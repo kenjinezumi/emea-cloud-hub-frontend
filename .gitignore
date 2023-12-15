@@ -21,3 +21,50 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# IDEs and Editors
+/.idea
+/.vscode
+/*.sublime-project
+/*.sublime-workspace
+
+# Logs and databases
+/logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp files
+/tmp
+/temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Configuration Files
+/.env
+.env.*
+!.env.example
+.env*.local
+
+# Compiled files
+/dist
+
+# Bundle artifacts
+/bundle
+
+# Dependency directories
+/jspm_packages
+/bower_components
+
+# Security
+*.pem
+*.cert
+*.key
