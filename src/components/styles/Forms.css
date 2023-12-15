@@ -1,0 +1,47 @@
+/* In your CSS file */
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align items to the start of the container (top) */
+    width: 100%;
+    background:lightgrey;
+    height: 100vh; /* Optional, if you want the container to take full viewport height */
+}
+
+.event-form {
+    width: 100%;
+    max-width: 800px;
+    border-radius: 4%;
+    padding: 40px;
+    background: white;
+    margin-top: 20px; /* Optional, adds some space at the top */
+    /* Additional styling */
+}
+
+.form-container {
+    padding: 20px;
+  }
+  
+  .form-title {
+    margin-bottom: 20px;
+  }
+  
+  .form-grid {
+    margin-bottom: 20px;
+  }
+  
+  .form-navigation-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .previous-button, .next-button, .save-button {
+    margin-top: 10px;
+  }
+  
+  .scrollable-form {
+    max-height: 800px; /* Adjust the height as needed */
+    overflow-y: auto;
+  }
+  

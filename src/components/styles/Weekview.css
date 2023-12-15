@@ -1,0 +1,42 @@
+.week-view-container {
+    max-width: 1000px;
+    margin: auto;
+  }
+  
+  .week-days-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f3f3f3;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .day-header {
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .time-slots {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .hour-row {
+    display: flex;
+  }
+  
+  .hour-slot {
+    flex: 1;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+  }
+  
+  .event {
+    background-color: #e0e0e0;
+    padding: 5px;
+    margin-top: 5px;
+    border-radius: 4px;
+  }
+  

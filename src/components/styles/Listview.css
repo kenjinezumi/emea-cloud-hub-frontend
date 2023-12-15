@@ -1,0 +1,20 @@
+.events-list-container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+  }
+  
+  .event-item {
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+  }
+  
+  .event-date {
+    color: #5f6368;
+    font-weight: bold;
+  }
+  
+  .event-title {
+    margin-top: 5px;
+  }
+  

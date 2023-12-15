@@ -1,0 +1,53 @@
+.app.dark {
+    background-color: #121212; /* Dark background */
+    color: #ffffff; /* Light text for readability */
+  }
+  
+  .app.dark button, 
+  .app.dark input, 
+  .app.dark select, 
+  .app.dark textarea {
+    background-color: #1e1e1e; /* Slightly lighter background for elements */
+    color: #ffffff; /* Light text */
+    border: 1px solid #333333; /* Subtle borders for elements */
+  }
+  
+  .app.dark a {
+    color: #bb86fc; /* Light purple for links */
+  }
+
+  .app.light {
+    background-color: #ffffff; /* Light background */
+    color: #000000; /* Dark text for readability */
+  }
+  
+  .app.light button, 
+  .app.light input, 
+  .app.light select, 
+  .app.light textarea {
+    background-color: #f0f0f0; /* Slightly darker background for elements */
+    color: #000000; /* Dark text */
+    border: 1px solid #cccccc; /* Subtle borders for elements */
+  }
+  
+  .app.light a {
+    color: #1a0dab; /* Standard blue for links */
+  }
+  .app.highContrast {
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text for maximum contrast */
+  }
+  
+  .app.highContrast button, 
+  .app.highContrast input, 
+  .app.highContrast select, 
+  .app.highContrast textarea {
+    background-color: #ffffff; /* White background for elements */
+    color: #000000; /* Black text */
+    border: 2px solid #ffffff; /* High contrast borders for elements */
+  }
+  
+  .app.highContrast a {
+    color: #ffcc00; /* Bright yellow for links */
+  }
+    
