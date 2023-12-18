@@ -15,14 +15,146 @@ export const regionFilters = [
     { label: "NORTHAM", checked: true },
   ];
   
+
   export const regionOptions = [
+    "GLOBAL",
     "APAC",
     "EMEA",
-    "GLOBAL",
     "JAPAN",
     "LATAM",
     "NORTHAM",
   ];
+
+  export const regionsData = [
+    {
+      region: "GLOBAL",
+      subregions: ["Alps", "Benelux", "CEE", "France", "Iberia", "Israel", "Italy", "MEA", "Nordics", "UK/IE"],
+    },
+    {
+      region: "EMEA",
+      subregions: ["Alps", "Benelux", "CEE", "France", "Iberia", "Israel", "Italy", "MEA", "Nordics", "UK/IE"],
+    },
+    // Add more regions with their respective subregions here
+  ];
+  
+  export const subregionsData = [
+    {
+      subregion: "Alps",
+      countries: ["AT", "CH"],
+    },
+    {
+      subregion: "Benelux",
+      countries: ["BE", "NL"],
+    },
+    {
+      subregion: "CEE",
+      countries: ["PL", ],
+    },
+    {
+      subregion: "France",
+      countries: ["FR",],
+    },
+    {
+      subregion: "Iberia",
+      countries: ["ES", "PT"],
+    },
+    {
+      subregion: "Israel",
+      countries: ["IL", ],
+    },
+    {
+      subregion: "Italy",
+      countries: ["IT", ],
+    },
+    {
+      subregion: "MEA",
+      countries: ["IL", ],
+    },
+    {
+      subregion: "Nordics",
+      countries: ["DE","NO","SE" ],
+    },
+    {
+      subregion: "UK/IE",
+      countries: ["GB",],
+    },
+
+  ];
+
+  
+  export const countriesData = [
+    {
+      country: "AT",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Alps",
+    },
+    {
+      country: "BE",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Benelux",
+    },
+    {
+      country: "CH",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Alps",
+    },
+    {
+      country: "DE",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Nordics",
+    },
+    {
+      country: "ES",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Iberia",
+    },
+    {
+      country: "FR",
+      region: ["EMEA","GLOBAL"],
+      subregion: "France",
+    },
+    {
+      country: "GB",
+      region: ["EMEA","GLOBAL"],
+      subregion: "UK/IE",
+    },
+    {
+      country: "IL",
+      region: ["EMEA","GLOBAL"],
+      subregion: "MEA",
+    },
+    {
+      country: "IT",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Italy",
+    },
+    {
+      country: "NL",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Benelux",
+    },
+    {
+      country: "NO",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Nordics",
+    },
+    {
+      country: "PL",
+      region: ["EMEA","GLOBAL"],
+      subregion: "CEE",
+    },
+    {
+      country: "PT",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Iberia",
+    },   
+     {
+      country: "SE",
+      region: ["EMEA","GLOBAL"],
+      subregion: "Nordics",
+    },
+  ];
+  
   
   export const subRegionOptions = [
     "Alps",
@@ -30,15 +162,11 @@ export const regionFilters = [
     "CEE",
     "France",
     "Iberia",
-    "ISRAEL",
+    "Israel",
     "Italy",
     "MEA",
     "Nordics",
     "UK/IE",
-    "UK IE Corp TRADI",
-    "UK/IE Digital Natives",
-    "UK/IE M&I",
-    "UK/IE TME",
   ];
 
   
@@ -57,7 +185,6 @@ export const countryOptions = [
     "PL",
     "PT",
     "SE",
-    "US",
 ]
 
 export const languageOptions = [

@@ -72,7 +72,7 @@ export default function CalendarHeader() {
           onClick={toggleSidebar}
         />
         <img src={logo} alt="calendar" className="mr-2 w-12 h-12" />
-        <h1 className="mr-10 text-xl text-gray-500 fond-bold">Calendar</h1>
+        <h1 className="mr-10 text-xl text-gray-500 fond-bold">EMEA Cloud Hub</h1>
         <img src={beta} alt="beta" className="mr-2 w-12 h-12" />
         <button onClick={handleReset} className="border rounded py-2 px-4 mr-5">
           Today

@@ -5,7 +5,6 @@ import {
   Button,
   TextField,
   FormControlLabel,
-  Checkbox,
   Typography,
   Grid,
   Switch,
@@ -14,15 +13,28 @@ import {
 import "../styles/Forms.css";
 import EmojiPicker from "emoji-picker-react";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
-import { LocalizationProvider, DateTimePicker } from "@mui/x-date-pickers";
+import {
+  LocalizationProvider,
+  DateTimePicker,
+  DatePicker,
+} from "@mui/x-date-pickers";
+import Chip from "@mui/material/Chip";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import {ReactComponent as FireLogo} from '../../assets/svg/fire.svg';
+import { ReactComponent as FireLogo } from "../../assets/svg/fire.svg";
 import { eventTypeOptions } from "../filters/FiltersData";
-
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
+const getRandomColor = () => {
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  const alpha = 0.3; // Set the opacity
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 export default function EventForm() {
-  const [eventType, setEventType] = useState(""); // State for event type
+  const [eventType, setEventType] = useState("");
+  const [colorMap, setColorMap] = useState({}); // New state to store colors
 
   const { daySelected, dispatchCalEvent, selectedEvent, updateFormData } =
     useContext(GlobalContext);
@@ -37,7 +49,7 @@ export default function EventForm() {
   );
   const [emoji, setEmoji] = useState("");
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-  const [organisedBy, setorganisedBy] = useState("");
+  const [organisedBy, setOrganisedBy] = useState([]);
   const [dropdownValue2, setDropdownValue2] = useState("");
   const [marketingActivityType, setMarketingActivityType] = useState("");
   const [isHighPriority, setIsHighPriority] = useState(false);
@@ -47,21 +59,39 @@ export default function EventForm() {
     useState("");
   const [isFormValid, setIsFormValid] = useState(true); // State to track form validity
 
-  const navigate = useNavigate(); // Use useNavigate
+  const navigate = useNavigate();
+
+  const handleOrganisedByChange = (event) => {
+    const newOrganisedBy = event.target.value;
+    const newColorMap = { ...colorMap };
+
+    newOrganisedBy.forEach((option) => {
+      if (!colorMap[option]) {
+        newColorMap[option] = getRandomColor();
+      }
+    });
+
+    setOrganisedBy(newOrganisedBy);
+    setColorMap(newColorMap); // Update the color map
+  };
 
   const handleNext = () => {
     // Save current form state to cache
-    const isTitleValid = title.trim() !== '';
-    const isorganisedByValid = organisedBy.trim() !== '';
-    const isEventTypeValid = eventType.trim() !== '';
-    const isDescriptionValid = description.trim() !== '';
-    const isMarketingProgramInstanceIdValid = marketingProgramInstanceId.trim() !== '';
+    const isTitleValid = title.trim() !== "";
+    const isorganisedByValid = organisedBy.length > 0; // Check if the array is not empty
+    const isEventTypeValid = eventType.trim() !== "";
+    const isDescriptionValid = description.trim() !== "";
+    const isMarketingProgramInstanceIdValid =
+      marketingProgramInstanceId.trim() !== "";
 
-    const formIsValid = isTitleValid && isorganisedByValid && isEventTypeValid && isDescriptionValid && isMarketingProgramInstanceIdValid;
+    const formIsValid =
+      isTitleValid &&
+      isorganisedByValid &&
+      isEventTypeValid &&
+      isDescriptionValid &&
+      isMarketingProgramInstanceIdValid;
 
-
-
-    setIsFormValid(formIsValid); 
+    setIsFormValid(formIsValid);
 
     if (!formIsValid) {
       // Prevent navigation if form is invalid
@@ -83,10 +113,9 @@ export default function EventForm() {
 
     updateFormData(newFormData); // Update the global form data
 
-    navigate('/location');
+    navigate("/location");
   };
 
-  
   const onEmojiClick = (event, emojiObject) => {
     console.log("Emoji Object:", emojiObject);
     setEmoji(emojiObject.emoji);
@@ -115,7 +144,7 @@ export default function EventForm() {
                   viewBox="0 0 24 24"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  style={{marginRight:'10px'}}
+                  style={{ marginRight: "10px" }}
                 >
                   <path
                     opacity="0.15"
@@ -140,7 +169,7 @@ export default function EventForm() {
           </Grid>
         </Grid>
 
-        <form  noValidate>
+        <form noValidate>
           <Grid
             container
             spacing={2}
@@ -189,11 +218,25 @@ export default function EventForm() {
 
               <FormControl fullWidth>
                 <Select
-                  labelId="dropdown-label-1"
-                  id="dropdown-select-1"
+                  labelId="organised-by-label"
+                  id="organised-by-select"
+                  multiple
                   value={organisedBy}
-                  label="Organised by"
-                  onChange={(e) => setorganisedBy(e.target.value)}
+                  onChange={handleOrganisedByChange} // Use the new change handler
+                  renderValue={(selected) => (
+                    <div style={{ display: "flex", flexWrap: "wrap" }}>
+                      {selected.map((value) => (
+                        <Chip
+                          key={value}
+                          label={value}
+                          style={{
+                            margin: 2,
+                            backgroundColor: colorMap[value],
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 >
                   <MenuItem value="Option1">Option 1</MenuItem>
                   <MenuItem value="Option2">Option 2</MenuItem>
@@ -205,17 +248,18 @@ export default function EventForm() {
               <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                 Activity type
               </Typography>
-
               <FormControl fullWidth>
                 <Select
-              value={eventType}
-              onChange={(e) => setEventType(e.target.value)}
-              label="Event Type"
-            >
-              {eventTypeOptions.map((type, idx) => (
-                <MenuItem key={idx} value={type}>{type}</MenuItem>
-              ))}
-            </Select>
+                  value={eventType}
+                  onChange={(e) => setEventType(e.target.value)}
+                  label="Event Type"
+                >
+                  {eventTypeOptions.map((type, idx) => (
+                    <MenuItem key={idx} value={type}>
+                      {type}
+                    </MenuItem>
+                  ))}
+                </Select>
               </FormControl>
             </Grid>
           </Grid>
@@ -231,11 +275,19 @@ export default function EventForm() {
                   />
                 }
                 label={
-                  <Typography variant="subtitle1" style={{ display: 'flex', alignItems: 'center' }}>
-                  <FireLogo style={{ width: '30px', height: '30px', marginRight: '8px' }} />
-                  High priority status
-                </Typography>
-                
+                  <Typography
+                    variant="subtitle1"
+                    style={{ display: "flex", alignItems: "center" }}
+                  >
+                    <FireLogo
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        marginRight: "8px",
+                      }}
+                    />
+                    High priority status
+                  </Typography>
                 }
               />
             </FormGroup>
@@ -246,35 +298,57 @@ export default function EventForm() {
             alignItems="center"
             style={{ marginBottom: "20px" }}
           >
+            {/* Event Start Date */}
             <Grid item xs={6}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DateTimePicker
-                  label="Event Start Date"
-                  inputFormat="MM/dd/yyyy"
-                  value={startDate}
-                  onChange={setStartDate}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
+                {eventType === "Blog Post" ? (
+                  <DatePicker
+                    label="Event Start Date"
+                    inputFormat="MM/dd/yyyy"
+                    value={startDate}
+                    onChange={setStartDate}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                ) : (
+                  <DateTimePicker
+                    label="Event Start Date"
+                    inputFormat="MM/dd/yyyy hh:mm a"
+                    value={startDate}
+                    onChange={setStartDate}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                )}
               </LocalizationProvider>
             </Grid>
-            <Grid item xs={6}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DateTimePicker
-                  label="Event End Date"
-                  inputFormat="MM/dd/yyyy"
-                  value={endDate}
-                  onChange={setEndDate}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </LocalizationProvider>
-            </Grid>
+
+            {/* Event End Date - Conditionally Rendered */}
+            {eventType !== "Blog Post" && (
+              <Grid item xs={6}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DateTimePicker
+                    label="Event End Date"
+                    inputFormat="MM/dd/yyyy"
+                    value={endDate}
+                    onChange={setEndDate}
+                    renderInput={(params) => (
+                      <TextField {...params} fullWidth />
+                    )}
+                  />
+                </LocalizationProvider>
+              </Grid>
+            )}
           </Grid>
+
           <Grid item xs={12} style={{ marginBottom: "20px" }}>
             <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
               Description
             </Typography>
             <TextField
-              label="Description"
+              label="Internal description (for internal use only)"
               multiline
               rows={4}
               value={description}
@@ -303,11 +377,10 @@ export default function EventForm() {
           </Grid>
 
           {!isFormValid && (
-          <Typography color="error" style={{ marginBottom: "10px" }}>
-            Please fill in all required fields.
-          </Typography>
-        )}
-
+            <Typography color="error" style={{ marginBottom: "10px" }}>
+              Please fill in all required fields.
+            </Typography>
+          )}
 
           <Button
             variant="contained"
