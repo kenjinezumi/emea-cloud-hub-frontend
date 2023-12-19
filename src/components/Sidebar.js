@@ -1,4 +1,4 @@
-import CreateEventButton from "./CreateEventButton";
+import CreateEventButton from "./commons/CreateEventButton";
 import SmallCalendar from "./SmallCalendar";
 import Labels from "./Labels";
 import GlobalContext from "../context/GlobalContext";

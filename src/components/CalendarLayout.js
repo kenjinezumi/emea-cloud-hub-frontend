@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { getMonth } from "../util";
-import CalendarHeader from "./CalendarHeader";
+import CalendarHeader from "./commons/CalendarHeader";
 import Sidebar from "./Sidebar";
 import MonthView from "./calendar/MonthView";
 import DayView from "./calendar/DayView";

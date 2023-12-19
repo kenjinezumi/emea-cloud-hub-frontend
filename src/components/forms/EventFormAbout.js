@@ -1,6 +1,8 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+
 import {
   Button,
   TextField,
@@ -127,7 +129,11 @@ export default function EventForm() {
   };
 
   return (
+    <div className="h-screen flex flex-col">
+        <CalendarHeaderForm />
+
     <div className="form-container">
+
       <div className="event-form">
         <Grid
           container
@@ -396,6 +402,7 @@ export default function EventForm() {
           </Button>
         </form>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import { languageOptions, okrOptions, gepOptions } from "../filters/FiltersData";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+
 import {
   Button,
   FormControl,
@@ -89,6 +91,8 @@ export default function ExtraDetailsForm() {
   };
 
   return (
+    <div className="h-screen flex flex-col">
+    <CalendarHeaderForm />
     <div className="form-container">
       <div className="event-form scrollable-form">
         <Typography
@@ -295,6 +299,7 @@ export default function ExtraDetailsForm() {
           </Button>
         </div>
       </div>
+    </div>
     </div>
   );
 }

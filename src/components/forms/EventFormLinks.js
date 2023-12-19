@@ -1,5 +1,6 @@
 import React, { useState, useContext,useEffect } from "react";
 import GlobalContext from "../../context/GlobalContext";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 
 import { Button, TextField, Typography, Grid } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -45,6 +46,8 @@ export default function LinksForm() {
 
   // Render the form
   return (
+    <div className="h-screen flex flex-col">
+    <CalendarHeaderForm />
     <div className="form-container">
         <div className="event-form"> 
         <Typography variant="h4" className="form-title" style={{ display: 'flex', alignItems: 'center', marginBottom:'40px' }}>
@@ -119,6 +122,7 @@ export default function LinksForm() {
         </Button>
       </div>
       </div>
+    </div>
     </div>
   );
 }

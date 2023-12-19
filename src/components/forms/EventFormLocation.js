@@ -5,6 +5,7 @@ import { Button, FormControl, Typography, Grid, Select, MenuItem } from "@mui/ma
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
 import { ReactComponent as LocationLogo } from "../../assets/svg/location.svg";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 
 export default function LocationFormPage() {
   const { formData, updateFormData } = useContext(GlobalContext);
@@ -65,6 +66,8 @@ export default function LocationFormPage() {
   };
 
   return (
+    <div className="h-screen flex flex-col">
+    <CalendarHeaderForm />
     <div className="form-container">
       <div className="event-form">
         <Typography variant="h4" className="form-title" style={{ display: "flex", alignItems: "center", marginBottom: "40px" }}>
@@ -125,6 +128,7 @@ export default function LocationFormPage() {
           <Button variant="outlined" onClick={handleNext} className="next-button" style={{ backgroundColor: "#4285F4", color: "white", float: "right", margin: "10px" }}>Next</Button>
         </div>
       </div>
+    </div>
     </div>
   );
 }

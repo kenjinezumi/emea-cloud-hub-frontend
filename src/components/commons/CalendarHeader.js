@@ -1,14 +1,12 @@
 import dayjs from "dayjs";
 import React, { useContext, useState } from "react";
-import logo from "../assets/svg/logo.svg";
-import hamburger from "../assets/svg/hamburger.svg";
-import beta from "../assets/svg/beta.svg";
+import logo from "../../assets/svg/logo.svg";
+import hamburger from "../../assets/svg/hamburger.svg";
+import beta from "../../assets/svg/beta.svg";
 import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
-import SettingsIcon from "@mui/icons-material/Settings";
 import { Select, MenuItem } from "@mui/material";
-import ThemePopup from "./Themepopup"; // Import the popup component
-import GlobalContext from "../context/GlobalContext";
+import GlobalContext from "../../context/GlobalContext";
 export default function CalendarHeader() {
   const {
     monthIndex,

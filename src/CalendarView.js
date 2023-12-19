@@ -2,12 +2,14 @@ import React, { useState, useContext, useEffect } from "react";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import "./App.css";
 import { getMonth } from "./util";
-
+import CalendarHeader from "./components/commons/CalendarHeader";
+import Sidebar from "./components/Sidebar";
 import MonthView from "./components/calendar/MonthView";
 import DayView from "./components/calendar/DayView";
 import YearView from "./components/calendar/YearView";
 import ListView from "./components/calendar/ListView";
 import WeekView from "./components/calendar/WeekView";
+import EventModal from "./components/EventModal";
 import EventForm from "./components/forms/EventFormAbout"; 
 import EventFormLocation from "./components/forms/EventFormLocation"; 
 import EventFormExtra from "./components/forms/EventFormExtra";
@@ -16,9 +18,7 @@ import EventFormLinks from "./components/forms/EventFormLinks";
 // import { ThemeProvider, useTheme } from './ThemeContext';
 // import './Theme.css'; 
 import GlobalContext from "./context/GlobalContext";
-import RenderCalendarView from "./components/CalendarLayout";
 
-function App() {
   const { sidebarOpen, currentView, monthIndex, showEventModal } = useContext(GlobalContext);
   const [currenMonth, setCurrentMonth] = useState(getMonth());
   // const { theme } = useTheme();
@@ -27,7 +27,7 @@ function App() {
     setCurrentMonth(getMonth(monthIndex));
   }, [monthIndex]);
 
-  function renderCalendarView() {
+  export default function renderCalendarView() {
     switch (currentView) {
       case 'day':
         return <DayView />;
@@ -42,23 +42,27 @@ function App() {
       default:
         return <MonthView month={currenMonth} />;
     }
+
+    return (
+      
+
+        <div className="h-screen flex flex-col">
+                {showEventModal && <EventModal />}
+  
+          <CalendarHeader />
+          {sidebarOpen && <Sidebar />}
+  
+          <div className="flex flex-1">
+            <Sidebar />
+  
+            {renderCalendarView()}
+            
+          </div>
+        </div>
+    );
   }
 
-  return (
-    <Router>
-          <Routes>
-            <Route path="/create-event" element={<EventForm />} />
-            <Route path="/" element={<RenderCalendarView/>} />
-            <Route path="/location" element={<EventFormLocation/>} />
-            <Route path="/extra" element={<EventFormExtra/>} />
-            <Route path="/audience" element={<EventFormAudience/>} />
-            <Route path="/links" element={<EventFormLinks/>} />
-
-          </Routes>
-   
-    </Router>
-  );
-}
 
 
-export default App;
+
+

@@ -1,4 +1,5 @@
 import React, { useContext,useEffect, useState } from "react";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 
 import { Button, FormControl, RadioGroup, Radio,   FormControlLabel,
     InputLabel, Select, MenuItem, Typography, Grid, Checkbox, FormGroup, TextField } from "@mui/material";
@@ -96,6 +97,8 @@ export default function AudiencePersonaForm() {
 
   // Render your form
   return (
+    <div className="h-screen flex flex-col">
+    <CalendarHeaderForm />
 <div className="form-container">
       <div className="event-form">     
       <Typography variant="h4" className="form-title" style={{ display: 'flex', alignItems: 'center', marginBottom:'40px' }}>
@@ -231,5 +234,7 @@ export default function AudiencePersonaForm() {
       </div>
     </div>
     </div>
+    </div>
+
   );
 }
