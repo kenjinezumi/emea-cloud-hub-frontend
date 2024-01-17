@@ -1,47 +1,84 @@
-/* In your CSS file */
+/* Base container styling */
 .form-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Align items to the start of the container (top) */
-    width: 100%;
-    background:lightgrey;
-    height: 100vh; /* Optional, if you want the container to take full viewport height */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align items to the start of the container (top) */
+  width: 100%;
+  background: #F8F9FA; /* Light grey background, typical of Google's design */
+  height: 100vh; /* Full viewport height */
+  padding: 20px; /* Consistent padding */
 }
 
+/* Form styling */
 .event-form {
-    width: 100%;
-    max-width: 800px;
-    border-radius: 4%;
-    padding: 40px;
-    background: white;
-    margin-top: 20px; /* Optional, adds some space at the top */
-    /* Additional styling */
+  width: 100%;
+  max-width: 600px; /* Google forms are typically not very wide */
+  padding: 24px;
+  background: white;
+  margin-top: 20px; /* Adds some space at the top */
+  border-radius: 8px; /* Slightly rounded corners */
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1); /* Light shadow for depth */
+  border: 1px solid #E0E0E0; /* Light border */
 }
 
-.form-container {
-    padding: 20px;
-  }
-  
-  .form-title {
-    margin-bottom: 20px;
-  }
-  
-  .form-grid {
-    margin-bottom: 20px;
-  }
-  
-  .form-navigation-buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  }
-  
-  .previous-button, .next-button, .save-button {
-    margin-top: 10px;
-  }
-  
-  .scrollable-form {
-    max-height: 800px; /* Adjust the height as needed */
-    overflow-y: auto;
-  }
-  
+/* Titles and labels */
+.form-title {
+  margin-bottom: 16px;
+  color: #202124; /* Dark gray for text */
+  font-size: 24px;
+  font-weight: 500; /* Medium font weight */
+}
+
+/* Grid layout for form elements */
+.form-grid {
+  margin-bottom: 16px;
+}
+
+/* Navigation buttons at the bottom of the form */
+.form-navigation-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.previous-button, .next-button, .save-button {
+  margin-top: 10px;
+  padding: 6px 16px; /* Standard button padding */
+  border: none;
+  border-radius: 4px;
+  background-color: #1a73e8; /* Google blue */
+  color: white;
+  text-transform: uppercase; /* Google's buttons often use uppercase text */
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Hover effect for buttons */
+.previous-button:hover, .next-button:hover, .save-button:hover {
+  background-color: #2a85f9; /* Slightly darker shade on hover */
+}
+
+/* Scrollable form section */
+.scrollable-form {
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+/* Input fields styling */
+input[type="text"], select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  display: inline-block;
+  /* border: 0px solid #ccc; */
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px;
+  text-align:left;
+}
+
+input[type="text"]:focus, select:focus, textarea:focus {
+  border-color: #1a73e8;
+  margin:4px;
+  box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}

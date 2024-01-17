@@ -64,10 +64,17 @@ export default function EventForm() {
 
   const navigate = useNavigate();
 
+  const handleStartDateChange = (newDate) => {
+    console.log('New Start Date:', newDate);
+    setStartDate(newDate);
+  };
+
   useEffect(() => {
     setIsClient(true);
   }, []);
-
+  useEffect(() => {
+    console.log(startDate, endDate); // Check if dates are updating correctly
+  }, [startDate, endDate]);
   const handleOrganisedByChange = (event) => {
     const newOrganisedBy = event.target.value;
     const newColorMap = { ...colorMap };
@@ -166,7 +173,10 @@ export default function EventForm() {
                       stroke="#001A72"
                     />
                   </svg>
-                  Activity
+                  Activity{" "}
+                  <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
+                    {emoji}
+                  </span>
                 </span>
               </Typography>
             </Grid>
@@ -186,32 +196,35 @@ export default function EventForm() {
               alignItems="center"
               style={{ marginBottom: "20px" }}
             >
-              <Grid item xs={2}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Emoji
-                </Typography>
-                <Button onClick={toggleEmojiPicker}>Choose Emoji  {emoji && (
-                  <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
-                    {emoji}
-                  </span>
-                )}</Button>
-               
-                {isClient && isEmojiPickerOpen && (
-                  <EmojiPicker onEmojiClick={onEmojiClick} />
-                )}{" "}
-              </Grid>
-              <Grid item xs={10}>
+              <Grid item xs={30}>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   Name
                 </Typography>
 
                 <TextField
-                  label="Event Name"
+                  label=""
                   variant="outlined"
                   fullWidth
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                 />
+              </Grid>
+              <Grid item xs={2}>
+                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                  Emoji
+                </Typography>
+                <Button onClick={toggleEmojiPicker}>
+                  
+                   {"Choose emoji "}
+                  {emoji && (
+                    <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
+                      {emoji}
+                    </span>
+                  )}
+                </Button>
+                {isClient && isEmojiPickerOpen && (
+                  <EmojiPicker onEmojiClick={onEmojiClick} />
+                )}{" "}
               </Grid>
             </Grid>
 
@@ -316,8 +329,10 @@ export default function EventForm() {
                     <DatePicker
                       label="Event Start Date"
                       inputFormat="MM/dd/yyyy"
+                      defaultValue={new Date()}
+
                       value={startDate}
-                      onChange={setStartDate}
+                      onChange={handleStartDateChange}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
                       )}
@@ -327,7 +342,7 @@ export default function EventForm() {
                       label="Event Start Date"
                       inputFormat="MM/dd/yyyy hh:mm a"
                       value={startDate}
-                      onChange={setStartDate}
+                      onChange={handleStartDateChange}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
                       )}
@@ -377,7 +392,7 @@ export default function EventForm() {
                 Marketing Program Instance ID
               </Typography>
               <TextField
-                label="Marketing Program Instance ID"
+                label=""
                 value={marketingProgramInstanceId}
                 onChange={(e) => setMarketingProgramInstanceId(e.target.value)}
                 variant="outlined"
