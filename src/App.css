@@ -1,44 +1,69 @@
+/* Base styles to set font and text alignment */
 .App {
   text-align: center;
   font-family: 'Roboto', sans-serif;
-
+  color: #3c4043; /* Google Calendar's primary text color */
+  background-color: #f1f3f4; /* Google Calendar's background color */
 }
+
+/* Body styling to maintain consistent font */
 body {
   font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f1f3f4; /* Consistent background color */
 }
 
-
+/* Logo styling */
 .App-logo {
-  height: 40vmin;
+  height: auto;
+  max-height: 40vmin;
   pointer-events: none;
 }
 
+/* Animation for the logo */
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
 }
 
+/* Header styling similar to Google Calendar's top bar */
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  background-color: #ffffff; /* White background for the header */
+  min-height: 60px; /* Adjusted height for a more compact header */
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* Row direction for horizontal layout */
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  justify-content: space-between; /* Space elements evenly */
+  padding: 0 20px; /* Padding on sides */
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.1); /* Subtle shadow for depth */
 }
 
+/* Link styling to fit Google's blue color */
 .App-link {
-  color: #61dafb;
+  color: #1a73e8;
 }
 
+/* Keyframes for logo animation */
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+  .App-header {
+    flex-direction: column; /* Stack elements in a column on smaller screens */
+    min-height: auto;
+    padding: 10px;
+  }
+
+  .App-logo {
+    max-height: 30vmin; /* Smaller logo for smaller screens */
   }
 }
