@@ -60,7 +60,7 @@ export default function LinksForm() {
         <Typography variant="subtitle1">Link to landing page</Typography>
 
           <TextField
-            label="Link to Landing Page"
+            label=""
             value={landingPageLink}
             onChange={(e) => setLandingPageLink(e.target.value)}
             variant="outlined"
@@ -72,7 +72,7 @@ export default function LinksForm() {
         <Typography variant="subtitle1">Sales kit link</Typography>
 
           <TextField
-            label="Sales Kit Link"
+            label=""
             value={salesKitLink}
             onChange={(e) => setSalesKitLink(e.target.value)}
             variant="outlined"
@@ -84,7 +84,7 @@ export default function LinksForm() {
         <Typography variant="subtitle1">Hailo link</Typography>
 
           <TextField
-            label="Hailo Link"
+            label=""
             value={hailoLink}
             onChange={(e) => setHailoLink(e.target.value)}
             variant="outlined"
@@ -96,7 +96,7 @@ export default function LinksForm() {
         <Typography variant="subtitle1">Other documents</Typography>
 
           <TextField
-            label="Other Documents Link"
+            label=""
             value={otherDocumentsLink}
             onChange={(e) => setOtherDocumentsLink(e.target.value)}
             variant="outlined"
