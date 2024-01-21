@@ -1,6 +1,7 @@
 const API_URL = "your-api-url"; // Replace with your API's URL
 
 const sendDataToAPI = async (data) => {
+  console.log(data);
   try {
     const response = await fetch(API_URL, {
       method: 'PUT',

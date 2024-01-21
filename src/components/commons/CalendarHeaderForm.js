@@ -6,9 +6,11 @@ import { ReactComponent as LocationLogo } from "../../assets/svg/location.svg";
 import { ReactComponent as InformationLogo } from "../../assets/svg/information.svg";
 import {ReactComponent as UsersLogo} from '../../assets/svg/users.svg';
 import {ReactComponent as LinksLogo} from '../../assets/svg/links.svg';
+import { useLocation } from "react-router-dom";
 
 const NavigationSidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const navigateTo = (path) => {
     navigate(path);
@@ -19,12 +21,16 @@ const NavigationSidebar = () => {
     navigate("/");
   };
 
+  // Function to check if the current path matches the button's path
+  const isCurrentPath = (path) => location.pathname === path;
+
+
   return (
     <div className="fixed right-0 top-16 h-[calc(100vh-64px)] w-60 bg-white shadow-md p-4">
       <div className="text-lg font-semibold mb-2">Sections</div>{" "}
       <button
         onClick={() => navigateTo("/create-event")}
-        className="block w-full text-left p-2 hover:bg-gray-200 rounded flex items-center"
+        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/create-event') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
           <svg
@@ -49,8 +55,9 @@ const NavigationSidebar = () => {
       </button>
       <button
         onClick={() => navigateTo("/location")}
-        className="block w-full text-left p-2 hover:bg-gray-200 rounded flex items-center"
-      >
+        className={`block w-full text-left p-2 rounded flex items-center ${
+          isCurrentPath('/location') ? 'text-black' : 'text-gray-400'
+        }`}      >
         <span className="mr-2">
           <LocationLogo style={{ width: "20px", height: "20px" }} />
         </span>
@@ -58,7 +65,7 @@ const NavigationSidebar = () => {
       </button>
       <button
         onClick={() => navigateTo("/extra")}
-        className="block w-full text-left p-2 hover:bg-gray-200 rounded flex items-center"
+        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/extra') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
         <InformationLogo style={{ width: "20px", height: "20px" }} />
@@ -68,7 +75,9 @@ const NavigationSidebar = () => {
 
       <button
         onClick={() => navigateTo("/audience")}
-        className="block w-full text-left p-2 hover:bg-gray-200 rounded flex items-center"
+        className={`block w-full text-left p-2 rounded flex items-center ${
+          isCurrentPath('/audience')  ? 'text-black' : 'text-gray-400'
+        }`}
       >
         <span className="mr-2">
         <UsersLogo style={{ width:'20px', height:'20px' }} />
@@ -78,7 +87,7 @@ const NavigationSidebar = () => {
 
       <button
         onClick={() => navigateTo("/links")}
-        className="block w-full text-left p-2 hover:bg-gray-200 rounded flex items-center"
+        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/links') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
         <LinksLogo style={{  width:'20px', height:'20px' }} />

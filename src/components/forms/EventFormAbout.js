@@ -35,45 +35,50 @@ const getRandomColor = () => {
 };
 
 export default function EventForm() {
-  const [eventType, setEventType] = useState("");
   const [colorMap, setColorMap] = useState({}); // New state to store colors
 
-  const { daySelected, dispatchCalEvent, selectedEvent, updateFormData } =
+  const { daySelected, dispatchCalEvent, selectedEvent, updateFormData, formData } =
     useContext(GlobalContext);
-  const [title, setTitle] = useState(selectedEvent ? selectedEvent.title : "");
-  const [description, setDescription] = useState(
-    selectedEvent ? selectedEvent.description : ""
-  );
-  const [selectedLabel, setSelectedLabel] = useState(
-    selectedEvent
-      ? labelsClasses.find((lbl) => lbl === selectedEvent.label)
-      : labelsClasses[0]
-  );
-  const [emoji, setEmoji] = useState("");
-  const [isClient, setIsClient] = useState(false);
-  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-  const [organisedBy, setOrganisedBy] = useState([]);
-  const [dropdownValue2, setDropdownValue2] = useState("");
-  const [marketingActivityType, setMarketingActivityType] = useState("");
-  const [isHighPriority, setIsHighPriority] = useState(false);
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [marketingProgramInstanceId, setMarketingProgramInstanceId] =
-    useState("");
-  const [isFormValid, setIsFormValid] = useState(true); // State to track form validity
+
+
+
+
+  const [eventType, setEventType] = useState(formData.eventType || "");
+  const [title, setTitle] = useState(selectedEvent ? selectedEvent.title : formData.title || "");
+  const [description, setDescription] = useState(selectedEvent ? selectedEvent.description : formData.description || "");
+  const [selectedLabel, setSelectedLabel] = useState(selectedEvent ? selectedEvent.label : formData.selectedLabel || labelsClasses[0]);
+  const [emoji, setEmoji] = useState(formData.emoji || "");
+  const [isClient, setIsClient] = useState(false); 
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false); 
+  const [organisedBy, setOrganisedBy] = useState(formData.organisedBy || []);
+  const [dropdownValue2] = useState(formData.dropdownValue2 || "");
+  const [marketingActivityType, setMarketingActivityType] = useState(formData.marketingActivityType || "");
+  const [isHighPriority, setIsHighPriority] = useState(formData.isHighPriority || false);
+  const [startDate, setStartDate] = useState(selectedEvent ? selectedEvent.startDate : formData.startDate || new Date());
+  const [endDate, setEndDate] = useState(selectedEvent ? selectedEvent.endDate : formData.endDate || new Date());
+  const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(formData.marketingProgramInstanceId || "");
+  const [isFormValid, setIsFormValid] = useState(true); 
+
 
   const navigate = useNavigate();
 
   const handleStartDateChange = (newDate) => {
-    console.log('New Start Date:', newDate);
     setStartDate(newDate);
   };
 
   useEffect(() => {
+
+    if (formData.eventType) {
+      setEventType(formData.eventType);
+    }
+  }, [formData.eventType]);
+  
+
+  useEffect(() => {
+    
     setIsClient(true);
   }, []);
   useEffect(() => {
-    console.log(startDate, endDate); // Check if dates are updating correctly
   }, [startDate, endDate]);
   const handleOrganisedByChange = (event) => {
     const newOrganisedBy = event.target.value;
@@ -123,6 +128,7 @@ export default function EventForm() {
       startDate,
       endDate,
       marketingProgramInstanceId,
+      eventType
     };
 
     updateFormData(newFormData); // Update the global form data
@@ -131,7 +137,6 @@ export default function EventForm() {
   };
 
   const onEmojiClick = (emojiData, event) => {
-    console.log("Emoji Data:", emojiData); // Check the structure of emojiData
     setEmoji(emojiData.emoji); // emojiData.emoji should be the emoji character
     setIsEmojiPickerOpen(false);
   };

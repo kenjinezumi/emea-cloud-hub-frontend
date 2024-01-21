@@ -10,24 +10,20 @@ import GlobalContext from "../../context/GlobalContext";
 import { audienceRoles, audienceSeniorityOptions } from "../filters/FiltersData";
 
 export default function AudiencePersonaForm() {
+  const { formData, updateFormData } = useContext(GlobalContext);
+
   const [maxEventCapacityError, setMaxEventCapacityError] = useState('');
   const [peopleMeetingCriteriaError, setPeopleMeetingCriteriaError] = useState('');
-
   const [isFormValid, setIsFormValid] = useState(true);
-
-  const [audiencePersona, setAudiencePersona] = useState([]);
-  const [audienceSeniority, setAudienceSeniority] = useState([]);
-  const [accountSectors, setAccountSectors] = useState('');
-  const [accountSegments, setAccountSegments] = useState({
-    enterprise: false,
-    corporate: false,
-    smb: false,
-  });
-  const [maxEventCapacity, setMaxEventCapacity] = useState('');
-  const [peopleMeetingCriteria, setPeopleMeetingCriteria] = useState('');
+  const [audiencePersona, setAudiencePersona] = useState(formData.audiencePersona || []);
+  const [audienceSeniority, setAudienceSeniority] = useState(formData.audienceSeniority || []);
+  const [accountSectors, setAccountSectors] = useState(formData.accountSectors || '');
+  const [accountSegments, setAccountSegments] = useState(formData.accountSegments || { enterprise: false, corporate: false, smb: false });
+  const [maxEventCapacity, setMaxEventCapacity] = useState(formData.maxEventCapacity || '');
+  const [peopleMeetingCriteria, setPeopleMeetingCriteria] = useState(formData.peopleMeetingCriteria || '');
   const navigate = useNavigate();
 
-  const { formData, updateFormData } = useContext(GlobalContext);
+
   const handleMaxEventCapacityChange = (e) => {
     const value = e.target.value;
     if (!value || /^\d+$/.test(value)) {

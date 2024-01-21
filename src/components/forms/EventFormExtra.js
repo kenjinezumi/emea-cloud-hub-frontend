@@ -24,36 +24,37 @@ import "../styles/Forms.css";
 import { ReactComponent as InformationLogo } from "../../assets/svg/information.svg";
 
 export default function ExtraDetailsForm() {
-  const [isFormValid, setIsFormValid] = useState(true);
-  const [activityOwner, setActivityOwner] = useState([]);
-  const [speakers, setSpeakers] = useState([]);
-  const [eventSeries, setEventSeries] = useState("no");
-  const [emailLanguage, setEmailLanguage] = useState("English");
-  const [emailText, setEmailText] = useState("");
-  const [customerUse, setCustomerUse] = useState("no");
-  const [okr, setOkr] = useState([]);
-  const [gep, setGep] = useState([]);
-  const [activityType, setActivityType] = useState("direct");
-  const [languagesAndTemplates, setLanguagesAndTemplates] = useState([
-    { language: "English", template: "" },
-  ]);
-  const navigate = useNavigate();
   const { formData, updateFormData } = useContext(GlobalContext);
+
+  const [isFormValid, setIsFormValid] = useState(true);
+  const [activityOwner, setActivityOwner] = useState(
+    formData.activityOwner || []
+  );
+  const [speakers, setSpeakers] = useState(formData.speakers || []);
+  const [eventSeries, setEventSeries] = useState(formData.eventSeries || "no");
+  const [emailLanguage, setEmailLanguage] = useState(
+    formData.emailLanguage || "English"
+  );
+  const [emailText, setEmailText] = useState(formData.emailText || "");
+  const [customerUse, setCustomerUse] = useState(formData.customerUse || "no");
+  const [okr, setOkr] = useState(formData.okr || []);
+  const [gep, setGep] = useState(formData.gep || []);
+  const [activityType, setActivityType] = useState(
+    formData.activityType || "direct"
+  );
+  const [languagesAndTemplates, setLanguagesAndTemplates] = useState(
+    formData.languagesAndTemplates || [{ language: "English", template: "" }]
+  );
+  const navigate = useNavigate();
 
   const handlePrevious = () => {
     navigate("/location");
   };
 
   const handleNext = () => {
+    // Validate only the mandatory fields
     const formIsValid =
-      speakers.length > 0 &&
-      eventSeries &&
-      emailLanguage &&
-      emailText &&
-      customerUse &&
-      okr.length > 0 &&
-      gep.length > 0 &&
-      activityType;
+      customerUse && okr.length > 0 && gep.length > 0 && activityType;
 
     setIsFormValid(formIsValid);
 
@@ -73,6 +74,7 @@ export default function ExtraDetailsForm() {
       activityType,
       languagesAndTemplates,
     };
+
     updateFormData({ ...formData, ...currentFormData });
 
     navigate("/audience");
@@ -169,11 +171,12 @@ export default function ExtraDetailsForm() {
                       variant="outlined"
                       onClick={() => handleRemoveLanguageAndTemplate(index)}
                       style={{
-                        color: '#d32f2f', // Reddish color for the text
-                        borderColor: '#d32f2f', // Reddish color for the border
-                        marginTop: '1px',
-                        textTransform: 'none', // Avoid uppercase text
-                      }}>
+                        color: "#d32f2f", // Reddish color for the text
+                        borderColor: "#d32f2f", // Reddish color for the border
+                        marginTop: "1px",
+                        textTransform: "none", // Avoid uppercase text
+                      }}
+                    >
                       Remove
                     </Button>
                   </Grid>

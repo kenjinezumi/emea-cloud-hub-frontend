@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext,  useState } from "react";
 import GlobalContext from "../../context/GlobalContext";
-import { regionOptions, subRegionOptions, countryOptions, regionsData, subregionsData } from "../filters/FiltersData";
+import { regionOptions, regionsData, subregionsData } from "../filters/FiltersData";
 import { Button, FormControl, Typography, Grid, Select, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
@@ -8,12 +8,16 @@ import { ReactComponent as LocationLogo } from "../../assets/svg/location.svg";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 
 export default function LocationFormPage() {
+
+
   const { formData, updateFormData } = useContext(GlobalContext);
-  const [region, setRegion] = useState("");
-  const [subRegion, setSubRegion] = useState([]);
-  const [country, setCountry] = useState([]);
+
+  
+  const [region, setRegion] = useState(formData.region || "");
+  const [subRegion, setSubRegion] = useState(formData.subRegion || []);
+  const [country, setCountry] = useState(formData.country || []);
   const [availableSubregions, setAvailableSubregions] = useState([]);
-  const [availableCountries, setAvailableCountries] = useState([]);
+  const [availableCountries] = useState([]);
   const [isFormValid, setIsFormValid] = useState(true);
   const navigate = useNavigate();
 
@@ -60,10 +64,6 @@ export default function LocationFormPage() {
     setCountry(countriesForSubregions);
   };
   
-  const handleCountryChange = (e) => {
-    const selectedCountries = e.target.value;
-    setCountry(selectedCountries);
-  };
 
   return (
     <div className="h-screen flex flex-col">

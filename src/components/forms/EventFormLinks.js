@@ -9,13 +9,14 @@ import {ReactComponent as LinksLogo} from '../../assets/svg/links.svg';
 import { sendDataToAPI } from '../../api/pushData'; // Adjust the path as per your project structure
 
 export default function LinksForm() {
-  const [landingPageLink, setLandingPageLink] = useState('');
-  const [salesKitLink, setSalesKitLink] = useState('');
-  const [hailoLink, setHailoLink] = useState('');
-  const [otherDocumentsLink, setOtherDocumentsLink] = useState('');
+  const { formData, updateFormData } = useContext(GlobalContext);
+
+  const [landingPageLink, setLandingPageLink] = useState(formData.landingPageLink || '');
+  const [salesKitLink, setSalesKitLink] = useState(formData.salesKitLink || '');
+  const [hailoLink, setHailoLink] = useState(formData.hailoLink || '');
+  const [otherDocumentsLink, setOtherDocumentsLink] = useState(formData.otherDocumentsLink || '');
   const navigate = useNavigate();
 
-  const { formData, updateFormData } = useContext(GlobalContext);
 
 
 
@@ -28,6 +29,8 @@ export default function LinksForm() {
       hailoLink,
       otherDocumentsLink
     };
+    console.log(formData);
+    console.log(FinalFormData);
     sendDataToAPI(FinalFormData)
       .then(response => {
         console.log('Data sent successfully:', response);
