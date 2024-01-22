@@ -16,7 +16,7 @@ export default function CalendarHeader() {
     toggleSidebar,
     setCurrentView,
   } = useContext(GlobalContext);
-  const [view, setView] = useState("day"); // State to manage the selected view
+  const [view, setView] = useState("month"); // State to manage the selected view
   // const [isThemePopupOpen, setIsThemePopupOpen] = useState(false); // State for popup visibility
 
   function handlePrevMonth() {
