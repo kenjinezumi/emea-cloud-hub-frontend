@@ -1,51 +1,55 @@
-import dayjs from 'dayjs';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import GlobalContext from '../../context/GlobalContext';
-import { Typography, Paper, List, ListItem, Divider } from '@mui/material';
+import { Typography, Paper, Divider, Button } from '@mui/material';
+import dayjs from 'dayjs';
+import { useLocation } from 'react-router-dom';
 
-export default function DayView({ events = defaultEvents }) {
-  const { daySelected } = useContext(GlobalContext);
+export default function DayView() {
+  const { showEventModal, daySelected, setShowEventModal, setDaySelected } = useContext(GlobalContext);
 
-  const startHour = 6; // 8 AM
-  const endHour = 20; // 5 PM
+  const startHour = 6; // 6 AM
+  const endHour = 20; // 8 PM
   const hours = Array.from({ length: endHour - startHour + 1 }, (_, i) => i + startHour);
 
+  const handleAddEvent = () => {
+    setShowEventModal(true);
+  };
+
+  useEffect(() => {
+    console.log("Modal state changed:", showEventModal);
+  }, [showEventModal]);
+  
+
+  const location = useLocation(); // Get the current location
+
+
+
   return (
-    
-    <Paper sx={{ margin: 2, width: '90%', maxHeight: '100%', overflowY: 'auto', border: 'none' }}> {/* Set border to 'none' */}
+    <Paper sx={{ margin: 2, width: '90%', maxHeight: '100%', overflowY: 'auto', border: 'none' }}>
       <Typography variant="h5" align="center" gutterBottom marginBottom={'20px'}>
         {daySelected.format('dddd, MMMM D, YYYY')}
       </Typography>
+      <div
+        className="flex-1 cursor-pointer"
+        onClick={() => {
+          setShowEventModal(true);
+        }}
+      ></div>
       {hours.map(hour => (
         <React.Fragment key={hour}>
-          <Typography 
-            style={{ 
-              position: 'relative', 
-              top: '-10px', 
-              fontSize: '0.75rem', // Make font smaller
-              color: 'grey' // Change color to light grey
-            }}
+          <div 
+            onClick={() => handleAddEvent()} 
+            style={{ width: '100%', textAlign: 'left', padding: '20px' }} 
+            variant="text"
           >
-            {dayjs().hour(hour).format('h A')}
-          </Typography>
-          <Divider />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', minHeight: '100px' }}>
-            <List style={{ width: '100%' }}>
-              {events.filter(event => dayjs(event.start).hour() === hour && dayjs(event.start).isSame(daySelected, 'day')).map((event, index) => (
-                <ListItem key={index} style={{ padding: '10px', borderRadius: '10px', backgroundColor: '#e0e0e0', marginBottom: '10px' }}>
-                  {event.title}
-                </ListItem>
-              ))}
-            </List>
-          </div>
+            <Typography style={{ fontSize: '0.75rem', color: 'grey' }}>
+              {dayjs().hour(hour).format('h A')}
+            </Typography>
+            <Divider style={{ marginTop: '10px' }} />
+            </div>
         </React.Fragment>
       ))}
     </Paper>
   );
 }
 
-const defaultEvents = [
-  { start: dayjs().hour(9).minute(0), title: "Team Meeting" },
-  { start: dayjs().hour(13).minute(30), title: "Lunch with Client" },
-  { start: dayjs().hour(15).minute(0), title: "Project Discussion" }
-];

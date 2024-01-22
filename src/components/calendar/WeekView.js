@@ -34,6 +34,7 @@ export default function WeekView({ weekStart = dayjs().startOf('week'), events =
             ))}
           </Grid>
           {/* Events grid */}
+
           {hoursOfDay.map(hour => (
             <Grid container key={hour} sx={{ minHeight: '60px', borderBottom: 1, borderColor: 'divider' }}>
               {daysOfWeek.map(day => {
