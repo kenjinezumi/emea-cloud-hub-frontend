@@ -1,15 +1,30 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import dayjs from "dayjs";
 import MonthView from "./MonthView";
 import { createYearData } from '../../util';
 import GlobalContext from '../../context/GlobalContext';
 import { Grid, Typography } from '@mui/material';
 import '../styles/Yearview.css'
+import { useLocation } from 'react-router-dom';
+
 
 export default function YearView() {
-  const { daySelected } = useContext(GlobalContext);
+  const { daySelected,setShowEventModal, setDaySelected} = useContext(GlobalContext);
   const year = daySelected.year();
   const yearData = createYearData(year);
+  const handleAddEvent = (monthIndex) => {
+    const selectedMonth = dayjs(new Date(year, monthIndex));
+    setDaySelected(selectedMonth);
+    setShowEventModal(true);
+  };
+
+  const location = useLocation(); // useLocation hook
+
+  useEffect(() => {
+   
+    setShowEventModal(false);
+  
+}, [location]);
 
   return (
       <div style={{ padding: 16, marginLeft: '40px', width:'80%', align:'center'}} >
@@ -19,12 +34,15 @@ export default function YearView() {
           <Grid container spacing={8}> {/* Increase spacing */}
               {yearData.map((month, index) => (
                   <Grid key={index} item xs={12} sm={6} md={4}>
-                      {/* Month name */}
-                      <Typography variant="h6" align="center" style={{ marginBottom: 8 }}>
+ <div   
+              onClick={() => handleAddEvent(index)} // Add event handler
+              style={{ cursor: 'pointer' }} // Make it look clickable
+            >                      <Typography variant="h6" align="center" style={{ marginBottom: 8 }}>
                           {dayjs(new Date(year, index)).format("MMMM")}
                       </Typography>
                       <div style={{ padding: 8}}> {/* Additional styling */}
                           <MonthView month={month} daySelected={daySelected} isYearView={true} />
+                      </div>
                       </div>
                   </Grid>
               ))}

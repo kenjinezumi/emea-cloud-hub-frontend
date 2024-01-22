@@ -1,8 +1,21 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { List, ListItem, ListItemText, Typography, Paper } from '@mui/material';
+import { useLocation } from 'react-router-dom';
+import GlobalContext from '../../context/GlobalContext';
+
 
 export default function ListView({ events = DummyEvents }) {
+
+const { showEventModal, daySelected, setShowEventModal, setDaySelected } = useContext(GlobalContext);
+
+const location = useLocation(); // useLocation hook
+
+useEffect(() => {
+ 
+    setShowEventModal(false);
+  
+}, [location]);
   return (
     <Paper sx={{ margin: 2, padding: 2, width: '90%', overflowY: 'auto' }}>
       <List>

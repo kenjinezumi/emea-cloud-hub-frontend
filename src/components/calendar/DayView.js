@@ -15,12 +15,14 @@ export default function DayView() {
     setShowEventModal(true);
   };
 
-  useEffect(() => {
-    console.log("Modal state changed:", showEventModal);
-  }, [showEventModal]);
-  
+  const location = useLocation(); // useLocation hook
 
-  const location = useLocation(); // Get the current location
+  useEffect(() => {
+   
+      setShowEventModal(false);
+    
+  }, [location]);
+
 
 
 
@@ -38,6 +40,7 @@ export default function DayView() {
       {hours.map(hour => (
         <React.Fragment key={hour}>
           <div 
+            className="flex-1 cursor-pointer"
             onClick={() => handleAddEvent()} 
             style={{ width: '100%', textAlign: 'left', padding: '20px' }} 
             variant="text"
