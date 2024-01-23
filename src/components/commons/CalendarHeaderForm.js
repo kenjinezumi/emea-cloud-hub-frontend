@@ -36,7 +36,7 @@ const NavigationSidebar = () => {
 
   return (
     <div className="fixed right-0 top-16 h-[calc(100vh-64px)] w-60 bg-white shadow-md p-4">
-      <div className="text-lg font-semibold mb-2">Sections</div>{" "}
+      <div className="text-lg mb-2">Sections</div>{" "}
       <button
         onClick={() => navigateTo("/create-event")}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/create-event') ? 'text-black' : 'text-gray-400'}`}
