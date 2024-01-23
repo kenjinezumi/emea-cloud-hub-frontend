@@ -1,40 +1,61 @@
-/* Base container styling */
+:root {
+  /* Light Mode Variables */
+  --background-base: #F8F9FA;
+  --background-form: #FFFFFF;
+  --color-text: #202124;
+  --color-border: #E0E0E0;
+  --color-button: #1A73E8;
+  --color-button-hover: #2A85F9;
+  --shadow-form: 0 1px 6px rgba(0, 0, 0, 0.1);
+  --border-radius: 8px;
+  --border-radius-button: 4px;
+  --font-family: 'Roboto', sans-serif;
+}
+
+/* Dark Mode Variables */
+.dark-mode {
+  --background-base: #202124;
+  --background-form: #303134;
+  --color-text: #E8EAED;
+  --color-border: #5F6368;
+  --color-button: #1A73E8;
+  --color-button-hover: #3B8BFA;
+  /* Shadow can remain the same */
+}
+
 .form-container {
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* Align items to the start of the container (top) */
+  align-items: flex-start;
   width: 100%;
-  background: #F8F9FA; /* Light grey background, typical of Google's design */
-  height: 100vh; /* Full viewport height */
-  padding: 20px; /* Consistent padding */
+  background: var(--background-base);
+  height: 100vh;
+  padding: 20px;
+  font-family: var(--font-family);
 }
 
-/* Form styling */
 .event-form {
   width: 100%;
-  max-width: 600px; /* Google forms are typically not very wide */
+  max-width: 600px;
   padding: 24px;
-  background: white;
-  margin-top: 20px; /* Adds some space at the top */
-  border-radius: 8px; /* Slightly rounded corners */
-  box-shadow: 0 1px 6px rgba(0,0,0,0.1); /* Light shadow for depth */
-  border: 1px solid #E0E0E0; /* Light border */
+  background: var(--background-form);
+  margin-top: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-form);
+  border: 1px solid var(--color-border);
 }
 
-/* Titles and labels */
 .form-title {
   margin-bottom: 16px;
-  color: #202124; /* Dark gray for text */
+  color: var(--color-text);
   font-size: 24px;
-  font-weight: 500; /* Medium font weight */
+  font-weight: 500;
 }
 
-/* Grid layout for form elements */
 .form-grid {
   margin-bottom: 16px;
 }
 
-/* Navigation buttons at the bottom of the form */
 .form-navigation-buttons {
   display: flex;
   justify-content: flex-end;
@@ -43,42 +64,39 @@
 
 .previous-button, .next-button, .save-button {
   margin-top: 10px;
-  padding: 6px 16px; /* Standard button padding */
+  padding: 6px 16px;
   border: none;
-  border-radius: 4px;
-  background-color: #1a73e8; /* Google blue */
+  border-radius: var(--border-radius-button);
+  background-color: var(--color-button);
   color: white;
-  text-transform: uppercase; /* Google's buttons often use uppercase text */
+  text-transform: uppercase;
   font-weight: bold;
   cursor: pointer;
 }
 
-/* Hover effect for buttons */
 .previous-button:hover, .next-button:hover, .save-button:hover {
-  background-color: #2a85f9; /* Slightly darker shade on hover */
+  background-color: var(--color-button-hover);
 }
 
-/* Scrollable form section */
 .scrollable-form {
   max-height: 800px;
   overflow-y: auto;
 }
 
-/* Input fields styling */
 input[type="text"], select, textarea {
   width: 100%;
   padding: 10px;
   margin: 8px 0;
   display: inline-block;
-  /* border: 0px solid #ccc; */
-  border-radius: 4px;
+  border-radius: var(--border-radius-button);
   box-sizing: border-box;
   font-size: 16px;
-  text-align:left;
+  text-align: left;
+  border: 1px solid var(--color-border);
 }
 
 input[type="text"]:focus, select:focus, textarea:focus {
-  border-color: #1a73e8;
+  border-color: var(--color-button);
   margin:4px;
   box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
 }

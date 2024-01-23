@@ -21,7 +21,8 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
-import { ReactComponent as InformationLogo } from "../../assets/svg/information.svg";
+import InfoIcon from '@mui/icons-material/Info';
+import { blue } from "@mui/material/colors";
 
 export default function ExtraDetailsForm() {
   const { formData, updateFormData } = useContext(GlobalContext);
@@ -120,9 +121,9 @@ export default function ExtraDetailsForm() {
               marginBottom: "40px",
             }}
           >
-            <InformationLogo
-              style={{ marginRight: "8px", width: "40px", height: "40px" }}
-            />
+            <InfoIcon
+                    style={{ marginRight: "10px", color: blue[500], height:"40px" }}
+                  />   
             Extra Details
           </Typography>
           <Grid container spacing={2}>

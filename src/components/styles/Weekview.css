@@ -1,42 +1,65 @@
+:root {
+  /* Light Mode Variables */
+  --color-background: #FFFFFF;
+  --color-header-background: #F3F3F3;
+  --color-text: #5F6368;
+  --color-border: #DDD;
+  --color-event-background: #E0E0E0;
+  --font-family: 'Roboto', sans-serif;
+  --border-radius-event: 4px;
+}
+
+/* Dark Mode Variables */
+.dark-mode {
+  --color-background: #303134;
+  --color-header-background: #202124;
+  --color-text: #E8EAED;
+  --color-border: #555;
+  --color-event-background: #3C4043;
+}
+
 .week-view-container {
-    max-width: 1000px;
-    margin: auto;
-  }
-  
-  .week-days-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    background-color: #f3f3f3;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .day-header {
-    flex: 1;
-    text-align: center;
-    font-weight: bold;
-  }
-  
-  .time-slots {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .hour-row {
-    display: flex;
-  }
-  
-  .hour-slot {
-    flex: 1;
-    border-right: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-    padding: 10px;
-  }
-  
-  .event {
-    background-color: #e0e0e0;
-    padding: 5px;
-    margin-top: 5px;
-    border-radius: 4px;
-  }
-  
+  max-width: 1000px;
+  margin: auto;
+  background-color: var(--color-background);
+  font-family: var(--font-family);
+}
+
+.week-days-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: var(--color-header-background);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.day-header {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  color: var(--color-text);
+}
+
+.time-slots {
+  display: flex;
+  flex-direction: column;
+}
+
+.hour-row {
+  display: flex;
+}
+
+.hour-slot {
+  flex: 1;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px;
+  color: var(--color-text);
+}
+
+.event {
+  background-color: var(--color-event-background);
+  padding: 5px;
+  margin-top: 5px;
+  border-radius: var(--border-radius-event);
+}

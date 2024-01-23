@@ -1,20 +1,37 @@
+:root {
+  /* Light Mode Variables */
+  --color-background: #FFFFFF;
+  --color-text: #5F6368;
+  --color-border: #DDD;
+  --font-family: 'Roboto', sans-serif;
+}
+
+/* Dark Mode Variables */
+.dark-mode {
+  --color-background: #303134;
+  --color-text: #E8EAED;
+  --color-border: #555;
+}
+
 .events-list-container {
-    max-width: 600px;
-    margin: auto;
-    padding: 20px;
-  }
-  
-  .event-item {
-    border-bottom: 1px solid #ddd;
-    padding: 10px;
-  }
-  
-  .event-date {
-    color: #5f6368;
-    font-weight: bold;
-  }
-  
-  .event-title {
-    margin-top: 5px;
-  }
-  
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+  background-color: var(--color-background);
+  font-family: var(--font-family);
+}
+
+.event-item {
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px;
+}
+
+.event-date {
+  color: var(--color-text);
+  font-weight: bold;
+}
+
+.event-title {
+  margin-top: 5px;
+  color: var(--color-text); /* Ensure text color consistency */
+}

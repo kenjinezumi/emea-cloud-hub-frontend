@@ -20,10 +20,16 @@ import {
   DateTimePicker,
   DatePicker,
 } from "@mui/x-date-pickers";
+
 import Chip from "@mui/material/Chip";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { ReactComponent as FireLogo } from "../../assets/svg/fire.svg";
+
 import { eventTypeOptions } from "../filters/FiltersData";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
+
+import { red } from "@mui/material/colors";
+import { blue } from "@mui/material/colors";
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
 const getRandomColor = () => {
@@ -37,28 +43,47 @@ const getRandomColor = () => {
 export default function EventForm() {
   const [colorMap, setColorMap] = useState({}); // New state to store colors
 
-  const { daySelected, dispatchCalEvent, selectedEvent, updateFormData, formData } =
-    useContext(GlobalContext);
-
-
-
+  const {
+    daySelected,
+    dispatchCalEvent,
+    selectedEvent,
+    updateFormData,
+    formData,
+  } = useContext(GlobalContext);
 
   const [eventType, setEventType] = useState(formData.eventType || "");
-  const [title, setTitle] = useState(selectedEvent ? selectedEvent.title : formData.title || "");
-  const [description, setDescription] = useState(selectedEvent ? selectedEvent.description : formData.description || "");
-  const [selectedLabel, setSelectedLabel] = useState(selectedEvent ? selectedEvent.label : formData.selectedLabel || labelsClasses[0]);
+  const [title, setTitle] = useState(
+    selectedEvent ? selectedEvent.title : formData.title || ""
+  );
+  const [description, setDescription] = useState(
+    selectedEvent ? selectedEvent.description : formData.description || ""
+  );
+  const [selectedLabel, setSelectedLabel] = useState(
+    selectedEvent
+      ? selectedEvent.label
+      : formData.selectedLabel || labelsClasses[0]
+  );
   const [emoji, setEmoji] = useState(formData.emoji || "");
-  const [isClient, setIsClient] = useState(false); 
-  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false); 
+  const [isClient, setIsClient] = useState(false);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [organisedBy, setOrganisedBy] = useState(formData.organisedBy || []);
   const [dropdownValue2] = useState(formData.dropdownValue2 || "");
-  const [marketingActivityType, setMarketingActivityType] = useState(formData.marketingActivityType || "");
-  const [isHighPriority, setIsHighPriority] = useState(formData.isHighPriority || false);
-  const [startDate, setStartDate] = useState(selectedEvent ? selectedEvent.startDate : formData.startDate || new Date());
-  const [endDate, setEndDate] = useState(selectedEvent ? selectedEvent.endDate : formData.endDate || new Date());
-  const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(formData.marketingProgramInstanceId || "");
-  const [isFormValid, setIsFormValid] = useState(true); 
-
+  const [marketingActivityType, setMarketingActivityType] = useState(
+    formData.marketingActivityType || ""
+  );
+  const [isHighPriority, setIsHighPriority] = useState(
+    formData.isHighPriority || false
+  );
+  const [startDate, setStartDate] = useState(
+    selectedEvent ? selectedEvent.startDate : formData.startDate || new Date()
+  );
+  const [endDate, setEndDate] = useState(
+    selectedEvent ? selectedEvent.endDate : formData.endDate || new Date()
+  );
+  const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(
+    formData.marketingProgramInstanceId || ""
+  );
+  const [isFormValid, setIsFormValid] = useState(true);
 
   const navigate = useNavigate();
 
@@ -67,19 +92,15 @@ export default function EventForm() {
   };
 
   useEffect(() => {
-
     if (formData.eventType) {
       setEventType(formData.eventType);
     }
   }, [formData.eventType]);
-  
 
   useEffect(() => {
-    
     setIsClient(true);
   }, []);
-  useEffect(() => {
-  }, [startDate, endDate]);
+  useEffect(() => {}, [startDate, endDate]);
   const handleOrganisedByChange = (event) => {
     const newOrganisedBy = event.target.value;
     const newColorMap = { ...colorMap };
@@ -128,7 +149,7 @@ export default function EventForm() {
       startDate,
       endDate,
       marketingProgramInstanceId,
-      eventType
+      eventType,
     };
 
     updateFormData(newFormData); // Update the global form data
@@ -160,24 +181,9 @@ export default function EventForm() {
             <Grid item>
               <Typography variant="h4">
                 <span style={{ display: "flex", alignItems: "center" }}>
-                  <svg
-                    width="30px"
-                    height="30px"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    style={{ marginRight: "10px" }}
-                  >
-                    <path
-                      opacity="0.15"
-                      d="M4 19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19V11H4V19Z"
-                      fill="#001A72"
-                    />
-                    <path
-                      d="M15 3V7M9 3V7M4 11H20M20 11V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V7C4 5.89543 4.89543 5 6 5H18C19.1046 5 20 5.89543 20 7V11Z"
-                      stroke="#001A72"
-                    />
-                  </svg>
+                  <CalendarMonthIcon
+                    style={{ marginRight: "10px", color: blue[500] }}
+                  />
                   Activity{" "}
                   <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
                     {emoji}
@@ -219,8 +225,7 @@ export default function EventForm() {
                   Emoji
                 </Typography>
                 <Button onClick={toggleEmojiPicker}>
-                  
-                   {"Choose emoji "}
+                  {"Choose emoji "}
                   {emoji && (
                     <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
                       {emoji}
@@ -308,13 +313,7 @@ export default function EventForm() {
                       variant="subtitle1"
                       style={{ display: "flex", alignItems: "center" }}
                     >
-                      <FireLogo
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          marginRight: "8px",
-                        }}
-                      />
+                      <WhatshotIcon style={{ color: red[500] }} />
                       High priority status
                     </Typography>
                   }
@@ -335,7 +334,6 @@ export default function EventForm() {
                       label="Event Start Date"
                       inputFormat="MM/dd/yyyy"
                       defaultValue={new Date()}
-
                       value={startDate}
                       onChange={handleStartDateChange}
                       renderInput={(params) => (

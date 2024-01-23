@@ -8,6 +8,14 @@ import {ReactComponent as UsersLogo} from '../../assets/svg/users.svg';
 import {ReactComponent as LinksLogo} from '../../assets/svg/links.svg';
 import { useLocation } from "react-router-dom";
 
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import LinkIcon from '@mui/icons-material/Link';
+import PeopleIcon from '@mui/icons-material/People';
+import InfoIcon from '@mui/icons-material/Info';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { blue } from "@mui/material/colors";
+
+
 const NavigationSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,23 +41,9 @@ const NavigationSidebar = () => {
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/create-event') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
-          <svg
-            width="20px"
-            height="20px"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              opacity="0.15"
-              d="M4 19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19V11H4V19Z"
-              fill="#001A72"
-            />
-            <path
-              d="M15 3V7M9 3V7M4 11H20M20 11V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V7C4 5.89543 4.89543 5 6 5H18C19.1046 5 20 5.89543 20 7V11Z"
-              stroke="#001A72"
-            />
-          </svg>
+        <CalendarMonthIcon
+                    style={{color: blue[500] }}
+                  />
         </span>{" "}
         <span>About</span>
       </button>
@@ -59,8 +53,9 @@ const NavigationSidebar = () => {
           isCurrentPath('/location') ? 'text-black' : 'text-gray-400'
         }`}      >
         <span className="mr-2">
-          <LocationLogo style={{ width: "20px", height: "20px" }} />
-        </span>
+        <LocationOnIcon
+                    style={{color: blue[500] }}
+                  />        </span>
         <span>Location</span>
       </button>
       <button
@@ -68,8 +63,9 @@ const NavigationSidebar = () => {
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/extra') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
-        <InformationLogo style={{ width: "20px", height: "20px" }} />
-        </span>
+        <InfoIcon
+                    style={{color: blue[500] }}
+                  />        </span>
         <span>Extra details</span>
       </button>
 
@@ -80,8 +76,9 @@ const NavigationSidebar = () => {
         }`}
       >
         <span className="mr-2">
-        <UsersLogo style={{ width:'20px', height:'20px' }} />
-        </span>
+        <PeopleIcon
+                    style={{color: blue[500] }}
+                  />        </span>
         <span>Audience</span>
       </button>
 
@@ -90,8 +87,9 @@ const NavigationSidebar = () => {
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/links') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
-        <LinksLogo style={{  width:'20px', height:'20px' }} />
-        </span>
+        <LinkIcon
+                    style={{color: blue[500] }}
+                  />        </span>
         <span>Links</span>
       </button>
 

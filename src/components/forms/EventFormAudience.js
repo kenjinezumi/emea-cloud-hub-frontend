@@ -8,6 +8,9 @@ import "../styles/Forms.css";
 import {ReactComponent as UsersLogo} from '../../assets/svg/users.svg';
 import GlobalContext from "../../context/GlobalContext";
 import { audienceRoles, audienceSeniorityOptions } from "../filters/FiltersData";
+import PeopleIcon from '@mui/icons-material/People';
+import { blue } from "@mui/material/colors";
+
 
 export default function AudiencePersonaForm() {
   const { formData, updateFormData } = useContext(GlobalContext);
@@ -98,8 +101,9 @@ export default function AudiencePersonaForm() {
 <div className="form-container">
       <div className="event-form">     
       <Typography variant="h4" className="form-title" style={{ display: 'flex', alignItems: 'center', marginBottom:'40px' }}>
-      <UsersLogo style={{ marginRight: '8px', width:'40px', height:'40px' }} />
-
+      <PeopleIcon
+                    style={{ marginRight: "10px", color: blue[500], height:"40px" }}
+                  />   
       Audience
       </Typography>
       <Grid container spacing={2}>

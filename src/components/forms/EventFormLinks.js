@@ -7,6 +7,9 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
 import {ReactComponent as LinksLogo} from '../../assets/svg/links.svg';
 import { sendDataToAPI } from '../../api/pushData'; // Adjust the path as per your project structure
+import LinkIcon from '@mui/icons-material/Link';
+import { blue } from "@mui/material/colors";
+
 
 export default function LinksForm() {
   const { formData, updateFormData } = useContext(GlobalContext);
@@ -54,8 +57,9 @@ export default function LinksForm() {
     <div className="form-container">
         <div className="event-form"> 
         <Typography variant="h4" className="form-title" style={{ display: 'flex', alignItems: 'center', marginBottom:'40px' }}>
-      <LinksLogo style={{ marginRight: '8px', width:'40px', height:'40px' }} />
-
+        <LinkIcon
+                    style={{ marginRight: "10px", color: blue[500], height:"40px" }}
+                  /> 
       Links
       </Typography>      
       <Grid container spacing={2}>

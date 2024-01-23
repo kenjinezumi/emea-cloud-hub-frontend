@@ -1,12 +1,16 @@
 import dayjs from "dayjs";
 import React, { useContext, useState } from "react";
 import logo from "../../assets/svg/logo.svg";
-import hamburger from "../../assets/svg/hamburger.svg";
+import MenuIcon from "@mui/icons-material/Menu";
 import beta from "../../assets/svg/beta.svg";
 import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
+import SettingsIcon from "@mui/icons-material/Settings";
+
 import { Select, MenuItem } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
+import ThemePopup from "../Themepopup";
+
 export default function CalendarHeader() {
   const {
     monthIndex,
@@ -17,7 +21,7 @@ export default function CalendarHeader() {
     setCurrentView,
   } = useContext(GlobalContext);
   const [view, setView] = useState("month"); // State to manage the selected view
-  // const [isThemePopupOpen, setIsThemePopupOpen] = useState(false); // State for popup visibility
+  const [isThemePopupOpen, setIsThemePopupOpen] = useState(false); // State for popup visibility
 
   function handlePrevMonth() {
     if (monthIndex === 0) {
@@ -54,21 +58,19 @@ export default function CalendarHeader() {
 
 
   // Function to toggle theme popup
-  // const toggleThemePopup = () => {
-  //   setIsThemePopupOpen(!isThemePopupOpen);
-  // };
+  const toggleThemePopup = () => {
+    console.log('Test');
+    setIsThemePopupOpen(!isThemePopupOpen);
+  };
 
   return (
     <header className="px-4 py-2 flex items-center justify-between">
       <div className="flex items-center">
         {" "}
         {/* Group left items together */}
-        <img
-          src={hamburger}
-          alt="hamburger"
-          className="mr-2 w-12 h-12"
-          onClick={toggleSidebar}
-        />
+        <IconButton onClick={toggleSidebar} className="mr-2">
+          <MenuIcon />
+        </IconButton>
         <img src={logo} alt="calendar" className="mr-2 w-12 h-12" />
         <h1 className="mr-10 text-xl text-gray-500 fond-bold">EMEA Cloud Hub</h1>
         <img src={beta} alt="beta" className="mr-2 w-12 h-12" />
@@ -109,12 +111,12 @@ export default function CalendarHeader() {
         <IconButton className="mr-2">
           <SearchIcon />
         </IconButton>
-        {/* <IconButton onClick={toggleThemePopup} className="mr-2">
+        {/* { <IconButton onClick={toggleThemePopup} className="mr-2">
           <SettingsIcon />
-        </IconButton> */}
-        {/* {isThemePopupOpen && (
+        </IconButton> }
+        {isThemePopupOpen && (
         <ThemePopup onClose={toggleThemePopup} />
-      )} */}
+      )}  */}
       </div>
     </header>
   );

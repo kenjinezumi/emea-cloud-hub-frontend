@@ -1,53 +1,76 @@
-.app.dark {
-    background-color: #121212; /* Dark background */
-    color: #ffffff; /* Light text for readability */
-  }
-  
-  .app.dark button, 
-  .app.dark input, 
-  .app.dark select, 
-  .app.dark textarea {
-    background-color: #1e1e1e; /* Slightly lighter background for elements */
-    color: #ffffff; /* Light text */
-    border: 1px solid #333333; /* Subtle borders for elements */
-  }
-  
-  .app.dark a {
-    color: #bb86fc; /* Light purple for links */
-  }
+:root {
+  /* Base colors for Light Mode */
+  --background-app-light: #FFFFFF;
+  --text-app-light: #000000;
+  --element-bg-light: #F0F0F0;
+  --border-light: #CCCCCC;
+  --link-color-light: #1A0DAB;
 
-  .app.light {
-    background-color: #ffffff; /* Light background */
-    color: #000000; /* Dark text for readability */
-  }
-  
-  .app.light button, 
-  .app.light input, 
-  .app.light select, 
-  .app.light textarea {
-    background-color: #f0f0f0; /* Slightly darker background for elements */
-    color: #000000; /* Dark text */
-    border: 1px solid #cccccc; /* Subtle borders for elements */
-  }
-  
-  .app.light a {
-    color: #1a0dab; /* Standard blue for links */
-  }
-  .app.highContrast {
-    background-color: #000000; /* Black background */
-    color: #ffffff; /* White text for maximum contrast */
-  }
-  
-  .app.highContrast button, 
-  .app.highContrast input, 
-  .app.highContrast select, 
-  .app.highContrast textarea {
-    background-color: #ffffff; /* White background for elements */
-    color: #000000; /* Black text */
-    border: 2px solid #ffffff; /* High contrast borders for elements */
-  }
-  
-  .app.highContrast a {
-    color: #ffcc00; /* Bright yellow for links */
-  }
-    
+  /* Base colors for Dark Mode */
+  --background-app-dark: #121212;
+  --text-app-dark: #FFFFFF;
+  --element-bg-dark: #1E1E1E;
+  --border-dark: #333333;
+  --link-color-dark: #BB86FC;
+
+  /* Base colors for High Contrast Mode */
+  --background-app-highContrast: #000000;
+  --text-app-highContrast: #FFFFFF;
+  --element-bg-highContrast: #FFFFFF;
+  --border-highContrast: #FFFFFF;
+  --link-color-highContrast: #FFCC00;
+}
+
+.app.dark {
+  background-color: var(--background-app-dark);
+  color: var(--text-app-dark);
+}
+
+.app.dark button, 
+.app.dark input, 
+.app.dark select, 
+.app.dark textarea {
+  background-color: var(--element-bg-dark);
+  color: var(--text-app-dark);
+  border: 1px solid var(--border-dark);
+}
+
+.app.dark a {
+  color: var(--link-color-dark);
+}
+
+.app.light {
+  background-color: var(--background-app-light);
+  color: var(--text-app-light);
+}
+
+.app.light button, 
+.app.light input, 
+.app.light select, 
+.app.light textarea {
+  background-color: var(--element-bg-light);
+  color: var(--text-app-light);
+  border: 1px solid var(--border-light);
+}
+
+.app.light a {
+  color: var(--link-color-light);
+}
+
+.app.highContrast {
+  background-color: var(--background-app-highContrast);
+  color: var(--text-app-highContrast);
+}
+
+.app.highContrast button, 
+.app.highContrast input, 
+.app.highContrast select, 
+.app.highContrast textarea {
+  background-color: var(--element-bg-highContrast);
+  color: var(--text-app-highContrast);
+  border: 2px solid var(--border-highContrast);
+}
+
+.app.highContrast a {
+  color: var(--link-color-highContrast);
+}

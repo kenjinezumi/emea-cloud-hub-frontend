@@ -6,6 +6,10 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
 import { ReactComponent as LocationLogo } from "../../assets/svg/location.svg";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+
+
+import { blue } from "@mui/material/colors";
 
 export default function LocationFormPage() {
 
@@ -71,8 +75,9 @@ export default function LocationFormPage() {
     <div className="form-container">
       <div className="event-form">
         <Typography variant="h4" className="form-title" style={{ display: "flex", alignItems: "center", marginBottom: "40px" }}>
-          <LocationLogo style={{ marginRight: "8px", width: "40px", height: "40px" }} />
-          Location
+        <LocationOnIcon
+                    style={{ marginRight: "10px", color: blue[500], height:"40px" }}
+                  />          Location
         </Typography>
         <Grid container spacing={3} className="form-grid">
           {/* Region Dropdown */}

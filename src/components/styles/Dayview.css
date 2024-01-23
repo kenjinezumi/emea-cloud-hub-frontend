@@ -1,42 +1,81 @@
+:root {
+  /* Light Mode Variables */
+  --color-background: #fff;
+  --color-border: #e0e0e0;
+  --color-text: #5f6368;
+  --color-event-background: #f1f3f4;
+  --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-event: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --border-radius: 8px;
+  --border-radius-event: 4px;
+  --font-family: 'Roboto', sans-serif;
+}
+
+/* Dark Mode Variables */
+.dark-mode {
+  --color-background: #202124;
+  --color-border: #5f6368;
+  --color-text: #e8eaed;
+  --color-event-background: #303134;
+  /* Shadows can remain the same */
+}
+
 .day-view-container {
-    width: 100%;
-    max-width: 700px; /* Slightly wider for better layout */
-    margin: auto;
-    background-color: #fff; /* White background */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
-    border-radius: 8px; /* Rounded corners */
-    text-align: left;
-    align-items: start;
-  }
-  
-  .hour-slot {
-    border-bottom: 1px solid #e0e0e0; /* Lighter border color */
-    padding: 15px;
-    display: flex;
-    align-items: start;
-  }
-  
-  .hour-label {
-    font-weight: 500; /* Medium weight for the font */
-    color: #5f6368; /* Google's typical text color */
-    margin-right: 20px; /* Space between time and events */
-    width: 50px; /* Fixed width for alignment */
-  }
-  
-  .events {
-    flex-grow: 1; /* Make event container take up remaining space */
-    align-items: start;
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--border-radius);
+  text-align: left;
+  align-items: start;
+  font-family: var(--font-family);
+}
 
-  }
-  
-  .event {
-    background-color: #f1f3f4; /* Lighter background for events */
-    padding: 10px;
-    border-radius: 4px;
-    margin-top: 5px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for events */
-    font-size: 0.9rem; /* Slightly smaller font size */
-    align-items: start;
+.hour-slot, .events, .event {
+  display: flex;
+  align-items: start;
+}
 
+.hour-slot {
+  border-bottom: 1px solid var(--color-border);
+  padding: 15px;
+}
+
+.hour-label {
+  font-weight: 500;
+  color: var(--color-text);
+  margin-right: 20px;
+  width: 50px;
+  text-align: right;
+}
+
+.events {
+  flex-grow: 1;
+}
+
+.event {
+  background-color: var(--color-event-background);
+  padding: 10px;
+  border-radius: var(--border-radius-event);
+  margin-top: 5px;
+  box-shadow: var(--shadow-event);
+  font-size: 0.9rem;
+  transition: background-color 0.3s, box-shadow 0.3s;
+
+  /* Interaction States */
+  &:hover {
+    background-color: darken(var(--color-event-background), 10%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   }
-  
+}
+
+@media (max-width: 600px) {
+  .day-view-container {
+    max-width: 100%;
+  }
+
+  .hour-label, .event {
+    font-size: 0.8rem;
+  }
+}
