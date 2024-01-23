@@ -12,7 +12,7 @@ export default function Sidebar() {
     return null; // or return some minimized version of the sidebar
   }
   return (
-    <aside className="border p-5" style={{width:'15%'}}>
+    <aside className="p-3 bg-white" style={{width:'15%'}}>
       <CreateEventButton />
       <SmallCalendar />
       <Labels />

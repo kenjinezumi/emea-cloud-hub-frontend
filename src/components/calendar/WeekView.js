@@ -24,7 +24,7 @@ export default function WeekView({ weekStart = dayjs().startOf('week'), events =
 }, [location]);
 
   return (
-    <Paper sx={{ marginLeft: '40px', width: '90%', overflowY: 'auto', padding: 2, border: 'none' }}>
+    <Paper sx={{ width: '90%', overflowY: 'auto', padding: 2, border: 'none' }}>
       <Grid container>
         {/* Hours Column */}
         <Grid item xs={1} sx={{ display: 'flex', flexDirection: 'column', borderRight: 1, borderColor: 'divider' }}>
@@ -42,7 +42,7 @@ export default function WeekView({ weekStart = dayjs().startOf('week'), events =
             {/* Days of the week header */}
             {daysOfWeek.map(day => (
               <Grid item xs key={day.format('DDMMYYYY')}>
-                <Typography align="center" variant="subtitle1" sx={{ fontWeight: 'bold', borderBottom: 1, borderColor: 'divider' }}>
+                <Typography align="center" variant="subtitle1" sx={{ marginBottom: "10px", borderBottom: 1, borderColor: 'divider' }}>
                   {day.format('dddd, MMM D')}
                 </Typography>
               </Grid>

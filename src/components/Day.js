@@ -22,21 +22,17 @@ export default function Day({ day, rowIdx, isYearView }) {
   function getCurrentDayClass() {
     return day.format("DD-MM-YY") === dayjs().format("DD-MM-YY")
       ? "bg-blue-600 text-white rounded-full w-7"
-      : "";
+      : "text-gray-600";
   }
 
   const dayStyle = isYearView
-  ? { border: 'none', minHeight: '60px' }
+  ? { border: 'none', minHeight: '20px' }
   : { border: '1px solid #d1d5db' };
   return (
     <div className="flex flex-col" style={dayStyle}>
 
       <header className="flex flex-col items-center">
-        {rowIdx === 0 && (
-          <p className="text-sm mt-1">
-            {day.format("ddd").toUpperCase()}
-          </p>
-        )}
+       
         <p
           className={`text-sm p-1 my-1 text-center  ${getCurrentDayClass()}`}
         >

@@ -27,8 +27,8 @@ export default function DayView() {
 
 
   return (
-    <Paper sx={{ margin: 2, width: '90%', maxHeight: '100%', overflowY: 'auto', border: 'none' }}>
-      <Typography variant="h5" align="center" gutterBottom marginBottom={'20px'}>
+    <Paper sx={{ width: '90%', maxHeight: '100%', overflowY: 'auto'}}>
+      <Typography variant="h6" align="center" gutterBottom marginBottom={'20px'} marginTop={'20px'}>
         {daySelected.format('dddd, MMMM D, YYYY')}
       </Typography>
       <div

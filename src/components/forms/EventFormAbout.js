@@ -176,7 +176,7 @@ export default function EventForm() {
             container
             justifyContent="space-between"
             alignItems="center"
-            style={{ marginBottom: "40px" }}
+            style={{ marginBottom: "15px" }}
           >
             <Grid item>
               <Typography variant="h4">
@@ -184,7 +184,10 @@ export default function EventForm() {
                   <CalendarMonthIcon
                     style={{ marginRight: "10px", color: blue[500] }}
                   />
-                  Activity{" "}
+                  <span className="mr-1 text-xl text-black  cursor-pointer">
+                    Activity{" "}
+                  </span>
+
                   <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
                     {emoji}
                   </span>

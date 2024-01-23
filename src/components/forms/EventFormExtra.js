@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
-import InfoIcon from '@mui/icons-material/Info';
+import InfoIcon from "@mui/icons-material/Info";
 import { blue } from "@mui/material/colors";
 
 export default function ExtraDetailsForm() {
@@ -118,13 +118,15 @@ export default function ExtraDetailsForm() {
             style={{
               display: "flex",
               alignItems: "center",
-              marginBottom: "40px",
+              marginBottom: "15px",
             }}
           >
             <InfoIcon
-                    style={{ marginRight: "10px", color: blue[500], height:"40px" }}
-                  />   
-            Extra Details
+              style={{ marginRight: "10px", color: blue[500], height: "40px" }}
+            />
+            <span className="mr-1 text-xl text-black  cursor-pointer">
+              Extra details
+            </span>
           </Typography>
           <Grid container spacing={2}>
             {/* Dynamically rendered Email Language and Template Inputs */}

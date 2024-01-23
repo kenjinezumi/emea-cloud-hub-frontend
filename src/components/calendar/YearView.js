@@ -27,8 +27,8 @@ export default function YearView() {
 }, [location]);
 
   return (
-      <div style={{ padding: 16, marginLeft: '40px', width:'80%', align:'center'}} >
-          <Typography variant="h4" align="center" gutterBottom>
+      <div style={{ padding: 16, marginLeft: '40px', width:'90%', align:'center'}} >
+          <Typography variant="h6" align="center" gutterBottom style={{ marginBottom:'20px'}}>
               Year Overview - {year}
           </Typography>
           <Grid container spacing={8}> {/* Increase spacing */}
@@ -37,10 +37,10 @@ export default function YearView() {
  <div   
               onClick={() => handleAddEvent(index)} // Add event handler
               style={{ cursor: 'pointer' }} // Make it look clickable
-            >                      <Typography variant="h6" align="center" style={{ marginBottom: 8 }}>
+            >                      <Typography  align="center" style={{ marginBottom: 4 }}>
                           {dayjs(new Date(year, index)).format("MMMM")}
                       </Typography>
-                      <div style={{ padding: 8}}> {/* Additional styling */}
+                      <div style={{ padding: 2}}> {/* Additional styling */}
                           <MonthView month={month} daySelected={daySelected} isYearView={true} />
                       </div>
                       </div>

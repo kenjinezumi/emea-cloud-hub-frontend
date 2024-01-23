@@ -63,8 +63,13 @@ export default function CalendarHeader() {
     setIsThemePopupOpen(!isThemePopupOpen);
   };
 
+  // Redirect to the home page
+  const navigateToHome = () => {
+    window.location.href = '/';
+  };
+
   return (
-    <header className="px-4 py-2 flex items-center justify-between">
+    <header className="px-4 py-2 flex items-center justify-between border-b border-gray-300">
       <div className="flex items-center">
         {" "}
         {/* Group left items together */}
@@ -72,9 +77,11 @@ export default function CalendarHeader() {
           <MenuIcon />
         </IconButton>
         <img src={logo} alt="calendar" className="mr-2 w-12 h-12" />
-        <h1 className="mr-10 text-xl text-gray-500 fond-bold">EMEA Cloud Hub</h1>
-        <img src={beta} alt="beta" className="mr-2 w-12 h-12" />
-        <button onClick={handleReset} className="border rounded py-2 px-4 mr-5">
+        <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
+          EMEA Cloud Hub
+        </h1>        
+        <img src={beta} alt="beta" className="mr-4 w-12 h-12" />
+        <button onClick={handleReset} className="border rounded py-2 px-4 mr-2">
           Today
         </button>
         <button onClick={handlePrevMonth}>
@@ -87,7 +94,7 @@ export default function CalendarHeader() {
             chevron_right
           </span>
         </button>
-        <h2 className="ml-4 text-xl text-gray-500 font-bold">
+        <h2 className="ml-4 text-xl text-black">
           {dayjs(new Date(dayjs().year(), monthIndex)).format("MMMM YYYY")}
         </h2>
       </div>

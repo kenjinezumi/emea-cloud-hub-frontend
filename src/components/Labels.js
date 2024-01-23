@@ -31,13 +31,13 @@ export default function Filters() {
   return (
     <React.Fragment>
       <p
-        className="text-gray-500 font-bold mt-10 cursor-pointer"
+        className="mt-8 cursor-pointer text-sm" // Reduced font size for the title
         onClick={toggleExpand}
-      >        {isExpanded ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
-
+      >
+        {isExpanded ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
         Region
       </p>
-      {isExpanded && // Only render the list if isExpanded is true
+      {isExpanded && 
         localFilters.map(({ label, checked }, idx) => (
           <label key={idx} className="items-center mt-3 block">
             <input
@@ -46,7 +46,7 @@ export default function Filters() {
               onChange={() => handleFilterChange(label)}
               className="form-checkbox h-5 w-5 rounded focus:ring-0 cursor-pointer"
             />
-            <span className="ml-2 text-gray-700 capitalize">{label}</span>
+            <span className="ml-2 text-gray-700 capitalize text-xs">{label}</span> {/* Reduced font size for labels */}
           </label>
         ))}
     </React.Fragment>
