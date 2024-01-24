@@ -29,7 +29,7 @@
   align-items: flex-start;
   width: 100%;
   background: var(--background-base);
-  height: 100vh;
+  height: 600vh;
   padding: 20px;
   font-family: var(--font-family);
 }
@@ -37,12 +37,14 @@
 .event-form {
   width: 100%;
   max-width: 600px;
+  max-height: 400vh;
   padding: 24px;
   background: var(--background-form);
-  margin-top: 20px;
+  margin-top: 60px;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-form);
   border: 1px solid var(--color-border);
+  overflow-y:auto;
 }
 
 .form-title {

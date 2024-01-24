@@ -2,10 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/svg/logo.svg";
 import beta from "../../assets/svg/beta.svg";
-import { ReactComponent as LocationLogo } from "../../assets/svg/location.svg";
-import { ReactComponent as InformationLogo } from "../../assets/svg/information.svg";
-import {ReactComponent as UsersLogo} from '../../assets/svg/users.svg';
-import {ReactComponent as LinksLogo} from '../../assets/svg/links.svg';
 import { useLocation } from "react-router-dom";
 
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -120,7 +116,7 @@ export default function CalendarHeaderForm() {
   return (
     <>
       <NavigationSidebar />
-      <header className="px-4 py-2 flex items-center justify-between">
+      <header className="fixed px-4 py-2 flex items-center justify-between bg-white" style={{width:"100%",marginBottom:"100px"}}>
         <div className="flex items-center">
           <img src={logo} alt="calendar" className="mr-2 w-12 h-12" />
           <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
