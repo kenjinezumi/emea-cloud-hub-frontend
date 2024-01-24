@@ -2,6 +2,7 @@ import React, { useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   Button,
@@ -116,6 +117,10 @@ export default function EventForm() {
   };
 
   const handleNext = () => {
+
+    const eventId = uuidv4(); // Generate a unique event ID
+
+
     // Save current form state to cache
     const isTitleValid = title.trim() !== "";
     const isorganisedByValid = organisedBy.length > 0; // Check if the array is not empty
@@ -139,6 +144,7 @@ export default function EventForm() {
     }
 
     const newFormData = {
+      eventId,
       title,
       description,
       emoji,

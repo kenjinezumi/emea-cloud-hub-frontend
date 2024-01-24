@@ -6,8 +6,10 @@ import beta from "../../assets/svg/beta.svg";
 import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ColorLensIcon from '@mui/icons-material/ColorLens';
+import { eventTypeOptions } from "../filters/FiltersData";
 
-import { Select, MenuItem } from "@mui/material";
+import { Select, MenuItem, Menu } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
 import ThemePopup from "../Themepopup";
 
@@ -22,6 +24,15 @@ export default function CalendarHeader() {
   } = useContext(GlobalContext);
   const [view, setView] = useState("month"); // State to manage the selected view
   const [isThemePopupOpen, setIsThemePopupOpen] = useState(false); // State for popup visibility
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleColorLensClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   function handlePrevMonth() {
     if (monthIndex === 0) {
@@ -99,7 +110,28 @@ export default function CalendarHeader() {
         </h2>
       </div>
 
+      
+
       <div className="flex items-center">
+
+        {/* ColorLens Icon and Dropdown */}
+        <IconButton onClick={handleColorLensClick} className="mr-2">
+          <ColorLensIcon
+                    style={{ fontSize: 'larger', marginRight: '15px' }} 
+                    />
+        </IconButton>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          {eventTypeOptions.map((option, index) => (
+            <MenuItem key={index} onClick={handleClose}>
+              {option}
+            </MenuItem>
+          ))}
+        </Menu>
+
         <Select
           value={view}
           onChange={handleViewChange}

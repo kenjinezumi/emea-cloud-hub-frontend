@@ -18,10 +18,11 @@
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.9",
     "emoji-picker-react": "^4.5.16",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
+    "uuid": "^9.0.1",
     "web-vitals": "^3.4.0"
   },
   "scripts": {

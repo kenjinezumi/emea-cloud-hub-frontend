@@ -14,6 +14,7 @@ export const regionFilters = [
     { label: "LATAM", checked: true },
     { label: "NORTHAM", checked: true },
   ];
+
   
 
   export const regionOptions = [
@@ -196,11 +197,13 @@ export const languageOptions = [
 ]
 
 export const okrOptions = [
-    "CHAMPION DEI & CULTURE",
-    "LIFT MINDSHARE",
-    "SOURCE DEMAND",
-    "SCALED ACQUISITION",
-    "IMPROVE EFFICIENCY AND EFFECTIVENESS"
+
+  { label: "CHAMPION DEI & CULTURE", checked: true },
+  { label: "LIFT MINDSHARE", checked: true },
+  { label:  "SOURCE DEMAND", checked: true },
+  { label: "SCALED ACQUISITION", checked: true },
+  { label: "IMPROVE EFFICIENCY AND EFFECTIVENESS", checked: true },
+    
 ]
 
 export const gepOptions = [
@@ -217,9 +220,9 @@ export const gepOptions = [
 ]
 
 export const audienceSeniorityOptions = [
-    "Decision Maker", 
-    "Practitioner", 
-    "Executive"
+  { label: "Decision Maker", checked: true },
+  { label:  "Practitioner", checked: true },
+  { label:  "Executive", checked: true },    
 ]
 
 
