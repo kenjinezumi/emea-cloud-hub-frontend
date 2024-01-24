@@ -136,7 +136,10 @@ export default function AudiencePersonaForm() {
     navigate("/extra"); // Adjust according to your route
   };
 
-  // Render your form
+  const handleAudienceSeniorityChange = (event) => {
+    setAudienceSeniority(event.target.value);
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <CalendarHeaderForm />
@@ -175,22 +178,22 @@ export default function AudiencePersonaForm() {
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="subtitle1">Audience seniority</Typography>
-              <FormControl fullWidth>
-                <Select
-                  multiple
-                  value={audienceSeniority}
-                  onChange={(e) => setAudienceSeniority(e.target.value)}
-                  renderValue={(selected) => selected.join(", ")}
-                >
-                  {audienceSeniorityOptions.map((seniority) => (
-                    <MenuItem key={seniority} value={seniority}>
-                      {seniority}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+      <Typography variant="subtitle1">Audience Seniority</Typography>
+      <FormControl fullWidth>
+        <Select
+          multiple
+          value={audienceSeniority}
+          onChange={handleAudienceSeniorityChange}
+          renderValue={(selected) => selected.join(", ")}
+        >
+          {audienceSeniorityOptions.map((option, idx) => (
+            <MenuItem key={idx} value={option.label}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Grid>
 
             {/* Radio Buttons for Account Sectors */}
             <Grid item xs={12}>

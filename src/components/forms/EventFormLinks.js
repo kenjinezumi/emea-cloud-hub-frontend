@@ -2,10 +2,9 @@ import React, { useState, useContext, useEffect } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 
-import { Button, TextField, Typography, Grid } from "@mui/material";
+import { Button, TextField, Typography, Grid, Snackbar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
-import { ReactComponent as LinksLogo } from "../../assets/svg/links.svg";
 import { sendDataToAPI } from "../../api/pushData"; // Adjust the path as per your project structure
 import LinkIcon from "@mui/icons-material/Link";
 import { blue } from "@mui/material/colors";
@@ -23,27 +22,48 @@ export default function LinksForm() {
   );
   const navigate = useNavigate();
 
-  const handleFinalSave = () => {
-    // Merge current form data with previous form data
-    const FinalFormData = {
-      ...formData,
-      landingPageLink,
-      salesKitLink,
-      hailoLink,
-      otherDocumentsLink,
-    };
-    console.log(formData);
-    console.log(FinalFormData);
-    sendDataToAPI(FinalFormData)
-      .then((response) => {
-        console.log("Data sent successfully:", response);
-        // Clear the cache if needed, navigate to a success page, etc.
-        localStorage.removeItem("formData");
-        // navigate('/success'); // Navigate to success page or next route
-      })
-      .catch((error) => {
-        console.error("Error sending data:", error);
-      });
+  const handleFinalSave = async () => {
+  // Merge current form data with previous form data
+  const FinalFormData = {
+    ...formData,
+    landingPageLink,
+    salesKitLink,
+    hailoLink,
+    otherDocumentsLink,
+  };
+
+  console.log(formData);
+  console.log(FinalFormData);
+
+  try {
+    const response = await sendDataToAPI(FinalFormData);
+
+    if (response && !response.error) {
+      setSnackbarMessage("Event successfully saved. Redirecting you to the main page...");
+      setSnackbarOpen(true);
+      setIsError(false);
+      setTimeout(() => navigate("/"), 3000);
+    } else {
+      setSnackbarMessage("Error saving event. Please check the logs.");
+      setSnackbarOpen(true);
+      setIsError(true);
+      console.error("Error sending data:", response);
+    }
+  } catch (error) {
+    setSnackbarMessage("Error saving event. Please check the logs.");
+    setSnackbarOpen(true);
+    setIsError(true);
+    console.error("Error sending data:", error);
+  }
+};
+
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [isError, setIsError] = useState(false);
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   const handlePrevious = () => {
@@ -152,6 +172,18 @@ export default function LinksForm() {
             </Button>
           </div>
         </div>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          message={snackbarMessage}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          ContentProps={{
+            style: {
+              backgroundColor: isError ? "red" : "green",
+            },
+          }}
+        />
       </div>
     </div>
   );

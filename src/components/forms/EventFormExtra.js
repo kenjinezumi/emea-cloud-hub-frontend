@@ -18,6 +18,7 @@ import {
   RadioGroup,
   FormControlLabel,
   TextField,
+
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
@@ -105,6 +106,11 @@ export default function ExtraDetailsForm() {
     const updatedItems = [...languagesAndTemplates];
     updatedItems[index].template = value;
     setLanguagesAndTemplates(updatedItems);
+  };
+
+  const handleOkrChange = (event) => {
+    const value = event.target.value;
+    setOkr(typeof value === "string" ? value.split(",") : value);
   };
 
   return (
@@ -221,12 +227,12 @@ export default function ExtraDetailsForm() {
                 <Select
                   multiple
                   value={okr}
-                  onChange={(e) => setOkr(e.target.value)}
+                  onChange={handleOkrChange}
                   renderValue={(selected) => selected.join(", ")}
                 >
                   {okrOptions.map((option, idx) => (
-                    <MenuItem key={idx} value={option}>
-                      {option}
+                    <MenuItem key={idx} value={option.label}>
+                      {option.label}
                     </MenuItem>
                   ))}
                 </Select>

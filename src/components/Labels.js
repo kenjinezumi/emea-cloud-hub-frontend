@@ -8,8 +8,10 @@ import { Typography } from "@mui/material";
 export default function Filters() {
   const { updateFilters } = useContext(GlobalContext);
 
-  // State for each filter category
   const [localRegionFilters, setLocalRegionFilters] = useState(regionFilters);
+  const [localOkrOptions, setLocalOkrOptions] = useState(okrOptions);
+  const [localAudienceSeniorityOptions, setLocalAudienceSeniorityOptions] = useState(audienceSeniorityOptions);
+  
   const [isRegionExpanded, setIsRegionExpanded] = useState(false);
   const [isOkrExpanded, setIsOkrExpanded] = useState(false);
   const [isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded] = useState(false);
@@ -25,13 +27,13 @@ export default function Filters() {
     setLocalRegionFilters(newFilters);
   };
 
-  // Update global filters state
-  useEffect(() => {
+ useEffect(() => {
     updateFilters({
       regions: localRegionFilters,
-      // Add other filters here when they are implemented
+      okr: localOkrOptions,
+      audienceSeniority: localAudienceSeniorityOptions,
     });
-  }, [localRegionFilters, updateFilters]);
+  }, [localRegionFilters, localOkrOptions, localAudienceSeniorityOptions, updateFilters]);
 
   const renderFilterSection = (title, filters, handleFilterChange, expanded, setExpanded) => (
     <div className="mb-4"> {/* Added margin bottom here */}
@@ -56,9 +58,8 @@ export default function Filters() {
   return (
     <div className="mt-8">
       {renderFilterSection("Region", localRegionFilters, handleRegionChange, isRegionExpanded, setIsRegionExpanded)}
-      {/* Add other filter sections here in the same format */}
       {renderFilterSection("OKR", okrOptions, handleRegionChange, isOkrExpanded, setIsOkrExpanded)} {/* Implement OKR filter logic */}
-      {renderFilterSection("Audience Seniority", audienceSeniorityOptions, handleRegionChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)} {/* Implement Audience Seniority filter logic */}
+      {renderFilterSection("Audience Seniority", audienceSeniorityOptions, handleRegionChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)} Implement Audience Seniority filter logic
     </div>
   );
 }

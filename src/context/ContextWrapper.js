@@ -3,6 +3,7 @@ import React, {
   useEffect,
   useReducer,
   useMemo,
+  useCallback
 } from "react";
 import GlobalContext from "./GlobalContext";
 import dayjs from "dayjs";
@@ -47,9 +48,10 @@ export default function ContextWrapper(props) {
   const updateFormData = (newData) => {
     setFormData({ ...formData, ...newData });
   };
-  const updateFilters = (newFilters) => {
+  const updateFilters = useCallback((newFilters) => {
     setFilters(newFilters);
-  };
+  }, [setFilters]);
+  
 
 
   const toggleSidebar = () => {
