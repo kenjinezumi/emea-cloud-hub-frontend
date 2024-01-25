@@ -1,9 +1,9 @@
 export const eventTypeOptions = [
-    "Online Event", 
-    "Physical Event", 
-    "Hybrid Event", 
-    "Customer Story", 
-    "Blog Post"
+  { label: "Online Event", checked: true },
+  { label: "Physical Event", checked: true },
+  { label: "Hybrid Event", checked: true },
+  { label: "Customer Story", checked: true },
+  { label: "Blog Post", checked: true },
 ]
 
 export const regionFilters = [

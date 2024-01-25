@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import GlobalContext from "../context/GlobalContext";
-import { regionFilters, okrOptions, audienceSeniorityOptions } from "./filters/FiltersData";
+import { regionFilters, okrOptions, audienceSeniorityOptions, eventTypeOptions } from "./filters/FiltersData";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { Typography } from "@mui/material";
@@ -11,12 +11,13 @@ export default function Filters() {
   const [localRegionFilters, setLocalRegionFilters] = useState(regionFilters);
   const [localOkrOptions, setLocalOkrOptions] = useState(okrOptions);
   const [localAudienceSeniorityOptions, setLocalAudienceSeniorityOptions] = useState(audienceSeniorityOptions);
-  
+  const [localEventTypeOptions, setLocalEventTypeOptions] = useState(eventTypeOptions);
+
   const [isRegionExpanded, setIsRegionExpanded] = useState(false);
   const [isOkrExpanded, setIsOkrExpanded] = useState(false);
   const [isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded] = useState(false);
+  const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(false);
 
-  // Function to handle filter change for each category
   const handleRegionChange = (label) => {
     const newFilters = localRegionFilters.map(filter => {
       if (filter.label === label) {
@@ -27,16 +28,27 @@ export default function Filters() {
     setLocalRegionFilters(newFilters);
   };
 
- useEffect(() => {
+  const handleEventTypeChange = (label) => {
+    const newFilters = localEventTypeOptions.map(filter => {
+      if (filter.label === label) {
+        return { ...filter, checked: !filter.checked };
+      }
+      return filter;
+    });
+    setLocalEventTypeOptions(newFilters);
+  };
+
+  useEffect(() => {
     updateFilters({
       regions: localRegionFilters,
       okr: localOkrOptions,
       audienceSeniority: localAudienceSeniorityOptions,
+      eventType: localEventTypeOptions, 
     });
-  }, [localRegionFilters, localOkrOptions, localAudienceSeniorityOptions, updateFilters]);
+  }, [localRegionFilters, localOkrOptions, localAudienceSeniorityOptions, localEventTypeOptions, updateFilters]);
 
   const renderFilterSection = (title, filters, handleFilterChange, expanded, setExpanded) => (
-    <div className="mb-4"> {/* Added margin bottom here */}
+    <div className="mb-4"> 
       <div onClick={() => setExpanded(!expanded)} className="cursor-pointer flex items-center">
         <Typography variant="subtitle2" className="mr-2">{title}</Typography>
         {expanded ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
@@ -58,8 +70,9 @@ export default function Filters() {
   return (
     <div className="mt-8">
       {renderFilterSection("Region", localRegionFilters, handleRegionChange, isRegionExpanded, setIsRegionExpanded)}
-      {renderFilterSection("OKR", okrOptions, handleRegionChange, isOkrExpanded, setIsOkrExpanded)} {/* Implement OKR filter logic */}
-      {renderFilterSection("Audience Seniority", audienceSeniorityOptions, handleRegionChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)} Implement Audience Seniority filter logic
+      {renderFilterSection("OKR", okrOptions, handleRegionChange, isOkrExpanded, setIsOkrExpanded)}
+      {renderFilterSection("Audience Seniority", audienceSeniorityOptions, handleRegionChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)}
+      {renderFilterSection("Event type", localEventTypeOptions, handleEventTypeChange, isEventTypeExpanded, setIsEventTypeExpanded)}
     </div>
   );
 }

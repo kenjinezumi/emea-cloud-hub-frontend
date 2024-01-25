@@ -114,12 +114,7 @@ export default function CalendarHeader() {
 
       <div className="flex items-center">
 
-        {/* ColorLens Icon and Dropdown */}
-        <IconButton onClick={handleColorLensClick} className="mr-2">
-          <ColorLensIcon
-                    style={{ fontSize: 'larger', marginRight: '15px' }} 
-                    />
-        </IconButton>
+
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}

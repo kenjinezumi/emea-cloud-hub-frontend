@@ -52,7 +52,9 @@ export default function EventForm() {
     formData,
   } = useContext(GlobalContext);
 
-  const [eventType, setEventType] = useState(formData.eventType || "");
+  const [eventType, setEventType] = useState(
+    formData.eventType || eventTypeOptions[0].label
+  );
   const [title, setTitle] = useState(
     selectedEvent ? selectedEvent.title : formData.title || ""
   );
@@ -287,24 +289,26 @@ export default function EventForm() {
                   </Select>
                 </FormControl>
               </Grid>
+             
               <Grid item xs={6}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Activity type
-                </Typography>
-                <FormControl fullWidth>
-                  <Select
-                    value={eventType}
-                    onChange={(e) => setEventType(e.target.value)}
-                    label="Event Type"
-                  >
-                    {eventTypeOptions.map((type, idx) => (
-                      <MenuItem key={idx} value={type}>
-                        {type}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+    <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+      Activity type
+    </Typography>
+    <FormControl fullWidth>
+      <Select
+        value={eventType}
+        onChange={(e) => setEventType(e.target.value)}
+        label="Event Type"
+      >
+        {eventTypeOptions.map((option) => (
+          <MenuItem key={option.label} value={option.label}>
+            {option.label}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </Grid>
+
             </Grid>
             <Grid item xs={6} style={{ marginBottom: "20px" }}>
               <FormGroup row>
