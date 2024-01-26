@@ -1,21 +1,30 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import { List, ListItem, ListItemText, Typography, Paper } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import GlobalContext from '../../context/GlobalContext';
+import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
 
+export default function ListView() {
+  const [events, setEvents] = useState([]);
+  const { setShowEventModal } = useContext(GlobalContext);
+  const location = useLocation(); // useLocation hook
 
-export default function ListView({ events = DummyEvents }) {
-
-const { showEventModal, daySelected, setShowEventModal, setDaySelected } = useContext(GlobalContext);
-
-const location = useLocation(); // useLocation hook
-
-useEffect(() => {
- 
+  useEffect(() => {
     setShowEventModal(false);
-  
-}, [location]);
+    
+    const fetchData = async () => {
+      try {
+        const eventData = await getDummyEventData();
+        setEvents(eventData);
+      } catch (error) {
+        console.error("Error fetching event data:", error);
+      }
+    };
+
+    fetchData();
+  }, [location, setShowEventModal]);
+
   return (
     <Paper sx={{ margin: 2, padding: 2, width: '90%', overflowY: 'auto' }}>
       <List>
@@ -23,7 +32,7 @@ useEffect(() => {
           <ListItem key={index} divider>
             <ListItemText
               primary={<Typography variant="h6">{event.title}</Typography>}
-              secondary={dayjs(event.date).format('dddd, MMMM D, YYYY')}
+              secondary={dayjs(event.startDate).format('dddd, MMMM D, YYYY')} // Assuming event has startDate
             />
           </ListItem>
         ))}
@@ -31,23 +40,3 @@ useEffect(() => {
     </Paper>
   );
 }
-
-const DummyEvents = [
-  { date: new Date(), title: "Event 1" },
-  { date: new Date(), title: "Event 2" },
-  { date: new Date(), title: "Event 1" },
-  { date: new Date(), title: "Event 2" },
-  { date: new Date(), title: "Event 1" },
-  { date: new Date(), title: "Event 2" },
-  { date: new Date(), title: "Event 1" },
-  { date: new Date(), title: "Event 2" },
-  { date: new Date(), title: "Event 1" },
-  { date: new Date(), title: "Event 2" },
-  { date: new Date(), title: "Event 1" },
-  { date: new Date(), title: "Event 2" },
-  { date: new Date(), title: "Event 1" },
-  { date: new Date(), title: "Event 2" },
-  { date: new Date(), title: "Event 1" },
-  { date: new Date(), title: "Event 2" },
-  // ... more events
-];
