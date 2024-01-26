@@ -115,17 +115,17 @@ export default function CalendarHeader() {
       <div className="flex items-center">
 
 
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          {eventTypeOptions.map((option, index) => (
-            <MenuItem key={index} onClick={handleClose}>
-              {option}
-            </MenuItem>
-          ))}
-        </Menu>
+      <Menu
+  anchorEl={anchorEl}
+  open={Boolean(anchorEl)}
+  onClose={handleClose}
+>
+  {eventTypeOptions.map((option, index) => (
+    <MenuItem key={index} onClick={handleClose}>
+      <span>{option}</span>
+    </MenuItem>
+  ))}
+</Menu>
 
         <Select
           value={view}
