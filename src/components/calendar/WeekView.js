@@ -1,27 +1,34 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import GlobalContext from '../../context/GlobalContext';
 import { Paper, Typography, Grid, Box } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
 
-export default function WeekView({ weekStart = dayjs().startOf('week'), events = defaultEvents }) {
-  const { setShowEventModal, setDaySelected, daySelected  } = useContext(GlobalContext);
+export default function WeekView() {
+  const { setShowEventModal, setDaySelected, daySelected } = useContext(GlobalContext);
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const eventData = await getDummyEventData(); // Fetch events data
+        setEvents(eventData);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    }
+
+    fetchEvents();
+  }, [daySelected]);
 
   const startOfWeek = daySelected.startOf('week');
   const daysOfWeek = Array.from({ length: 7 }, (_, i) => dayjs(startOfWeek).add(i, 'day'));
   const hoursOfDay = Array.from({ length: 24 }, (_, i) => i);
 
-   const handleAddEvent = (day, hour) => {
+  const handleAddEvent = (day, hour) => {
     setDaySelected(day.hour(hour));
     setShowEventModal(true);
   };
-  const location = useLocation(); // useLocation hook
-
-  useEffect(() => {
-   
-    setShowEventModal(false);
-  
-}, [location]);
 
   return (
     <Paper sx={{ width: '90%', overflowY: 'auto', padding: 2, border: 'none' }}>
@@ -51,21 +58,22 @@ export default function WeekView({ weekStart = dayjs().startOf('week'), events =
             {hoursOfDay.map(hour => (
               <Grid container key={hour} sx={{ minHeight: '60px', borderBottom: 1, borderColor: 'divider' }}>
                 {daysOfWeek.map(day => {
-                  const hourEvents = events.filter(event => dayjs(event.start).isSame(day, 'day') && dayjs(event.start).hour() === hour);
+                  const hourEvents = events.filter(event => 
+                    dayjs(event.startDate).isSame(day, 'day') && 
+                    dayjs(event.startDate).hour() === hour
+                  );
                   return (
                     <Grid item xs key={day.format('DDMMYYYY') + hour} sx={{ borderRight: 1, borderColor: 'divider' }}>
-                      <Box 
+                      <Box
                         sx={{ minHeight: '60px' }}
                         className="flex-1 cursor-pointer"
-                        onClick={() => handleAddEvent(day, hour)} // Add event handler
+                        onClick={() => handleAddEvent(day, hour)}
                       >
-                        {hourEvents.length > 0 ? 
-                          hourEvents.map((event, index) => (
-                            <Box key={index} sx={{ padding: 1, backgroundColor: 'grey.200', margin: '5px', borderRadius: 1 }}>
-                              {event.title}
-                            </Box>
-                          )) : null
-                        }
+                        {hourEvents.map((event, index) => (
+                          <Box key={index} sx={{ padding: 1, backgroundColor: 'grey.200', margin: '5px', borderRadius: 1 }}>
+                            {event.title}
+                          </Box>
+                        ))}
                       </Box>
                     </Grid>
                   );
@@ -78,9 +86,3 @@ export default function WeekView({ weekStart = dayjs().startOf('week'), events =
     </Paper>
   );
 }
-
-const defaultEvents = [
-  { start: dayjs().hour(9).minute(0), title: "Team Meeting" },
-  { start: dayjs().hour(13).minute(30), title: "Lunch with Client" },
-  { start: dayjs().hour(15).minute(0), title: "Project Discussion" }
-];
