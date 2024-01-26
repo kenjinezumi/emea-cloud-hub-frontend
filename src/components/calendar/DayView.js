@@ -75,7 +75,6 @@ export default function DayView() {
 
     return { top, height, left, width };
   };
-
   return (
     <Paper
       sx={{
@@ -97,7 +96,9 @@ export default function DayView() {
       </Typography>
       <div style={{ display: "flex", alignItems: "flex-start" }}>
         {/* Time Column */}
-        <div
+        {/* ... Time column code ... */}
+ {/* Time Column */}
+ <div
           style={{
             flex: "0 0 auto",
             marginRight: "10px",
@@ -131,11 +132,10 @@ export default function DayView() {
             </div>
           ))}
         </div>
-
         {/* Event Column */}
         <div style={{ flex: 3, position: "relative" }}>
-           {/* Hour and half-hour tickers */}
-           {Array.from(
+          {/* Hour and half-hour tickers */}
+          {Array.from(
             { length: (endHour - startHour) * 4 },
             (_, i) => i + startHour * 4
           ).map((quarter) => (
@@ -179,6 +179,8 @@ export default function DayView() {
               )}
             </div>
           ))}
+
+          {/* Event rendering */}
           {events.map((event) => {
             if (dayjs(event.startDate).isSame(daySelected, "day")) {
               const { top, height, left, width } = calculateEventBlockStyles(event);
