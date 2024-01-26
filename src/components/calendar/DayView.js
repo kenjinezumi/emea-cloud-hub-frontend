@@ -8,6 +8,7 @@ import { getDummyEventData } from "../../api/getDummyData";
 export default function DayView() {
   const { daySelected } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
+  const [eventGroups, setEventGroups] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
@@ -16,6 +17,7 @@ export default function DayView() {
         const eventData = await getDummyEventData();
         console.log("Fetched events:", eventData); // Debug: Check the fetched data
         setEvents(eventData);
+        setEventGroups(calculateOverlapGroups(eventData));
       } catch (error) {
         console.error("Error fetching event data:", error);
       }
@@ -23,30 +25,55 @@ export default function DayView() {
     fetchData();
   }, [location, daySelected]);
 
+  useEffect(() => {
+    setEventGroups(calculateOverlapGroups(events));
+  }, [events]);
+
   const hourHeight = 90; // Height of one hour slot in pixels
   const startHour = 0; // Define startHour here
   const endHour = 24; // Define endHour here
 
-  const calculateEventBlockStyles = (start, end) => {
-    const eventStart = dayjs(start);
-    const eventEnd = dayjs(end);
+  const calculateOverlapGroups = (events) => {
+    let eventGroups = [];
+    events.forEach((event) => {
+      let added = false;
+      for (let group of eventGroups) {
+        if (isOverlapping(event, group)) {
+          group.push(event);
+          added = true;
+          break;
+        }
+      }
+      if (!added) {
+        eventGroups.push([event]);
+      }
+    });
+    return eventGroups;
+  };
 
-    // Calculate the difference in minutes between event start and midnight
-    const minutesFromMidnight = eventStart.diff(
-      daySelected.startOf("day"),
-      "minutes"
-    );
+  const isOverlapping = (event, group) => {
+    return group.some(groupEvent => {
+      return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
+             dayjs(groupEvent.startDate).isBefore(event.endDate);
+    });
+  };
 
-    // Calculate the duration of the event in minutes
+  const calculateEventBlockStyles = (event) => {
+    const eventStart = dayjs(event.startDate);
+    const eventEnd = dayjs(event.endDate);
+
+    const minutesFromMidnight = eventStart.diff(daySelected.startOf("day"), "minutes");
     const durationInMinutes = eventEnd.diff(eventStart, "minutes");
 
-    // Calculate the top position based on minutes from midnight
-    const top = (minutesFromMidnight / 60) * hourHeight + 0;
-
-    // Calculate the height of the event block based on its duration
+    const top = (minutesFromMidnight / 60) * hourHeight;
     const height = (durationInMinutes / 60) * hourHeight;
 
-    return { top, height };
+    const group = eventGroups.find(g => g.includes(event));
+    const width = group ? 100 / group.length : 100;
+    const index = group ? group.indexOf(event) : 0;
+    const left = width * index;
+
+    return { top, height, left, width };
   };
 
   return (
@@ -69,6 +96,7 @@ export default function DayView() {
         {daySelected.format("dddd, MMMM D, YYYY")}
       </Typography>
       <div style={{ display: "flex", alignItems: "flex-start" }}>
+        {/* Time Column */}
         <div
           style={{
             flex: "0 0 auto",
@@ -76,7 +104,6 @@ export default function DayView() {
             fontWeight: "400",
             textAlign: "right",
             marginLeft: "10px",
-
             paddingRight: "10px",
             borderRight: "1px solid #ddd",
             height: "100%",
@@ -105,83 +132,78 @@ export default function DayView() {
           ))}
         </div>
 
-        <div style={{ flex: 3 }}>
-          <div style={{ position: "relative" }}>
-            {Array.from(
-              { length: (endHour - startHour) * 4 },
-              (_, i) => i + startHour * 4
-            ).map((quarter) => (
-              <div
-                key={quarter}
-                style={{
-                  height: `${hourHeight / 4}px`,
-                  borderTop: `1px solid ${
-                    quarter % 4 === 0
-                      ? "rgba(0, 0, 0, 0.2)"
-                      : "rgba(0, 0, 0, 0.1)"
-                  }`,
-                  position: "relative",
-                }}
-              >
-                {/* Show a small tick for quarters and a bigger tick for half-hours */}
-                {quarter % 4 === 0 ? (
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "0",
-                      top: "0",
-                      transform: "translateY(-50%)",
-                      width: "1px",
-                      height: "5px",
-                      backgroundColor: "rgba(0, 0, 0, 0.2)",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: "0",
-                      top: "0",
-                      transform: "translateY(-50%)",
-                      width: "1px",
-                      height: "3px",
-                      backgroundColor: "rgba(0, 0, 0, 0.1)",
-                    }}
-                  />
-                )}
-              </div>
-            ))}
-            {events.map((event) => {
-              if (dayjs(event.startDate).isSame(daySelected, "day")) {
-                const { top, height } = calculateEventBlockStyles(
-                  event.startDate,
-                  event.endDate
-                );
-                return (
-                  <div
-                    key={event.eventId}
-                    style={{
-                      position: "absolute",
-                      top: `${top}px`,
-                      left: "20px",
-                      right: "20px",
-                      height: `${height}px`,
-                      backgroundColor: "#f0f0f0",
-                      borderLeft: "4px solid #3174ad",
-                      padding: "10px",
-                      boxSizing: "border-box",
-                      display: "flex",
-                      alignItems: "center",
-                      zIndex: 1000, // Ensure the event is above the quarter-hour slots
-                    }}
-                  >
-                    <Typography variant="body1">{event.title}</Typography>
-                  </div>
-                );
-              }
-              return null;
-            })}
-          </div>
+        {/* Event Column */}
+        <div style={{ flex: 3, position: "relative" }}>
+           {/* Hour and half-hour tickers */}
+           {Array.from(
+            { length: (endHour - startHour) * 4 },
+            (_, i) => i + startHour * 4
+          ).map((quarter) => (
+            <div
+              key={quarter}
+              style={{
+                height: `${hourHeight / 4}px`,
+                borderTop: `1px solid ${
+                  quarter % 4 === 0
+                    ? "rgba(0, 0, 0, 0.2)"
+                    : "rgba(0, 0, 0, 0.1)"
+                }`,
+                position: "relative",
+              }}
+            >
+              {/* Show a small tick for quarters and a bigger tick for half-hours */}
+              {quarter % 4 === 0 ? (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "0",
+                    top: "0",
+                    transform: "translateY(-50%)",
+                    width: "1px",
+                    height: "5px",
+                    backgroundColor: "rgba(0, 0, 0, 0.2)",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "0",
+                    top: "0",
+                    transform: "translateY(-50%)",
+                    width: "1px",
+                    height: "3px",
+                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                  }}
+                />
+              )}
+            </div>
+          ))}
+          {events.map((event) => {
+            if (dayjs(event.startDate).isSame(daySelected, "day")) {
+              const { top, height, left, width } = calculateEventBlockStyles(event);
+              return (
+                <div
+                  key={event.eventId}
+                  style={{
+                    position: "absolute",
+                    top: `${top}px`,
+                    left: `${left}%`,
+                    width: `${width}%`,
+                    height: `${height}px`,
+                    backgroundColor: "#f0f0f0",
+                    borderLeft: "4px solid #3174ad",
+                    padding: "10px",
+                    boxSizing: "border-box",
+                    zIndex: 1000,
+                  }}
+                >
+                  <Typography variant="body1">{event.title}</Typography>
+                </div>
+              );
+            }
+            return null;
+          })}
         </div>
       </div>
     </Paper>
