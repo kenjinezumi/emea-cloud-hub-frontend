@@ -23,6 +23,8 @@ const GlobalContext = createContext({
   setCurrentView: () => {},
   filters: [], // Add filters to the initial context
   updateFilters: () => {}, // Function to update filters
+  showEventInfoModal: false,
+  setShowInfoEventModal: () => {},
 });
 
 export const GlobalProvider = ({ children }) => {
@@ -31,6 +33,8 @@ export const GlobalProvider = ({ children }) => {
   const [smallCalendarMonth, setSmallCalendarMonth] = useState(0);
   const [daySelected, setDaySelected] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showEventInfoModal , setShowInfoEventModal] = useState(false);
+
   const [savedEvents, setSavedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [labels, setLabels] = useState([]);
@@ -38,7 +42,7 @@ export const GlobalProvider = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [filters, setFilters] = useState([]); // State to manage filters
 
-  
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
@@ -61,6 +65,8 @@ export const GlobalProvider = ({ children }) => {
       setDaySelected,
       showEventModal,
       setShowEventModal,
+      showEventInfoModal ,
+      setShowInfoEventModal,
       savedEvents,
       selectedEvent,
       setSelectedEvent,

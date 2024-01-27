@@ -2,6 +2,8 @@ import React, { useContext } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 
 export default function EventInfoPopup() {
+    const { showEventInfoModal, setShowInfoEventModal } = useContext(GlobalContext);
+
   console.log('there we is')
   const { selectedEvent, setSelectedEvent } = useContext(GlobalContext);
 

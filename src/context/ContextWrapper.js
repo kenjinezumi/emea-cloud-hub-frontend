@@ -35,6 +35,7 @@ export default function ContextWrapper(props) {
   const [smallCalendarMonth, setSmallCalendarMonth] = useState(null);
   const [daySelected, setDaySelected] = useState(dayjs());
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showEventInfoModal,setShowInfoEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [labels, setLabels] = useState([]);
   const [filters, setFilters] = useState([]);  // State for filters
@@ -99,6 +100,12 @@ export default function ContextWrapper(props) {
     }
   }, [showEventModal]);
 
+  useEffect(() => {
+    if (!showEventInfoModal) {
+      setSelectedEvent(null);
+    }
+  }, [showEventInfoModal]);
+
   function updateLabel(label) {
     setLabels(
       labels.map((lbl) => (lbl.label === label.label ? label : lbl))
@@ -121,6 +128,8 @@ export default function ContextWrapper(props) {
         setDaySelected,
         showEventModal,
         setShowEventModal,
+        setShowInfoEventModal,
+        showEventInfoModal,
         dispatchCalEvent,
         selectedEvent,
         setSelectedEvent,
@@ -138,6 +147,7 @@ export default function ContextWrapper(props) {
 
       }}
     >
+
       {props.children}
     </GlobalContext.Provider>
   );

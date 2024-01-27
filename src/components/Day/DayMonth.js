@@ -8,15 +8,18 @@ export default function Day({ day, events, isYearView }) {
   const maxEventsToShow = 3;
   const dayEvents = events.filter(evt => dayjs(evt.startDate).isSame(day, 'day'));
   const hasEvents = dayEvents.length > 0;
+  console.log(useContext(GlobalContext))
 
   const {
     setDaySelected,
     setShowEventModal,
     setCurrentView,
     setSelectedEvent,
+    showEventInfoModal, // This should match the name in your context
+    setShowInfoEventModal, // This should match the name in your context
+    
   } = useContext(GlobalContext);
 
-  const [showAddEventModal, setShowAddEventModal] = useState(false); // Local state for Add Event modal
 
   const handleDayClick = () => {
     if (!isYearView) {
@@ -27,13 +30,13 @@ export default function Day({ day, events, isYearView }) {
 
       if (dayEvents.length > 0) {
         console.log('IT HAS EVENTS')
-        setShowEventModal(true);
-        setShowAddEventModal(true);
+        setShowEventModal(false);
+        setShowInfoEventModal(true);
       } else {
         console.log('IT HAS NO EVENTS')
 
         setShowEventModal(true);
-        setShowAddEventModal(false);
+        setShowInfoEventModal(false);
       }
     }
   };
@@ -46,9 +49,9 @@ export default function Day({ day, events, isYearView }) {
 
   const handleEventClick = (evt) => {
     if (!isYearView) {
+      setShowEventModal(false);
       setSelectedEvent(evt);
-      setShowEventModal(true);
-      setShowAddEventModal(false);
+      setShowInfoEventModal(true);
     }
   };
 
