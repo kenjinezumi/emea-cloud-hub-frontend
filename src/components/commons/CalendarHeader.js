@@ -11,7 +11,7 @@ import { eventTypeOptions } from "../filters/FiltersData";
 
 import { Select, MenuItem, Menu } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
-import ThemePopup from "../Themepopup";
+import ThemePopup from "../popup/Themepopup";
 
 export default function CalendarHeader() {
   const {

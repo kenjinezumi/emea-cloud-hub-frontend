@@ -1,26 +1,56 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import dayjs from 'dayjs';
-import {  Link } from '@mui/material';
+import { Link } from '@mui/material';
 import GlobalContext from "../../context/GlobalContext";
+import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 
-export default function Day({ day, events,  isYearView }) {
-  const maxEventsToShow = 3; // Define the maximum number of events to show
+export default function Day({ day, events, isYearView }) {
+  const maxEventsToShow = 3;
   const dayEvents = events.filter(evt => dayjs(evt.startDate).isSame(day, 'day'));
   const hasEvents = dayEvents.length > 0;
-  const { setDaySelected, setShowEventModal, setCurrentView } = useContext(GlobalContext);
+
+  const {
+    setDaySelected,
+    setShowEventModal,
+    setCurrentView,
+    setSelectedEvent,
+  } = useContext(GlobalContext);
+
+  const [showAddEventModal, setShowAddEventModal] = useState(false); // Local state for Add Event modal
 
   const handleDayClick = () => {
     if (!isYearView) {
       setDaySelected(day);
-      setShowEventModal(true);
+      setSelectedEvent(null);
+
+      const dayEvents = events.filter(evt => dayjs(evt.startDate).isSame(day, 'day'));
+
+      if (dayEvents.length > 0) {
+        console.log('IT HAS EVENTS')
+        setShowEventModal(true);
+        setShowAddEventModal(true);
+      } else {
+        console.log('IT HAS NO EVENTS')
+
+        setShowEventModal(true);
+        setShowAddEventModal(false);
+      }
     }
   };
 
   const handleSeeMoreClick = (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation();
     setDaySelected(day);
-    setCurrentView('day'); // Update currentView to switch to DayView
-};
+    setCurrentView('day');
+  };
+
+  const handleEventClick = (evt) => {
+    if (!isYearView) {
+      setSelectedEvent(evt);
+      setShowEventModal(true);
+      setShowAddEventModal(false);
+    }
+  };
 
   const dayNumberStyle = {
     display: 'flex',
@@ -45,7 +75,12 @@ export default function Day({ day, events,  isYearView }) {
       {!isYearView && (
         <div className="flex-1 flex flex-col">
           {dayEvents.slice(0, maxEventsToShow).map((evt, idx) => (
-            <div key={idx} className="p-1 mb-1 text-gray-600 text-sm rounded truncate" style={{ backgroundColor: "#f0f0f0" }}>
+            <div
+              key={idx}
+              className="p-1 mb-1 text-gray-600 text-sm rounded truncate cursor-pointer"
+              style={{ backgroundColor: "#f0f0f0", pointerEvents: 'auto' }}
+              onClick={() => handleEventClick(evt)}
+            >
               {evt.title}
             </div>
           ))}
@@ -56,6 +91,9 @@ export default function Day({ day, events,  isYearView }) {
           )}
         </div>
       )}
+      
+      {/* Conditionally render the EventInfoPopup */}
+      {hasEvents && <EventInfoPopup />}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import DayView from "./calendar/DayView";
 import YearView from "./calendar/YearView";
 import ListView from "./calendar/ListView";
 import WeekView from "./calendar/WeekView";
-import EventModal from "../components/EventModal";
+import EventModal from "./popup/EventModal";
 
 import GlobalContext from "../context/GlobalContext";
 

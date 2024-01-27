@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import GlobalContext from "../context/GlobalContext";
+import GlobalContext from "../../context/GlobalContext";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 export default function EventModal() {

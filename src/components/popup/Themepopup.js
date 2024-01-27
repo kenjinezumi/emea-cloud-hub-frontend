@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogTitle, List, ListItem, ListItemText } from '@mui/material';
-import { useTheme } from '../ThemeContext';
+import { useTheme } from '../../ThemeContext';
 
 const ThemePopup = ({ onClose }) => {
     const { setTheme } = useTheme();
