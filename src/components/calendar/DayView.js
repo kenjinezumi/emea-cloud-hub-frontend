@@ -10,6 +10,17 @@ export default function DayView() {
   const [events, setEvents] = useState([]);
   const [eventGroups, setEventGroups] = useState([]);
   const location = useLocation();
+  const { setShowEventModal, showEventModal} = useContext(GlobalContext);
+
+  const handleAddEvent = () => {
+    console.log('triggered');
+    setShowEventModal(true);
+  };
+  useEffect(() => {
+   
+    setShowEventModal(false);
+  
+}, [location]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +86,9 @@ export default function DayView() {
 
     return { top, height, left, width };
   };
+
+  console.log(showEventModal)
+  
   return (
     <Paper
       sx={{
@@ -94,6 +108,12 @@ export default function DayView() {
       >
         {daySelected.format("dddd, MMMM D, YYYY")}
       </Typography>
+      <div
+        className="flex-1 cursor-pointer"
+        onClick={() => {
+          setShowEventModal(true);
+        }}
+      ></div>
       <div style={{ display: "flex", alignItems: "flex-start" }}>
         {/* Time Column */}
         {/* ... Time column code ... */}
@@ -126,8 +146,9 @@ export default function DayView() {
                 justifyContent: "flex-end",
                 height: `${hourHeight}px`,
                 fontSize: "12px",
-              }}
-            >
+              }} 
+            >           
+
               {dayjs().hour(hour).minute(0).format("HH:mm")}
             </div>
           ))}
@@ -149,7 +170,7 @@ export default function DayView() {
                     : "rgba(0, 0, 0, 0.1)"
                 }`,
                 position: "relative",
-              }}
+              }} onClick={() => handleAddEvent()}
             >
               {/* Show a small tick for quarters and a bigger tick for half-hours */}
               {quarter % 4 === 0 ? (
@@ -162,7 +183,8 @@ export default function DayView() {
                     width: "1px",
                     height: "5px",
                     backgroundColor: "rgba(0, 0, 0, 0.2)",
-                  }}
+                    
+                  }}onClick={() => handleAddEvent()}
                 />
               ) : (
                 <div
@@ -174,7 +196,7 @@ export default function DayView() {
                     width: "1px",
                     height: "3px",
                     backgroundColor: "rgba(0, 0, 0, 0.1)",
-                  }}
+                  }}onClick={() => handleAddEvent()}
                 />
               )}
             </div>

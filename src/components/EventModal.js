@@ -13,7 +13,7 @@ export default function EventModal() {
   };
 
   return (
-    <div className="h-screen w-full fixed left-0 top-0 flex justify-center items-center">
+    <div className="h-screen w-full fixed left-0 top-0 flex justify-center items-center" style={{ zIndex: 1000 }}>
     <div className="bg-white rounded-lg shadow-md w-1/4">
       <header className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
         <span className="text-gray-600 font-semibold">Add Event</span>
