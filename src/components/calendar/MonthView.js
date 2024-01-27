@@ -1,30 +1,45 @@
-import Day from "../Day";
-import React, { useContext, useEffect } from 'react';
+import Day from "../Day/DayMonth";
+import React, { useContext, useEffect, useState } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import { useLocation } from 'react-router-dom';
-
+import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
 
 export default function MonthView({ month, isYearView = false }) {
-  const numRows = Math.ceil(month.length / 7);
-  const gridClass = isYearView ? 'year-grid' : 'flex-1 grid grid-cols-7 grid-rows-5';
-  const { showEventModal, daySelected, setShowEventModal, setDaySelected } = useContext(GlobalContext);
+  const { setShowEventModal,setDaySelected } = useContext(GlobalContext);
+  const [events, setEvents] = useState([]);
+  const location = useLocation();
 
-  const location = useLocation(); // useLocation hook
-  
   useEffect(() => {
-   
-      setShowEventModal(false);
-    
-  }, [location]);
+    const fetchData = async () => {
+      try {
+        const eventData = await getDummyEventData();
+        setEvents(eventData);
+      } catch (error) {
+        console.error("Error fetching event data:", error);
+      }
+    };
+
+    fetchData();
+    setShowEventModal(false);
+  }, [location, setShowEventModal]);
+
   return (
-    <div className={gridClass}>
+    <div className={isYearView ? 'year-grid' : 'flex-1 grid grid-cols-7 grid-rows-5'}>
       {month.map((row, i) => (
         <React.Fragment key={i}>
           {row.map((day, idx) => (
-            <Day day={day} key={idx} rowIdx={i} isYearView={isYearView} />
+            <Day 
+              day={day} 
+              key={idx} 
+              events={events} 
+              setDaySelected={setDaySelected} 
+              setShowEventModal={setShowEventModal} 
+              isYearView={isYearView} 
+            />
           ))}
         </React.Fragment>
       ))}
     </div>
   );
 }
+
