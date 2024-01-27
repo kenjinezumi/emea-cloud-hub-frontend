@@ -44,15 +44,15 @@ export default function SmallCalendar() {
   }
   return (
     <div className="mt-9">
-      <header className="flex justify-between">
-      <p className="text-black" style={{marginLeft:"10px"}}>
+      <header className="flex ">
+      <p className="text-black" style={{marginLeft:"10px", fontSize:"13px"}}>
           {dayjs(new Date(dayjs().year(), currentMonthIdx)).format(
             "MMMM YYYY"
           )}
         </p>
         <div>
         
-          <button onClick={handlePrevMonth}>
+          <button onClick={handlePrevMonth} >
             <span className="material-icons-outlined cursor-pointer text-gray-600 mx-2">
               chevron_left
             </span>

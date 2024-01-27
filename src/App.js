@@ -21,7 +21,7 @@ import RenderCalendarView from "./components/CalendarLayout";
 function App() {
   const { sidebarOpen, currentView, monthIndex, showEventModal } = useContext(GlobalContext);
   const [currenMonth, setCurrentMonth] = useState(getMonth());
-  // const { theme } = useTheme();
+  const {  daySelected } = useContext(GlobalContext);
 
   useEffect(() => {
     setCurrentMonth(getMonth(monthIndex));
@@ -30,7 +30,7 @@ function App() {
   function renderCalendarView() {
     switch (currentView) {
       case 'day':
-        return <DayView />;
+        return <DayView day={daySelected} />;
       case 'week':
         return <WeekView />;
       case 'month':

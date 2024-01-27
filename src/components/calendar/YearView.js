@@ -41,7 +41,10 @@ export default function YearView() {
                           {dayjs(new Date(year, index)).format("MMMM")}
                       </Typography>
                       <div style={{ padding: 2}}> {/* Additional styling */}
-                          <MonthView month={month} daySelected={daySelected} isYearView={true} />
+                          <MonthView 
+                          month={month} 
+                          daySelected={daySelected} 
+                          isYearView={true} />
                       </div>
                       </div>
                   </Grid>

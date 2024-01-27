@@ -30,11 +30,9 @@ export default function MonthView({ month, isYearView = false }) {
           {row.map((day, idx) => (
             <Day 
               day={day} 
-              key={idx} 
-              events={events} 
-              setDaySelected={setDaySelected} 
-              setShowEventModal={setShowEventModal} 
-              isYearView={isYearView} 
+              events={events} // Make sure 'events' is passed here
+              setDaySelected={setDaySelected}
+              isYearView={isYearView}
             />
           ))}
         </React.Fragment>

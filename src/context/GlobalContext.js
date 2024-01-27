@@ -38,6 +38,8 @@ export const GlobalProvider = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [filters, setFilters] = useState([]); // State to manage filters
 
+
+
   
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
