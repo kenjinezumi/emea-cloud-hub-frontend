@@ -4,6 +4,7 @@ import { Typography, Paper } from "@mui/material";
 import dayjs from "dayjs";
 import { useLocation } from "react-router-dom";
 import { getDummyEventData } from "../../api/getDummyData";
+import EventInfoPopup from "../popup/EventInfoModal"; // Import the EventInfoPopup component
 
 export default function DayView() {
   const { daySelected } = useContext(GlobalContext);
@@ -11,6 +12,20 @@ export default function DayView() {
   const [eventGroups, setEventGroups] = useState([]);
   const location = useLocation();
   const { setShowEventModal, showEventModal} = useContext(GlobalContext);
+  const {
+    setDaySelected,
+    showEventInfoModal,
+    setSelectedEvent,
+    setShowInfoEventModal,
+  } = useContext(GlobalContext);
+
+
+  const handleEventClick = (eventData) => {
+    setSelectedEvent(eventData);
+    setShowInfoEventModal(true);
+  };
+
+
 
   const handleAddEvent = () => {
     console.log('triggered');
@@ -88,7 +103,6 @@ export default function DayView() {
   };
 
   console.log(showEventModal)
-  
   return (
     <Paper
       sx={{
@@ -221,6 +235,9 @@ export default function DayView() {
                     boxSizing: "border-box",
                     zIndex: 1000,
                   }}
+                  onClick={() => {
+                    handleEventClick(event);
+                  }}
                 >
                   <Typography variant="body1">{event.title}</Typography>
                 </div>
@@ -230,6 +247,8 @@ export default function DayView() {
           })}
         </div>
       </div>
+      {showEventInfoModal && <EventInfoPopup />}
+
     </Paper>
   );
 }
