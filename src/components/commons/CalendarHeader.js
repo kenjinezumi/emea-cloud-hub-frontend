@@ -8,10 +8,15 @@ import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import { eventTypeOptions } from "../filters/FiltersData";
+import Input from '@mui/material/Input';
+import { useNavigate } from 'react-router-dom';
 
 import { Select, MenuItem, Menu } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
 import ThemePopup from "../popup/Themepopup";
+import ListView from "../calendar/ListView";
+
+import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
 
 export default function CalendarHeader() {
   const {
@@ -21,10 +26,51 @@ export default function CalendarHeader() {
     setDaySelected,
     toggleSidebar,
     setCurrentView,
-  } = useContext(GlobalContext);
+    setEvents,
+    currentView,
+    searchText, setSearchText} = useContext(GlobalContext);
   const [view, setView] = useState("month"); // State to manage the selected view
   const [isThemePopupOpen, setIsThemePopupOpen] = useState(false); // State for popup visibility
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const [showSearchInput, setShowSearchInput] = useState(false);
+  const navigate = useNavigate();
+
+
+  const fetchData = async () => {
+    try {
+      const eventData = await getDummyEventData();
+      setEvents(eventData);
+    } catch (error) {
+      console.error("Error fetching event data:", error);
+    }
+  };
+
+
+  const handleSearchIconClick = () => {
+    setShowSearchInput(!showSearchInput);
+  };
+
+  const handleSearchInputChange = (event) => {
+    setSearchText(event.target.value);
+  };
+
+
+  const handleSearchSubmit = async () => {
+    await  fetchData()
+
+    if (searchText) {
+      // Call a function to set the search text and navigate to the list view
+      handleSearchAction(searchText);
+    }
+  };
+
+  // Function to trigger search action and navigate to the list view
+  const handleSearchAction = (text) => {
+    setSearchText(text);
+    setCurrentView("list"); // Switch to list view when search is submitted
+  };
+
 
   const handleColorLensClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -128,8 +174,8 @@ export default function CalendarHeader() {
 </Menu>
 
         <Select
-          value={view}
-          onChange={handleViewChange}
+  value={currentView} // Use the currentView state to set the value
+  onChange={handleViewChange}
           label="View"
           displayEmpty
           inputProps={{ "aria-label": "Without label" }}
@@ -142,7 +188,15 @@ export default function CalendarHeader() {
           <MenuItem value="year">Year</MenuItem>
           <MenuItem value="list">List</MenuItem>
         </Select>
-        <IconButton className="mr-2">
+        {showSearchInput && (
+          <Input
+            placeholder="Search events..."
+            value={searchText}
+            onChange={handleSearchInputChange}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
+          />
+        )}
+        <IconButton onClick={handleSearchIconClick} className="mr-2">
           <SearchIcon />
         </IconButton>
         {/* { <IconButton onClick={toggleThemePopup} className="mr-2">

@@ -39,6 +39,7 @@ export default function ContextWrapper(props) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [labels, setLabels] = useState([]);
   const [filters, setFilters] = useState([]);  // State for filters
+  const [searchText, setSearchText] = useState(""); // Add searchText state
 
   const [savedEvents, dispatchCalEvent] = useReducer(
     savedEventsReducer,
@@ -144,6 +145,8 @@ export default function ContextWrapper(props) {
         updateFormData,
         filters,       
         updateFilters,
+        searchText,
+        setSearchText
 
       }}
     >

@@ -25,6 +25,8 @@ const GlobalContext = createContext({
   updateFilters: () => {}, // Function to update filters
   showEventInfoModal: false,
   setShowInfoEventModal: () => {},
+  setSearchText: () => {},
+  searchText: null,
 });
 
 export const GlobalProvider = ({ children }) => {
@@ -34,6 +36,7 @@ export const GlobalProvider = ({ children }) => {
   const [daySelected, setDaySelected] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showEventInfoModal , setShowInfoEventModal] = useState(false);
+  const [searchText, setSearchText] = useState(""); // Add searchText state
 
   const [savedEvents, setSavedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -81,6 +84,8 @@ export const GlobalProvider = ({ children }) => {
       updateFormData,
       filters,
       updateFilters,
+      searchText,
+      setSearchText
       
     }}
     >

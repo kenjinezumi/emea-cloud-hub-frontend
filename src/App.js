@@ -19,9 +19,15 @@ import GlobalContext from "./context/GlobalContext";
 import RenderCalendarView from "./components/CalendarLayout";
 
 function App() {
-  const { sidebarOpen, currentView, monthIndex, showEventModal } = useContext(GlobalContext);
+  const { sidebarOpen, currentView, monthIndex, showEventModal, setCurrentView  } = useContext(GlobalContext);
   const [currenMonth, setCurrentMonth] = useState(getMonth());
   const {  daySelected } = useContext(GlobalContext);
+  const [searchText, setSearchText] = useState('');
+
+  const handleSearchSubmit = (text) => {
+    setSearchText(text);
+    setCurrentView('list'); // Switch to list view when search is submitted
+  };
 
   useEffect(() => {
     setCurrentMonth(getMonth(monthIndex));
@@ -37,9 +43,9 @@ function App() {
         return <MonthView month={currenMonth} />;
       case 'year':
         return <YearView />;
-      case 'list':
-        return <ListView />;
-      default:
+        case 'list':
+          return <ListView/>;
+          default:
         return <MonthView month={currenMonth} />;
     }
   }
