@@ -33,20 +33,22 @@ export default function WeekView() {
     // Convert event times from UTC to local time
     const eventStart = dayjs.utc(event.startDate).local();
     const eventEnd = dayjs.utc(event.endDate).local();
-
-    const minutesFromMidnight = eventStart.diff(dayjs(eventStart).startOf("day"), "minutes");
+  
+    // Calculate minutes from midnight of the event day
+    const eventDayStart = dayjs(eventStart).startOf("day");
+    const minutesFromMidnight = eventStart.diff(eventDayStart, "minutes");
     const durationInMinutes = eventEnd.diff(eventStart, "minutes");
-
-    const top = (minutesFromMidnight / 60) * 60; // Adjusted for 60px per hour
-    const height = (durationInMinutes / 60) * 60; // Adjusted for 60px per hour
-    
-    // Calculate width and left position based on overlapping events
+  
+    const top = (minutesFromMidnight / 60) * 8; // Height of 1 hour is 60px
+    const height = (durationInMinutes / 60) * 60;
+  
     const width = 100 / overlappingEvents;
-    const positionIndex = events.findIndex(e => e.eventId === event.eventId); // Use eventId to find index
+    const positionIndex = events.findIndex(e => e.eventId === event.eventId);
     const left = (positionIndex % overlappingEvents) * width;
-
+  
     return { top, height, left, width };
   };
+  
 
   const handleAddEvent = (day, hour) => {
     setDaySelected(day.hour(hour));
@@ -64,13 +66,13 @@ export default function WeekView() {
   };
 
   return (
-    <Paper sx={{ width: '90%', overflowY: 'auto', padding: 2, border: 'none' }}>
+    <Paper sx={{ width: '80%', overflowY: 'auto', padding: 2, border: 'none' }}>
       <Grid container>
         {/* Hours Column */}
         <Grid item xs={1} sx={{ display: 'flex', flexDirection: 'column', borderRight: 1, borderColor: 'divider' }}>
           {hoursOfDay.map(hour => (
             <Box key={hour} sx={{ minHeight: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Typography variant="caption" sx={{ color: 'grey.500' }}>
+              <Typography variant="caption" sx={{ color: 'grey.500' }} >
                 {dayjs().hour(hour).format('h A')}
               </Typography>
             </Box>
@@ -82,8 +84,8 @@ export default function WeekView() {
             {/* Days of the week header */}
             {daysOfWeek.map(day => (
               <Grid item xs key={day.format('DDMMYYYY')}>
-                <Typography align="center" variant="subtitle1" sx={{ marginBottom: "10px", borderBottom: 1, borderColor: 'divider' }}>
-                  {day.format('dddd, MMM D')}
+                <Typography align="center" variant="subtitle1" sx={{ marginBottom: "10px", fontSize:"14px", borderBottom: 1, borderColor: 'divider' }}>
+                  {day.format('dddd, D')}
                 </Typography>
               </Grid>
             ))}
