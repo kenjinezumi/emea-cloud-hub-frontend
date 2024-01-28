@@ -1,8 +1,9 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { Link } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
 import EventInfoPopup from "../popup/EventInfoModal"; // Import the EventInfoPopup component
+import { useLocation } from "react-router-dom";
 
 export default function Day({ day, events, isYearView }) {
   const maxEventsToShow = 3;
@@ -10,6 +11,7 @@ export default function Day({ day, events, isYearView }) {
     dayjs(evt.startDate).isSame(day, "day")
   );
   const hasEvents = dayEvents.length > 0;
+  const location = useLocation();
 
   const {
     setDaySelected,
@@ -21,6 +23,13 @@ export default function Day({ day, events, isYearView }) {
   } = useContext(GlobalContext);
 
   const [showAddEventModal, setShowAddEventModal] = useState(false); // Local state for Add Event modal
+
+  useEffect(() => {
+   
+    setShowEventModal(false);
+    setShowInfoEventModal(false);
+
+}, [location]);
 
   const handleDayClick = () => {
     console.log("I am in");

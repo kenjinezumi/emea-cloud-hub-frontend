@@ -4,6 +4,8 @@ import utc from "dayjs/plugin/utc";
 import GlobalContext from "../../context/GlobalContext";
 import { Paper, Typography, Grid, Box } from "@mui/material";
 import { getDummyEventData } from "../../api/getDummyData";
+import EventInfoPopup from "../popup/EventInfoModal"; // Import the EventInfoPopup component
+
 dayjs.extend(utc);
 
 export default function WeekView() {
@@ -17,18 +19,20 @@ export default function WeekView() {
   } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
 
-  const handleEventClick = (eventData, e) => {
-    console.log('WE ARE IN')
-    e.stopPropagation(); // Stop event from bubbling up
+  const handleEventClick = (eventData) => {
     setSelectedEvent(eventData);
     setShowInfoEventModal(true);
+  };
+
+  const handleDayClick = () => {
+    setSelectedEvent(null);
+    setShowEventModal(true);
   };
 
   useEffect(() => {
     async function fetchEvents() {
       try {
         const eventData = await getDummyEventData();
-        console.log("Fetched Events:", eventData);
         setEvents(eventData);
       } catch (error) {
         console.error("Error fetching events:", error);
@@ -48,10 +52,13 @@ export default function WeekView() {
     const eventStart = dayjs.utc(event.startDate).local();
     const eventEnd = dayjs.utc(event.endDate).local();
 
-    const minutesFromMidnight = eventStart.diff(daySelected.startOf("day"), "minutes");
+    const minutesFromMidnight = eventStart.diff(
+      daySelected.startOf("day"),
+      "minutes"
+    );
     const durationInMinutes = eventEnd.diff(eventStart, "minutes");
 
-    const top = (minutesFromMidnight / 60) * 60;
+    const top = (minutesFromMidnight / 60) * 8;
     const height = (durationInMinutes / 60) * 60;
 
     const width = 100 / overlappingEvents;
@@ -59,11 +66,6 @@ export default function WeekView() {
     const left = (positionIndex % overlappingEvents) * width;
 
     return { top, height, left, width };
-  };
-
-  const handleAddEvent = (day, hour) => {
-    setDaySelected(day.hour(hour));
-    setShowEventModal(true);
   };
 
   const getOverlappingEventsCount = (day, hour) => {
@@ -77,45 +79,104 @@ export default function WeekView() {
       );
     }).length;
   };
+  const globalContext = useContext(GlobalContext);
+
+  console.log("Global Context:", globalContext);
 
   return (
     <Paper sx={{ width: "80%", overflowY: "auto", padding: 2, border: "none" }}>
       <Grid container>
         {/* Hours Column */}
-        <Grid item xs={1} sx={{ display: "flex", flexDirection: "column", borderRight: 1, borderColor: "divider" }}>
-          {hoursOfDay.map(hour => (
-            <div key={hour} style={{ minHeight: "60px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Grid
+          item
+          xs={1}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            borderRight: 1,
+            borderColor: "divider",
+          }}
+        >
+          {hoursOfDay.map((hour) => (
+            <div
+              key={hour}
+              style={{
+                minHeight: "60px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Typography variant="caption" sx={{ color: "grey.500" }}>
                 {dayjs().hour(hour).format("h A")}
               </Typography>
             </div>
           ))}
         </Grid>
-  
+
         {/* Event Grid */}
         <Grid item xs={11}>
           <Grid container>
             {/* Days of the week header */}
-            {daysOfWeek.map(day => (
+            {daysOfWeek.map((day) => (
               <Grid item xs key={day.format("DDMMYYYY")}>
-                <Typography align="center" variant="subtitle1" sx={{ marginBottom: "10px", borderBottom: 1, borderColor: "divider" }}>
+                <Typography
+                  align="center"
+                  variant="subtitle1"
+                  sx={{
+                    marginBottom: "10px",
+                    borderBottom: 1,
+                    borderColor: "divider",
+                  }}
+                >
                   {day.format("dddd, D")}
                 </Typography>
               </Grid>
             ))}
-  
+
             {/* Events grid */}
-            {hoursOfDay.map(hour => (
-              <Grid container key={hour} sx={{ minHeight: "60px", borderBottom: 1, borderColor: "divider" }}>
-                {daysOfWeek.map(day => (
-                  <Grid item xs key={day.format("DDMMYYYY") + hour} sx={{ borderRight: 1, borderColor: "divider" }}>
-                    <div style={{ display: "flex", flexDirection: "column", minHeight: "60px", position: "relative" }}>
+            {hoursOfDay.map((hour) => (
+              <Grid
+                container
+                key={hour}
+                sx={{
+                  minHeight: "60px",
+                  borderBottom: 1,
+                  borderColor: "divider",
+                }}
+              >
+                {daysOfWeek.map((day) => (
+                  <Grid
+                    item
+                    xs
+                    key={day.format("DDMMYYYY") + hour}
+                    sx={{ borderRight: 1, borderColor: "divider" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        minHeight: "60px",
+                        position: "relative",
+                      }}
+                    >
                       {events
-                        .filter(event => dayjs.utc(event.startDate).local().isSame(day, "day") && dayjs.utc(event.startDate).local().hour() === hour)
-                        .map(event => {
-                          const overlappingEvents = getOverlappingEventsCount(day, hour);
-                          const { top, height, left, width } = calculateEventBlockStyles(event, overlappingEvents);
-                           
+                        .filter(
+                          (event) =>
+                            dayjs
+                              .utc(event.startDate)
+                              .local()
+                              .isSame(day, "day") &&
+                            dayjs.utc(event.startDate).local().hour() === hour
+                        )
+                        .map((event) => {
+                          const overlappingEvents = getOverlappingEventsCount(
+                            day,
+                            hour
+                          );
+                          const { top, height, left, width } =
+                            calculateEventBlockStyles(event, overlappingEvents);
+
                           return (
                             <div
                               key={event.eventId}
@@ -136,20 +197,43 @@ export default function WeekView() {
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
                                 cursor: "pointer",
-                                zIndex: 1000,
+                                zIndex: 6000,
                                 boxSizing: "border-box",
-
-
                               }}
-                              onClick={(e) => {
-                                // e.stopPropagation();
-                                handleEventClick(event, e);
+                              onClick={() => {
+                                handleEventClick(event);
                               }}
                             >
                               {event.title}
                             </div>
                           );
                         })}
+                      {/* If there are no events, render a div to add an event */}
+                      {events.filter(
+                        (event) =>
+                          dayjs
+                            .utc(event.startDate)
+                            .local()
+                            .isSame(day, "day") &&
+                          dayjs.utc(event.startDate).local().hour() === hour
+                      ).length === 0 && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                          }}
+                          onClick={() => {
+                            handleDayClick(day, hour); // Handle adding an event when clicked
+                          }}
+                        ></div>
+                      )}
                     </div>
                   </Grid>
                 ))}
@@ -158,6 +242,7 @@ export default function WeekView() {
           </Grid>
         </Grid>
       </Grid>
+      {showEventInfoModal && <EventInfoPopup />}
     </Paper>
   );
-                      }  
+}
