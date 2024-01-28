@@ -10,15 +10,17 @@ import LinkIcon from "@mui/icons-material/Link";
 import { blue } from "@mui/material/colors";
 
 export default function LinksForm() {
-  const { formData, updateFormData } = useContext(GlobalContext);
+  const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
 
   const [landingPageLink, setLandingPageLink] = useState(
-    formData.landingPageLink || ""
+    selectedEvent ? selectedEvent.landingPageLink : formData.landingPageLink || ""
   );
-  const [salesKitLink, setSalesKitLink] = useState(formData.salesKitLink || "");
-  const [hailoLink, setHailoLink] = useState(formData.hailoLink || "");
+  const [salesKitLink, setSalesKitLink] = useState(
+    selectedEvent ? selectedEvent.salesKitLink : formData.salesKitLink || "");
+  const [hailoLink, setHailoLink] = useState(
+    selectedEvent ? selectedEvent.hailoLink : formData.hailoLink || "");
   const [otherDocumentsLink, setOtherDocumentsLink] = useState(
-    formData.otherDocumentsLink || ""
+    selectedEvent ? selectedEvent.otherDocumentsLink : formData.otherDocumentsLink || ""
   );
   const navigate = useNavigate();
 

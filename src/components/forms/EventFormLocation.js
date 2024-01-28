@@ -22,11 +22,14 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { blue } from "@mui/material/colors";
 
 export default function LocationFormPage() {
-  const { formData, updateFormData } = useContext(GlobalContext);
+  const { formData, updateFormData,    selectedEvent,
+  } = useContext(GlobalContext);
 
-  const [region, setRegion] = useState(formData.region || "");
-  const [subRegion, setSubRegion] = useState(formData.subRegion || []);
-  const [country, setCountry] = useState(formData.country || []);
+  const [region, setRegion] = useState(
+    selectedEvent ? selectedEvent.region : formData.region || "");
+  const [subRegion, setSubRegion] = useState(
+    selectedEvent ? selectedEvent.subRegion : formData.subRegion || []);
+  const [country, setCountry] = useState(  selectedEvent ? selectedEvent.country : formData.country || []);
   const [availableSubregions, setAvailableSubregions] = useState([]);
   const [availableCountries] = useState([]);
   const [isFormValid, setIsFormValid] = useState(true);

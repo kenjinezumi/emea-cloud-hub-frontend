@@ -28,33 +28,33 @@ import PeopleIcon from "@mui/icons-material/People";
 import { blue } from "@mui/material/colors";
 
 export default function AudiencePersonaForm() {
-  const { formData, updateFormData } = useContext(GlobalContext);
+  const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
 
   const [maxEventCapacityError, setMaxEventCapacityError] = useState("");
   const [peopleMeetingCriteriaError, setPeopleMeetingCriteriaError] =
     useState("");
   const [isFormValid, setIsFormValid] = useState(true);
   const [audiencePersona, setAudiencePersona] = useState(
-    formData.audiencePersona || []
+    selectedEvent ? selectedEvent.audiencePersona : formData.audiencePersona || []
   );
   const [audienceSeniority, setAudienceSeniority] = useState(
-    formData.audienceSeniority || []
+    selectedEvent ? selectedEvent.audienceSeniority : formData.audienceSeniority || []
   );
   const [accountSectors, setAccountSectors] = useState(
-    formData.accountSectors || ""
+    selectedEvent ? selectedEvent.accountSectors : formData.accountSectors || ""
   );
   const [accountSegments, setAccountSegments] = useState(
-    formData.accountSegments || {
+    selectedEvent ? selectedEvent.accountSegments : formData.accountSegments || {
       enterprise: false,
       corporate: false,
       smb: false,
     }
   );
   const [maxEventCapacity, setMaxEventCapacity] = useState(
-    formData.maxEventCapacity || ""
+    selectedEvent ? selectedEvent.maxEventCapacity: formData.maxEventCapacity || ""
   );
   const [peopleMeetingCriteria, setPeopleMeetingCriteria] = useState(
-    formData.peopleMeetingCriteria || ""
+    selectedEvent ? selectedEvent.peopleMeetingCriteria: formData.peopleMeetingCriteria || ""
   );
   const navigate = useNavigate();
 

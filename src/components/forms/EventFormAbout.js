@@ -58,6 +58,7 @@ export default function EventForm() {
   const [title, setTitle] = useState(
     selectedEvent ? selectedEvent.title : formData.title || ""
   );
+
   const [description, setDescription] = useState(
     selectedEvent ? selectedEvent.description : formData.description || ""
   );
@@ -66,15 +67,25 @@ export default function EventForm() {
       ? selectedEvent.label
       : formData.selectedLabel || labelsClasses[0]
   );
-  const [emoji, setEmoji] = useState(formData.emoji || "");
-  const [isClient, setIsClient] = useState(false);
+  const [emoji, setEmoji] = useState(
+    selectedEvent
+    ? selectedEvent.emoji
+    : formData.emoji || "");
+  const [isClient, setIsClient] = useState(selectedEvent ? selectedEvent.isClient : false);
+
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-  const [organisedBy, setOrganisedBy] = useState(formData.organisedBy || []);
+
+  const [organisedBy, setOrganisedBy] = useState(
+    selectedEvent
+    ? selectedEvent.organisedBy
+    : formData.organisedBy || []);
+
   const [dropdownValue2] = useState(formData.dropdownValue2 || "");
   const [marketingActivityType, setMarketingActivityType] = useState(
     formData.marketingActivityType || ""
   );
   const [isHighPriority, setIsHighPriority] = useState(
+    selectedEvent ? selectedEvent.isHighPriority : 
     formData.isHighPriority || false
   );
   const [startDate, setStartDate] = useState(
@@ -84,6 +95,7 @@ export default function EventForm() {
     selectedEvent ? selectedEvent.endDate : formData.endDate || new Date()
   );
   const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(
+    selectedEvent ? selectedEvent.marketingProgramInstanceId  : 
     formData.marketingProgramInstanceId || ""
   );
   const [isFormValid, setIsFormValid] = useState(true);

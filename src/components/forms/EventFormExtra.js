@@ -26,25 +26,33 @@ import InfoIcon from "@mui/icons-material/Info";
 import { blue } from "@mui/material/colors";
 
 export default function ExtraDetailsForm() {
-  const { formData, updateFormData } = useContext(GlobalContext);
+  const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
 
   const [isFormValid, setIsFormValid] = useState(true);
   const [activityOwner, setActivityOwner] = useState(
-    formData.activityOwner || []
+    selectedEvent ? selectedEvent.activityOwner  : formData.activityOwner || []
   );
-  const [speakers, setSpeakers] = useState(formData.speakers || []);
-  const [eventSeries, setEventSeries] = useState(formData.eventSeries || "no");
+  const [speakers, setSpeakers] = useState(
+    selectedEvent ? selectedEvent.speaker  :  formData.speakers || []);
+  const [eventSeries, setEventSeries] = useState( 
+    selectedEvent ? selectedEvent.eventSeries  : formData.eventSeries || "no");
   const [emailLanguage, setEmailLanguage] = useState(
+    selectedEvent ? selectedEvent.emailLanguage : 
     formData.emailLanguage || "English"
   );
-  const [emailText, setEmailText] = useState(formData.emailText || "");
-  const [customerUse, setCustomerUse] = useState(formData.customerUse || "no");
-  const [okr, setOkr] = useState(formData.okr || []);
-  const [gep, setGep] = useState(formData.gep || []);
+  const [emailText, setEmailText] = useState(
+    selectedEvent ? selectedEvent.emailText : formData.emailText || "");
+  const [customerUse, setCustomerUse] = useState(
+    selectedEvent ? selectedEvent.customerUse  : formData.customerUse || "no");
+  const [okr, setOkr] = useState(
+    selectedEvent ? selectedEvent.okr : formData.okr || []);
+  const [gep, setGep] = useState(
+    selectedEvent ? selectedEvent.gep  :  formData.gep || []);
   const [activityType, setActivityType] = useState(
-    formData.activityType || "direct"
+    selectedEvent ? selectedEvent.activityType : formData.activityType || "direct"
   );
   const [languagesAndTemplates, setLanguagesAndTemplates] = useState(
+    selectedEvent ? selectedEvent.languagesAndTemplates : 
     formData.languagesAndTemplates || [{ language: "English", template: "" }]
   );
   const navigate = useNavigate();
