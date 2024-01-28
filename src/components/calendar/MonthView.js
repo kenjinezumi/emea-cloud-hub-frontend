@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
 import EventPopup from '../popup/EventInfoModal'; // Import the EventPopup component
 
-export default function MonthView({ month, isYearView = false }) {
+export default function MonthView({ month, isYearView = false}) {
   const { setDaySelected } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const location = useLocation();
@@ -22,7 +22,6 @@ export default function MonthView({ month, isYearView = false }) {
 
     fetchData();
   }, [location]);
-
   return (
     <div className={isYearView ? 'year-grid' : 'flex-1 grid grid-cols-7 grid-rows-5'}>
       {month.map((row, i) => (

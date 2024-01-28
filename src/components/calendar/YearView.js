@@ -1,22 +1,23 @@
 import React, { useContext, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import MonthView from "./MonthView";
-import { createYearData } from '../../util';
-import GlobalContext from '../../context/GlobalContext';
-import { Grid, Typography, Paper, Box , Chip} from '@mui/material'; // Import Box for styling
-import '../styles/Yearview.css'
-import { useLocation } from 'react-router-dom';
+import { createYearData } from "../../util";
+import GlobalContext from "../../context/GlobalContext";
+import { Grid, Typography, Paper, Box, Chip } from "@mui/material"; // Import Box for styling
+import "../styles/Yearview.css";
+import { useLocation } from "react-router-dom";
 
-import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
+import { getDummyEventData } from "../../api/getDummyData"; // Assuming this is your API call
 
-import CameraIndoorIcon from '@mui/icons-material/CameraIndoor';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
-import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople';
-import CampaignIcon from '@mui/icons-material/Campaign';
-import LaptopIcon from '@mui/icons-material/Laptop';
+import CameraIndoorIcon from "@mui/icons-material/CameraIndoor";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
+import EmojiPeopleIcon from "@mui/icons-material/EmojiPeople";
+import CampaignIcon from "@mui/icons-material/Campaign";
+import LaptopIcon from "@mui/icons-material/Laptop";
 
 export default function YearView() {
-  const { daySelected, setShowEventModal, setDaySelected } = useContext(GlobalContext);
+  const { daySelected, setShowEventModal, setDaySelected } =
+    useContext(GlobalContext);
   const [events, setEvents] = useState([]); // Use useState to initialize events as an empty array
 
   const year = daySelected.year();
@@ -52,7 +53,7 @@ export default function YearView() {
     const eventDate = dayjs(event.startDate);
     const monthIndex = eventDate.month();
     const eventType = event.eventType;
-    
+
     if (eventTypeCounts[eventType]) {
       eventTypeCounts[eventType][monthIndex]++;
     }
@@ -65,59 +66,78 @@ export default function YearView() {
   }, [location]);
 
   return (
-    <div style={{ padding: 16, marginLeft: '40px', width: '90%', align: 'center' }}>
-      <Typography variant="h6" align="center" gutterBottom style={{ marginBottom: '20px' }}>
+    <div
+      style={{ padding: 16, marginLeft: "40px", width: "90%", align: "center" }}
+    >
+      <Typography
+        variant="h6"
+        align="center"
+        gutterBottom
+        style={{ marginBottom: "20px" }}
+      >
         Year Overview - {year}
       </Typography>
       <Grid container spacing={8}>
         {yearData.map((month, index) => (
           <Grid key={index} item xs={12} sm={6} md={4}>
-            <Paper className="month-container"> {/* Add styling using Paper */}
+            <Paper className="month-container">
+              {" "}
+              {/* Add styling using Paper */}
               <div
                 onClick={() => handleAddEvent(index)}
-                style={{ cursor: 'pointer', padding: '16px', border: '1px solid transparent' }}
+                style={{
+                  cursor: "pointer",
+                  padding: "16px",
+                  border: "1px solid transparent",
+                }}
               >
-                <Typography align="center" style={{ marginBottom: '4px' }}>
+                <Typography align="center" style={{ marginBottom: "4px" }}>
                   {dayjs(new Date(year, index)).format("MMMM")}
                 </Typography>
-                <Box display="flex" justifyContent="center" alignItems="center" flexWrap="wrap" gap={2}>
-  <Chip
-    icon={<CameraIndoorIcon />}
-    label={eventTypeCounts["Online Event"][index]}
-    variant="outlined"
-    size="small"
-    style={{ margin: '4px' }}
-  />
-  <Chip
-    icon={<LaptopIcon />}
-    label={eventTypeCounts["Blog Post"][index]}
-    variant="outlined"
-    size="small"
-    style={{ margin: '4px' }}
-  />
-  <Chip
-    icon={<CampaignIcon />}
-    label={eventTypeCounts["Customer Story"][index]}
-    variant="outlined"
-    size="small"
-    style={{ margin: '4px' }}
-  />
-  <Chip
-    icon={<EmojiPeopleIcon />}
-    label={eventTypeCounts["Hybrid Event"][index]}
-    variant="outlined"
-    size="small"
-    style={{ margin: '4px' }}
-  />
-  <Chip
-    icon={<MeetingRoomIcon />}
-    label={eventTypeCounts["Physical Event"][index]}
-    variant="outlined"
-    size="small"
-    style={{ margin: '4px' }}
-  />
-</Box>
-                <div style={{ padding: '8px' }}>
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  flexWrap="wrap"
+                  gap={2}
+                >
+                  <Chip
+                    icon={<CameraIndoorIcon />}
+                    label={eventTypeCounts["Online Event"][index]}
+                    variant="outlined"
+                    size="small"
+                    style={{ margin: "4px" }}
+                  />
+                  <Chip
+                    icon={<LaptopIcon />}
+                    label={eventTypeCounts["Blog Post"][index]}
+                    variant="outlined"
+                    size="small"
+                    style={{ margin: "4px" }}
+                  />
+                  <Chip
+                    icon={<CampaignIcon />}
+                    label={eventTypeCounts["Customer Story"][index]}
+                    variant="outlined"
+                    size="small"
+                    style={{ margin: "4px" }}
+                  />
+                  <Chip
+                    icon={<EmojiPeopleIcon />}
+                    label={eventTypeCounts["Hybrid Event"][index]}
+                    variant="outlined"
+                    size="small"
+                    style={{ margin: "4px" }}
+                  />
+                  <Chip
+                    icon={<MeetingRoomIcon />}
+                    label={eventTypeCounts["Physical Event"][index]}
+                    variant="outlined"
+                    size="small"
+                    style={{ margin: "4px" }}
+                  />
+                </Box>
+                <div style={{ padding: "8px" }}>
                   <MonthView
                     month={month}
                     daySelected={daySelected}

@@ -32,11 +32,13 @@ export default function Day({ day, events, isYearView }) {
 }, [location]);
 
   const handleDayClick = () => {
-    console.log("I am in");
+
     if (!isYearView) {
       setDaySelected(day);
       setSelectedEvent(null);
       setShowEventModal(true);
+    }else{
+
     }
   };
 
@@ -68,6 +70,7 @@ export default function Day({ day, events, isYearView }) {
     borderRadius: "50%",
     width: "25px",
   };
+
 
   return (
     <div
@@ -139,7 +142,7 @@ export default function Day({ day, events, isYearView }) {
             </div>
           )}
         </div>
-      )}
+      )} 
 
       {/* Conditionally render the EventInfoPopup */}
       {showEventInfoModal && <EventInfoPopup />}

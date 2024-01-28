@@ -20,6 +20,24 @@ export default function DayView() {
   } = useContext(GlobalContext);
 
 
+  const { filters } = useContext(GlobalContext);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  useEffect(() => {
+    const applyFilters = (events, filters) => {
+      return events.filter(event => {
+        const regionMatch = filters.regions.some(region => region.checked && event.region.includes(region.label));
+        const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
+        const okrMatch = filters.okr.some(okr => okr.checked && event.okr.includes(okr.label));
+        const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority.includes(seniority.label));
+  
+        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
+      });
+    };
+  
+    setFilteredEvents(applyFilters(events, filters));
+  }, [events, filters]);
+  
+
   const handleEventClick = (eventData) => {
     setSelectedEvent(eventData);
     setShowInfoEventModal(true);

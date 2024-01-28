@@ -28,6 +28,26 @@ export default function Filters() {
     setLocalRegionFilters(newFilters);
   };
 
+  const handleOkrChange = (label) => {
+    const newFilters = localOkrOptions.map(filter => {
+      if (filter.label === label) {
+        return { ...filter, checked: !filter.checked };
+      }
+      return filter;
+    });
+    setLocalOkrOptions(newFilters);
+  };
+
+  const handleAudienceSeniorityChange = (label) => {
+    const newFilters = localAudienceSeniorityOptions.map(filter => {
+      if (filter.label === label) {
+        return { ...filter, checked: !filter.checked };
+      }
+      return filter;
+    });
+    setLocalAudienceSeniorityOptions(newFilters);
+  };
+
   const handleEventTypeChange = (label) => {
     const newFilters = localEventTypeOptions.map(filter => {
       if (filter.label === label) {
@@ -70,8 +90,8 @@ export default function Filters() {
   return (
     <div className="mt-8">
       {renderFilterSection("Region", localRegionFilters, handleRegionChange, isRegionExpanded, setIsRegionExpanded)}
-      {renderFilterSection("OKR", okrOptions, handleRegionChange, isOkrExpanded, setIsOkrExpanded)}
-      {renderFilterSection("Audience Seniority", audienceSeniorityOptions, handleRegionChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)}
+      {renderFilterSection("OKR", localOkrOptions, handleOkrChange, isOkrExpanded, setIsOkrExpanded)}
+      {renderFilterSection("Audience Seniority", localAudienceSeniorityOptions, handleAudienceSeniorityChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)}
       {renderFilterSection("Event type", localEventTypeOptions, handleEventTypeChange, isEventTypeExpanded, setIsEventTypeExpanded)}
     </div>
   );
