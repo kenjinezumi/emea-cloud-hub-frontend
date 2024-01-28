@@ -7,9 +7,17 @@ import {
     Paper,
     IconButton,
     Divider,
+    Chip,
+    Avatar,
+    Stack,
   } from '@mui/material';
   import CloseIcon from '@mui/icons-material/Close';
+  import EditIcon from '@mui/icons-material/Edit';
   import { useNavigate } from 'react-router-dom';
+  import TravelExploreIcon from '@mui/icons-material/TravelExplore';
+  import LocationOnIcon from '@mui/icons-material/LocationOn';
+  import DescriptionIcon from '@mui/icons-material/Description';
+
 
 export default function EventInfoPopup() {
     const navigate = useNavigate();
@@ -52,55 +60,39 @@ export default function EventInfoPopup() {
     }
 };
 
-  return (
-    <div className="h-screen w-full fixed left-0 top-0 flex justify-center items-center" style={{ zIndex: 6000 }}>
-      <Paper elevation={1} className="bg-white">
-        <header className="px-4 py-2  flex justify-between items-center">
-        <Typography variant="subtitle1" style={{fontSize:'20px'}}>
-                {selectedEvent.title} {selectedEvent.emoji}
-              </Typography>
-          <IconButton onClick={handleClose} size="small">
-            <CloseIcon />
-          </IconButton>
-        </header>
-        {selectedEvent && (
-          <div>
-            <div className="p-3">
-             
-            <Typography variant="subtitle1">
-              <strong>Start Date:</strong> {formattedStartDateString} {formattedStartTime}
-            </Typography>
-            <Typography variant="subtitle1">
-              <strong>End Date:</strong> {formattedEndTime}
-            </Typography>
-            <Typography variant="subtitle1">
-              <strong>Event Type:</strong> {selectedEvent.eventType}
-            </Typography>
-            <Typography variant="subtitle1">
-              <strong>High Priority:</strong>{' '}
-              {selectedEvent.isHighPriority ? 'Yes' : 'No'}
-            </Typography>
-            <Typography variant="subtitle1">
-              <strong>Global region:</strong>{' '}
-              {selectedEvent.region }
-            </Typography>            
-            <Typography variant="subtitle1">
-              <strong>Subb-region:</strong>{' '}
-              {selectedEvent.subRegion }
-            </Typography>            
-            <Typography variant="subtitle1">
-              <strong>Countries:</strong>{' '}
-              {selectedEvent.country }
-            </Typography>            </div>
-            <Divider />
-            <footer className="flex justify-end border-t p-3">
-              <Button variant="outlined" onClick={ handleEditEvent}>
-                Edit Event
-              </Button>
-            </footer>
-          </div>
-        )}
-      </Paper>
-    </div>
+return (
+    <Paper sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', minWidth: 500, zIndex: 6000 }}>
+      <IconButton onClick={handleClose} size="small" sx={{ position: 'absolute', right: 8, top: 8 }}>
+        <CloseIcon />
+      </IconButton>
+      <Stack direction="row" spacing={1} sx={{ p: 2, alignItems: 'center' }}>
+        {/* Render the emoji if available */}
+        <Avatar>{selectedEvent.emoji}</Avatar>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {selectedEvent.title}
+        </Typography>
+       
+      </Stack>
+      <Divider />
+      <Stack spacing={2} sx={{ p: 3 }}>
+        {/* Rest of the event details */}
+        <Typography variant="body1">{dayjs(selectedEvent.startDate).format('dddd, MMMM D, YYYY h:mm A')}</Typography>
+        {/* Map chips for event properties like high priority etc. */}
+        <Stack direction="row" spacing={1}>
+          <Chip label="Online Event" color="primary" size="small" />
+          {selectedEvent.isHighPriority && <Chip label="High Priority" color="error" size="small" />}
+        </Stack>
+        {/* Add other event details with Typography */}
+        <Typography variant="body2"><TravelExploreIcon style={{marginRight:'10px'}} />{selectedEvent.region}</Typography>
+        <Typography variant="body2"><LocationOnIcon style={{marginRight:'10px'}}/>{selectedEvent.subRegion}</Typography>
+        <Typography variant="body2"><DescriptionIcon style={{marginRight:'10px'}}/>{selectedEvent.description}</Typography>
+      </Stack>
+      <Divider />
+      <Stack direction="row" spacing={1} sx={{ p: 2, justifyContent: 'flex-end' }}>
+        <Button variant="outlined" startIcon={<EditIcon />} onClick={ handleEditEvent}>
+          Edit Event
+        </Button>
+      </Stack>
+    </Paper>
   );
 }

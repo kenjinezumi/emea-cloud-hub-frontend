@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import MonthView from "./MonthView";
 import { createYearData } from '../../util';
 import GlobalContext from '../../context/GlobalContext';
-import { Grid, Typography, Paper, Box } from '@mui/material'; // Import Box for styling
+import { Grid, Typography, Paper, Box , Chip} from '@mui/material'; // Import Box for styling
 import '../styles/Yearview.css'
 import { useLocation } from 'react-router-dom';
 
@@ -80,29 +80,43 @@ export default function YearView() {
                 <Typography align="center" style={{ marginBottom: '4px' }}>
                   {dayjs(new Date(year, index)).format("MMMM")}
                 </Typography>
-                <Box display="flex"        
->
-                  <div style={{ marginRight: '30px', marginLeft:'8px' }}>
-                    <CameraIndoorIcon style={{ fontSize: '20px' }}/>
-                    <span>{eventTypeCounts["Online Event"][index]}</span>
-                  </div>
-                  <div style={{ marginRight: '30px' }}>
-                    <LaptopIcon style={{ fontSize: '20px' }}/>
-                    <span>{eventTypeCounts["Blog Post"][index]}</span>
-                  </div>
-                  <div style={{ marginRight: '30px' }}>                    
-                  <CampaignIcon style={{ fontSize: '20px' }}/>
-                    <span>{eventTypeCounts["Customer Story"][index]}</span>
-                  </div>
-                  <div style={{ marginRight: '30px' }}>
-                    <EmojiPeopleIcon style={{ fontSize: '20px' }}/>
-                    <span>{eventTypeCounts["Hybrid Event"][index]}</span>
-                  </div>
-                  <div style={{ marginRight: '30px' }}>
-                    <MeetingRoomIcon style={{ fontSize: '20px' }}/>
-                    <span>{eventTypeCounts["Physical Event"][index]}</span>
-                  </div>
-                </Box>
+                <Box display="flex" justifyContent="center" alignItems="center" flexWrap="wrap" gap={2}>
+  <Chip
+    icon={<CameraIndoorIcon />}
+    label={eventTypeCounts["Online Event"][index]}
+    variant="outlined"
+    size="small"
+    style={{ margin: '4px' }}
+  />
+  <Chip
+    icon={<LaptopIcon />}
+    label={eventTypeCounts["Blog Post"][index]}
+    variant="outlined"
+    size="small"
+    style={{ margin: '4px' }}
+  />
+  <Chip
+    icon={<CampaignIcon />}
+    label={eventTypeCounts["Customer Story"][index]}
+    variant="outlined"
+    size="small"
+    style={{ margin: '4px' }}
+  />
+  <Chip
+    icon={<EmojiPeopleIcon />}
+    label={eventTypeCounts["Hybrid Event"][index]}
+    variant="outlined"
+    size="small"
+    style={{ margin: '4px' }}
+  />
+  <Chip
+    icon={<MeetingRoomIcon />}
+    label={eventTypeCounts["Physical Event"][index]}
+    variant="outlined"
+    size="small"
+    style={{ margin: '4px' }}
+  />
+</Box>
                 <div style={{ padding: '8px' }}>
                   <MonthView
                     month={month}

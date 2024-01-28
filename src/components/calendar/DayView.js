@@ -25,10 +25,7 @@ export default function DayView() {
     setShowInfoEventModal(true);
   };
 
-
-
   const handleAddEvent = () => {
-    console.log('triggered');
     setShowEventModal(true);
   };
   useEffect(() => {
@@ -197,6 +194,7 @@ export default function DayView() {
                     width: "1px",
                     height: "5px",
                     backgroundColor: "rgba(0, 0, 0, 0.2)",
+
                     
                   }}onClick={() => handleAddEvent()}
                 />
@@ -210,6 +208,8 @@ export default function DayView() {
                     width: "1px",
                     height: "3px",
                     backgroundColor: "rgba(0, 0, 0, 0.1)",
+                    cursor: "pointer",
+
                   }}onClick={() => handleAddEvent()}
                 />
               )}
@@ -229,11 +229,16 @@ export default function DayView() {
                     left: `${left}%`,
                     width: `${width}%`,
                     height: `${height}px`,
-                    backgroundColor: "#f0f0f0",
-                    borderLeft: "4px solid #3174ad",
+                    backgroundColor: "#fff", // White background for the event block
+                    borderLeft: "4px solid #1a73e8", // Blue left border for event type indication
+                    boxShadow: "2 3px 3px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
+                    margin: "4px 0", // Slightly more space between events
+                    marginLeft: "4px", // Left margin to align with the grid
                     padding: "10px",
                     boxSizing: "border-box",
                     zIndex: 1000,
+                    transition: "background-color 0.2s, box-shadow 0.2s", // Smooth transitions for hover effects
+                    cursor: "pointer",
                   }}
                   onClick={() => {
                     handleEventClick(event);

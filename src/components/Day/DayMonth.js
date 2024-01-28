@@ -97,8 +97,16 @@ export default function Day({ day, events, isYearView }) {
                 <div
                   key={idx}
                   className="p-1 mb-1 text-gray-600 text-sm rounded truncate cursor-pointer"
-                  style={{ backgroundColor: "#f0f0f0", pointerEvents: "auto", fontSize:"12px" }}
-                  onClick={() => handleEventClick(evt)}
+                  style={{
+                    backgroundColor: "#fff", // White background
+                    pointerEvents: "auto",
+                    fontSize: "0.875rem", // 14px
+                    borderLeft: "4px solid #1a73e8", // Blue left border for event type indication
+                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
+                    margin: "4px 0", // Slightly more space between events
+                    marginLeft:"4px",
+                    transition: "background-color 0.2s, box-shadow 0.2s", // Smooth transitions for hover effects
+                  }}           onClick={() => handleEventClick(evt)}
                 >
                   {evt.title}
                 </div>

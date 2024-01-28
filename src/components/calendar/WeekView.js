@@ -107,8 +107,8 @@ export default function WeekView() {
                 justifyContent: "center",
               }}
             >
-              <Typography variant="caption" sx={{ color: "grey.500" }}>
-                {dayjs().hour(hour).format("h A")}
+              <Typography variant="caption" sx={{ color: "grey.500",  marginRight:'2px'}}>
+              {dayjs().hour(hour).minute(0).format("HH:mm")}
               </Typography>
             </div>
           ))}
@@ -186,19 +186,26 @@ export default function WeekView() {
                                 left: `${left}%`,
                                 width: `${width}%`,
                                 height: `${height}px`,
-                                backgroundColor: "blue", // For visibility
-                                color: "white",
-                                padding: "4px",
-                                borderRadius: "4px",
+                                backgroundColor: "#fff", // White background for the event block
+                                color: "#5f6368", // Dark text color for contrast
+                                padding: "2px 4px", // Padding inside the event block
+                                borderRadius: "4px", // Rounded corners like Google Calendar events
                                 display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
+                                alignItems: "top",
+                                justifyContent: "flex-start",
                                 overflow: "hidden",
                                 textOverflow: "ellipsis",
                                 whiteSpace: "nowrap",
                                 cursor: "pointer",
-                                zIndex: 6000,
+                                zIndex: 2,
                                 boxSizing: "border-box",
+                                borderLeft: "4px solid #1a73e8", // Blue left border as an indicator of event type
+                                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)", // Subtle shadow for a 3D effect
+                                margin: "4px 0", // Margin for spacing between events
+                                marginLeft: "4px", // Left margin to align with the grid
+                                transition: "background-color 0.2s, box-shadow 0.2s", // Smooth transitions for hover effects
+                                fontSize: "0.875rem", // 14px for text size
+                                fontWeight: "500", // Medium font weight for readability
                               }}
                               onClick={() => {
                                 handleEventClick(event);
