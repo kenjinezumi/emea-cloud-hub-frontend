@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 
 export default function EventInfoPopup() {
+    console.log('IM INS')
   const { selectedEvent, setShowInfoEventModal } = useContext(GlobalContext);
 
   const handleClose = () => {
@@ -19,6 +20,7 @@ export default function EventInfoPopup() {
           <span className="text-gray-600 font-semibold">{selectedEvent.title}</span>
           <button onClick={handleClose}>Close</button>
         </header>
+        <div>checkme</div>
         <div className="text-gray-700 text-sm mb-2 p-3">
           {selectedEvent.description}
         </div>
