@@ -1,15 +1,24 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import dayjs from "dayjs";
 import MonthView from "./MonthView";
 import { createYearData } from '../../util';
 import GlobalContext from '../../context/GlobalContext';
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, Paper, Box } from '@mui/material'; // Import Box for styling
 import '../styles/Yearview.css'
 import { useLocation } from 'react-router-dom';
 
+import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
+
+import CameraIndoorIcon from '@mui/icons-material/CameraIndoor';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import EmojiPeopleIcon from '@mui/icons-material/EmojiPeople';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import LaptopIcon from '@mui/icons-material/Laptop';
 
 export default function YearView() {
-  const { daySelected,setShowEventModal, setDaySelected} = useContext(GlobalContext);
+  const { daySelected, setShowEventModal, setDaySelected } = useContext(GlobalContext);
+  const [events, setEvents] = useState([]); // Use useState to initialize events as an empty array
+
   const year = daySelected.year();
   const yearData = createYearData(year);
   const handleAddEvent = (monthIndex) => {
@@ -18,38 +27,94 @@ export default function YearView() {
     setShowEventModal(true);
   };
 
+  const fetchData = async () => {
+    try {
+      const eventData = await getDummyEventData();
+      setEvents(eventData);
+    } catch (error) {
+      console.error("Error fetching event data:", error);
+    }
+  };
+
+  const eventTypeCounts = {
+    "Online Event": Array(12).fill(0), // Initialize counts for each month with 0
+    "Blog Post": Array(12).fill(0),
+    "Customer Story": Array(12).fill(0),
+    "Hybrid Event": Array(12).fill(0),
+    "Physical Event": Array(12).fill(0),
+  };
+
+  useEffect(() => {
+    fetchData(); // Fetch event data when the component mounts
+  }, []); // Empty dependency array to run this effect once
+
+  events.forEach((event) => {
+    const eventDate = dayjs(event.startDate);
+    const monthIndex = eventDate.month();
+    const eventType = event.eventType;
+    
+    if (eventTypeCounts[eventType]) {
+      eventTypeCounts[eventType][monthIndex]++;
+    }
+  });
+
   const location = useLocation(); // useLocation hook
 
   useEffect(() => {
-   
     setShowEventModal(false);
-  
-}, [location]);
+  }, [location]);
 
   return (
-      <div style={{ padding: 16, marginLeft: '40px', width:'90%', align:'center'}} >
-          <Typography variant="h6" align="center" gutterBottom style={{ marginBottom:'20px'}}>
-              Year Overview - {year}
-          </Typography>
-          <Grid container spacing={8}> {/* Increase spacing */}
-              {yearData.map((month, index) => (
-                  <Grid key={index} item xs={12} sm={6} md={4}>
- <div   
-              onClick={() => handleAddEvent(index)} // Add event handler
-              style={{ cursor: 'pointer' }} // Make it look clickable
-            >                      <Typography  align="center" style={{ marginBottom: 4 }}>
-                          {dayjs(new Date(year, index)).format("MMMM")}
-                      </Typography>
-                      <div style={{ padding: 2}}> {/* Additional styling */}
-                          <MonthView 
-                          month={month} 
-                          daySelected={daySelected} 
-                          isYearView={true} />
-                      </div>
-                      </div>
-                  </Grid>
-              ))}
+    <div style={{ padding: 16, marginLeft: '40px', width: '90%', align: 'center' }}>
+      <Typography variant="h6" align="center" gutterBottom style={{ marginBottom: '20px' }}>
+        Year Overview - {year}
+      </Typography>
+      <Grid container spacing={8}>
+        {yearData.map((month, index) => (
+          <Grid key={index} item xs={12} sm={6} md={4}>
+            <Paper className="month-container"> {/* Add styling using Paper */}
+              <div
+                onClick={() => handleAddEvent(index)}
+                style={{ cursor: 'pointer', padding: '16px', border: '1px solid transparent' }}
+              >
+                <Typography align="center" style={{ marginBottom: '4px' }}>
+                  {dayjs(new Date(year, index)).format("MMMM")}
+                </Typography>
+                <Box display="flex"        
+>
+                  <div style={{ marginRight: '30px', marginLeft:'8px' }}>
+                    <CameraIndoorIcon style={{ fontSize: '20px' }}/>
+                    <span>{eventTypeCounts["Online Event"][index]}</span>
+                  </div>
+                  <div style={{ marginRight: '30px' }}>
+                    <LaptopIcon style={{ fontSize: '20px' }}/>
+                    <span>{eventTypeCounts["Blog Post"][index]}</span>
+                  </div>
+                  <div style={{ marginRight: '30px' }}>                    
+                  <CampaignIcon style={{ fontSize: '20px' }}/>
+                    <span>{eventTypeCounts["Customer Story"][index]}</span>
+                  </div>
+                  <div style={{ marginRight: '30px' }}>
+                    <EmojiPeopleIcon style={{ fontSize: '20px' }}/>
+                    <span>{eventTypeCounts["Hybrid Event"][index]}</span>
+                  </div>
+                  <div style={{ marginRight: '30px' }}>
+                    <MeetingRoomIcon style={{ fontSize: '20px' }}/>
+                    <span>{eventTypeCounts["Physical Event"][index]}</span>
+                  </div>
+                </Box>
+                <div style={{ padding: '8px' }}>
+                  <MonthView
+                    month={month}
+                    daySelected={daySelected}
+                    isYearView={true}
+                  />
+                </div>
+              </div>
+            </Paper>
           </Grid>
-      </div>
+        ))}
+      </Grid>
+    </div>
   );
 }
