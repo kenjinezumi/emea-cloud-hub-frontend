@@ -17,6 +17,9 @@ import {
   import TravelExploreIcon from '@mui/icons-material/TravelExplore';
   import LocationOnIcon from '@mui/icons-material/LocationOn';
   import DescriptionIcon from '@mui/icons-material/Description';
+  import LinkIcon from '@mui/icons-material/Link';
+  import LabelIcon from '@mui/icons-material/Label';
+  import PeopleIcon from '@mui/icons-material/People';
 
 
 export default function EventInfoPopup() {
@@ -85,7 +88,11 @@ return (
         {/* Add other event details with Typography */}
         <Typography variant="body2"><TravelExploreIcon style={{marginRight:'10px'}} />{selectedEvent.region}</Typography>
         <Typography variant="body2"><LocationOnIcon style={{marginRight:'10px'}}/>{selectedEvent.subRegion}</Typography>
-        <Typography variant="body2"><DescriptionIcon style={{marginRight:'10px'}}/>{selectedEvent.description}</Typography>
+        <Typography variant="body2"><LinkIcon style={{marginRight:'10px'}}/>{selectedEvent.landingPageLink}</Typography>
+        {/* <Typography variant="body2"><PeopleIcon style={{marginRight:'10px'}}/>Registrations: {selectedEvent.landingPageLink}</Typography> */}
+        <Typography variant="body2"><LabelIcon style={{marginRight:'10px'}}/>Activity Owner: {selectedEvent.landingPageLink}</Typography>
+        <Typography variant="body2">< DescriptionIcon style={{marginRight:'10px'}}/>{selectedEvent.description}</Typography>
+
       </Stack>
       <Divider />
       <Stack direction="row" spacing={1} sx={{ p: 2, justifyContent: 'flex-end' }}>
