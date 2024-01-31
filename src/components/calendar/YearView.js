@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import MonthView from "./MonthView";
 import { createYearData } from "../../util";
 import GlobalContext from "../../context/GlobalContext";
-import { Grid, Typography, Paper, Box, Chip } from "@mui/material"; // Import Box for styling
+import { Grid, Typography, Paper, Box, Chip, Tooltip } from "@mui/material"; // Import Box for styling
 import "../styles/Yearview.css";
 import { useLocation } from "react-router-dom";
 
@@ -101,41 +101,63 @@ export default function YearView() {
                   flexWrap="wrap"
                   gap={2}
                 >
+                  <Tooltip title='Online event'>
                   <Chip
                     icon={<CameraIndoorIcon />}
+                    title="Online event"
                     label={eventTypeCounts["Online Event"][index]}
                     variant="outlined"
                     size="small"
                     style={{ margin: "4px" }}
                   />
+                  </Tooltip>
+                  <Tooltip title='Blog post'>
+
                   <Chip
                     icon={<LaptopIcon />}
+                    title="Blog post"
                     label={eventTypeCounts["Blog Post"][index]}
                     variant="outlined"
                     size="small"
                     style={{ margin: "4px" }}
                   />
+                  </Tooltip>
+
+                  <Tooltip title='Customer story'>
+
                   <Chip
                     icon={<CampaignIcon />}
+                    title="Customer story"
                     label={eventTypeCounts["Customer Story"][index]}
                     variant="outlined"
                     size="small"
                     style={{ margin: "4px" }}
                   />
+                    </Tooltip>
+
+                    <Tooltip title='Hybrid event'>
+
                   <Chip
                     icon={<EmojiPeopleIcon />}
+                    title="Hybrid event"
                     label={eventTypeCounts["Hybrid Event"][index]}
                     variant="outlined"
                     size="small"
                     style={{ margin: "4px" }}
                   />
+                   </Tooltip>
+                   <Tooltip title='Physical event'>
+
                   <Chip
                     icon={<MeetingRoomIcon />}
+                    title="Physical event"
                     label={eventTypeCounts["Physical Event"][index]}
                     variant="outlined"
                     size="small"
                     style={{ margin: "4px" }}
                   />
+                   </Tooltip>
+
                 </Box>
                 <div style={{ padding: "8px" }}>
                   <MonthView
