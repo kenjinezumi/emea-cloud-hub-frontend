@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
-
+import dayjs from 'dayjs';
 import { Button, TextField, Typography, Grid, Snackbar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
@@ -24,6 +24,9 @@ export default function LinksForm() {
   );
   const navigate = useNavigate();
 
+  const publishedDate = selectedEvent ? selectedEvent.publishedDate : dayjs(); 
+  const lastEditedDate =  dayjs(); 
+
   const handleFinalSave = async () => {
   // Merge current form data with previous form data
   const FinalFormData = {
@@ -32,7 +35,12 @@ export default function LinksForm() {
     salesKitLink,
     hailoLink,
     otherDocumentsLink,
+    publishedDate, 
+    lastEditedDate
   };
+
+
+
 
   console.log(formData);
   console.log(FinalFormData);

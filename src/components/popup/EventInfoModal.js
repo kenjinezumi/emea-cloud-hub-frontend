@@ -65,6 +65,19 @@ export default function EventInfoPopup() {
     }
 };
 
+const isEventNew = (dateStart, dateEnd, step) => {
+  if (dayjs(dateEnd) - dayjs(dateStart) <= step){
+
+    return true;
+  }else{
+    return false; 
+  }
+}
+isEventNew(); 
+
+
+
+
 return (
     <Paper sx={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', minWidth: 500, zIndex: 6000 }}>
       <IconButton onClick={handleClose} size="small" sx={{ position: 'absolute', right: 8, top: 8 }}>
@@ -86,6 +99,13 @@ return (
         <Stack direction="row" spacing={1}>
           <Chip label="Online Event" color="primary" size="small" />
           {selectedEvent.isHighPriority && <Chip label="High Priority" color="error" size="small" />}
+          {(dayjs().diff(dayjs(selectedEvent.publishedDate), 'day', true) <= 7) && <Chip label="Newly published" color="success"  variant="outlined" size="small" />}
+
+
+
+          {((dayjs().diff(dayjs(selectedEvent.publishedDate), 'day', true) > 7) && (dayjs().diff(dayjs(selectedEvent.lastEditedDate), 'day', true) <= 7)  ) && <Chip label="Newly published" color="success"  variant="outlined" size="small" />}
+
+
         </Stack>
         {/* Add other event details with Typography */}
         <Typography variant="body2">

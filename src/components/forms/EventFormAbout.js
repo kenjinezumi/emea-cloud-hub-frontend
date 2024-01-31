@@ -99,7 +99,6 @@ export default function EventForm() {
     formData.marketingProgramInstanceId || ""
   );
   const [isFormValid, setIsFormValid] = useState(true);
-
   const navigate = useNavigate();
 
   const handleStartDateChange = (newDate) => {

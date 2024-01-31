@@ -38,7 +38,9 @@ export function getDummyEventData() {
         "landingPageLink": "",
         "salesKitLink": "",
         "hailoLink": "",
-        "otherDocumentsLink": ""
+        "otherDocumentsLink": "",
+        "publishedDate":"2024-01-31T15:31:33.978Z",
+        "lastEditedDate":"2024-01-31T15:31:33.978Z"
       },
       {
         "eventId": "f3241335-3e00-4cd5-8df5-a9e952e3177e",
@@ -78,7 +80,9 @@ export function getDummyEventData() {
         "landingPageLink": "",
         "salesKitLink": "",
         "hailoLink": "",
-        "otherDocumentsLink": ""
+        "otherDocumentsLink": "",
+        "publishedDate":"2024-01-31T15:31:33.978Z",
+        "lastEditedDate":"2024-01-31T15:31:33.978Z"
       },
       {
         "eventId": "f3291335-3e00-4cd5-8df5-a9e952e3177e",
@@ -118,7 +122,9 @@ export function getDummyEventData() {
         "landingPageLink": "",
         "salesKitLink": "",
         "hailoLink": "",
-        "otherDocumentsLink": ""
+        "otherDocumentsLink": "",
+        "publishedDate":"2024-01-31T15:31:33.978Z",
+        "lastEditedDate":"2024-01-31T15:31:33.978Z"
       },
       {
         "eventId": "b5b9a962-b10b-4229-b1c3-3991e5fcf365",
@@ -158,7 +164,9 @@ export function getDummyEventData() {
         "landingPageLink": "http://random.co.uk",
         "salesKitLink": "",
         "hailoLink": "",
-        "otherDocumentsLink": ""
+        "otherDocumentsLink": "",
+        "publishedDate":"2024-01-31T15:31:33.978Z",
+        "lastEditedDate":"2024-01-31T15:31:33.978Z"
       }
     ];
   }
