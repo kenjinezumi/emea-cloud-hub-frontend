@@ -5,6 +5,7 @@ import GlobalContext from "../../context/GlobalContext";
 import { Paper, Typography, Grid, Box } from "@mui/material";
 import { getDummyEventData } from "../../api/getDummyData";
 import EventInfoPopup from "../popup/EventInfoModal"; // Import the EventInfoPopup component
+import { useLocation } from "react-router-dom";
 
 dayjs.extend(utc);
 
@@ -28,6 +29,14 @@ export default function WeekView() {
     setSelectedEvent(null);
     setShowEventModal(true);
   };
+
+  const location = useLocation(); // useLocation hook
+
+  useEffect(() => {
+    setShowEventModal(false);
+    setShowInfoEventModal(false);
+  }, [location]);
+
 
   useEffect(() => {
     async function fetchEvents() {

@@ -6,7 +6,7 @@ import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is 
 import EventPopup from '../popup/EventInfoModal'; // Import the EventPopup component
 
 export default function MonthView({ month, isYearView = false}) {
-  const { setDaySelected } = useContext(GlobalContext);
+  const { setDaySelected, setShowEventModal, setShowInfoEventModal } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const location = useLocation();
 
@@ -22,6 +22,13 @@ export default function MonthView({ month, isYearView = false}) {
 
     fetchData();
   }, [location]);
+
+
+  useEffect(() => {
+    setShowEventModal(false);
+    setShowInfoEventModal(false);
+  }, [location]);
+
   return (
     <div className={isYearView ? 'year-grid' : 'flex-1 grid grid-cols-7 grid-rows-5'}>
       {month.map((row, i) => (
@@ -30,7 +37,7 @@ export default function MonthView({ month, isYearView = false}) {
       <Day 
         key={`day-${i}-${idx}`} // Add a unique key prop
         day={day} 
-        events={events} // Make sure 'events' is passed here
+        events={events} 
         setDaySelected={setDaySelected}
         isYearView={isYearView}
       />

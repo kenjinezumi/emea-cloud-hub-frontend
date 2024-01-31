@@ -111,7 +111,7 @@ return (
         {/* Add other event details with Typography */}
         <Typography variant="body2">
           <TravelExploreIcon style={{marginRight:'5px'}} />{selectedEvent.region}
-          <MyLocationIcon  style={{marginRight:'5px', marginLeft:'40px'}}/>{selectedEvent.subRegion}
+          <MyLocationIcon  style={{marginRight:'5px', marginLeft:'40px'}}/>{selectedEvent.subRegion.toString()}
         </Typography>
         <Typography variant="body2"><LocationOnIcon style={{marginRight:'5px'}}/>{selectedEvent.country.toString()}</Typography>
         <Typography variant="body2"><LinkIcon style={{marginRight:'5px'}}/>{selectedEvent.landingPageLink}</Typography>

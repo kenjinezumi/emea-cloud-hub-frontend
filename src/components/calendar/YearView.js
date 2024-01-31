@@ -63,6 +63,7 @@ export default function YearView() {
 
   useEffect(() => {
     setShowEventModal(false);
+    
   }, [location]);
 
   return (

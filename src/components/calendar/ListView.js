@@ -20,7 +20,13 @@ export default function ListView({}) {
     }
   };
 
-  console.log(searchText);
+
+  useEffect(() => {
+    setShowEventModal(false);
+    setShowInfoEventModal(false);
+  }, [location]);
+
+
   useEffect(() => {
     setShowEventModal(false);
 
@@ -77,7 +83,10 @@ export default function ListView({}) {
           }}>
             <ListItemText
               primary={<Typography variant="h6">{event.title} {event.emoji}</Typography>}
-              secondary={dayjs(event.startDate).format('dddd, MMMM D, YYYY')} // Assuming event has startDate
+              secondary={
+                `Start date: ${dayjs(event.startDate).format('dddd, MMMM D, YYYY')}\nCountries: ${event.country}`
+              } // Assuming event has startDate
+
             />
           </ListItem>
         ))}

@@ -49,8 +49,12 @@ export default function DayView() {
   useEffect(() => {
    
     setShowEventModal(false);
-  
+    setShowInfoEventModal(false);
+
 }, [location]);
+
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -117,7 +121,6 @@ export default function DayView() {
     return { top, height, left, width };
   };
 
-  console.log(showEventModal)
   return (
     <Paper
       sx={{
