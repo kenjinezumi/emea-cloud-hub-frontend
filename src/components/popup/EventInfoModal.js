@@ -21,6 +21,7 @@ import {
   import LabelIcon from '@mui/icons-material/Label';
   import PeopleIcon from '@mui/icons-material/People';
   import MyLocationIcon from '@mui/icons-material/MyLocation';
+  import ShareIcon from '@mui/icons-material/Share';
 
 
 export default function EventInfoPopup() {
@@ -121,6 +122,9 @@ return (
       </Stack>
       <Divider />
       <Stack direction="row" spacing={1} sx={{ p: 2, justifyContent: 'flex-end' }}>
+      <Button variant="outlined" startIcon={<ShareIcon />} onClick={ handleEditEvent}>
+          Share Event
+        </Button>
         <Button variant="outlined" startIcon={<EditIcon />} onClick={ handleEditEvent}>
           Edit Event
         </Button>
