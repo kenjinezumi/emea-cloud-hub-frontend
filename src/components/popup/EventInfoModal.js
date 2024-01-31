@@ -20,6 +20,7 @@ import {
   import LinkIcon from '@mui/icons-material/Link';
   import LabelIcon from '@mui/icons-material/Label';
   import PeopleIcon from '@mui/icons-material/People';
+  import MyLocationIcon from '@mui/icons-material/MyLocation';
 
 
 export default function EventInfoPopup() {
@@ -52,6 +53,7 @@ export default function EventInfoPopup() {
     day: 'numeric',
     month: 'long',
   });
+
 
   const handleEditEvent = () => {
     if (selectedEvent) {
@@ -86,12 +88,15 @@ return (
           {selectedEvent.isHighPriority && <Chip label="High Priority" color="error" size="small" />}
         </Stack>
         {/* Add other event details with Typography */}
-        <Typography variant="body2"><TravelExploreIcon style={{marginRight:'10px'}} />{selectedEvent.region}</Typography>
-        <Typography variant="body2"><LocationOnIcon style={{marginRight:'10px'}}/>{selectedEvent.subRegion}</Typography>
-        <Typography variant="body2"><LinkIcon style={{marginRight:'10px'}}/>{selectedEvent.landingPageLink}</Typography>
-        {/* <Typography variant="body2"><PeopleIcon style={{marginRight:'10px'}}/>Registrations: {selectedEvent.landingPageLink}</Typography> */}
-        <Typography variant="body2"><LabelIcon style={{marginRight:'10px'}}/>Activity Owner: {selectedEvent.landingPageLink}</Typography>
-        <Typography variant="body2">< DescriptionIcon style={{marginRight:'10px'}}/>{selectedEvent.description}</Typography>
+        <Typography variant="body2">
+          <TravelExploreIcon style={{marginRight:'5px'}} />{selectedEvent.region}
+          <MyLocationIcon  style={{marginRight:'5px', marginLeft:'40px'}}/>{selectedEvent.subRegion}
+        </Typography>
+        <Typography variant="body2"><LocationOnIcon style={{marginRight:'5px'}}/>{selectedEvent.country.toString()}</Typography>
+        <Typography variant="body2"><LinkIcon style={{marginRight:'5px'}}/>{selectedEvent.landingPageLink}</Typography>
+        <Typography variant="body2"><PeopleIcon style={{marginRight:'10px'}}/>Registrations: {selectedEvent.landingPageLink}</Typography>
+        <Typography variant="body2"><LabelIcon style={{marginRight:'5px'}}/>Activity Owner: {selectedEvent.activityOwner}</Typography>
+        <Typography variant="body2">< DescriptionIcon style={{marginRight:'5px'}}/>{selectedEvent.description}</Typography>
 
       </Stack>
       <Divider />
