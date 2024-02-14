@@ -6,7 +6,6 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { Typography } from "@mui/material";
 
 export default function Filters() {
-  const { updateFilters } = useContext(GlobalContext);
 
   const [localRegionFilters, setLocalRegionFilters] = useState(regionFilters);
   const [localOkrOptions, setLocalOkrOptions] = useState(okrOptions);
@@ -17,6 +16,7 @@ export default function Filters() {
   const [isOkrExpanded, setIsOkrExpanded] = useState(false);
   const [isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded] = useState(false);
   const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(false);
+  const { updateFilters, filters } =  useContext(GlobalContext);
 
   const handleRegionChange = (label) => {
     const newFilters = localRegionFilters.map(filter => {

@@ -13,6 +13,8 @@ import EventFormLocation from "./components/forms/EventFormLocation";
 import EventFormExtra from "./components/forms/EventFormExtra";
 import EventFormAudience from "./components/forms/EventFormAudience";
 import EventFormLinks from "./components/forms/EventFormLinks";
+import EventSharePage from "./components/forms/EventSharePage";
+
 // import { ThemeProvider, useTheme } from './ThemeContext';
 // import './Theme.css'; 
 import GlobalContext from "./context/GlobalContext";
@@ -59,6 +61,7 @@ function App() {
             <Route path="/extra" element={<EventFormExtra/>} />
             <Route path="/audience" element={<EventFormAudience/>} />
             <Route path="/links" element={<EventFormLinks/>} />
+            <Route path="/event/:eventId" element={<EventSharePage />} />
 
           </Routes>
    

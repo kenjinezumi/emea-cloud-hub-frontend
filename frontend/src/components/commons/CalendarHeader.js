@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import React, { useContext, useState } from "react";
-import logo from "../../assets/svg/logo.svg";
+import logo from "../../assets/logo/logo.png";
 import MenuIcon from "@mui/icons-material/Menu";
 import beta from "../../assets/svg/beta.svg";
 import IconButton from "@mui/material/IconButton";
@@ -133,7 +133,7 @@ export default function CalendarHeader() {
         <IconButton onClick={toggleSidebar} className="mr-2">
           <MenuIcon />
         </IconButton>
-        <img src={logo} alt="calendar" className="mr-2 w-12 h-12" />
+        <img src={logo} alt="calendar" className="mr-2 w-8 h-8" />
         <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
           EMEA Cloud Hub
         </h1>        

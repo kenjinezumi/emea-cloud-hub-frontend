@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../../assets/svg/logo.svg";
+import logo from "../../assets/logo/logo.png";
 import beta from "../../assets/svg/beta.svg";
 import { useLocation } from "react-router-dom";
 
@@ -118,7 +118,7 @@ export default function CalendarHeaderForm() {
       <NavigationSidebar />
       <header className="fixed px-4 py-2 flex items-center justify-between bg-white" style={{width:"100%",marginBottom:"100px"}}>
         <div className="flex items-center">
-          <img src={logo} alt="calendar" className="mr-2 w-12 h-12" />
+          <img src={logo} alt="calendar" className="mr-2 w-8 h-8" />
           <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
           EMEA Cloud Hub
         </h1>  

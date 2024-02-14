@@ -4,6 +4,8 @@ import GlobalContext from "../../context/GlobalContext";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import { v4 as uuidv4 } from 'uuid';
 
+//API calls
+import { queryBigQuery } from "../../api/getData"; // Assuming you have a function for fetching data
 import {
   Button,
   TextField,
@@ -294,6 +296,7 @@ export default function EventForm() {
                       </div>
                     )}
                   >
+                    
                     <MenuItem value="Option1">Option 1</MenuItem>
                     <MenuItem value="Option2">Option 2</MenuItem>
                     {/* ... other options */}

@@ -55,6 +55,11 @@ export default function EventInfoPopup() {
     month: 'long',
   });
 
+  const handleShareEvent = () => {
+    if (selectedEvent && selectedEvent.id) {
+      navigate(`/event/${selectedEvent.id}`);
+    }
+  };
 
   const handleEditEvent = () => {
     if (selectedEvent) {
@@ -122,7 +127,7 @@ return (
       </Stack>
       <Divider />
       <Stack direction="row" spacing={1} sx={{ p: 2, justifyContent: 'flex-end' }}>
-      <Button variant="outlined" startIcon={<ShareIcon />} onClick={ handleEditEvent}>
+      <Button variant="outlined" startIcon={<ShareIcon />} onClick={ handleShareEvent}>
           Share Event
         </Button>
         <Button variant="outlined" startIcon={<EditIcon />} onClick={ handleEditEvent}>

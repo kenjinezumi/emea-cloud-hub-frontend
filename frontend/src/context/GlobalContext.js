@@ -43,8 +43,12 @@ export const GlobalProvider = ({ children }) => {
   const [labels, setLabels] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [filters, setFilters] = useState([]); // State to manage filters
-
+  const [filters, setFilters] = useState({
+    regions: [],
+    eventType: [],
+    okr: [],
+    audienceSeniority: [],
+  });
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);

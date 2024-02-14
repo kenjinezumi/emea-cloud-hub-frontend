@@ -1,0 +1,5 @@
+{
+    "sampleQuery": "SELECT name, COUNT(*) as total_people FROM `bigquery-public-data.usa_names.usa_1910_2013` WHERE state = 'TX' GROUP BY name ORDER BY total_people DESC LIMIT 10",
+    "anotherQuery": "SELECT * FROM `your-dataset.your-table` LIMIT 5"
+  }
+  
