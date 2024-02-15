@@ -15,9 +15,5 @@ handlers:
   redirect_http_response_code: 301
   script: auto
 
-predeploy:
-  - npm install
-  - npm run build
-
 runtime_config:
   start_command: npm start
