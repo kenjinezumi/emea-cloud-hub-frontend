@@ -1,4 +1,4 @@
-import React, {useState, useContext, useEffect} from 'react';
+import React, {useState, useContext} from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import CalendarHeaderForm from '../commons/CalendarHeaderForm';
 import dayjs from 'dayjs';
@@ -20,7 +20,7 @@ const isValidUrl = (urlString) => {
 
 
 export default function LinksForm() {
-  const {formData, updateFormData, selectedEvent} = useContext(GlobalContext);
+  const {formData,  selectedEvent} = useContext(GlobalContext);
 
  
   const [salesKitLink, setSalesKitLink] = useState(
