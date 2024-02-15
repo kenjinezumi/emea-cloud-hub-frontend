@@ -15,7 +15,7 @@ export default function Sidebar() {
     <aside className="p-3 bg-white" style={{width: '15%'}}>
       <CreateEventButton />
       <SmallCalendar />
-      {currentView !== 'list' && <Labels />}
+     <Labels />
     </aside>
   );
 }

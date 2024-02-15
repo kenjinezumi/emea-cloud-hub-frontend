@@ -4,6 +4,9 @@ import {regionFilters, okrOptions, audienceSeniorityOptions, eventTypeOptions} f
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import {Typography} from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import ClearIcon from '@mui/icons-material/Clear';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 export default function Filters() {
   const [localRegionFilters, setLocalRegionFilters] = useState(regionFilters);
@@ -16,6 +19,21 @@ export default function Filters() {
   const [isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded] = useState(false);
   const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(false);
   const {updateFilters, filters} = useContext(GlobalContext);
+
+  const clearAllFilters = () => {
+    setLocalRegionFilters(localRegionFilters.map(filter => ({ ...filter, checked: false })));
+    setLocalOkrOptions(localOkrOptions.map(option => ({ ...option, checked: false })));
+    setLocalAudienceSeniorityOptions(localAudienceSeniorityOptions.map(option => ({ ...option, checked: false })));
+    setLocalEventTypeOptions(localEventTypeOptions.map(option => ({ ...option, checked: false })));
+  };
+  
+  const selectAllFilters = () => {
+    setLocalRegionFilters(localRegionFilters.map(filter => ({ ...filter, checked: true })));
+    setLocalOkrOptions(localOkrOptions.map(option => ({ ...option, checked: true })));
+    setLocalAudienceSeniorityOptions(localAudienceSeniorityOptions.map(option => ({ ...option, checked: true })));
+    setLocalEventTypeOptions(localEventTypeOptions.map(option => ({ ...option, checked: true })));
+  };
+  
 
   const handleRegionChange = (label) => {
     const newFilters = localRegionFilters.map((filter) => {
@@ -87,7 +105,34 @@ export default function Filters() {
   );
 
   return (
-    <div className="mt-8">
+    <div className="mt-4">
+      {/* <hr style={{ margin: '8px 0', border: 0, height: '0.1px', backgroundColor: '#e0e0e0' }} /> */}
+
+      <div >
+      <IconButton 
+        aria-label="select all" 
+        onClick={selectAllFilters}
+        size="small"
+        style={{ color: '#1976d2',}} // Google's blue color
+      >
+      <DoneAllIcon style={{ fontSize: '20px', marginLeft:'0px' }}/> 
+      </IconButton>  <span style={{ fontSize: '14px' }}>Select all filters</span> 
+
+    </div>
+    <div >
+
+    <IconButton 
+        aria-label="clear all" 
+        onClick={clearAllFilters}
+        size="small"
+        style={{ color: '#d32f2f' }} // Google's red color
+      >
+        <ClearIcon style={{ fontSize: '20px' }}/>
+      </IconButton><span style={{ fontSize: '14px' }}>Clear all filters</span> 
+   </div>
+{/* After the Clear all filters div */}
+<hr style={{ margin: '8px 0', border: 0, }} />
+
       {renderFilterSection('Region', localRegionFilters, handleRegionChange, isRegionExpanded, setIsRegionExpanded)}
       {renderFilterSection('OKR', localOkrOptions, handleOkrChange, isOkrExpanded, setIsOkrExpanded)}
       {renderFilterSection('Audience Seniority', localAudienceSeniorityOptions, handleAudienceSeniorityChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)}

@@ -2,7 +2,7 @@ import React, {useContext, useEffect, useState} from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import GlobalContext from '../../context/GlobalContext';
-import {Paper, Typography, Grid, Box} from '@mui/material';
+import {Paper, Typography, Grid} from '@mui/material';
 import {getDummyEventData} from '../../api/getDummyData';
 import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 import {useLocation} from 'react-router-dom';
@@ -19,6 +19,24 @@ export default function WeekView() {
     setShowInfoEventModal,
   } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
+  const {filters} = useContext(GlobalContext);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+
+  useEffect(() => {
+    const applyFilters = (events, filters) => {
+
+      return events.filter((event) => {
+        const regionMatch = filters.regions.some((region) => region.checked && event.region.includes(region.label));
+        const eventTypeMatch = filters.eventType.some((type) => type.checked && event.eventType === type.label);
+        const okrMatch = filters.okr.some((okr) => okr.checked && event.okr.includes(okr.label));
+        const audienceSeniorityMatch = filters.audienceSeniority.some((seniority) => seniority.checked && event.audienceSeniority.includes(seniority.label));
+
+        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
+      });
+    };
+    const filteredEvents = applyFilters(events, filters);
+    setFilteredEvents(applyFilters(events, filters));
+  }, [events, filters]);
 
   const handleEventClick = (eventData) => {
     setSelectedEvent(eventData);
@@ -169,7 +187,7 @@ export default function WeekView() {
                         position: 'relative',
                       }}
                     >
-                      {events
+                      {filteredEvents
                           .filter(
                               (event) =>
                                 dayjs
