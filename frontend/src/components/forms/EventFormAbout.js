@@ -4,8 +4,7 @@ import GlobalContext from '../../context/GlobalContext';
 import CalendarHeaderForm from '../commons/CalendarHeaderForm';
 import {v4 as uuidv4} from 'uuid';
 
-// API calls
-import {queryBigQuery} from '../../api/getData'; // Assuming you have a function for fetching data
+import {queryBigQuery} from '../../api/getData'; 
 import {
   Button,
   TextField,
@@ -18,7 +17,7 @@ import {
 } from '@mui/material';
 import '../styles/Forms.css';
 import EmojiPicker from 'emoji-picker-react';
-import {FormControl, InputLabel, Select, MenuItem} from '@mui/material';
+import {FormControl,  Select, MenuItem} from '@mui/material';
 import {
   LocalizationProvider,
   DateTimePicker,
