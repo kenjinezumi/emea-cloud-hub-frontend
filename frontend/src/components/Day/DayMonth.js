@@ -25,6 +25,7 @@ export default function Day({ day, events, isYearView }) {
   const {
     setDaySelected,
     setShowEventModal,
+    showEventModal,
     setCurrentView,
     selectedEvent,
     setSelectedEvent,
@@ -71,10 +72,11 @@ export default function Day({ day, events, isYearView }) {
       e.stopPropagation(); // Stop the event from propagating
 
       setShowInfoEventModal(false);
-
       setSelectedEvents(dayEvents);
       setShowEventListModal(true);
-      setShowEventModal(false);
+    }else {
+      setSelectedEvent(null);
+      setShowEventModal(true);
     }
   };
 
@@ -107,9 +109,6 @@ export default function Day({ day, events, isYearView }) {
     width: "25px",
   };
 
-  console.log(
-    `showEventListModal: ${showEventListModal}, showEventInfoModal: ${showEventInfoModal}`
-  );
 
   return (
     <div
@@ -159,7 +158,7 @@ export default function Day({ day, events, isYearView }) {
             <div
               className="p-1 mb-1 text-gray-600 text-sm rounded truncate cursor-pointer w-full h-full"
               style={{ pointerEvents: "auto" }}
-              onClick={handleEventsClick}
+              onClick={handleDayClick}
             ></div>
           )}
 
@@ -191,6 +190,7 @@ export default function Day({ day, events, isYearView }) {
             onClose={() => setActivePopup(PopupState.NONE)}
           />
         )}
+        
         {activePopup === PopupState.EVENT_LIST && (
           <EventListPopup
             events={selectedEvents}

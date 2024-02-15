@@ -31,7 +31,6 @@ export default function ListView({}) {
 
   useEffect(() => {
     const applyFilters = (events, filters) => {
-      console.log('Applying filters to events:', events, 'with filters:', filters); // Before filtering
 
       return events.filter((event) => {
         const regionMatch = filters.regions.some((region) => region.checked && event.region.includes(region.label));
@@ -43,7 +42,6 @@ export default function ListView({}) {
       });
     };
     const filteredEvents = applyFilters(events, filters);
-    console.log('Filtered events:', filteredEvents); // After filtering
     setFilteredEvents(applyFilters(events, filters));
   }, [events, filters]);
 

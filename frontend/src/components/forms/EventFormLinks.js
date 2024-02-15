@@ -40,8 +40,6 @@ export default function LinksForm() {
     };
 
 
-    console.log(formData);
-    console.log(FinalFormData);
 
     try {
       const response = await sendDataToAPI(FinalFormData);

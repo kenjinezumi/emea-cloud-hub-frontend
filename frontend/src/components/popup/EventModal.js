@@ -7,7 +7,6 @@ export default function EventModal() {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const handleAddEventClick = () => {
-    console.log(showEventModal);
     navigate('/create-event'); // Redirect to event creation route
     setShowEventModal(false); // Optionally close the modal
   };

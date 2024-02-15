@@ -64,7 +64,6 @@ export default function EventInfoPopup() {
   const handleEditEvent = () => {
     if (selectedEvent) {
       // Pass the selected event data to the EventForm component and navigate to it
-      console.log(selectedEvent);
       selectedEvent.startDate = null;
       selectedEvent.endDate = null;
       navigate('/create-event');

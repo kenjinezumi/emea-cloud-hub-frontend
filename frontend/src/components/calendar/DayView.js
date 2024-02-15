@@ -24,7 +24,6 @@ export default function DayView() {
   const [filteredEvents, setFilteredEvents] = useState([]);
   useEffect(() => {
     const applyFilters = (events, filters) => {
-      console.log('Applying filters to events:', events, 'with filters:', filters); // Before filtering
 
       return events.filter((event) => {
         const regionMatch = filters.regions.some((region) => region.checked && event.region.includes(region.label));
@@ -36,7 +35,6 @@ export default function DayView() {
       });
     };
     const filteredEvents = applyFilters(events, filters);
-    console.log('Filtered events:', filteredEvents); // After filtering
     setFilteredEvents(applyFilters(events, filters));
   }, [events, filters]);
 
@@ -59,8 +57,6 @@ export default function DayView() {
     const fetchData = async () => {
       try {
         const eventData = await getDummyEventData();
-        console.log('Whut')
-        console.log('Fetched events:', eventData); // Debug: Check the fetched data
         setEvents(eventData);
         setEventGroups(calculateOverlapGroups(eventData));
       } catch (error) {

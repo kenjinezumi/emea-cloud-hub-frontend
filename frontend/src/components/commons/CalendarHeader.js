@@ -116,7 +116,6 @@ export default function CalendarHeader() {
 
   // Function to toggle theme popup
   const toggleThemePopup = () => {
-    console.log('Test');
     setIsThemePopupOpen(!isThemePopupOpen);
   };
 
