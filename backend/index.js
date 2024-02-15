@@ -27,14 +27,14 @@ app.post('/queryBigQuery', async (req, res) => {
     const { queryName } = req.body; // Destructure queryName from the request body
     const queries = loadQueries(); // Load queries from the JSON file
     
-    // Check if the queryName exists in the loaded queries
     if (!queries[queryName]) {
-      return res.status(404).json({error: `Query '${queryName}' not found.`});
+      return res.status(404).json({ error: `Query '${queryName}' not found.` });
     }
     
-    const query = queries[queryName]; // Get the query string by queryName
-    const options = {query: query, location: 'US'};
+    const query = queries[queryName]; 
+    const options = { query: query, location: 'US' };
     const [rows] = await bigquery.query(options);
+
     res.json(rows);
   } catch (error) {
     console.error(`ERROR: ${error}`);
