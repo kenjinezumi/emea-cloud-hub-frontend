@@ -18,3 +18,13 @@
   background-color: var(--color-background);
   font-family: var(--font-family);
 }
+
+.month-container {
+  display: flex; /* Set the display property to flex */
+  flex-direction: column; /* Arrange child elements vertically */
+  height: 100%; /* Ensure that the container takes up the full height of its parent */
+}
+
+.month-container > div {
+  flex-grow: 1; /* Make the child div elements grow to occupy remaining space */
+}
