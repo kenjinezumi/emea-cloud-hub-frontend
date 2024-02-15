@@ -12,9 +12,7 @@ import {blue} from '@mui/material/colors';
 export default function LinksForm() {
   const {formData, updateFormData, selectedEvent} = useContext(GlobalContext);
 
-  const [landingPageLink, setLandingPageLink] = useState(
-    selectedEvent ? selectedEvent.landingPageLink : formData.landingPageLink || '',
-  );
+ 
   const [salesKitLink, setSalesKitLink] = useState(
     selectedEvent ? selectedEvent.salesKitLink : formData.salesKitLink || '');
   const [hailoLink, setHailoLink] = useState(
@@ -31,7 +29,7 @@ export default function LinksForm() {
   // Merge current form data with previous form data
     const FinalFormData = {
       ...formData,
-      landingPageLink,
+   
       salesKitLink,
       hailoLink,
       otherDocumentsLink,
@@ -99,18 +97,7 @@ export default function LinksForm() {
             </span>
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1">Link to landing page</Typography>
-
-              <TextField
-                label=""
-                value={landingPageLink}
-                onChange={(e) => setLandingPageLink(e.target.value)}
-                variant="outlined"
-                fullWidth
-                margin="normal"
-              />
-            </Grid>
+            
             <Grid item xs={12}>
               <Typography variant="subtitle1">Sales kit link</Typography>
 

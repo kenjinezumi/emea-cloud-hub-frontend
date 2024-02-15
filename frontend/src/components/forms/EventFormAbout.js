@@ -47,7 +47,7 @@ export default function EventForm() {
   const [colorMap, setColorMap] = useState({}); // New state to store colors
   const [organisedByOptions, setOrganisedByOptions] = useState([]); // State to store dropdown options
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
-
+ 
   const {
     daySelected,
     dispatchCalEvent,
@@ -55,7 +55,9 @@ export default function EventForm() {
     updateFormData,
     formData,
   } = useContext(GlobalContext);
-
+  const [landingPageLink, setLandingPageLink] = useState(
+    selectedEvent ? selectedEvent.landingPageLink : formData.landingPageLink || '',
+  );
   const [eventType, setEventType] = useState(
       formData.eventType || eventTypeOptions[0].label,
   );
@@ -205,6 +207,7 @@ export default function EventForm() {
     }
 
     const newFormData = {
+      landingPageLink,
       eventId,
       title,
       description,
@@ -290,6 +293,18 @@ export default function EventForm() {
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </Grid>
+              <Grid item xs={12}>
+              <Typography variant="subtitle1">Link to landing page</Typography>
+
+              <TextField
+                label=""
+                value={landingPageLink}
+                onChange={(e) => setLandingPageLink(e.target.value)}
+                variant="outlined"
+                fullWidth
+                margin="normal"
+              />
+            </Grid>
               <Grid item xs={2}>
                 <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                   Emoji
