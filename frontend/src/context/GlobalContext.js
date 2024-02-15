@@ -9,6 +9,8 @@ const GlobalContext = createContext({
   setDaySelected: (day) => {},
   showEventModal: false,
   setShowEventModal: () => {},
+  showEventListModal:false,
+  setShowEventListModal: () => {},
   dispatchCalEvent: ({type, payload}) => {},
   savedEvents: [],
   selectedEvent: null,
@@ -35,11 +37,13 @@ export const GlobalProvider = ({children}) => {
   const [smallCalendarMonth, setSmallCalendarMonth] = useState(0);
   const [daySelected, setDaySelected] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [showEventListModal, setShowEventListModal] = useState(false);
   const [showEventInfoModal, setShowInfoEventModal] = useState(false);
   const [searchText, setSearchText] = useState(''); // Add searchText state
 
   const [savedEvents, setSavedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvents, setSelectedEvents] = useState([]);
   const [labels, setLabels] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -72,8 +76,12 @@ export const GlobalProvider = ({children}) => {
         setDaySelected,
         showEventModal,
         setShowEventModal,
+        showEventListModal,
+        setShowEventListModal,
         showEventInfoModal,
         setShowInfoEventModal,
+        selectedEvents, 
+        setSelectedEvents,
         savedEvents,
         selectedEvent,
         setSelectedEvent,

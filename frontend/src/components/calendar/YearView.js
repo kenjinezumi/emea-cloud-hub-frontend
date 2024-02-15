@@ -22,11 +22,7 @@ export default function YearView() {
 
   const year = daySelected.year();
   const yearData = createYearData(year);
-  const handleAddEvent = (monthIndex) => {
-    const selectedMonth = dayjs(new Date(year, monthIndex));
-    setDaySelected(selectedMonth);
-    setShowEventModal(true);
-  };
+
 
   const fetchData = async () => {
     try {
@@ -84,7 +80,6 @@ export default function YearView() {
               {" "}
               {/* Add styling using Paper */}
               <div
-                onClick={() => handleAddEvent(index)}
                 style={{
                   cursor: "pointer",
                   padding: "16px",
@@ -162,5 +157,6 @@ export default function YearView() {
         ))}
       </Grid>
     </div>
+    
   );
 }
