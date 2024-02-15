@@ -1,3 +1,5 @@
+/* eslint-env node */
+
 const express = require('express');
 const {BigQuery} = require('@google-cloud/bigquery');
 const fs = require('fs');

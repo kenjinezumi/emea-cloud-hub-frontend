@@ -1,12 +1,11 @@
-import React, { useState, useContext, useEffect } from "react";
-import GlobalContext from "../context/GlobalContext";
-import { regionFilters, okrOptions, audienceSeniorityOptions, eventTypeOptions } from "./filters/FiltersData";
+import React, {useState, useContext, useEffect} from 'react';
+import GlobalContext from '../context/GlobalContext';
+import {regionFilters, okrOptions, audienceSeniorityOptions, eventTypeOptions} from './filters/FiltersData';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import { Typography } from "@mui/material";
+import {Typography} from '@mui/material';
 
 export default function Filters() {
-
   const [localRegionFilters, setLocalRegionFilters] = useState(regionFilters);
   const [localOkrOptions, setLocalOkrOptions] = useState(okrOptions);
   const [localAudienceSeniorityOptions, setLocalAudienceSeniorityOptions] = useState(audienceSeniorityOptions);
@@ -16,12 +15,12 @@ export default function Filters() {
   const [isOkrExpanded, setIsOkrExpanded] = useState(false);
   const [isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded] = useState(false);
   const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(false);
-  const { updateFilters, filters } =  useContext(GlobalContext);
+  const {updateFilters, filters} = useContext(GlobalContext);
 
   const handleRegionChange = (label) => {
-    const newFilters = localRegionFilters.map(filter => {
+    const newFilters = localRegionFilters.map((filter) => {
       if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
+        return {...filter, checked: !filter.checked};
       }
       return filter;
     });
@@ -29,9 +28,9 @@ export default function Filters() {
   };
 
   const handleOkrChange = (label) => {
-    const newFilters = localOkrOptions.map(filter => {
+    const newFilters = localOkrOptions.map((filter) => {
       if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
+        return {...filter, checked: !filter.checked};
       }
       return filter;
     });
@@ -39,9 +38,9 @@ export default function Filters() {
   };
 
   const handleAudienceSeniorityChange = (label) => {
-    const newFilters = localAudienceSeniorityOptions.map(filter => {
+    const newFilters = localAudienceSeniorityOptions.map((filter) => {
       if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
+        return {...filter, checked: !filter.checked};
       }
       return filter;
     });
@@ -49,9 +48,9 @@ export default function Filters() {
   };
 
   const handleEventTypeChange = (label) => {
-    const newFilters = localEventTypeOptions.map(filter => {
+    const newFilters = localEventTypeOptions.map((filter) => {
       if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
+        return {...filter, checked: !filter.checked};
       }
       return filter;
     });
@@ -63,17 +62,17 @@ export default function Filters() {
       regions: localRegionFilters,
       okr: localOkrOptions,
       audienceSeniority: localAudienceSeniorityOptions,
-      eventType: localEventTypeOptions, 
+      eventType: localEventTypeOptions,
     });
   }, [localRegionFilters, localOkrOptions, localAudienceSeniorityOptions, localEventTypeOptions, updateFilters]);
 
   const renderFilterSection = (title, filters, handleFilterChange, expanded, setExpanded) => (
-    <div className="mb-4"> 
+    <div className="mb-4">
       <div onClick={() => setExpanded(!expanded)} className="cursor-pointer flex items-center">
         <Typography variant="subtitle2" className="mr-2">{title}</Typography>
         {expanded ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
       </div>
-      {expanded && filters.map(({ label, checked }, idx) => (
+      {expanded && filters.map(({label, checked}, idx) => (
         <label key={idx} className="items-center mt-3 block">
           <input
             type="checkbox"
@@ -89,10 +88,10 @@ export default function Filters() {
 
   return (
     <div className="mt-8">
-      {renderFilterSection("Region", localRegionFilters, handleRegionChange, isRegionExpanded, setIsRegionExpanded)}
-      {renderFilterSection("OKR", localOkrOptions, handleOkrChange, isOkrExpanded, setIsOkrExpanded)}
-      {renderFilterSection("Audience Seniority", localAudienceSeniorityOptions, handleAudienceSeniorityChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)}
-      {renderFilterSection("Event type", localEventTypeOptions, handleEventTypeChange, isEventTypeExpanded, setIsEventTypeExpanded)}
+      {renderFilterSection('Region', localRegionFilters, handleRegionChange, isRegionExpanded, setIsRegionExpanded)}
+      {renderFilterSection('OKR', localOkrOptions, handleOkrChange, isOkrExpanded, setIsOkrExpanded)}
+      {renderFilterSection('Audience Seniority', localAudienceSeniorityOptions, handleAudienceSeniorityChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)}
+      {renderFilterSection('Event type', localEventTypeOptions, handleEventTypeChange, isEventTypeExpanded, setIsEventTypeExpanded)}
     </div>
   );
 }

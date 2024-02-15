@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
 export function getMonth(month = dayjs().month()) {
   month = Math.floor(month);
@@ -15,7 +15,7 @@ export function getMonth(month = dayjs().month()) {
 }
 
 export function createYearData(year) {
-  let yearData = [];
+  const yearData = [];
 
   for (let month = 0; month < 12; month++) {
     let monthStart = dayjs(new Date(year, month, 1));
@@ -32,7 +32,7 @@ export function createYearData(year) {
     }
 
     // Generate days for the month
-    let monthDays = [];
+    const monthDays = [];
     let currentDay = monthStart;
 
     while (currentDay.isBefore(monthEnd) || currentDay.isSame(monthEnd, 'day')) {
@@ -41,7 +41,7 @@ export function createYearData(year) {
     }
 
     // Split into weeks
-    let weeks = [];
+    const weeks = [];
     for (let i = 0; i < monthDays.length; i += 7) {
       weeks.push(monthDays.slice(i, i + 7));
     }

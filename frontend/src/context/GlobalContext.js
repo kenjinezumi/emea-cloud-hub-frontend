@@ -1,4 +1,4 @@
-import React, { useState, createContext } from "react";
+import React, {useState, createContext} from 'react';
 
 const GlobalContext = createContext({
   monthIndex: 0,
@@ -9,7 +9,7 @@ const GlobalContext = createContext({
   setDaySelected: (day) => {},
   showEventModal: false,
   setShowEventModal: () => {},
-  dispatchCalEvent: ({ type, payload }) => {},
+  dispatchCalEvent: ({type, payload}) => {},
   savedEvents: [],
   selectedEvent: null,
   setSelectedEvent: () => {},
@@ -29,14 +29,14 @@ const GlobalContext = createContext({
   searchText: null,
 });
 
-export const GlobalProvider = ({ children }) => {
+export const GlobalProvider = ({children}) => {
   const [currentView, setCurrentView] = useState('month'); // Default to 'month'
   const [monthIndex, setMonthIndex] = useState(0);
   const [smallCalendarMonth, setSmallCalendarMonth] = useState(0);
   const [daySelected, setDaySelected] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
-  const [showEventInfoModal , setShowInfoEventModal] = useState(false);
-  const [searchText, setSearchText] = useState(""); // Add searchText state
+  const [showEventInfoModal, setShowInfoEventModal] = useState(false);
+  const [searchText, setSearchText] = useState(''); // Add searchText state
 
   const [savedEvents, setSavedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -55,7 +55,7 @@ export const GlobalProvider = ({ children }) => {
   };
   const [formData, setFormData] = useState({});
   const updateFormData = (newData) => {
-    setFormData({ ...formData, ...newData });
+    setFormData({...formData, ...newData});
   };
   const updateFilters = (newFilters) => {
     setFilters(newFilters);
@@ -63,35 +63,35 @@ export const GlobalProvider = ({ children }) => {
 
   return (
     <GlobalContext.Provider
-    value={{
-      monthIndex,
-      setMonthIndex,
-      smallCalendarMonth,
-      setSmallCalendarMonth,
-      daySelected,
-      setDaySelected,
-      showEventModal,
-      setShowEventModal,
-      showEventInfoModal ,
-      setShowInfoEventModal,
-      savedEvents,
-      selectedEvent,
-      setSelectedEvent,
-      setLabels,
-      labels,
-      filteredEvents,
-      sidebarOpen,
-      toggleSidebar,
-      currentView, 
-      setCurrentView,
-      formData, 
-      updateFormData,
-      filters,
-      updateFilters,
-      searchText,
-      setSearchText
-      
-    }}
+      value={{
+        monthIndex,
+        setMonthIndex,
+        smallCalendarMonth,
+        setSmallCalendarMonth,
+        daySelected,
+        setDaySelected,
+        showEventModal,
+        setShowEventModal,
+        showEventInfoModal,
+        setShowInfoEventModal,
+        savedEvents,
+        selectedEvent,
+        setSelectedEvent,
+        setLabels,
+        labels,
+        filteredEvents,
+        sidebarOpen,
+        toggleSidebar,
+        currentView,
+        setCurrentView,
+        formData,
+        updateFormData,
+        filters,
+        updateFilters,
+        searchText,
+        setSearchText,
+
+      }}
     >
       {children}
     </GlobalContext.Provider>

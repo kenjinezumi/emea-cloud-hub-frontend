@@ -1,22 +1,22 @@
-import dayjs from "dayjs";
-import React, { useContext, useState } from "react";
-import logo from "../../assets/logo/logo.png";
-import MenuIcon from "@mui/icons-material/Menu";
-import beta from "../../assets/svg/beta.svg";
-import IconButton from "@mui/material/IconButton";
-import SearchIcon from "@mui/icons-material/Search";
-import SettingsIcon from "@mui/icons-material/Settings";
+import dayjs from 'dayjs';
+import React, {useContext, useState} from 'react';
+import logo from '../../assets/logo/logo.png';
+import MenuIcon from '@mui/icons-material/Menu';
+import beta from '../../assets/svg/beta.svg';
+import IconButton from '@mui/material/IconButton';
+import SearchIcon from '@mui/icons-material/Search';
+import SettingsIcon from '@mui/icons-material/Settings';
 import ColorLensIcon from '@mui/icons-material/ColorLens';
-import { eventTypeOptions } from "../filters/FiltersData";
+import {eventTypeOptions} from '../filters/FiltersData';
 import Input from '@mui/material/Input';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 
-import { Select, MenuItem, Menu } from "@mui/material";
-import GlobalContext from "../../context/GlobalContext";
-import ThemePopup from "../popup/Themepopup";
-import ListView from "../calendar/ListView";
+import {Select, MenuItem, Menu} from '@mui/material';
+import GlobalContext from '../../context/GlobalContext';
+import ThemePopup from '../popup/Themepopup';
+import ListView from '../calendar/ListView';
 
-import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
+import {getDummyEventData} from '../../api/getDummyData'; // Assuming this is your API call
 
 export default function CalendarHeader() {
   const {
@@ -29,7 +29,7 @@ export default function CalendarHeader() {
     setEvents,
     currentView,
     searchText, setSearchText} = useContext(GlobalContext);
-  const [view, setView] = useState("month"); // State to manage the selected view
+  const [view, setView] = useState('month'); // State to manage the selected view
   const [isThemePopupOpen, setIsThemePopupOpen] = useState(false); // State for popup visibility
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -42,7 +42,7 @@ export default function CalendarHeader() {
       const eventData = await getDummyEventData();
       setEvents(eventData);
     } catch (error) {
-      console.error("Error fetching event data:", error);
+      console.error('Error fetching event data:', error);
     }
   };
 
@@ -57,7 +57,7 @@ export default function CalendarHeader() {
 
 
   const handleSearchSubmit = async () => {
-    await  fetchData()
+    await fetchData();
 
     if (searchText) {
       // Call a function to set the search text and navigate to the list view
@@ -68,7 +68,7 @@ export default function CalendarHeader() {
   // Function to trigger search action and navigate to the list view
   const handleSearchAction = (text) => {
     setSearchText(text);
-    setCurrentView("list"); // Switch to list view when search is submitted
+    setCurrentView('list'); // Switch to list view when search is submitted
   };
 
 
@@ -82,20 +82,20 @@ export default function CalendarHeader() {
 
   function handlePrevMonth() {
     if (monthIndex === 0) {
-      setDaySelected(daySelected.subtract(1, "year").month(11));
+      setDaySelected(daySelected.subtract(1, 'year').month(11));
       setMonthIndex(11);
     } else {
-      setDaySelected(daySelected.subtract(1, "month"));
+      setDaySelected(daySelected.subtract(1, 'month'));
       setMonthIndex(monthIndex - 1);
     }
   }
 
   function handleNextMonth() {
     if (monthIndex === 11) {
-      setDaySelected(daySelected.add(1, "year").month(0));
+      setDaySelected(daySelected.add(1, 'year').month(0));
       setMonthIndex(0);
     } else {
-      setDaySelected(daySelected.add(1, "month"));
+      setDaySelected(daySelected.add(1, 'month'));
       setMonthIndex(monthIndex + 1);
     }
   }
@@ -128,7 +128,7 @@ export default function CalendarHeader() {
   return (
     <header className="px-4 py-2 flex items-center justify-between border-b border-gray-300">
       <div className="flex items-center">
-        {" "}
+        {' '}
         {/* Group left items together */}
         <IconButton onClick={toggleSidebar} className="mr-2">
           <MenuIcon />
@@ -136,7 +136,7 @@ export default function CalendarHeader() {
         <img src={logo} alt="calendar" className="mr-2 w-8 h-8" />
         <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
           EMEA Cloud Hub
-        </h1>        
+        </h1>
         <img src={beta} alt="beta" className="mr-4 w-12 h-12" />
         <button onClick={handleReset} className="border rounded py-2 px-4 mr-2">
           Today
@@ -152,34 +152,33 @@ export default function CalendarHeader() {
           </span>
         </button>
         <h2 className="ml-4 text-xl text-black">
-          {dayjs(new Date(dayjs().year(), monthIndex)).format("MMMM YYYY")}
+          {dayjs(new Date(dayjs().year(), monthIndex)).format('MMMM YYYY')}
         </h2>
       </div>
 
-      
 
       <div className="flex items-center">
 
 
-      <Menu
-  anchorEl={anchorEl}
-  open={Boolean(anchorEl)}
-  onClose={handleClose}
->
-  {eventTypeOptions.map((option, index) => (
-    <MenuItem key={index} onClick={handleClose}>
-      <span>{option}</span>
-    </MenuItem>
-  ))}
-</Menu>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+        >
+          {eventTypeOptions.map((option, index) => (
+            <MenuItem key={index} onClick={handleClose}>
+              <span>{option}</span>
+            </MenuItem>
+          ))}
+        </Menu>
 
         <Select
-  value={currentView} // Use the currentView state to set the value
-  onChange={handleViewChange}
+          value={currentView} // Use the currentView state to set the value
+          onChange={handleViewChange}
           label="View"
           displayEmpty
-          inputProps={{ "aria-label": "Without label" }}
-          sx={{ width: "100px" }} // Adjust the width as needed
+          inputProps={{'aria-label': 'Without label'}}
+          sx={{width: '100px'}} // Adjust the width as needed
           className="mr-2"
         >
           <MenuItem value="day">Day</MenuItem>

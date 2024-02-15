@@ -1,4 +1,4 @@
-const API_URL = "your-api-url"; // Replace with your API's URL
+const API_URL = 'your-api-url'; // Replace with your API's URL
 
 const sendDataToAPI = async (data) => {
   console.log(data);
@@ -14,10 +14,10 @@ const sendDataToAPI = async (data) => {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return response.json(); 
+    return response.json();
   } catch (error) {
-    console.error("Error sending data:", error);
+    console.error('Error sending data:', error);
   }
 };
 
-export { sendDataToAPI };
+export {sendDataToAPI};

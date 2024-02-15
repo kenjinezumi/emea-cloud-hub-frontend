@@ -1,14 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import dayjs from 'dayjs';
-import { List, ListItem, ListItemText, Typography, Paper } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import {List, ListItem, ListItemText, Typography, Paper} from '@mui/material';
+import {useLocation} from 'react-router-dom';
 import GlobalContext from '../../context/GlobalContext';
-import { getDummyEventData } from '../../api/getDummyData'; // Assuming this is your API call
-import EventInfoPopup from "../popup/EventInfoModal"; // Import the EventInfoPopup component
+import {getDummyEventData} from '../../api/getDummyData'; // Assuming this is your API call
+import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 
 export default function ListView({}) {
   const [events, setEvents] = useState([]);
-  const { setShowEventModal,    setShowInfoEventModal, searchText, setSearchText,    showEventInfoModal,
+  const {setShowEventModal, setShowInfoEventModal, searchText, setSearchText, showEventInfoModal,
     setSelectedEvent} = useContext(GlobalContext);
   const location = useLocation(); // useLocation hook
   const fetchData = async () => {
@@ -16,7 +16,7 @@ export default function ListView({}) {
       const eventData = await getDummyEventData();
       setEvents(eventData);
     } catch (error) {
-      console.error("Error fetching event data:", error);
+      console.error('Error fetching event data:', error);
     }
   };
 
@@ -30,13 +30,13 @@ export default function ListView({}) {
   useEffect(() => {
     setShowEventModal(false);
 
-    
+
     const fetchData = async () => {
       try {
         const eventData = await getDummyEventData();
         setEvents(eventData);
       } catch (error) {
-        console.error("Error fetching event data:", error);
+        console.error('Error fetching event data:', error);
       }
     };
 
@@ -49,38 +49,37 @@ export default function ListView({}) {
   useEffect(() => {
     // Filter events based on searchText here
     if (searchText) {
-      const filteredEvents = events.filter(event => 
-        event.title.toLowerCase().includes(searchText.toLowerCase())
+      const filteredEvents = events.filter((event) =>
+        event.title.toLowerCase().includes(searchText.toLowerCase()),
       );
       setEvents(filteredEvents);
     }
   }, [searchText, events, location, setShowEventModal]);
 
   const handleEventClick = (eventData) => {
-
     setSelectedEvent(eventData);
     setShowInfoEventModal(true);
   };
 
   return (
-    <Paper sx={{ margin: 2, padding: 2, width: '90%', overflowY: 'auto' }}>
+    <Paper sx={{margin: 2, padding: 2, width: '90%', overflowY: 'auto'}}>
       <List>
         {events.map((event, index) => (
           <ListItem key={index} divider
-          sx={{
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.04)', // Light hover effect
-            },
-            cursor: 'pointer',
-            margin: '4px 0',
-            padding: '10px',
-            borderLeft: '4px solid #1a73e8', // Blue left border for event type indication
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-            transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transitions for hover effects
-          }}
-          onClick={() => {
-            handleEventClick(event);
-          }}>
+            sx={{
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)', // Light hover effect
+              },
+              'cursor': 'pointer',
+              'margin': '4px 0',
+              'padding': '10px',
+              'borderLeft': '4px solid #1a73e8', // Blue left border for event type indication
+              'boxShadow': '0 1px 3px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
+              'transition': 'background-color 0.2s, box-shadow 0.2s', // Smooth transitions for hover effects
+            }}
+            onClick={() => {
+              handleEventClick(event);
+            }}>
             <ListItemText
               primary={<Typography variant="h6">{event.title} {event.emoji}</Typography>}
               secondary={

@@ -1,75 +1,73 @@
-import React, { useState, useContext, useEffect } from "react";
-import GlobalContext from "../../context/GlobalContext";
-import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+import React, {useState, useContext, useEffect} from 'react';
+import GlobalContext from '../../context/GlobalContext';
+import CalendarHeaderForm from '../commons/CalendarHeaderForm';
 import dayjs from 'dayjs';
-import { Button, TextField, Typography, Grid, Snackbar } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import "../styles/Forms.css";
-import { sendDataToAPI } from "../../api/pushData"; // Adjust the path as per your project structure
-import LinkIcon from "@mui/icons-material/Link";
-import { blue } from "@mui/material/colors";
+import {Button, TextField, Typography, Grid, Snackbar} from '@mui/material';
+import {useNavigate} from 'react-router-dom';
+import '../styles/Forms.css';
+import {sendDataToAPI} from '../../api/pushData'; // Adjust the path as per your project structure
+import LinkIcon from '@mui/icons-material/Link';
+import {blue} from '@mui/material/colors';
 
 export default function LinksForm() {
-  const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
+  const {formData, updateFormData, selectedEvent} = useContext(GlobalContext);
 
   const [landingPageLink, setLandingPageLink] = useState(
-    selectedEvent ? selectedEvent.landingPageLink : formData.landingPageLink || ""
+    selectedEvent ? selectedEvent.landingPageLink : formData.landingPageLink || '',
   );
   const [salesKitLink, setSalesKitLink] = useState(
-    selectedEvent ? selectedEvent.salesKitLink : formData.salesKitLink || "");
+    selectedEvent ? selectedEvent.salesKitLink : formData.salesKitLink || '');
   const [hailoLink, setHailoLink] = useState(
-    selectedEvent ? selectedEvent.hailoLink : formData.hailoLink || "");
+    selectedEvent ? selectedEvent.hailoLink : formData.hailoLink || '');
   const [otherDocumentsLink, setOtherDocumentsLink] = useState(
-    selectedEvent ? selectedEvent.otherDocumentsLink : formData.otherDocumentsLink || ""
+    selectedEvent ? selectedEvent.otherDocumentsLink : formData.otherDocumentsLink || '',
   );
   const navigate = useNavigate();
 
-  const publishedDate = selectedEvent ? selectedEvent.publishedDate : dayjs(); 
-  const lastEditedDate =  dayjs(); 
+  const publishedDate = selectedEvent ? selectedEvent.publishedDate : dayjs();
+  const lastEditedDate = dayjs();
 
   const handleFinalSave = async () => {
   // Merge current form data with previous form data
-  const FinalFormData = {
-    ...formData,
-    landingPageLink,
-    salesKitLink,
-    hailoLink,
-    otherDocumentsLink,
-    publishedDate, 
-    lastEditedDate
+    const FinalFormData = {
+      ...formData,
+      landingPageLink,
+      salesKitLink,
+      hailoLink,
+      otherDocumentsLink,
+      publishedDate,
+      lastEditedDate,
+    };
+
+
+    console.log(formData);
+    console.log(FinalFormData);
+
+    try {
+      const response = await sendDataToAPI(FinalFormData);
+
+      if (response && !response.error) {
+        setSnackbarMessage('Event successfully saved. Redirecting you to the main page...');
+        setSnackbarOpen(true);
+        setIsError(false);
+        setTimeout(() => navigate('/'), 3000);
+      } else {
+        setSnackbarMessage('Error saving event. Please check the logs.');
+        setSnackbarOpen(true);
+        setIsError(true);
+        console.error('Error sending data:', response);
+      }
+    } catch (error) {
+      setSnackbarMessage('Error saving event. Please check the logs.');
+      setSnackbarOpen(true);
+      setIsError(true);
+      console.error('Error sending data:', error);
+    }
   };
 
 
-
-
-  console.log(formData);
-  console.log(FinalFormData);
-
-  try {
-    const response = await sendDataToAPI(FinalFormData);
-
-    if (response && !response.error) {
-      setSnackbarMessage("Event successfully saved. Redirecting you to the main page...");
-      setSnackbarOpen(true);
-      setIsError(false);
-      setTimeout(() => navigate("/"), 3000);
-    } else {
-      setSnackbarMessage("Error saving event. Please check the logs.");
-      setSnackbarOpen(true);
-      setIsError(true);
-      console.error("Error sending data:", response);
-    }
-  } catch (error) {
-    setSnackbarMessage("Error saving event. Please check the logs.");
-    setSnackbarOpen(true);
-    setIsError(true);
-    console.error("Error sending data:", error);
-  }
-};
-
-
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const [isError, setIsError] = useState(false);
 
   const handleCloseSnackbar = () => {
@@ -77,7 +75,7 @@ export default function LinksForm() {
   };
 
   const handlePrevious = () => {
-    navigate("/audience"); // Adjust according to your route
+    navigate('/audience'); // Adjust according to your route
   };
 
   // Render the form
@@ -90,13 +88,13 @@ export default function LinksForm() {
             variant="h4"
             className="form-title"
             style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: "15px",
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '15px',
             }}
           >
             <LinkIcon
-              style={{ marginRight: "10px", color: blue[500], height: "40px" }}
+              style={{marginRight: '10px', color: blue[500], height: '40px'}}
             />
             <span className="mr-1 text-xl text-black  cursor-pointer">
               Links
@@ -152,17 +150,17 @@ export default function LinksForm() {
               />
             </Grid>
           </Grid>
-          <div style={{ marginTop: "20px", float: "right" }}>
+          <div style={{marginTop: '20px', float: 'right'}}>
             <Button
               variant="outlined"
               onClick={handlePrevious}
               style={{
-                backgroundColor: "white",
-                color: "#202124", // Google's typical text color
-                border: "1px solid #dadce0", // Google's border color
-                boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
-                float: "left", // Changed to 'left' to separate it from the 'Next' button
-                margin: "10px",
+                backgroundColor: 'white',
+                color: '#202124', // Google's typical text color
+                border: '1px solid #dadce0', // Google's border color
+                boxShadow: '0 1px 2px 0 rgba(60,64,67,0.302)',
+                float: 'left', // Changed to 'left' to separate it from the 'Next' button
+                margin: '10px',
               }}
             >
               Previous
@@ -172,10 +170,10 @@ export default function LinksForm() {
               variant="contained"
               onClick={handleFinalSave}
               style={{
-                backgroundColor: "#4285F4",
-                color: "white",
-                float: "right",
-                margin: "10px",
+                backgroundColor: '#4285F4',
+                color: 'white',
+                float: 'right',
+                margin: '10px',
               }}
             >
               Save
@@ -187,10 +185,10 @@ export default function LinksForm() {
           autoHideDuration={6000}
           onClose={handleCloseSnackbar}
           message={snackbarMessage}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
           ContentProps={{
             style: {
-              backgroundColor: isError ? "red" : "green",
+              backgroundColor: isError ? 'red' : 'green',
             },
           }}
         />

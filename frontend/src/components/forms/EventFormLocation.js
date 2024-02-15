@@ -1,10 +1,10 @@
-import React, { useContext, useState } from "react";
-import GlobalContext from "../../context/GlobalContext";
+import React, {useContext, useState} from 'react';
+import GlobalContext from '../../context/GlobalContext';
 import {
   regionOptions,
   regionsData,
   subregionsData,
-} from "../filters/FiltersData";
+} from '../filters/FiltersData';
 import {
   Button,
   FormControl,
@@ -12,31 +12,31 @@ import {
   Grid,
   Select,
   MenuItem,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import "../styles/Forms.css";
-import { ReactComponent as LocationLogo } from "../../assets/svg/location.svg";
-import CalendarHeaderForm from "../commons/CalendarHeaderForm";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
+} from '@mui/material';
+import {useNavigate} from 'react-router-dom';
+import '../styles/Forms.css';
+import {ReactComponent as LocationLogo} from '../../assets/svg/location.svg';
+import CalendarHeaderForm from '../commons/CalendarHeaderForm';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
-import { blue } from "@mui/material/colors";
+import {blue} from '@mui/material/colors';
 
 export default function LocationFormPage() {
-  const { formData, updateFormData,    selectedEvent,
+  const {formData, updateFormData, selectedEvent,
   } = useContext(GlobalContext);
 
   const [region, setRegion] = useState(
-    selectedEvent ? selectedEvent.region : formData.region || "");
+    selectedEvent ? selectedEvent.region : formData.region || '');
   const [subRegion, setSubRegion] = useState(
     selectedEvent ? selectedEvent.subRegion : formData.subRegion || []);
-  const [country, setCountry] = useState(  selectedEvent ? selectedEvent.country : formData.country || []);
+  const [country, setCountry] = useState( selectedEvent ? selectedEvent.country : formData.country || []);
   const [availableSubregions, setAvailableSubregions] = useState([]);
   const [availableCountries] = useState([]);
   const [isFormValid, setIsFormValid] = useState(true);
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate("/create-event");
+    navigate('/create-event');
   };
 
   const handleNext = () => {
@@ -47,9 +47,9 @@ export default function LocationFormPage() {
       return;
     }
 
-    const currentFormData = { region, subRegion, country };
-    updateFormData({ ...formData, ...currentFormData });
-    navigate("/extra");
+    const currentFormData = {region, subRegion, country};
+    updateFormData({...formData, ...currentFormData});
+    navigate('/extra');
   };
 
   const handleRegionChange = (e) => {
@@ -73,9 +73,9 @@ export default function LocationFormPage() {
 
     // Filter available countries based on the selected subregions
     const countriesForSubregions = selectedSubregions.flatMap(
-      (selectedSubregion) =>
-        subregionsData.find((data) => data.subregion === selectedSubregion)
-          ?.countries || []
+        (selectedSubregion) =>
+          subregionsData.find((data) => data.subregion === selectedSubregion)
+              ?.countries || [],
     );
     setCountry(countriesForSubregions);
   };
@@ -89,13 +89,13 @@ export default function LocationFormPage() {
             variant="h4"
             className="form-title"
             style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: "15px",
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '15px',
             }}
           >
             <LocationOnIcon
-              style={{ marginRight: "10px", color: blue[500], height: "40px" }}
+              style={{marginRight: '10px', color: blue[500], height: '40px'}}
             />
             <span className="mr-1 text-xl text-black  cursor-pointer">
               Location
@@ -105,7 +105,7 @@ export default function LocationFormPage() {
             {/* Region Dropdown */}
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                   Region
                 </Typography>
                 <Select value={region} onChange={handleRegionChange}>
@@ -121,14 +121,14 @@ export default function LocationFormPage() {
             {/* Sub-Region Dropdown */}
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                   Sub-Region
                 </Typography>
                 <Select
                   multiple
                   value={subRegion}
                   onChange={handleSubRegionChange}
-                  renderValue={(selected) => selected.join(", ")}
+                  renderValue={(selected) => selected.join(', ')}
                 >
                   {availableSubregions.map((subRegion, idx) => (
                     <MenuItem key={idx} value={subRegion}>
@@ -141,14 +141,14 @@ export default function LocationFormPage() {
             {/* Country Dropdown */}
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                   Country
                 </Typography>
                 <Select
                   multiple
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  renderValue={(selected) => selected.join(", ")}
+                  renderValue={(selected) => selected.join(', ')}
                 >
                   {availableCountries.map((country, idx) => (
                     <MenuItem key={idx} value={country}>
@@ -160,7 +160,7 @@ export default function LocationFormPage() {
             </Grid>
           </Grid>
           {!isFormValid && (
-            <Typography color="error" style={{ marginBottom: "10px" }}>
+            <Typography color="error" style={{marginBottom: '10px'}}>
               All fields are required.
             </Typography>
           )}
@@ -169,12 +169,12 @@ export default function LocationFormPage() {
               variant="outlined"
               onClick={handlePrevious}
               style={{
-                backgroundColor: "white",
-                color: "#202124",
-                border: "1px solid #dadce0",
-                boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
-                float: "left",
-                margin: "10px",
+                backgroundColor: 'white',
+                color: '#202124',
+                border: '1px solid #dadce0',
+                boxShadow: '0 1px 2px 0 rgba(60,64,67,0.302)',
+                float: 'left',
+                margin: '10px',
               }}
             >
               Previous
@@ -184,10 +184,10 @@ export default function LocationFormPage() {
               onClick={handleNext}
               className="next-button"
               style={{
-                backgroundColor: "#4285F4",
-                color: "white",
-                float: "right",
-                margin: "10px",
+                backgroundColor: '#4285F4',
+                color: 'white',
+                float: 'right',
+                margin: '10px',
               }}
             >
               Next

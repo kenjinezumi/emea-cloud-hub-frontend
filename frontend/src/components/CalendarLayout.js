@@ -1,20 +1,19 @@
-import React, { useState, useContext, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { getMonth } from "../util";
-import CalendarHeader from "./commons/CalendarHeader";
-import Sidebar from "./Sidebar";
-import MonthView from "./calendar/MonthView";
-import DayView from "./calendar/DayView";
-import YearView from "./calendar/YearView";
-import ListView from "./calendar/ListView";
-import WeekView from "./calendar/WeekView";
-import EventModal from "./popup/EventModal";
+import React, {useState, useContext, useEffect} from 'react';
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import {getMonth} from '../util';
+import CalendarHeader from './commons/CalendarHeader';
+import Sidebar from './Sidebar';
+import MonthView from './calendar/MonthView';
+import DayView from './calendar/DayView';
+import YearView from './calendar/YearView';
+import ListView from './calendar/ListView';
+import WeekView from './calendar/WeekView';
+import EventModal from './popup/EventModal';
 
-import GlobalContext from "../context/GlobalContext";
+import GlobalContext from '../context/GlobalContext';
 
 export default function RenderCalendarView() {
-
-  const { sidebarOpen, currentView, monthIndex, showEventModal } = useContext(GlobalContext);
+  const {sidebarOpen, currentView, monthIndex, showEventModal} = useContext(GlobalContext);
   const [currenMonth, setCurrentMonth] = useState(getMonth());
   // const { theme } = useTheme();
 
@@ -41,21 +40,20 @@ export default function RenderCalendarView() {
 
   return (
 
-      <div className="h-screen flex flex-col">
-        {showEventModal && <EventModal />}
+    <div className="h-screen flex flex-col">
+      {showEventModal && <EventModal />}
 
-        <CalendarHeader />
-        {sidebarOpen && <Sidebar />}
+      <CalendarHeader />
+      {sidebarOpen && <Sidebar />}
 
-        <div className="flex flex-1">
-          <Sidebar />
+      <div className="flex flex-1">
+        <Sidebar />
 
-          {renderCalendarView()} 
-           
+        {renderCalendarView()}
 
-          
-        </div>
+
       </div>
+    </div>
 
   );
 }

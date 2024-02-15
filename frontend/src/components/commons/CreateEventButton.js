@@ -1,7 +1,7 @@
-import React, { useContext } from "react";
-import plusImg from "../../assets/svg/addbutton.svg";
-import GlobalContext from "../../context/GlobalContext";
-import { useNavigate } from 'react-router-dom';
+import React, {useContext} from 'react';
+import plusImg from '../../assets/svg/addbutton.svg';
+import GlobalContext from '../../context/GlobalContext';
+import {useNavigate} from 'react-router-dom';
 
 export default function CreateEventButton() {
   const navigate = useNavigate();

@@ -1,11 +1,11 @@
-import React, { useEffect, useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import GlobalContext from "../../context/GlobalContext";
-import CalendarHeaderForm from "../commons/CalendarHeaderForm";
-import { v4 as uuidv4 } from 'uuid';
+import React, {useEffect, useContext, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import GlobalContext from '../../context/GlobalContext';
+import CalendarHeaderForm from '../commons/CalendarHeaderForm';
+import {v4 as uuidv4} from 'uuid';
 
-//API calls
-import { queryBigQuery } from "../../api/getData"; // Assuming you have a function for fetching data
+// API calls
+import {queryBigQuery} from '../../api/getData'; // Assuming you have a function for fetching data
 import {
   Button,
   TextField,
@@ -14,26 +14,26 @@ import {
   Grid,
   Switch,
   FormGroup,
-} from "@mui/material";
-import "../styles/Forms.css";
-import EmojiPicker from "emoji-picker-react";
-import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+} from '@mui/material';
+import '../styles/Forms.css';
+import EmojiPicker from 'emoji-picker-react';
+import {FormControl, InputLabel, Select, MenuItem} from '@mui/material';
 import {
   LocalizationProvider,
   DateTimePicker,
   DatePicker,
-} from "@mui/x-date-pickers";
+} from '@mui/x-date-pickers';
 
-import Chip from "@mui/material/Chip";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import Chip from '@mui/material/Chip';
+import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
 
-import { eventTypeOptions } from "../filters/FiltersData";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import WhatshotIcon from "@mui/icons-material/Whatshot";
+import {eventTypeOptions} from '../filters/FiltersData';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import WhatshotIcon from '@mui/icons-material/Whatshot';
 
-import { red } from "@mui/material/colors";
-import { blue } from "@mui/material/colors";
-const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
+import {red} from '@mui/material/colors';
+import {blue} from '@mui/material/colors';
+const labelsClasses = ['indigo', 'gray', 'green', 'blue', 'red', 'purple'];
 
 const getRandomColor = () => {
   const r = Math.floor(Math.random() * 256);
@@ -55,50 +55,50 @@ export default function EventForm() {
   } = useContext(GlobalContext);
 
   const [eventType, setEventType] = useState(
-    formData.eventType || eventTypeOptions[0].label
+      formData.eventType || eventTypeOptions[0].label,
   );
   const [title, setTitle] = useState(
-    selectedEvent ? selectedEvent.title : formData.title || ""
+    selectedEvent ? selectedEvent.title : formData.title || '',
   );
 
   const [description, setDescription] = useState(
-    selectedEvent ? selectedEvent.description : formData.description || ""
+    selectedEvent ? selectedEvent.description : formData.description || '',
   );
   const [selectedLabel, setSelectedLabel] = useState(
-    selectedEvent
-      ? selectedEvent.label
-      : formData.selectedLabel || labelsClasses[0]
+    selectedEvent ?
+      selectedEvent.label :
+      formData.selectedLabel || labelsClasses[0],
   );
   const [emoji, setEmoji] = useState(
-    selectedEvent
-    ? selectedEvent.emoji
-    : formData.emoji || "");
+    selectedEvent ?
+    selectedEvent.emoji :
+    formData.emoji || '');
   const [isClient, setIsClient] = useState(selectedEvent ? selectedEvent.isClient : false);
 
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
   const [organisedBy, setOrganisedBy] = useState(
-    selectedEvent
-    ? selectedEvent.organisedBy
-    : formData.organisedBy || []);
+    selectedEvent ?
+    selectedEvent.organisedBy :
+    formData.organisedBy || []);
 
-  const [dropdownValue2] = useState(formData.dropdownValue2 || "");
+  const [dropdownValue2] = useState(formData.dropdownValue2 || '');
   const [marketingActivityType, setMarketingActivityType] = useState(
-    formData.marketingActivityType || ""
+      formData.marketingActivityType || '',
   );
   const [isHighPriority, setIsHighPriority] = useState(
-    selectedEvent ? selectedEvent.isHighPriority : 
-    formData.isHighPriority || false
+    selectedEvent ? selectedEvent.isHighPriority :
+    formData.isHighPriority || false,
   );
   const [startDate, setStartDate] = useState(
-    selectedEvent ? selectedEvent.startDate : formData.startDate || new Date()
+    selectedEvent ? selectedEvent.startDate : formData.startDate || new Date(),
   );
   const [endDate, setEndDate] = useState(
-    selectedEvent ? selectedEvent.endDate : formData.endDate || new Date()
+    selectedEvent ? selectedEvent.endDate : formData.endDate || new Date(),
   );
   const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(
-    selectedEvent ? selectedEvent.marketingProgramInstanceId  : 
-    formData.marketingProgramInstanceId || ""
+    selectedEvent ? selectedEvent.marketingProgramInstanceId :
+    formData.marketingProgramInstanceId || '',
   );
   const [isFormValid, setIsFormValid] = useState(true);
   const navigate = useNavigate();
@@ -119,7 +119,7 @@ export default function EventForm() {
   useEffect(() => {}, [startDate, endDate]);
   const handleOrganisedByChange = (event) => {
     const newOrganisedBy = event.target.value;
-    const newColorMap = { ...colorMap };
+    const newColorMap = {...colorMap};
 
     newOrganisedBy.forEach((option) => {
       if (!colorMap[option]) {
@@ -132,17 +132,16 @@ export default function EventForm() {
   };
 
   const handleNext = () => {
-
     const eventId = uuidv4(); // Generate a unique event ID
 
 
     // Save current form state to cache
-    const isTitleValid = title.trim() !== "";
+    const isTitleValid = title.trim() !== '';
     const isorganisedByValid = organisedBy.length > 0; // Check if the array is not empty
-    const isEventTypeValid = eventType.trim() !== "";
-    const isDescriptionValid = description.trim() !== "";
+    const isEventTypeValid = eventType.trim() !== '';
+    const isDescriptionValid = description.trim() !== '';
     const isMarketingProgramInstanceIdValid =
-      marketingProgramInstanceId.trim() !== "";
+      marketingProgramInstanceId.trim() !== '';
 
     const formIsValid =
       isTitleValid &&
@@ -175,7 +174,7 @@ export default function EventForm() {
 
     updateFormData(newFormData); // Update the global form data
 
-    navigate("/location");
+    navigate('/location');
   };
 
   const onEmojiClick = (emojiData, event) => {
@@ -197,19 +196,19 @@ export default function EventForm() {
             container
             justifyContent="space-between"
             alignItems="center"
-            style={{ marginBottom: "15px" }}
+            style={{marginBottom: '15px'}}
           >
             <Grid item>
               <Typography variant="h4">
-                <span style={{ display: "flex", alignItems: "center" }}>
+                <span style={{display: 'flex', alignItems: 'center'}}>
                   <CalendarMonthIcon
-                    style={{ marginRight: "10px", color: blue[500] }}
+                    style={{marginRight: '10px', color: blue[500]}}
                   />
                   <span className="mr-1 text-xl text-black  cursor-pointer">
-                    Activity{" "}
+                    Activity{' '}
                   </span>
 
-                  <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
+                  <span style={{fontSize: '1.5rem', marginLeft: '10px'}}>
                     {emoji}
                   </span>
                 </span>
@@ -229,10 +228,10 @@ export default function EventForm() {
               container
               spacing={2}
               alignItems="center"
-              style={{ marginBottom: "20px" }}
+              style={{marginBottom: '20px'}}
             >
               <Grid item xs={30}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                   Name
                 </Typography>
 
@@ -245,20 +244,20 @@ export default function EventForm() {
                 />
               </Grid>
               <Grid item xs={2}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                   Emoji
                 </Typography>
                 <Button onClick={toggleEmojiPicker}>
-                  {"Choose emoji "}
+                  {'Choose emoji '}
                   {emoji && (
-                    <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
+                    <span style={{fontSize: '1.5rem', marginLeft: '10px'}}>
                       {emoji}
                     </span>
                   )}
                 </Button>
                 {isClient && isEmojiPickerOpen && (
                   <EmojiPicker onEmojiClick={onEmojiClick} />
-                )}{" "}
+                )}{' '}
               </Grid>
             </Grid>
 
@@ -267,10 +266,10 @@ export default function EventForm() {
               container
               spacing={2}
               alignItems="center"
-              style={{ marginBottom: "20px" }}
+              style={{marginBottom: '20px'}}
             >
               <Grid item xs={6}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                   Organised by
                 </Typography>
 
@@ -282,7 +281,7 @@ export default function EventForm() {
                     value={organisedBy}
                     onChange={handleOrganisedByChange} // Use the new change handler
                     renderValue={(selected) => (
-                      <div style={{ display: "flex", flexWrap: "wrap" }}>
+                      <div style={{display: 'flex', flexWrap: 'wrap'}}>
                         {selected.map((value) => (
                           <Chip
                             key={value}
@@ -296,35 +295,35 @@ export default function EventForm() {
                       </div>
                     )}
                   >
-                    
+
                     <MenuItem value="Option1">Option 1</MenuItem>
                     <MenuItem value="Option2">Option 2</MenuItem>
                     {/* ... other options */}
                   </Select>
                 </FormControl>
               </Grid>
-             
+
               <Grid item xs={6}>
-    <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
       Activity type
-    </Typography>
-    <FormControl fullWidth>
-      <Select
-        value={eventType}
-        onChange={(e) => setEventType(e.target.value)}
-        label="Event Type"
-      >
-        {eventTypeOptions.map((option) => (
-          <MenuItem key={option.label} value={option.label}>
-            {option.label}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  </Grid>
+                </Typography>
+                <FormControl fullWidth>
+                  <Select
+                    value={eventType}
+                    onChange={(e) => setEventType(e.target.value)}
+                    label="Event Type"
+                  >
+                    {eventTypeOptions.map((option) => (
+                      <MenuItem key={option.label} value={option.label}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
 
             </Grid>
-            <Grid item xs={6} style={{ marginBottom: "20px" }}>
+            <Grid item xs={6} style={{marginBottom: '20px'}}>
               <FormGroup row>
                 <FormControlLabel
                   control={
@@ -338,9 +337,9 @@ export default function EventForm() {
                   label={
                     <Typography
                       variant="subtitle1"
-                      style={{ display: "flex", alignItems: "center" }}
+                      style={{display: 'flex', alignItems: 'center'}}
                     >
-                      <WhatshotIcon style={{ color: red[500] }} />
+                      <WhatshotIcon style={{color: red[500]}} />
                       High priority status
                     </Typography>
                   }
@@ -351,12 +350,12 @@ export default function EventForm() {
               container
               spacing={2}
               alignItems="center"
-              style={{ marginBottom: "20px" }}
+              style={{marginBottom: '20px'}}
             >
               {/* Event Start Date */}
               <Grid item xs={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  {eventType === "Blog Post" ? (
+                  {eventType === 'Blog Post' ? (
                     <DatePicker
                       label="Event Start Date"
                       inputFormat="MM/dd/yyyy"
@@ -382,7 +381,7 @@ export default function EventForm() {
               </Grid>
 
               {/* Event End Date - Conditionally Rendered */}
-              {eventType !== "Blog Post" && (
+              {eventType !== 'Blog Post' && (
                 <Grid item xs={6}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DateTimePicker
@@ -399,8 +398,8 @@ export default function EventForm() {
               )}
             </Grid>
 
-            <Grid item xs={12} style={{ marginBottom: "20px" }}>
-              <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+            <Grid item xs={12} style={{marginBottom: '20px'}}>
+              <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                 Description
               </Typography>
               <TextField
@@ -412,13 +411,13 @@ export default function EventForm() {
                 variant="outlined"
                 fullWidth
                 margin="dense" // Reduced margin
-                inputProps={{ maxLength: 400 }}
+                inputProps={{maxLength: 400}}
                 helperText={`${description.length}/400`}
               />
             </Grid>
 
-            <Grid item xs={12} style={{ marginBottom: "20px" }}>
-              <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+            <Grid item xs={12} style={{marginBottom: '20px'}}>
+              <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
                 Marketing Program Instance ID
               </Typography>
               <TextField
@@ -433,7 +432,7 @@ export default function EventForm() {
             </Grid>
 
             {!isFormValid && (
-              <Typography color="error" style={{ marginBottom: "10px" }}>
+              <Typography color="error" style={{marginBottom: '10px'}}>
                 Please fill in all required fields.
               </Typography>
             )}
@@ -442,10 +441,10 @@ export default function EventForm() {
               variant="contained"
               onClick={handleNext}
               style={{
-                backgroundColor: "#4285F4",
-                color: "white",
-                float: "right",
-                margin: "10px",
+                backgroundColor: '#4285F4',
+                color: 'white',
+                float: 'right',
+                margin: '10px',
               }}
             >
               Next
