@@ -45,6 +45,7 @@ const getRandomColor = () => {
 
 export default function EventForm() {
   const [colorMap, setColorMap] = useState({}); // New state to store colors
+  const [organisedByOptions, setOrganisedByOptions] = useState([]); // State to store dropdown options
 
   const {
     daySelected,
@@ -130,6 +131,24 @@ export default function EventForm() {
     setOrganisedBy(newOrganisedBy);
     setColorMap(newColorMap); // Update the color map
   };
+
+  useEffect(() => {
+    const fetchOrganisedByOptions = async () => {
+      try {
+        const response = await queryBigQuery('organisedByOptionsQuery');
+        if (response && Array.isArray(response)) {
+          const options = response.map((row) => row.organisedBy);
+          setOrganisedByOptions(options);
+        } else {
+          console.error('Invalid response format:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching organisedBy options:', error);
+      }
+    };
+  
+    fetchOrganisedByOptions();
+  }, []);
 
   const handleNext = () => {
     const eventId = uuidv4(); // Generate a unique event ID
@@ -279,9 +298,9 @@ export default function EventForm() {
                     id="organised-by-select"
                     multiple
                     value={organisedBy}
-                    onChange={handleOrganisedByChange} // Use the new change handler
+                    onChange={handleOrganisedByChange}
                     renderValue={(selected) => (
-                      <div style={{display: 'flex', flexWrap: 'wrap'}}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                         {selected.map((value) => (
                           <Chip
                             key={value}
@@ -295,10 +314,12 @@ export default function EventForm() {
                       </div>
                     )}
                   >
-
-                    <MenuItem value="Option1">Option 1</MenuItem>
-                    <MenuItem value="Option2">Option 2</MenuItem>
-                    {/* ... other options */}
+                    {/* Populate dropdown options */}
+                    {organisedByOptions.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>

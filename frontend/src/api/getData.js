@@ -1,8 +1,8 @@
-const axios = require('axios');
+import axios from 'axios';
 
-async function queryBigQuery(queryName) {
+export async function queryBigQuery(queryName) {
   // URL of your server-side API endpoint
-  const apiUrl = 'http://localhost:3000/api/queryBigQuery';
+  const apiUrl = 'https://backend.cloudhub.googleplex.com/queryBigQuery';
 
   try {
     // Send a POST request to the server
