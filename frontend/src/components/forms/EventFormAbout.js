@@ -252,7 +252,7 @@ export default function EventForm() {
                     style={{marginRight: '10px', color: blue[500]}}
                   />
                   <span className="mr-1 text-xl text-black  cursor-pointer">
-                    Activity{' '}
+                  {title.trim() !== '' ? title : 'Activity'}
                   </span>
 
                   <span style={{fontSize: '1.5rem', marginLeft: '10px'}}>
