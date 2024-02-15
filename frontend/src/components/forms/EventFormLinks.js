@@ -9,6 +9,16 @@ import {sendDataToAPI} from '../../api/pushData'; // Adjust the path as per your
 import LinkIcon from '@mui/icons-material/Link';
 import {blue} from '@mui/material/colors';
 
+const isValidUrl = (urlString) => {
+  try {
+    new URL(urlString);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+
 export default function LinksForm() {
   const {formData, updateFormData, selectedEvent} = useContext(GlobalContext);
 
@@ -22,11 +32,28 @@ export default function LinksForm() {
   );
   const navigate = useNavigate();
 
+  
   const publishedDate = selectedEvent ? selectedEvent.publishedDate : dayjs();
   const lastEditedDate = dayjs();
 
   const handleFinalSave = async () => {
-  // Merge current form data with previous form data
+    if (!isValidUrl(salesKitLink)) {
+      setSnackbarMessage('Invalid Sales Kit Link.');
+      setSnackbarOpen(true);
+      setIsError(true);
+      return;
+    } else if (!isValidUrl(hailoLink)) {
+      setSnackbarMessage('Invalid Hailo Link.');
+      setSnackbarOpen(true);
+      setIsError(true);
+      return;
+    } else if (!isValidUrl(otherDocumentsLink)) {
+      setSnackbarMessage('Invalid Other Documents Link.');
+      setSnackbarOpen(true);
+      setIsError(true);
+      return;
+    }
+    
     const FinalFormData = {
       ...formData,
    

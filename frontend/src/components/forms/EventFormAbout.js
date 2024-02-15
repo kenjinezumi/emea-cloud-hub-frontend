@@ -14,6 +14,7 @@ import {
   Grid,
   Switch,
   FormGroup,
+  Snackbar
 } from '@mui/material';
 import '../styles/Forms.css';
 import EmojiPicker from 'emoji-picker-react';
@@ -35,6 +36,16 @@ import {red} from '@mui/material/colors';
 import {blue} from '@mui/material/colors';
 const labelsClasses = ['indigo', 'gray', 'green', 'blue', 'red', 'purple'];
 
+const isValidUrl = (urlString) => {
+  try {
+    new URL(urlString);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+
 const getRandomColor = () => {
   const r = Math.floor(Math.random() * 256);
   const g = Math.floor(Math.random() * 256);
@@ -47,7 +58,8 @@ export default function EventForm() {
   const [colorMap, setColorMap] = useState({}); // New state to store colors
   const [organisedByOptions, setOrganisedByOptions] = useState([]); // State to store dropdown options
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
- 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const {
     daySelected,
     dispatchCalEvent,
@@ -183,6 +195,11 @@ export default function EventForm() {
   const handleNext = () => {
     const eventId = uuidv4(); // Generate a unique event ID
 
+    if (!isValidUrl(landingPageLink)) {
+      setSnackbarMessage('Please enter a valid URL for the landing page.');
+      setSnackbarOpen(true);
+      return; // Stop form submission
+    }
 
     // Save current form state to cache
     const isTitleValid = title.trim() !== '';
@@ -205,6 +222,7 @@ export default function EventForm() {
       // Prevent navigation if form is invalid
       return;
     }
+ 
 
     const newFormData = {
       landingPageLink,
@@ -493,6 +511,12 @@ export default function EventForm() {
                   margin="dense"
                 />
             </Grid>
+            <Snackbar
+  open={snackbarOpen}
+  autoHideDuration={6000}
+  onClose={() => setSnackbarOpen(false)}
+  message={snackbarMessage}
+/>
 
             {!isFormValid && (
               <Typography color="error" style={{marginBottom: '10px'}}>
