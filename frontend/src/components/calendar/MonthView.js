@@ -9,6 +9,8 @@ export default function MonthView({month, isYearView = false}) {
   const {setDaySelected, setShowEventModal, setShowInfoEventModal} = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const location = useLocation();
+  const {filters} = useContext(GlobalContext);
+  const [filteredEvents, setFilteredEvents] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,6 +24,24 @@ export default function MonthView({month, isYearView = false}) {
 
     fetchData();
   }, [location]);
+
+  useEffect(() => {
+    const applyFilters = (events, filters) => {
+      console.log('Applying filters to events:', events, 'with filters:', filters); // Before filtering
+
+      return events.filter((event) => {
+        const regionMatch = filters.regions.some((region) => region.checked && event.region.includes(region.label));
+        const eventTypeMatch = filters.eventType.some((type) => type.checked && event.eventType === type.label);
+        const okrMatch = filters.okr.some((okr) => okr.checked && event.okr.includes(okr.label));
+        const audienceSeniorityMatch = filters.audienceSeniority.some((seniority) => seniority.checked && event.audienceSeniority.includes(seniority.label));
+
+        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
+      });
+    };
+    const filteredEvents = applyFilters(events, filters);
+    console.log('Filtered events:', filteredEvents); // After filtering
+    setFilteredEvents(applyFilters(events, filters));
+  }, [events, filters]);
 
 
   useEffect(() => {
@@ -37,7 +57,7 @@ export default function MonthView({month, isYearView = false}) {
             <Day
               key={`day-${i}-${idx}`} // Add a unique key prop
               day={day}
-              events={events}
+              events={filteredEvents}
               setDaySelected={setDaySelected}
               isYearView={isYearView}
             />

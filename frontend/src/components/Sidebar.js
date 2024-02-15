@@ -6,7 +6,7 @@ import React, {useContext} from 'react';
 
 
 export default function Sidebar() {
-  const {isSidebarOpen} = useContext(GlobalContext);
+  const {isSidebarOpen, currentView} = useContext(GlobalContext);
 
   if (!isSidebarOpen) {
     return null; // or return some minimized version of the sidebar
@@ -15,7 +15,7 @@ export default function Sidebar() {
     <aside className="p-3 bg-white" style={{width: '15%'}}>
       <CreateEventButton />
       <SmallCalendar />
-      <Labels />
+      {currentView !== 'list' && <Labels />}
     </aside>
   );
 }

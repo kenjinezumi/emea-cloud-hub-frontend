@@ -46,6 +46,7 @@ const getRandomColor = () => {
 export default function EventForm() {
   const [colorMap, setColorMap] = useState({}); // New state to store colors
   const [organisedByOptions, setOrganisedByOptions] = useState([]); // State to store dropdown options
+  const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
 
   const {
     daySelected,
@@ -131,6 +132,33 @@ export default function EventForm() {
     setOrganisedBy(newOrganisedBy);
     setColorMap(newColorMap); // Update the color map
   };
+
+  useEffect(() => {
+    const fetchMarketingProgramOptions = async () => {
+      try {
+        const response = await queryBigQuery('marketingProgramQuery');
+        if (response && Array.isArray(response)) {
+          const options = response.map((row) => row.Sandbox_Program_Id);
+          const sortedOptions = options.sort(); // Sort the options alphabetically
+          setMarketingProgramOptions(sortedOptions);
+        } else {
+          console.error('Invalid response format:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching marketing program options:', error);
+      }
+    };
+
+    fetchMarketingProgramOptions();
+  }, []);
+
+  useEffect(() => {
+    // Prepopulate marketing program instance ID if available in formData
+    if (formData.marketingProgramInstanceId) {
+      setMarketingProgramInstanceId(formData.marketingProgramInstanceId);
+    }
+  }, [formData.marketingProgramInstanceId]);
+
 
   useEffect(() => {
     const fetchOrganisedByOptions = async () => {
@@ -442,14 +470,13 @@ export default function EventForm() {
                 Marketing Program Instance ID
               </Typography>
               <TextField
-                label=""
-                value={marketingProgramInstanceId}
-                onChange={(e) => setMarketingProgramInstanceId(e.target.value)}
-                variant="outlined"
-                fullWidth
-                // Try adjusting or removing this margin
-                margin="dense" // Changed from 'normal' to 'dense' for less space
-              />
+                  label=""
+                  value={marketingProgramInstanceId}
+                  onChange={(e) => setMarketingProgramInstanceId(e.target.value)}
+                  variant="outlined"
+                  fullWidth
+                  margin="dense"
+                />
             </Grid>
 
             {!isFormValid && (
