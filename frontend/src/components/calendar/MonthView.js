@@ -15,7 +15,7 @@ export default function MonthView({month, isYearView = false}) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const eventData = await getDummyEventData();
+        const eventData = await getDummyEventData('eventDataQuery');
         setEvents(eventData);
       } catch (error) {
         console.error('Error fetching event data:', error);

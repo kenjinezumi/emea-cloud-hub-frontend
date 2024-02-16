@@ -59,7 +59,7 @@ export default function WeekView() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const eventData = await getDummyEventData();
+        const eventData = await getDummyEventData('eventDataQuery');
         setEvents(eventData);
       } catch (error) {
         console.error('Error fetching events:', error);

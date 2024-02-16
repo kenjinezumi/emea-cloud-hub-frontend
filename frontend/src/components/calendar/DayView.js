@@ -4,6 +4,7 @@ import {Typography, Paper} from '@mui/material';
 import dayjs from 'dayjs';
 import {useLocation} from 'react-router-dom';
 import {getDummyEventData} from '../../api/getDummyData';
+
 import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 
 export default function DayView() {
@@ -56,7 +57,7 @@ export default function DayView() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const eventData = await getDummyEventData();
+        const eventData = await getDummyEventData('eventDataQuery');
         setEvents(eventData);
         setEventGroups(calculateOverlapGroups(eventData));
       } catch (error) {

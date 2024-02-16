@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function queryBigQuery(queryName) {
+export async function getDummyEventData(queryName) {
   // URL of your server-side API endpoint
   const apiUrl = 'https://backend.cloudhub.googleplex.com/queryBigQuery';
 
@@ -12,5 +12,6 @@ export async function queryBigQuery(queryName) {
     response.data.forEach((row) => console.log(row));
   } catch (error) {
     console.error(`Error querying '${queryName}' from the server:`, error.message);
+    return [];
   }
 }

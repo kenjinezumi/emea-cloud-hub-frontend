@@ -12,5 +12,6 @@ export async function queryBigQuery(queryName) {
     response.data.forEach((row) => console.log(row));
   } catch (error) {
     console.error(`Error querying '${queryName}' from the server:`, error.message);
+    return [];
   }
 }

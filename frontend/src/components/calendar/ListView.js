@@ -15,7 +15,7 @@ export default function ListView({}) {
   const location = useLocation(); // useLocation hook
   const fetchData = async () => {
     try {
-      const eventData = await getDummyEventData();
+      const eventData = await getDummyEventData('eventDataQuery');
       setEvents(eventData);
     } catch (error) {
       console.error('Error fetching event data:', error);
@@ -53,7 +53,7 @@ export default function ListView({}) {
 
     const fetchData = async () => {
       try {
-        const eventData = await getDummyEventData();
+        const eventData = await getDummyEventData('eventDataQuery');
         setEvents(eventData);
       } catch (error) {
         console.error('Error fetching event data:', error);
