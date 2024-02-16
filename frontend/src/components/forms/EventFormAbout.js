@@ -210,7 +210,7 @@ export default function EventForm() {
 
     const formIsValid =
       isTitleValid &&
-      isorganisedByValid &&
+      // isorganisedByValid &&
       isEventTypeValid &&
       isDescriptionValid &&
       isMarketingProgramInstanceIdValid;

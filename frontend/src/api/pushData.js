@@ -1,4 +1,4 @@
-const API_URL = 'your-api-url'; // Replace with your API's URL
+const API_URL = 'https://backend.cloudhub.googleplex.com/'; // Replace with your API's URL
 
 const sendDataToAPI = async (data) => {
   console.log(data);

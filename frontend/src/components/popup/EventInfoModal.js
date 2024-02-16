@@ -39,10 +39,14 @@ export default function EventInfoPopup() {
  
 
   const handleShareEvent = () => {
-    if (selectedEvent && selectedEvent.id) {
-      navigate(`/event/${selectedEvent.id}`);
+    console.log('wtf');
+    console.log(selectedEvent.eventId)
+    if (selectedEvent && selectedEvent.eventId) {
+      console.log('hi')
+      navigate(`/event/${selectedEvent.eventId}`);
     }
   };
+  
 
   const handleEditEvent = () => {
     if (selectedEvent) {

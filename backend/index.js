@@ -5,6 +5,7 @@ const {BigQuery} = require('@google-cloud/bigquery');
 const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
+import {insertIntoBigQuery} from './helpers/saveData'; // Assuming this is your API call
 
 app.use(express.json());
 
@@ -38,6 +39,47 @@ app.post('/queryBigQuery', async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error(`ERROR: ${error}`);
+    res.status(500).send(error.message);
+  }
+});
+
+// Assuming you have setup express, and bigquery as shown in previous snippets
+
+app.get('/event/:eventId', async (req, res) => {
+  const { eventId } = req.params;
+  const query = `
+    SELECT * FROM \`google.com:cloudhub.data.master_event_data\`
+    WHERE eventId = @eventId
+  `;
+  const options = {
+    query: query,
+    params: { eventId: eventId },
+    location: 'US',
+  };
+
+  try {
+    const [rows] = await bigquery.query(options);
+    if (rows.length > 0) {
+      res.json(rows[0]);
+    } else {
+      res.status(404).send('Event not found');
+    }
+  } catch (error) {
+    console.error(`ERROR: ${error}`);
+    res.status(500).send(error.message);
+  }
+});
+
+
+app.post('/saveEventData', async (req, res) => {
+  const formData = req.body;
+  const datasetId = 'data';
+  const tableId = 'master_event_data';
+
+  try {
+    await insertIntoBigQuery(formData, datasetId, tableId);
+    res.json({ message: 'Data saved successfully' });
+  } catch (error) {
     res.status(500).send(error.message);
   }
 });

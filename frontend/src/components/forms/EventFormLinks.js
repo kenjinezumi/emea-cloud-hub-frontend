@@ -64,6 +64,7 @@ export default function LinksForm() {
       lastEditedDate,
     };
 
+    console.log(FinalFormData);
 
 
     try {
