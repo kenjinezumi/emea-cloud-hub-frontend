@@ -1,7 +1,6 @@
-const API_URL = 'https://backend.cloudhub.googleplex.com/'; // Replace with your API's URL
+const API_URL = 'https://backend-dot-cloudhub.googleplex.com/saveEventData'; // Replace with your API's URL
 
 const sendDataToAPI = async (data) => {
-  console.log(data);
   try {
     const response = await fetch(API_URL, {
       method: 'PUT',
@@ -10,7 +9,6 @@ const sendDataToAPI = async (data) => {
       },
       body: JSON.stringify(data),
     });
-    console.log(JSON.stringify(data));
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }

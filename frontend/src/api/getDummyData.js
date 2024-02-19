@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function getDummyEventData(queryName) {
   // URL of your server-side API endpoint
-  const apiUrl = 'https://backend.cloudhub.googleplex.com/queryBigQuery';
+  const apiUrl = 'https://backend-dot-cloudhub.googleplex.com/queryBigQuery';
 
   try {
     // Send a POST request to the server

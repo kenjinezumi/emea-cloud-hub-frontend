@@ -108,7 +108,6 @@ export default function WeekView() {
   };
   const globalContext = useContext(GlobalContext);
 
-  console.log('Global Context:', globalContext);
 
   return (
     <Paper sx={{width: '80%', overflowY: 'auto', padding: 2, border: 'none'}}>
