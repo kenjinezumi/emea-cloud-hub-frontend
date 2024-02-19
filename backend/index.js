@@ -5,8 +5,10 @@ const {BigQuery} = require('@google-cloud/bigquery');
 const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
-import {insertIntoBigQuery} from './helpers/saveData'; // Assuming this is your API call
+const cors = require('cors'); // Import the cors middleware
 
+import {insertIntoBigQuery} from './helpers/saveData'; // Assuming this is your API call
+app.use(cors()); // Use the cors middleware to handle CORS headers
 app.use(express.json());
 
 const bigquery = new BigQuery();
@@ -22,6 +24,13 @@ function loadQueries() {
     throw error; // Rethrow to handle it in the endpoint
   }
 }
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://cloudhub.googleplex.com, https://login.corp.google.com');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
 app.post('/queryBigQuery', async (req, res) => {
   try {
