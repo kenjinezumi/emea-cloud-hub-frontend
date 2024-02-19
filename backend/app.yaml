@@ -11,15 +11,5 @@ automatic_scaling:
   min_pending_latency: 30ms
   max_pending_latency: 50ms
 
-handlers:
-- url: /queryBigQuery
-  script: auto
-
-- url: /event/.*
-  script: auto
-
-- url: /saveEventData
-  script: auto
-
 - url: .*
-  script: auto
+  script: app.js
