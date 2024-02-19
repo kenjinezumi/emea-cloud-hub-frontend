@@ -1,4 +1,4 @@
-service: frontend 
+service: default
 
 runtime: nodejs20
 instance_class: F4_1G
