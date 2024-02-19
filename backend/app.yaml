@@ -12,5 +12,14 @@ automatic_scaling:
   max_pending_latency: 50ms
 
 handlers:
-- url: /backend/.*
+- url: /queryBigQuery
+  script: auto
+
+- url: /event/.*
+  script: auto
+
+- url: /saveEventData
+  script: auto
+
+- url: .*
   script: auto

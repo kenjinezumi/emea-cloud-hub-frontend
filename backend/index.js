@@ -7,7 +7,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 const cors = require('cors'); // Import the cors middleware
 
-import {insertIntoBigQuery} from './helpers/saveData'; // Assuming this is your API call
+const { insertIntoBigQuery } = require('./helpers/saveData');
 app.use(cors()); // Use the cors middleware to handle CORS headers
 app.use(express.json());
 
