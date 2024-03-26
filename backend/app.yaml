@@ -13,3 +13,5 @@ automatic_scaling:
 
 - url: .*
   script: app.js
+  http_headers:
+    Access-Control-Allow-Origin: https://cloudhub.googleplex.com/
