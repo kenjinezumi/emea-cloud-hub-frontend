@@ -5,11 +5,19 @@ const {BigQuery} = require('@google-cloud/bigquery');
 const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
-const cors = require('cors'); // Import the cors middleware
+const cors = require('cors'); 
 
 const { insertIntoBigQuery } = require('./helpers/saveData');
-app.use(cors()); // Use the cors middleware to handle CORS headers
-app.use(express.json());
+
+const corsOptions = {
+  origin: '*', // Or more specific origins for better security
+  methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'], // Add any other headers your client might send
+  credentials: true, // If your client needs to send cookies
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
 
 const bigquery = new BigQuery();
 
@@ -25,34 +33,29 @@ function loadQueries() {
   }
 }
 
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://cloudhub.googleplex.com, https://login.corp.google.com');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
 
 app.post('/queryBigQuery', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
   try {
-    const { queryName } = req.body; // Destructure queryName from the request body
-    const queries = loadQueries(); // Load queries from the JSON file
+    // const { queryName } = req.body; // Destructure queryName from the request body
+    // const queries = loadQueries(); // Load queries from the JSON file
     
-    if (!queries[queryName]) {
-      return res.status(404).json({ error: `Query '${queryName}' not found.` });
-    }
+    // if (!queries[queryName]) {
+    //   return res.status(404).json({ error: `Query '${queryName}' not found.` });
+    // }
     
-    const query = queries[queryName]; 
-    const options = { query: query, location: 'US' };
-    const [rows] = await bigquery.query(options);
+    // const query = queries[queryName]; 
+    // const options = { query: query, location: 'US' };
+    // const [rows] = await bigquery.query(options);
 
-    res.json(rows);
+    // res.json(rows);
+    res.json('hi');
   } catch (error) {
     console.error(`ERROR: ${error}`);
     res.status(500).send(error.message);
   }
 });
 
-// Assuming you have setup express, and bigquery as shown in previous snippets
 
 app.get('/event/:eventId', async (req, res) => {
   const { eventId } = req.params;
@@ -78,6 +81,7 @@ app.get('/event/:eventId', async (req, res) => {
     res.status(500).send(error.message);
   }
 });
+
 
 
 
