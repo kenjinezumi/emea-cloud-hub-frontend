@@ -1,4 +1,5 @@
 const API_URL = 'https://backend-dot-cloudhub.googleplex.com/saveEventData'; // Replace with your API's URL
+console.log('CHECKING THE save DATA API');
 
 const sendDataToAPI = async (data) => {
   try {

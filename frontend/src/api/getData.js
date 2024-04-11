@@ -2,6 +2,7 @@ import axios from 'axios';
 
 export async function queryBigQuery(queryName) {
   // URL of your server-side API endpoint
+  console.log('CHECKING THE GET DATA API');
   const apiUrl = 'https://backend-dot-cloudhub.googleplex.com/queryBigQuery';
 
   try {

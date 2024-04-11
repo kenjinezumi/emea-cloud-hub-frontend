@@ -11,7 +11,7 @@ automatic_scaling:
   max_pending_latency: 50ms
 
 handlers:
-- url: .*
+- url: /.*
+  secure: always
   script: app.js
-  http_headers:
-    Access-Control-Allow-Origin: https://cloudhub.googleplex.com/
+
