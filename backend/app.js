@@ -1,50 +1,77 @@
-/* eslint-env node */
-
 const express = require('express');
-// const {BigQuery} = require('@google-cloud/bigquery');
-const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 const cors = require('cors'); 
-// const cookieParser = require('cookie-parser');
-// app.use(cookieParser());
+const cookieParser = require('cookie-parser');
+const routes = require('./routes');
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
 
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", ["https://cloudhub.googleplex.com"]);
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Credentials", "true");
-
-  if (req.method === "OPTIONS") {
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.status(204).end();
-    return; 
+  var oneof = false;
+  if(req.headers.origin) {
+      res.header('Access-Control-Allow-Origin', req.headers.origin);
+      res.header('Access-Control-Allow-Credentials', 'true'); 
+      oneof = true;
+  }
+  if(req.headers['access-control-request-method']) {
+      res.header('Access-Control-Allow-Methods', req.headers['access-control-request-method']);
+      oneof = true;
+  }
+  if(req.headers['access-control-request-headers']) {
+      res.header('Access-Control-Allow-Headers', req.headers['access-control-request-headers']);
+      oneof = true;
+  }
+  if(oneof) {
+      res.header('Access-Control-Max-Age', 60 * 60 * 24 * 365);
   }
 
-  next();
+  // intercept OPTIONS method
+  if (oneof && req.method == 'OPTIONS') {
+      res.send(200);
+  }
+  else {
+      next();
+  }
 });
 
-app.get('/', (req, res) => {
-  console.log('GET request to the root');
-  res.json({ message: 'GET request success' });
+// Middleware for parsing plain text
+app.use((req, res, next) => {
+  if (req.headers['content-type'] === 'text/plain') {
+    let data = '';
+    req.on('data', chunk => {
+      data += chunk;
+    });
+    req.on('end', () => {
+      try {
+        // Attempt to parse the text as JSON
+        req.body = JSON.parse(data);
+      } catch (error) {
+        // If parsing fails, log an error or handle it as needed
+        console.error('Error parsing JSON from text/plain request body:', error);
+      }
+      next();
+    });
+  } else {
+    next();
+  }
 });
 
-// Basic POST endpoint
-app.post('/queryBigQuery', (req, res) => {
-  console.log('POST request to /TEST');
-  // Log the request body to see what was sent by the client
-  console.log('Request Body:', req.body);
-  res.json({ message: 'POST request success', requestBody: req.body });
+
+// Middleware for cookie parsing
+app.use(cookieParser());
+
+// Mount the router at the root path
+app.use('/', routes);
+
+// Middleware for the errors management
+app.use((err, req, res, next) => {
+  console.error(`[ERROR] ${err.stack}`);
+  res.status(500).json({
+    success: false,
+    message: 'An unexpected error occurred on the server.'
+  });
 });
-
-
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
-
