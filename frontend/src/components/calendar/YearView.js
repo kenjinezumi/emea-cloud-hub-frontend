@@ -45,15 +45,29 @@ export default function YearView() {
     fetchData(); // Fetch event data when the component mounts
   }, []); // Empty dependency array to run this effect once
 
-  events.forEach((event) => {
-    const eventDate = dayjs(event.startDate);
-    const monthIndex = eventDate.month();
-    const eventType = event.eventType;
 
-    if (eventTypeCounts[eventType]) {
-      eventTypeCounts[eventType][monthIndex]++;
-    }
-  });
+  if (Array.isArray(events)) {
+    events.forEach((event) => {
+      if (event.startDate && event.eventType) {
+        const eventDate = dayjs(event.startDate);
+        const monthIndex = eventDate.month();
+        const eventType = event.eventType;
+  
+        // Ensure that each eventType key exists in eventTypeCounts.
+        // This is useful if the set of event types isn't known in advance.
+        if (!eventTypeCounts[eventType]) {
+          eventTypeCounts[eventType] = Array(12).fill(0);
+        }
+  
+        // Safely increment the count for the event type and month.
+        eventTypeCounts[eventType][monthIndex]++;
+      } else {
+        console.warn('Encountered an event with missing startDate or eventType', event);
+      }
+    });
+  } else {
+    console.error('Expected events to be an array', events);
+  }
 
   const location = useLocation(); // useLocation hook
 

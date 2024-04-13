@@ -4,7 +4,7 @@ import GlobalContext from '../../context/GlobalContext';
 import CalendarHeaderForm from '../commons/CalendarHeaderForm';
 import {v4 as uuidv4} from 'uuid';
 
-import {queryBigQuery} from '../../api/getData'; 
+import {getDummyEventData} from '../../api/getDummyData'; 
 import {
   Button,
   TextField,
@@ -149,7 +149,7 @@ export default function EventForm() {
   useEffect(() => {
     const fetchMarketingProgramOptions = async () => {
       try {
-        const response = await queryBigQuery('marketingProgramQuery');
+        const response = await getDummyEventData('marketingProgramQuery');
         if (response && Array.isArray(response)) {
           const options = response.map((row) => row.Sandbox_Program_Id);
           const sortedOptions = options.sort(); // Sort the options alphabetically
@@ -176,9 +176,9 @@ export default function EventForm() {
   useEffect(() => {
     const fetchOrganisedByOptions = async () => {
       try {
-        const response = await queryBigQuery('organisedByOptionsQuery');
+        const response = await getDummyEventData('organisedByOptionsQuery');
         if (response && Array.isArray(response)) {
-          const options = response.map((row) => row.organisedBy);
+          const options = response.map((row) => row.title).sort();
           setOrganisedByOptions(options);
         } else {
           console.error('Invalid response format:', response);

@@ -30,19 +30,35 @@ export default function ListView({}) {
 
 
   useEffect(() => {
-    const applyFilters = (events, filters) => {
-
-      return events.filter((event) => {
-        const regionMatch = filters.regions.some((region) => region.checked && event.region.includes(region.label));
-        const eventTypeMatch = filters.eventType.some((type) => type.checked && event.eventType === type.label);
-        const okrMatch = filters.okr.some((okr) => okr.checked && event.okr.includes(okr.label));
-        const audienceSeniorityMatch = filters.audienceSeniority.some((seniority) => seniority.checked && event.audienceSeniority.includes(seniority.label));
-
-        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
+    const applyFilters = async (events, filters) => {
+      // Ensure 'events' is an array before proceeding
+      if (!Array.isArray(events)) {
+        console.error("applyFilters was called with 'events' that is not an array:", events);
+        return [];
+      }
+      
+      console.log(events);
+  
+      const filterPromises = events.map(event => {
+        // Immediately invoked asynchronous function to handle possible async conditions inside the filter logic
+        return (async () => {
+          const regionMatch = filters.regions.some(region => region.checked && event.region.includes(region.label));
+          const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
+          const okrMatch = filters.okr.some(okr => okr.checked && event.okr.includes(okr.label));
+          const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority.includes(seniority.label));
+  
+          return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
+        })();
       });
+  
+      const results = await Promise.all(filterPromises);
+      return events.filter((_, index) => results[index]);
     };
-    const filteredEvents = applyFilters(events, filters);
-    setFilteredEvents(applyFilters(events, filters));
+  
+    (async () => {
+      const filteredEvents = await applyFilters(events, filters);
+      setFilteredEvents(filteredEvents);
+    })();
   }, [events, filters]);
 
 

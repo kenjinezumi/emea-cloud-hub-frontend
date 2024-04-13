@@ -1,15 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { GoogleAuth } = require('google-auth-library');
-const loadQueries = require('./utils/queriesLoaders');
 const { BigQuery } = require('@google-cloud/bigquery');
-// Middleware for cookie parsing
+const loadQueriesAsync = require('./utils/queriesLoaders');
+
+// Middleware for parsing JSON bodies
 router.use(express.json());
 
-// Init BQ
+// Initialize BigQuery client
 const bigquery = new BigQuery();
+
+// Handler for GET requests
 router.get('/', async (req, res) => {
-  const { queryName } = req.query; 
+  const { queryName } = req.query;
 
   if (!queryName) {
     return res.status(400).json({
@@ -18,79 +20,71 @@ router.get('/', async (req, res) => {
     });
   }
 
-  res.json(
-    {message:queryName}
-  );
+  res.json({ message: queryName });
 });
 
-// Get query from BigQuery
+// Handler for POST requests
 router.post('/', async (req, res) => {
-  // try {
-  //   const auth = new GoogleAuth({
-  //     // Specify the required scopes
-  //     scopes: 'https://www.googleapis.com/auth/cloud-platform',
-  //   });
+  const { message, queryName, data } = req.body;
 
-  //   // Acquire a client, and use it to fetch the token
-  //   const client = await auth.getClient();
-  //   const accessToken = await client.getAccessToken();
-
-  //   // Send the token back to the client
-  //   res.json({ accessToken: accessToken.token });
-  // } catch (error) {
-  //   console.error('Error fetching access token:', error);
-  //   res.status(500).send('Failed to fetch access token');
-  // }
-  const { queryName } = req.body;
-
-  // Example: Returning the "queryName" from the request body in the response
-  res.json({
-    message: `Received query name: ${queryName}`
-  });
-  // console.log(`Request Method: ${req.method}`);
-  // console.log(`Request URL: ${req.originalUrl}`);
-  // console.log(`Request IP: ${req.ip}`);
-  // console.log(`Request Body: ${JSON.stringify(req.body)}`);
-  // console.log(`Request Headers: ${JSON.stringify(req.headers)}`);
-  
-  // const { queryName } = req.body;
-
-  // if (!queryName) {
-  //   return res.status(400).json({
-  //     success: false,
-  //     message: 'Query name is required.'
-  //   });
-  // }
-
-  // console.log(`Running query for: ${queryName}`);
-  
-  // try {
-  //   const queries = loadQueries(); 
+  if (message === 'save-data') {
+    try {
+      await saveEventData(data);
+      res.json({ success: true, message: 'Data saved successfully.' });
+    } catch (error) {
+      if (error.name === 'PartialFailureError') {
+        console.error('Partial failure occurred:', error.errors);
+      } else {
+        console.error('ERROR:', error);
+      }
+      throw error; 
+    }
     
-  //   if (!queries.hasOwnProperty(queryName)) {
-  //     console.log(`Query '${queryName}' does not exist.`);
-  //     return res.status(404).json({
-  //       success: false,
-  //       message: `Query '${queryName}' not found.`
-  //     });
-  //   }
-    
-  //   const query = queries[queryName];
-  //   const options = { query: query, location: 'US' };
-  //   const [rows] = await bigquery.query(options);
-
-  //   res.json({
-  //     success: true,
-  //     message: `${rows.length} rows retrieved successfully.`,
-  //     data: rows
-  //   });
-  // } catch (error) {
-  //   console.error(`Query execution error: ${error}`);
-  //   res.status(500).json({
-  //     success: false,
-  //     message: 'Failed to execute query. Please try again later.'
-  //   });
-  // }
+  } else if (queryName) {
+    // This branch handles fetching data based on a provided queryName
+    try {
+      const queries = await loadQueriesAsync();
+      const query = queries[queryName];
+      if (!query) {
+        return res.status(404).json({ success: false, message: 'Query not found.' });
+      }
+      const options = { query: query, location: 'US' };
+      const [rows] = await bigquery.query(options);
+      res.json({
+        success: true,
+        message: `${rows.length} rows retrieved successfully.`,
+        data: rows
+      });
+    } catch (error) {
+      console.error(`Query execution error: ${error}`);
+      res.status(500).json({ success: false, message: 'Failed to execute query. Please try again later.' });
+    }
+  } else {
+    // If neither save-data message nor queryName is provided
+    res.status(400).json({ success: false, message: 'Invalid request.' });
+  }
 });
+
+// Function to save event data
+async function saveEventData(eventData) {
+  const datasetId = 'data';
+  const tableId = 'master_event_data';
+
+  // Serialize accountSegments to a JSON string
+  eventData.isHighPriority = eventData.isHighPriority.toString(); 
+  eventData.accountSegments = JSON.stringify(eventData.accountSegments);  
+  eventData.region = [eventData.region]; 
+
+  delete eventData.dropdownValue2;
+  delete eventData.languagesAndTemplates;
+ 
+  try {
+    await bigquery.dataset(datasetId).table(tableId).insert([eventData]);
+    console.log(`Inserted 1 row into table ${tableId}`);
+  } catch (error) {
+    console.error('ERROR:', error);
+    throw error; // Consider handling this error more gracefully
+  }
+}
 
 module.exports = router;
