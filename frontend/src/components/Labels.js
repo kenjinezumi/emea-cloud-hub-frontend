@@ -116,7 +116,9 @@ export default function Filters() {
         style={{ color: '#1976d2',}} // Google's blue color
       >
       <DoneAllIcon style={{ fontSize: '20px', marginLeft:'0px' }}/> 
-      </IconButton>  <span style={{ fontSize: '14px' }}>Select all filters</span> 
+      </IconButton>  <button style={{ fontSize: '14px', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer' }} onClick={selectAllFilters}>
+    Select all filters
+</button>
 
     </div>
     <div >
@@ -128,7 +130,9 @@ export default function Filters() {
         style={{ color: '#d32f2f' }} // Google's red color
       >
         <ClearIcon style={{ fontSize: '20px' }}/>
-      </IconButton><span style={{ fontSize: '14px' }}>Clear all filters</span> 
+      </IconButton><button style={{ fontSize: '14px', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer' }} onClick={clearAllFilters}>
+    Clear all filters
+</button> 
    </div>
 {/* After the Clear all filters div */}
 <hr style={{ margin: '8px 0', border: 0, }} />

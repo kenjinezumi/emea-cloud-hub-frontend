@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { Typography, Grid, Chip, Divider, Paper, Link } from '@mui/material';
+import CalendarHeaderEventShare from '../commons/CalendarHeaderEventShare';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import LinkIcon from '@mui/icons-material/Link';
+import PeopleIcon from '@mui/icons-material/People';
+import InfoIcon from '@mui/icons-material/Info';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import {blue} from '@mui/material/colors';
+import {getDummyEventData} from '../../api/getDummyData';
 import { useParams } from 'react-router-dom';
-import { Paper, Typography, Stack, Divider } from '@mui/material';
 
-// Adjusted API call function to hit your backend endpoint
-const fetchEventDetails = async (eventId) => {
-  // Replace this URL with your actual endpoint that fetches event details
-  const response = await fetch(`https://backend.cloudhub.googleplex.com/event/${eventId}`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch event details');
-  }
-  return response.json();
-};
+
 
 function ShareEventPage() {
   const { eventId } = useParams();
@@ -19,9 +19,9 @@ function ShareEventPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchEventDetails(eventId)
+   getDummyEventData(eventId)
       .then((data) => {
-        setEventDetails(data);
+        setEventDetails(data[0]);
         setLoading(false);
       })
       .catch((error) => {
@@ -31,30 +31,127 @@ function ShareEventPage() {
       });
   }, [eventId]);
 
+  useEffect(() => {
+    if (eventDetails) {
+      console.log(eventDetails); // This will log after eventDetails is updated
+    }
+  }, [eventDetails]); 
+
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography color="error">{error}</Typography>;
 
   // Display event details with improved structure
   return (
-    <Paper elevation={3} sx={{ padding: 2, margin: 'auto', maxWidth: 600, mt: 4 }}>
-      <Stack spacing={2}>
-        <Typography variant="h5" component="h2">{eventDetails.title}</Typography>
-        <Divider />
-        {/* Display more detailed event information */}
-        <Typography variant="body1">Start Date: {new Date(eventDetails.startDate).toLocaleString()}</Typography>
-        <Typography variant="body1">End Date: {new Date(eventDetails.endDate).toLocaleString()}</Typography>
-        <Typography variant="body1">Location: {eventDetails.location}</Typography>
-        <Typography variant="body1">Organised By: {eventDetails.organisedBy}</Typography>
-        <Typography variant="body1">Event Type: {eventDetails.eventType}</Typography>
-        <Typography variant="body1">Description: {eventDetails.description}</Typography>
-        {/* Add more event details as per your requirement */}
-        {eventDetails.landingPageLink && (
-          <Typography variant="body1">
-            Landing Page: <a href={eventDetails.landingPageLink} target="_blank" rel="noreferrer">Click Here</a>
-          </Typography>
-        )}
-      </Stack>
-    </Paper>
+    <div className="h-screen flex flex-col">
+      <CalendarHeaderEventShare />
+
+      <div className="form-container" >
+        <div className="event-form" >
+          <Paper style={{ padding: 20, margin: '20px', overflow: 'auto', border: 'none',  
+          boxShadow: '0px 0px 0px rgba(0,0,0,0.1)' }} >
+          <Grid container spacing={3} className="form-grid" style={{ border: 'none' }}>
+              <Grid item xs={12} >
+                <Typography variant="h5" gutterBottom component="div">
+                  <CalendarMonthIcon style={{ verticalAlign: 'middle', color: blue[500], marginRight: 8 }} id="about-section" />
+                  About
+                </Typography>
+                <hr />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Title:</Typography>
+                <Typography variant="body1" gutterBottom>{eventDetails.title} {eventDetails.emoji}</Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Description:</Typography>
+                <Typography variant="body1" gutterBottom>{eventDetails.description}</Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Organised By:</Typography>
+                {eventDetails.organisedBy.map((organiser, index) => (
+                  <Chip key={index} label={organiser} style={{ margin: 2 }} />
+                ))}
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="h5" gutterBottom component="div">
+                  <LocationOnIcon style={{ verticalAlign: 'middle', color: blue[500], marginRight: 8 }}  id="location-section"/>
+                  Location
+                </Typography>
+                <hr />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Regions:</Typography>
+                {eventDetails.region.map((region, index) => (
+                  <Chip key={index} label={region} style={{ margin: 2 }} />
+                ))}
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Sub Regions:</Typography>
+                {eventDetails.subRegion.map((subRegion, index) => (
+                  <Chip key={index} label={subRegion} style={{ margin: 2 }} />
+                ))}
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Countries:</Typography>
+                {eventDetails.country.map((country, index) => (
+                  <Chip key={index} label={country} style={{ margin: 2 }} />
+                ))}
+              </Grid>
+              <Grid item xs={12} >
+                <Typography variant="h5" gutterBottom component="div">
+                  <PeopleIcon style={{ verticalAlign: 'middle', color: blue[500], marginRight: 8 }} id="audience-section"/>
+                  Audience
+                </Typography>
+                <hr />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Audience Persona:</Typography>
+                {eventDetails.audiencePersona.map((persona, index) => (
+                  <Chip key={index} label={persona} style={{ margin: 2 }} />
+                ))}
+              </Grid>
+              <Grid item xs={12} >
+                <Typography variant="h5" gutterBottom component="div">
+                  <InfoIcon style={{ verticalAlign: 'middle', color: blue[500], marginRight: 8 }} id="extra-details-section"/>
+                  Extra details
+                </Typography>
+                <hr />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Email Language:</Typography>
+                <Typography variant="body1" gutterBottom>{eventDetails.emailLanguage}</Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Email Text:</Typography>
+                <Typography variant="body1" gutterBottom>{eventDetails.emailText}</Typography>
+              </Grid>
+              <Grid item xs={12} >
+                <Typography variant="h5" gutterBottom component="div">
+                  <LinkIcon style={{ verticalAlign: 'middle', color: blue[500], marginRight: 8 }} id="links-section"/>
+                  Links
+                </Typography>
+                <hr />
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="body1" gutterBottom>
+                Landing Page: <Link href={eventDetails.landingPageLink}  target="_blank">{eventDetails.landingPageLink}</Link>
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                Sales Kit: <Link href={eventDetails.salesKitLink} sx={{ marginBottom: 2 }} target="_blank">{eventDetails.salesKitLink}</Link><br />
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                HAILO Link: <Link href={eventDetails.hailoLink} sx={{ marginBottom: 2 }} target="_blank">{eventDetails.hailoLink}</Link><br />
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                Other Documents: <Link href={eventDetails.otherDocumentsLink} sx={{ marginBottom: 2 }} target="_blank">{eventDetails.otherDocumentsLink}</Link>
+                </Typography>
+
+
+              </Grid>
+            </Grid>
+          </Paper>
+        </div>
+      </div>
+    </div>
   );
 }
 

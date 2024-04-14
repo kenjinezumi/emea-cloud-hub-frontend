@@ -43,6 +43,7 @@ export default function RenderCalendarView() {
     <div className="h-screen flex flex-col">
       {showEventModal && <EventModal />}
 
+
       <CalendarHeader />
       {sidebarOpen && <Sidebar />}
 

@@ -40,6 +40,7 @@ export const GlobalProvider = ({children}) => {
   const [showEventListModal, setShowEventListModal] = useState(false);
   const [showEventInfoModal, setShowInfoEventModal] = useState(false);
   const [searchText, setSearchText] = useState(''); // Add searchText state
+  const [eventDetails, setEventDetails] = useState(null);
 
   const [savedEvents, setSavedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -98,6 +99,9 @@ export const GlobalProvider = ({children}) => {
         updateFilters,
         searchText,
         setSearchText,
+        eventDetails, 
+        setEventDetails
+
 
       }}
     >

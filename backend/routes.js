@@ -40,7 +40,7 @@ router.post('/', async (req, res) => {
       throw error; 
     }
     
-  } else if (queryName) {
+  } else if (queryName=='eventDataQuery') {
     // This branch handles fetching data based on a provided queryName
     try {
       console.log('Fetching the data');
@@ -62,8 +62,21 @@ router.post('/', async (req, res) => {
       res.status(500).json({ success: false, message: 'Failed to execute query. Please try again later.' });
     }
   } else {
-    // If neither save-data message nor queryName is provided
-    res.status(400).json({ success: false, message: 'Invalid request.' });
+    try {
+   
+      const query = `SELECT * FROM \`google.com:cloudhub.data.master_event_data\` WHERE eventId = '${queryName}'`;
+      const options = { query: query, location: 'US' };
+      const [rows] = await bigquery.query(options);
+      console.log([rows]);
+      res.status(200).json({
+        success: true,
+        message: `${rows.length} rows retrieved successfully.`,
+        data: rows
+      });
+    } catch (error) {
+      console.error(`Query execution error: ${error}`);
+      res.status(500).json({ success: false, message: 'Failed to execute query. Please try again later.' });
+    }s
   }
 });
 

@@ -4,8 +4,10 @@ import {Typography, Paper} from '@mui/material';
 import dayjs from 'dayjs';
 import {useLocation} from 'react-router-dom';
 import {getDummyEventData} from '../../api/getDummyData';
+import minMax from 'dayjs/plugin/minMax';
 
 import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
+dayjs.extend(minMax);
 
 export default function DayView() {
   const {daySelected} = useContext(GlobalContext);
@@ -22,7 +24,7 @@ export default function DayView() {
 
 
   const {filters} = useContext(GlobalContext);
-  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [Eventsfiltered, setFilteredEvents] = useState([]);
   useEffect(() => {
     const applyFilters = async (events, filters) => {
       // Ensure 'events' is an array before proceeding
@@ -125,9 +127,16 @@ export default function DayView() {
   const calculateEventBlockStyles = (event) => {
     const eventStart = dayjs(event.startDate);
     const eventEnd = dayjs(event.endDate);
+    const startOfDay = daySelected.startOf('day');
+    const endOfDay = daySelected.endOf('day');
 
-    const minutesFromMidnight = eventStart.diff(daySelected.startOf('day'), 'minutes');
-    const durationInMinutes = eventEnd.diff(eventStart, 'minutes');
+    // Ensure the event starts at or after the start of the day or at the event start time, whichever is later
+    const displayStart = dayjs.max(startOfDay, eventStart);
+    // Ensure the event ends at or before the end of the day or at the event end time, whichever is earlier
+    const displayEnd = dayjs.min(endOfDay, eventEnd);
+
+    const minutesFromMidnight = displayStart.diff(startOfDay, 'minutes');
+    const durationInMinutes = displayEnd.diff(displayStart, 'minutes');
 
     const top = (minutesFromMidnight / 60) * hourHeight;
     const height = (durationInMinutes / 60) * hourHeight;
@@ -137,8 +146,17 @@ export default function DayView() {
     const index = group ? group.indexOf(event) : 0;
     const left = width * index;
 
-    return {top, height, left, width};
-  };
+    return { top, height, left, width };
+};
+
+
+const dayEvents = Eventsfiltered.filter(evt =>
+  dayjs(evt.startDate).isSame(daySelected, 'day') ||
+  dayjs(evt.endDate).isSame(daySelected, 'day') ||
+  (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
+);
+
+
 
   return (
     <Paper
@@ -166,9 +184,6 @@ export default function DayView() {
         }}
       ></div>
       <div style={{display: 'flex', alignItems: 'flex-start'}}>
-        {/* Time Column */}
-        {/* ... Time column code ... */}
-        {/* Time Column */}
         <div
           style={{
             flex: '0 0 auto',
@@ -257,39 +272,46 @@ export default function DayView() {
           ))}
 
           {/* Event rendering */}
-          {filteredEvents.map((event) => {
-            if (dayjs(event.startDate).isSame(daySelected, 'day')) {
-              const {top, height, left, width} = calculateEventBlockStyles(event);
-              return (
-                <div
-                  key={event.eventId}
-                  style={{
-                    position: 'absolute',
-                    top: `${top}px`,
-                    left: `${left}%`,
-                    width: `${width}%`,
-                    height: `${height}px`,
-                    backgroundColor: '#fff', // White background for the event block
-                    borderLeft: '4px solid #1a73e8', // Blue left border for event type indication
-                    boxShadow: '2 3px 3px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
-                    margin: '4px 0', // Slightly more space between events
-                    marginLeft: '4px', // Left margin to align with the grid
-                    padding: '10px',
-                    boxSizing: 'border-box',
-                    zIndex: 1000,
-                    transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transitions for hover effects
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => {
-                    handleEventClick(event);
-                  }}
-                >
-                  <Typography variant="body1">{event.title}</Typography>
-                </div>
-              );
-            }
-            return null;
-          })}
+          {/* Event rendering */}
+{dayEvents.map((event) => {
+  const { top, height, left, width } = calculateEventBlockStyles(event);
+  return (
+    <div
+      key={event.id}
+      style={{
+        position: 'absolute',
+                                  top: `${top}px`,
+                                  left: `${left}%`,
+                                  width: `${width}%`,
+                                  height: `${height}px`,
+                                  backgroundColor: '#fff', // White background for the event block
+                                  color: '#5f6368', // Dark text color for contrast
+                                  padding: '2px 4px', // Padding inside the event block
+                                  borderRadius: '4px', // Rounded corners like Google Calendar events
+                                  display: 'flex',
+                                  alignItems: 'top',
+                                  justifyContent: 'flex-start',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  cursor: 'pointer',
+                                  zIndex: 2,
+                                  boxSizing: 'border-box',
+                                  borderLeft: '4px solid #1a73e8', // Blue left border as an indicator of event type
+                                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Subtle shadow for a 3D effect
+                                  margin: '4px 0', // Margin for spacing between events
+                                  marginLeft: '4px', // Left margin to align with the grid
+                                  transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transitions for hover effects
+                                  fontSize: '0.875rem', // 14px for text size
+                                  fontWeight: '500', // Medium font weight for readability
+      }}
+      onClick={() => handleEventClick(event)}
+    >
+      <Typography>{event.title}</Typography>
+    </div>
+  );
+})}
+
         </div>
       </div>
       {showEventInfoModal && <EventInfoPopup />}

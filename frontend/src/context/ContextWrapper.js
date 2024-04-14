@@ -30,7 +30,7 @@ function initEvents() {
 
 export default function ContextWrapper(props) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
+  const [eventDetails, setEventDetails] = useState(null);
   const [monthIndex, setMonthIndex] = useState(dayjs().month());
   const [smallCalendarMonth, setSmallCalendarMonth] = useState(null);
   const [daySelected, setDaySelected] = useState(dayjs());
@@ -160,6 +160,9 @@ export default function ContextWrapper(props) {
         updateFilters,
         searchText,
         setSearchText,
+       eventDetails, 
+       setEventDetails
+
 
       }}
     >

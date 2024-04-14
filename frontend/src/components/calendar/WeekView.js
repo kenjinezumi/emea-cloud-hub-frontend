@@ -90,26 +90,31 @@ export default function WeekView() {
     startOfWeek.add(i, 'day'),
   );
   const hoursOfDay = Array.from({length: 24}, (_, i) => i);
-
   const calculateEventBlockStyles = (event, overlappingEvents) => {
     const eventStart = dayjs.utc(event.startDate).local();
     const eventEnd = dayjs.utc(event.endDate).local();
-
-    const minutesFromMidnight = eventStart.diff(
-        daySelected.startOf('day'),
-        'minutes',
-    );
-    const durationInMinutes = eventEnd.diff(eventStart, 'minutes');
-
-    const top = (minutesFromMidnight / 60) * 8;
+    const startOfDay = daySelected.startOf('day');
+    const endOfDay = daySelected.endOf('day');
+  
+    // Adjust the display start to be within the current day
+    const displayStart = dayjs.max(startOfDay, eventStart);
+    // Adjust the display end to be within the current day
+    const displayEnd = dayjs.min(endOfDay, eventEnd);
+  
+    const minutesFromMidnight = displayStart.diff(daySelected.startOf('day'), 'minutes');
+    const durationInMinutes = displayEnd.diff(displayStart, 'minutes');
+  
+    const top = (minutesFromMidnight / 60) * 8; // Assuming 8 hours per day
     const height = (durationInMinutes / 60) * 60;
-
+  
     const width = 100 / overlappingEvents;
     const positionIndex = events.findIndex((e) => e.eventId === event.eventId);
     const left = (positionIndex % overlappingEvents) * width;
-
-    return {top, height, left, width};
+  
+    return { top, height, left, width };
   };
+  
+  
 
   const getOverlappingEventsCount = (day, hour) => {
     if (!Array.isArray(events)) {
@@ -126,6 +131,7 @@ export default function WeekView() {
       );
     }).length;
   };
+
   const globalContext = useContext(GlobalContext);
 
 
