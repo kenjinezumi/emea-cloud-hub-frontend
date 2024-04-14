@@ -40,7 +40,8 @@ export default function LocationFormPage() {
   };
 
   const handleNext = () => {
-    const formIsValid = region.trim();
+    console.log(region);
+    const formIsValid = region.map(item => String(item)).join('').trim();
     setIsFormValid(formIsValid);
 
     if (!formIsValid) {
