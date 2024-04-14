@@ -43,6 +43,7 @@ router.post('/', async (req, res) => {
   } else if (queryName) {
     // This branch handles fetching data based on a provided queryName
     try {
+      console.log('Fetching the data');
       const queries = await loadQueriesAsync();
       const query = queries[queryName];
       if (!query) {
@@ -50,7 +51,8 @@ router.post('/', async (req, res) => {
       }
       const options = { query: query, location: 'US' };
       const [rows] = await bigquery.query(options);
-      res.json({
+      console.log([rows]);
+      res.status(200).json({
         success: true,
         message: `${rows.length} rows retrieved successfully.`,
         data: rows

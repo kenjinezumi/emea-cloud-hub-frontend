@@ -16,6 +16,8 @@ export default function MonthView({month, isYearView = false}) {
     const fetchData = async () => {
       try {
         const eventData = await getDummyEventData('eventDataQuery');
+        console.log('DATA IS');
+        console.log(eventData);
         setEvents(eventData);
       } catch (error) {
         console.error('Error fetching event data:', error);
