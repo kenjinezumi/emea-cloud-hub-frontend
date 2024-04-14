@@ -41,12 +41,21 @@ export default function LocationFormPage() {
 
   const handleNext = () => {
     console.log(region);
-    const formIsValid = region.map(item => String(item)).join('').trim();
-    setIsFormValid(formIsValid);
+    let formIsValid = Array.isArray(region) ? region.map(String).join('').trim() : String(region).trim();
 
-    if (!formIsValid) {
-      return;
-    }
+  // Check if form is valid
+  if (!formIsValid) {
+    setIsFormValid(false);
+    return;
+  }
+
+  // Additional form validation for subRegion and country
+  if (!subRegion.length || !country.length) {
+    setIsFormValid(false);
+    return;
+  }
+
+
 
     const currentFormData = {region, subRegion, country};
     updateFormData({...formData, ...currentFormData});

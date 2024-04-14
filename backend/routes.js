@@ -40,7 +40,8 @@ router.post('/', async (req, res) => {
       throw error; 
     }
     
-  } else if (queryName=='eventDataQuery') {
+  } else if (queryName=='eventDataQuery' || queryName === 'organisedByOptionsQuery'
+  || queryName === 'marketingProgramQuery') {
     // This branch handles fetching data based on a provided queryName
     try {
       console.log('Fetching the data');
@@ -61,7 +62,7 @@ router.post('/', async (req, res) => {
       console.error(`Query execution error: ${error}`);
       res.status(500).json({ success: false, message: 'Failed to execute query. Please try again later.' });
     }
-  } else {
+  }else {
     try {
    
       const query = `SELECT * FROM \`google.com:cloudhub.data.master_event_data\` WHERE eventId = '${queryName}'`;
