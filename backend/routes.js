@@ -76,7 +76,7 @@ router.post('/', async (req, res) => {
     } catch (error) {
       console.error(`Query execution error: ${error}`);
       res.status(500).json({ success: false, message: 'Failed to execute query. Please try again later.' });
-    }s
+    }
   }
 });
 
@@ -88,7 +88,12 @@ async function saveEventData(eventData) {
   // Serialize accountSegments to a JSON string
   eventData.isHighPriority = eventData.isHighPriority.toString(); 
   eventData.accountSegments = JSON.stringify(eventData.accountSegments);  
-  eventData.region = [eventData.region]; 
+  if (Array.isArray(eventData.region)) {
+    eventData.region = eventData.region.flat(); // Flatten nested array
+  } else {
+    eventData.region = [eventData.region]; // Wrap single value in array
+  }
+  
 
   delete eventData.dropdownValue2;
   delete eventData.languagesAndTemplates;
