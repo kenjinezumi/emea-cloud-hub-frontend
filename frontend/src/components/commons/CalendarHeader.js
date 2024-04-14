@@ -132,7 +132,7 @@ export default function CalendarHeader() {
         <IconButton onClick={toggleSidebar} className="mr-2">
           <MenuIcon />
         </IconButton>
-        <img src={logo} alt="calendar" className="mr-2 w-8 h-8" />
+        <img src={logo} alt="calendar" className="mr-2 w-8 h-8 cursor-pointer" onClick={navigateToHome}/>
         <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
           EMEA Cloud Hub
         </h1>

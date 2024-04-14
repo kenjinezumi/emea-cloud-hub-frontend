@@ -118,7 +118,7 @@ export default function CalendarHeaderForm() {
       <NavigationSidebar />
       <header className="fixed px-4 py-2 flex items-center justify-between bg-white" style={{width: '100%', marginBottom: '100px'}}>
         <div className="flex items-center">
-          <img src={logo} alt="calendar" className="mr-2 w-8 h-8" />
+          <img src={logo} alt="calendar" className="mr-2 w-8 h-8 cursor-pointer" onClick={navigateToHome}/>
           <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
           EMEA Cloud Hub
           </h1>
