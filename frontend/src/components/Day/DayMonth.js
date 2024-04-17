@@ -131,7 +131,7 @@ export default function Day({ day, events, isYearView }) {
         </p>
       </header>
       {!isYearView && (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col" >
           {dayEvents.length > 0 ? (
             <div>
               {dayEvents.slice(0, maxEventsToShow).map((evt, idx) => (

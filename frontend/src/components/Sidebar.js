@@ -12,7 +12,8 @@ export default function Sidebar() {
     return null; // or return some minimized version of the sidebar
   }
   return (
-    <aside className="p-3 bg-white" style={{width: '15%'}}>
+    <aside className="p-3 bg-white" style={{width: '15%',  maxHeight: '80vh', // or another fixed value like '500px'
+    overflowY: 'auto'}}>
       <CreateEventButton />
       <SmallCalendar />
       {currentView !== 'list' && <Labels />}

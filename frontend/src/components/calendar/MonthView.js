@@ -64,7 +64,7 @@ export default function MonthView({month, isYearView = false}) {
   }, [location]);
 
   return (
-    <div className={isYearView ? 'year-grid' : 'flex-1 grid grid-cols-7 grid-rows-5'}>
+    <div className={isYearView ? 'year-grid' : 'flex-1 grid grid-cols-7 grid-rows-5 overflow'}>
       {month.map((row, i) => (
         <React.Fragment key={i}>
           {row.map((day, idx) => (
