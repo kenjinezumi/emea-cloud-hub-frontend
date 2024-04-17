@@ -259,8 +259,8 @@ export default function EventForm() {
     <div className="h-screen flex flex-col">
       <CalendarHeaderForm />
 
-      <div className="form-container">
-        <div className="event-form">
+      <div className="form-container" >
+        <div className="event-form" >
           <Grid
             container
             justifyContent="space-between"

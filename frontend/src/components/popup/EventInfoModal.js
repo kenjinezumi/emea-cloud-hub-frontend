@@ -69,6 +69,10 @@ export default function EventInfoPopup() {
         transform: "translate(-50%, -50%)",
         minWidth: 500,
         zIndex: 6000,
+        boxShadow: "0px 4px 10px rgba(0,0,0,0.5)", // Enhanced shadow effect
+        borderRadius: "20px", // More pronounced rounded corners
+        bgcolor: 'background.paper' 
+        
       }}
     >
       <IconButton
