@@ -7,7 +7,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import InfoIcon from '@mui/icons-material/Info';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import {blue} from '@mui/material/colors';
-import {getDummyEventData} from '../../api/getDummyData';
+import {getEventData} from '../../api/getEventData';
 import { useParams } from 'react-router-dom';
 
 
@@ -19,7 +19,7 @@ function ShareEventPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-   getDummyEventData(eventId)
+   getEventData(eventId)
       .then((data) => {
         setEventDetails(data[0]);
         setLoading(false);
@@ -33,7 +33,6 @@ function ShareEventPage() {
 
   useEffect(() => {
     if (eventDetails) {
-      console.log(eventDetails); // This will log after eventDetails is updated
     }
   }, [eventDetails]); 
 

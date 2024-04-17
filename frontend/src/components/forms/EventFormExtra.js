@@ -188,10 +188,10 @@ export default function ExtraDetailsForm() {
                       variant="outlined"
                       onClick={() => handleRemoveLanguageAndTemplate(index)}
                       style={{
-                        color: '#d32f2f', // Reddish color for the text
-                        borderColor: '#d32f2f', // Reddish color for the border
+                        color: '#d32f2f', 
+                        borderColor: '#d32f2f',
                         marginTop: '1px',
-                        textTransform: 'none', // Avoid uppercase text
+                        textTransform: 'none', 
                       }}
                     >
                       Remove

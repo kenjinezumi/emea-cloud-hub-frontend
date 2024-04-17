@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import GlobalContext from '../../context/GlobalContext';
 import {Paper, Typography, Grid} from '@mui/material';
-import {getDummyEventData} from '../../api/getDummyData';
+import {getEventData} from '../../api/getEventData';
 import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 import {useLocation} from 'react-router-dom';
 
@@ -30,7 +30,6 @@ export default function WeekView() {
         return [];
       }
       
-      console.log(events);
   
       const filterPromises = events.map(event => {
         // Immediately invoked asynchronous function to handle possible async conditions inside the filter logic
@@ -75,7 +74,7 @@ export default function WeekView() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const eventData = await getDummyEventData('eventDataQuery');
+        const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
       } catch (error) {
         console.error('Error fetching events:', error);

@@ -35,24 +35,18 @@ export default function EventInfoPopup() {
     return null; // Don't render the pop-up if no event is selected
   }
 
-
- 
-
   const handleShareEvent = () => {
-    console.log('wtf');
-    console.log(selectedEvent.eventId)
     if (selectedEvent && selectedEvent.eventId) {
-      console.log('hi')
       navigate(`/event/${selectedEvent.eventId}`);
     }
   };
   
 
   const handleEditEvent = () => {
+    console.log("Whats going on")
     if (selectedEvent) {
-      // Pass the selected event data to the EventForm component and navigate to it
-      selectedEvent.startDate = null;
-      selectedEvent.endDate = null;
+
+      console.log(`Selected event is: ${selectedEvent.startDate}`);
       navigate("/create-event");
     }
   };

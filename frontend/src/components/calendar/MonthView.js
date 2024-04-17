@@ -2,7 +2,7 @@ import Day from '../Day/DayMonth';
 import React, {useContext, useEffect, useState} from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import {useLocation} from 'react-router-dom';
-import {getDummyEventData} from '../../api/getDummyData'; // Assuming this is your API call
+import {getEventData} from '../../api/getEventData'; // Assuming this is your API call
 import EventPopup from '../popup/EventInfoModal'; // Import the EventPopup component
 
 export default function MonthView({month, isYearView = false}) {
@@ -15,9 +15,7 @@ export default function MonthView({month, isYearView = false}) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const eventData = await getDummyEventData('eventDataQuery');
-        console.log('DATA IS');
-        console.log(eventData);
+        const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
       } catch (error) {
         console.error('Error fetching event data:', error);
@@ -35,7 +33,6 @@ export default function MonthView({month, isYearView = false}) {
         return [];
       }
       
-      console.log(events);
   
       const filterPromises = events.map(event => {
         // Immediately invoked asynchronous function to handle possible async conditions inside the filter logic

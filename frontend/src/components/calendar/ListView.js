@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import {List, ListItem, ListItemText, Typography, Paper} from '@mui/material';
 import {useLocation} from 'react-router-dom';
 import GlobalContext from '../../context/GlobalContext';
-import {getDummyEventData} from '../../api/getDummyData'; // Assuming this is your API call
+import {getEventData} from '../../api/getEventData'; // Assuming this is your API call
 import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 
 export default function ListView({}) {
@@ -15,7 +15,7 @@ export default function ListView({}) {
   const location = useLocation(); // useLocation hook
   const fetchData = async () => {
     try {
-      const eventData = await getDummyEventData('eventDataQuery');
+      const eventData = await getEventData('eventDataQuery');
       setEvents(eventData);
     } catch (error) {
       console.error('Error fetching event data:', error);
@@ -37,7 +37,6 @@ export default function ListView({}) {
         return [];
       }
       
-      console.log(events);
   
       const filterPromises = events.map(event => {
         // Immediately invoked asynchronous function to handle possible async conditions inside the filter logic
@@ -69,7 +68,7 @@ export default function ListView({}) {
 
     const fetchData = async () => {
       try {
-        const eventData = await getDummyEventData('eventDataQuery');
+        const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
       } catch (error) {
         console.error('Error fetching event data:', error);

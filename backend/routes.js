@@ -44,7 +44,6 @@ router.post('/', async (req, res) => {
   || queryName === 'marketingProgramQuery') {
     // This branch handles fetching data based on a provided queryName
     try {
-      console.log('Fetching the data');
       const queries = await loadQueriesAsync();
       const query = queries[queryName];
       if (!query) {
@@ -52,7 +51,6 @@ router.post('/', async (req, res) => {
       }
       const options = { query: query, location: 'US' };
       const [rows] = await bigquery.query(options);
-      console.log([rows]);
       res.status(200).json({
         success: true,
         message: `${rows.length} rows retrieved successfully.`,
@@ -68,7 +66,6 @@ router.post('/', async (req, res) => {
       const query = `SELECT * FROM \`google.com:cloudhub.data.master_event_data\` WHERE eventId = '${queryName}'`;
       const options = { query: query, location: 'US' };
       const [rows] = await bigquery.query(options);
-      console.log([rows]);
       res.status(200).json({
         success: true,
         message: `${rows.length} rows retrieved successfully.`,
@@ -101,9 +98,7 @@ async function saveEventData(eventData) {
  
   try {
     await bigquery.dataset(datasetId).table(tableId).insert([eventData]);
-    console.log(`Inserted 1 row into table ${tableId}`);
   } catch (error) {
-    console.error('ERROR:', error);
     throw error; // Consider handling this error more gracefully
   }
 }

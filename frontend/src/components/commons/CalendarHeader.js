@@ -16,7 +16,7 @@ import GlobalContext from '../../context/GlobalContext';
 import ThemePopup from '../popup/Themepopup';
 import ListView from '../calendar/ListView';
 
-import {getDummyEventData} from '../../api/getDummyData'; // Assuming this is your API call
+import {getEventData} from '../../api/getEventData'; // Assuming this is your API call
 
 export default function CalendarHeader() {
   const {
@@ -39,7 +39,7 @@ export default function CalendarHeader() {
 
   const fetchData = async () => {
     try {
-      const eventData = await getDummyEventData('eventDataQuery');
+      const eventData = await getEventData('eventDataQuery');
       setEvents(eventData);
     } catch (error) {
       console.error('Error fetching event data:', error);

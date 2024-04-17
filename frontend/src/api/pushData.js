@@ -1,8 +1,6 @@
 const API_URL = 'https://backend-dot-cloudhub.googleplex.com/'; // Replace with your API's URL
-console.log('CHECKING THE save DATA API');
 
 const sendDataToAPI = async (data) => {
-  console.log(JSON.stringify(data));
   try {
     const response = await fetch(API_URL, {
       method: 'POST',

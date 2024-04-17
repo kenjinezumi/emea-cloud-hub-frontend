@@ -21,17 +21,12 @@ async function insertOrUpdateBigQuery(formData, datasetId, tableId) {
 
     if (rows.length > 0) {
       // Update existing record
-      console.log(`Event ID ${eventId} found. Updating record.`);
       await updateBigQuery(formData, datasetId, tableId);
     } else {
       // Insert new record
-      console.log(`Event ID ${eventId} not found. Inserting new record.`);
       await bigquery.dataset(datasetId).table(tableId).insert([preparedData]);
     }
-
-    console.log('Operation successful');
   } catch (error) {
-    console.error('ERROR in insertOrUpdateBigQuery:', error);
     throw error;
   }
 }

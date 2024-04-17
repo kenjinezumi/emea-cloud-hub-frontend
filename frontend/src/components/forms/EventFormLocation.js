@@ -40,7 +40,6 @@ export default function LocationFormPage() {
   };
 
   const handleNext = () => {
-    console.log(region);
     let formIsValid = Array.isArray(region) ? region.map(String).join('').trim() : String(region).trim();
 
   // Check if form is valid

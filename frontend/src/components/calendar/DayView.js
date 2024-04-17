@@ -3,7 +3,7 @@ import GlobalContext from '../../context/GlobalContext';
 import {Typography, Paper} from '@mui/material';
 import dayjs from 'dayjs';
 import {useLocation} from 'react-router-dom';
-import {getDummyEventData} from '../../api/getDummyData';
+import {getEventData} from '../../api/getEventData';
 import minMax from 'dayjs/plugin/minMax';
 
 import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
@@ -33,7 +33,6 @@ export default function DayView() {
         return [];
       }
       
-      console.log(events);
   
       const filterPromises = events.map(event => {
         // Immediately invoked asynchronous function to handle possible async conditions inside the filter logic
@@ -75,7 +74,7 @@ export default function DayView() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const eventData = await getDummyEventData('eventDataQuery');
+        const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
         setEventGroups(calculateOverlapGroups(eventData));
       } catch (error) {

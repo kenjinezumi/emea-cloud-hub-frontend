@@ -7,7 +7,7 @@ import { Grid, Typography, Paper, Box, Chip, Tooltip } from "@mui/material";
 import "../styles/Yearview.css";
 import { useLocation } from "react-router-dom";
 
-import { getDummyEventData } from "../../api/getDummyData"; 
+import { getEventData } from "../../api/getEventData"; 
 
 import CameraIndoorIcon from "@mui/icons-material/CameraIndoor";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
@@ -26,7 +26,7 @@ export default function YearView() {
 
   const fetchData = async () => {
     try {
-      const eventData = await getDummyEventData('eventDataQuery');
+      const eventData = await getEventData('eventDataQuery');
       setEvents(eventData);
     } catch (error) {
       console.error("Error fetching event data:", error);

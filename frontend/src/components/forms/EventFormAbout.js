@@ -4,7 +4,7 @@ import GlobalContext from '../../context/GlobalContext';
 import CalendarHeaderForm from '../commons/CalendarHeaderForm';
 import {v4 as uuidv4} from 'uuid';
 
-import {getDummyEventData} from '../../api/getDummyData'; 
+import {getEventData} from '../../api/getEventData'; 
 import {
   Button,
   TextField,
@@ -149,7 +149,7 @@ export default function EventForm() {
   useEffect(() => {
     const fetchMarketingProgramOptions = async () => {
       try {
-        const response = await getDummyEventData('marketingProgramQuery');
+        const response = await getEventData('marketingProgramQuery');
         if (response && Array.isArray(response)) {
           const options = response.map((row) => row.Sandbox_Program_Id);
           const sortedOptions = options.sort(); // Sort the options alphabetically
@@ -176,7 +176,7 @@ export default function EventForm() {
   useEffect(() => {
     const fetchOrganisedByOptions = async () => {
       try {
-        const response = await getDummyEventData('organisedByOptionsQuery');
+        const response = await getEventData('organisedByOptionsQuery');
         if (response && Array.isArray(response)) {
           const options = response.map((row) => row.title).sort();
           setOrganisedByOptions(options);
@@ -252,6 +252,8 @@ export default function EventForm() {
   const toggleEmojiPicker = () => {
     setIsEmojiPickerOpen(!isEmojiPickerOpen);
   };
+
+  console.log(startDate);
 
   return (
     <div className="h-screen flex flex-col">
@@ -441,7 +443,7 @@ export default function EventForm() {
                       label="Event Start Date"
                       inputFormat="MM/dd/yyyy"
                       defaultValue={new Date()}
-                      value={startDate}
+                      value= {new Date(startDate)}
                       onChange={handleStartDateChange}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
@@ -451,7 +453,7 @@ export default function EventForm() {
                     <DateTimePicker
                       label="Event Start Date"
                       inputFormat="MM/dd/yyyy hh:mm a"
-                      value={startDate}
+                      value={new Date(startDate)}
                       onChange={handleStartDateChange}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
@@ -467,8 +469,8 @@ export default function EventForm() {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DateTimePicker
                       label="Event End Date"
-                      inputFormat="MM/dd/yyyy"
-                      value={endDate}
+                      inputFormat="MM/dd/yyyy hh:mm a"
+                      value={new Date(endDate)}
                       onChange={setEndDate}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
