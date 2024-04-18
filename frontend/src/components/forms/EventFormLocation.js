@@ -42,7 +42,7 @@ export default function LocationFormPage() {
   const [availableSubregions, setAvailableSubregions] = useState(
     formData.availableSubregions || []
   );
-  const [availableCountries] = useState([]);
+  const [availableCountries, setAvailableCountries] = useState(formData.availableCountries || []);
   const [isFormValid, setIsFormValid] = useState(true);
   const navigate = useNavigate();
 
@@ -51,12 +51,20 @@ export default function LocationFormPage() {
   };
 
   const handleDelete = (subRegionToDelete) => (event) => {
-    event.stopPropagation(); // Stops the dropdown from opening
-    // Update the subRegion state to filter out the deleted chip
+    event.stopPropagation(); 
     setSubRegion((currentSubRegions) => 
         currentSubRegions.filter((subRegion) => subRegion !== subRegionToDelete)
     );
 };
+
+const handleCountryDelete = (countryToDelete) => (event) => {
+  event.stopPropagation(); 
+  setCountry((currentCountries) => 
+      currentCountries.filter((country) => country !== countryToDelete)
+  );
+};
+
+
 
 
   const handleChange = (event) => {
@@ -108,15 +116,17 @@ export default function LocationFormPage() {
   const handleSubRegionChange = (e) => {
     const selectedSubregions = e.target.value;
     setSubRegion(selectedSubregions);
-
+  
     // Filter available countries based on the selected subregions
     const countriesForSubregions = selectedSubregions.flatMap(
       (selectedSubregion) =>
         subregionsData.find((data) => data.subregion === selectedSubregion)
           ?.countries || []
     );
-    setCountry(countriesForSubregions);
+    setAvailableCountries(countriesForSubregions);  // Make sure this is set to update available countries
+    setCountry([]);  // Optionally clear countries when subregions change
   };
+  
 
   return (
     <div className="h-screen flex flex-col">
@@ -195,24 +205,39 @@ export default function LocationFormPage() {
             </Grid>
             {/* Country Dropdown */}
             <Grid item xs={12}>
-              <FormControl fullWidth>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Country
-                </Typography>
-                <Select
-                  multiple
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  renderValue={(selected) => selected.join(", ")}
-                >
-                  {availableCountries.map((country, idx) => (
-                    <MenuItem key={idx} value={country}>
-                      {country}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+  <FormControl fullWidth>
+    <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+      Country
+    </Typography>
+    <Select
+      multiple
+      value={country}
+      onChange={(e) => setCountry(e.target.value)}
+      renderValue={(selected) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+          {selected.map((country) => (
+            <Chip
+              key={country}
+              label={country}
+              onDelete={handleCountryDelete(country)}
+              style={{ margin: "2px" }}
+              onMouseDown={(event) => {
+                event.stopPropagation();
+              }}
+            />
+          ))}
+        </div>
+      )}
+    >
+      {availableCountries.map((country, idx) => (
+        <MenuItem key={idx} value={country}>
+          {country}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
+
           </Grid>
           {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>

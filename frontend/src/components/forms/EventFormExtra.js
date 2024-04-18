@@ -1,11 +1,11 @@
-import React, {useContext, useEffect, useState} from 'react';
-import GlobalContext from '../../context/GlobalContext';
+import React, { useContext, useEffect, useState } from "react";
+import GlobalContext from "../../context/GlobalContext";
 import {
   languageOptions,
   okrOptions,
   gepOptions,
-} from '../filters/FiltersData';
-import CalendarHeaderForm from '../commons/CalendarHeaderForm';
+} from "../filters/FiltersData";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 
 import {
   Button,
@@ -18,47 +18,69 @@ import {
   RadioGroup,
   FormControlLabel,
   TextField,
-
-} from '@mui/material';
-import {useNavigate} from 'react-router-dom';
-import '../styles/Forms.css';
-import InfoIcon from '@mui/icons-material/Info';
-import {blue} from '@mui/material/colors';
+  Chip,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import "../styles/Forms.css";
+import InfoIcon from "@mui/icons-material/Info";
+import { blue } from "@mui/material/colors";
 
 export default function ExtraDetailsForm() {
-  const {formData, updateFormData, selectedEvent} = useContext(GlobalContext);
+  const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
 
   const [isFormValid, setIsFormValid] = useState(true);
   const [activityOwner, setActivityOwner] = useState(
-    selectedEvent ? selectedEvent.activityOwner : formData.activityOwner || [],
+    selectedEvent ? selectedEvent.activityOwner : formData.activityOwner || []
   );
   const [speakers, setSpeakers] = useState(
-    selectedEvent ? selectedEvent.speaker : formData.speakers || []);
+    selectedEvent ? selectedEvent.speaker : formData.speakers || []
+  );
   const [eventSeries, setEventSeries] = useState(
-    selectedEvent ? selectedEvent.eventSeries : formData.eventSeries || 'no');
+    selectedEvent ? selectedEvent.eventSeries : formData.eventSeries || "no"
+  );
   const [emailLanguage, setEmailLanguage] = useState(
-    selectedEvent ? selectedEvent.emailLanguage :
-    formData.emailLanguage || 'English',
+    selectedEvent
+      ? selectedEvent.emailLanguage
+      : formData.emailLanguage || "English"
   );
   const [emailText, setEmailText] = useState(
-    selectedEvent ? selectedEvent.emailText : formData.emailText || '');
+    selectedEvent ? selectedEvent.emailText : formData.emailText || ""
+  );
   const [customerUse, setCustomerUse] = useState(
-    selectedEvent ? selectedEvent.customerUse : formData.customerUse || 'no');
+    selectedEvent ? selectedEvent.customerUse : formData.customerUse || "no"
+  );
   const [okr, setOkr] = useState(
-    selectedEvent ? selectedEvent.okr : formData.okr || []);
+    selectedEvent ? selectedEvent.okr : formData.okr || []
+  );
   const [gep, setGep] = useState(
-    selectedEvent ? selectedEvent.gep : formData.gep || []);
+    selectedEvent ? selectedEvent.gep : formData.gep || []
+  );
   const [activityType, setActivityType] = useState(
-    selectedEvent ? selectedEvent.activityType : formData.activityType || 'direct',
+    selectedEvent
+      ? selectedEvent.activityType
+      : formData.activityType || "direct"
   );
   const [languagesAndTemplates, setLanguagesAndTemplates] = useState(
-    selectedEvent ? selectedEvent.languagesAndTemplates :
-    formData.languagesAndTemplates || [{language: 'English', template: ''}],
+    selectedEvent
+      ? selectedEvent.languagesAndTemplates
+      : formData.languagesAndTemplates || [
+          { language: "English", template: "" },
+        ]
   );
   const navigate = useNavigate();
 
   const handlePrevious = () => {
-    navigate('/location');
+    navigate("/location");
+  };
+
+  const handleOkrDelete = (okrToDelete) => (event) => {
+    event.stopPropagation();
+    setOkr((currentOkr) => currentOkr.filter((okr) => okr !== okrToDelete));
+  };
+
+  const handleGepDelete = (gepToDelete) => (event) => {
+    event.stopPropagation();
+    setGep((currentGep) => currentGep.filter((gep) => gep !== gepToDelete));
   };
 
   const handleNext = () => {
@@ -85,21 +107,21 @@ export default function ExtraDetailsForm() {
       languagesAndTemplates,
     };
 
-    updateFormData({...formData, ...currentFormData});
+    updateFormData({ ...formData, ...currentFormData });
 
-    navigate('/audience');
+    navigate("/audience");
   };
 
   const handleAddLanguageAndTemplate = () => {
     setLanguagesAndTemplates([
       ...languagesAndTemplates,
-      {language: 'English', template: ''},
+      { language: "English", template: "" },
     ]);
   };
 
   const handleRemoveLanguageAndTemplate = (index) => {
     const updatedItems = languagesAndTemplates.filter(
-        (_, idx) => idx !== index,
+      (_, idx) => idx !== index
     );
     setLanguagesAndTemplates(updatedItems);
   };
@@ -118,7 +140,7 @@ export default function ExtraDetailsForm() {
 
   const handleOkrChange = (event) => {
     const value = event.target.value;
-    setOkr(typeof value === 'string' ? value.split(',') : value);
+    setOkr(typeof value === "string" ? value.split(",") : value);
   };
 
   return (
@@ -130,13 +152,13 @@ export default function ExtraDetailsForm() {
             variant="h4"
             className="form-title"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '15px',
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "15px",
             }}
           >
             <InfoIcon
-              style={{marginRight: '10px', color: blue[500], height: '40px'}}
+              style={{ marginRight: "10px", color: blue[500], height: "40px" }}
             />
             <span className="mr-1 text-xl text-black  cursor-pointer">
               Extra details
@@ -149,7 +171,7 @@ export default function ExtraDetailsForm() {
                 container
                 spacing={2}
                 key={index}
-                style={{marginTop: '20px', marginLeft: '1px'}}
+                style={{ marginTop: "20px", marginLeft: "1px" }}
               >
                 <Grid item xs={12}>
                   <FormControl fullWidth>
@@ -188,10 +210,10 @@ export default function ExtraDetailsForm() {
                       variant="outlined"
                       onClick={() => handleRemoveLanguageAndTemplate(index)}
                       style={{
-                        color: '#d32f2f', 
-                        borderColor: '#d32f2f',
-                        marginTop: '1px',
-                        textTransform: 'none', 
+                        color: "#d32f2f",
+                        borderColor: "#d32f2f",
+                        marginTop: "1px",
+                        textTransform: "none",
                       }}
                     >
                       Remove
@@ -227,7 +249,6 @@ export default function ExtraDetailsForm() {
                 </RadioGroup>
               </FormControl>
             </Grid>
-
             {/* OKR Dropdown */}
             <Grid item xs={12}>
               <FormControl fullWidth>
@@ -236,7 +257,20 @@ export default function ExtraDetailsForm() {
                   multiple
                   value={okr}
                   onChange={handleOkrChange}
-                  renderValue={(selected) => selected.join(', ')}
+                  renderValue={(selected) => (
+                    <div
+                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
+                    >
+                      {selected.map((okrItem) => (
+                        <Chip
+                          key={okrItem}
+                          label={okrItem}
+                          onDelete={handleOkrDelete(okrItem)}
+                          onMouseDown={(event) => event.stopPropagation()}
+                        />
+                      ))}
+                    </div>
+                  )}
                 >
                   {okrOptions.map((option, idx) => (
                     <MenuItem key={idx} value={option.label}>
@@ -255,7 +289,20 @@ export default function ExtraDetailsForm() {
                   multiple
                   value={gep}
                   onChange={(e) => setGep(e.target.value)}
-                  renderValue={(selected) => selected.join(', ')}
+                  renderValue={(selected) => (
+                    <div
+                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
+                    >
+                      {selected.map((gepItem) => (
+                        <Chip
+                          key={gepItem}
+                          label={gepItem}
+                          onDelete={handleGepDelete(gepItem)}
+                          onMouseDown={(event) => event.stopPropagation()}
+                        />
+                      ))}
+                    </div>
+                  )}
                 >
                   {gepOptions.map((option, idx) => (
                     <MenuItem key={idx} value={option}>
@@ -287,21 +334,21 @@ export default function ExtraDetailsForm() {
             </Grid>
           </Grid>
           {!isFormValid && (
-            <Typography color="error" style={{marginBottom: '10px'}}>
+            <Typography color="error" style={{ marginBottom: "10px" }}>
               Please fill in all required fields.
             </Typography>
           )}
-          <div style={{marginTop: '20px', float: 'right'}}>
+          <div style={{ marginTop: "20px", float: "right" }}>
             <Button
               variant="outlined"
               onClick={handlePrevious}
               style={{
-                backgroundColor: 'white',
-                color: '#202124',
-                border: '1px solid #dadce0',
-                boxShadow: '0 1px 2px 0 rgba(60,64,67,0.302)',
-                float: 'left',
-                margin: '10px',
+                backgroundColor: "white",
+                color: "#202124",
+                border: "1px solid #dadce0",
+                boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
+                float: "left",
+                margin: "10px",
               }}
             >
               Previous
@@ -310,10 +357,10 @@ export default function ExtraDetailsForm() {
               variant="contained"
               onClick={handleNext}
               style={{
-                backgroundColor: '#4285F4',
-                color: 'white',
-                float: 'right',
-                margin: '10px',
+                backgroundColor: "#4285F4",
+                color: "white",
+                float: "right",
+                margin: "10px",
               }}
             >
               Next

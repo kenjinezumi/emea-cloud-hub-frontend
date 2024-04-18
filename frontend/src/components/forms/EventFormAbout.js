@@ -1,10 +1,10 @@
-import React, {useEffect, useContext, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import GlobalContext from '../../context/GlobalContext';
-import CalendarHeaderForm from '../commons/CalendarHeaderForm';
-import {v4 as uuidv4} from 'uuid';
+import React, { useEffect, useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import GlobalContext from "../../context/GlobalContext";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+import { v4 as uuidv4 } from "uuid";
 
-import {getEventData} from '../../api/getEventData'; 
+import { getEventData } from "../../api/getEventData";
 import {
   Button,
   TextField,
@@ -13,27 +13,27 @@ import {
   Grid,
   Switch,
   FormGroup,
-  Snackbar
-} from '@mui/material';
-import '../styles/Forms.css';
-import EmojiPicker from 'emoji-picker-react';
-import {FormControl,  Select, MenuItem} from '@mui/material';
+  Snackbar,
+} from "@mui/material";
+import "../styles/Forms.css";
+import EmojiPicker from "emoji-picker-react";
+import { FormControl, Select, MenuItem } from "@mui/material";
 import {
   LocalizationProvider,
   DateTimePicker,
   DatePicker,
-} from '@mui/x-date-pickers';
+} from "@mui/x-date-pickers";
 
-import Chip from '@mui/material/Chip';
-import {AdapterDateFns} from '@mui/x-date-pickers/AdapterDateFns';
+import Chip from "@mui/material/Chip";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
-import {eventTypeOptions} from '../filters/FiltersData';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import WhatshotIcon from '@mui/icons-material/Whatshot';
+import { eventTypeOptions } from "../filters/FiltersData";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
 
-import {red} from '@mui/material/colors';
-import {blue} from '@mui/material/colors';
-const labelsClasses = ['indigo', 'gray', 'green', 'blue', 'red', 'purple'];
+import { red } from "@mui/material/colors";
+import { blue } from "@mui/material/colors";
+const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
 const isValidUrl = (urlString) => {
   try {
@@ -43,7 +43,6 @@ const isValidUrl = (urlString) => {
     return false;
   }
 };
-
 
 const getRandomColor = () => {
   const r = Math.floor(Math.random() * 256);
@@ -58,7 +57,7 @@ export default function EventForm() {
   const [organisedByOptions, setOrganisedByOptions] = useState([]); // State to store dropdown options
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const {
     daySelected,
     dispatchCalEvent,
@@ -67,53 +66,57 @@ export default function EventForm() {
     formData,
   } = useContext(GlobalContext);
   const [landingPageLink, setLandingPageLink] = useState(
-    selectedEvent ? selectedEvent.landingPageLink : formData.landingPageLink || '',
+    selectedEvent
+      ? selectedEvent.landingPageLink
+      : formData.landingPageLink || ""
   );
   const [eventType, setEventType] = useState(
-      formData.eventType || eventTypeOptions[0].label,
+    formData.eventType || eventTypeOptions[0].label
   );
   const [title, setTitle] = useState(
-    selectedEvent ? selectedEvent.title : formData.title || '',
+    selectedEvent ? selectedEvent.title : formData.title || ""
   );
 
   const [description, setDescription] = useState(
-    selectedEvent ? selectedEvent.description : formData.description || '',
+    selectedEvent ? selectedEvent.description : formData.description || ""
   );
   const [selectedLabel, setSelectedLabel] = useState(
-    selectedEvent ?
-      selectedEvent.label :
-      formData.selectedLabel || labelsClasses[0],
+    selectedEvent
+      ? selectedEvent.label
+      : formData.selectedLabel || labelsClasses[0]
   );
   const [emoji, setEmoji] = useState(
-    selectedEvent ?
-    selectedEvent.emoji :
-    formData.emoji || '');
-  const [isClient, setIsClient] = useState(selectedEvent ? selectedEvent.isClient : false);
+    selectedEvent ? selectedEvent.emoji : formData.emoji || ""
+  );
+  const [isClient, setIsClient] = useState(
+    selectedEvent ? selectedEvent.isClient : false
+  );
 
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
   const [organisedBy, setOrganisedBy] = useState(
-    selectedEvent ?
-    selectedEvent.organisedBy :
-    formData.organisedBy || []);
+    selectedEvent ? selectedEvent.organisedBy : formData.organisedBy || []
+  );
 
-  const [dropdownValue2] = useState(formData.dropdownValue2 || '');
+  const [dropdownValue2] = useState(formData.dropdownValue2 || "");
   const [marketingActivityType, setMarketingActivityType] = useState(
-      formData.marketingActivityType || '',
+    formData.marketingActivityType || ""
   );
   const [isHighPriority, setIsHighPriority] = useState(
-    selectedEvent ? selectedEvent.isHighPriority :
-    formData.isHighPriority || false,
+    selectedEvent
+      ? selectedEvent.isHighPriority
+      : formData.isHighPriority || false
   );
   const [startDate, setStartDate] = useState(
-    selectedEvent ? selectedEvent.startDate : formData.startDate || new Date(),
+    selectedEvent ? selectedEvent.startDate : formData.startDate || new Date()
   );
   const [endDate, setEndDate] = useState(
-    selectedEvent ? selectedEvent.endDate : formData.endDate || new Date(),
+    selectedEvent ? selectedEvent.endDate : formData.endDate || new Date()
   );
   const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(
-    selectedEvent ? selectedEvent.marketingProgramInstanceId :
-    formData.marketingProgramInstanceId || '',
+    selectedEvent
+      ? selectedEvent.marketingProgramInstanceId
+      : formData.marketingProgramInstanceId || ""
   );
   const [isFormValid, setIsFormValid] = useState(true);
   const navigate = useNavigate();
@@ -133,32 +136,33 @@ export default function EventForm() {
   }, []);
   useEffect(() => {}, [startDate, endDate]);
   const handleOrganisedByChange = (event) => {
-    const newOrganisedBy = event.target.value;
-    const newColorMap = {...colorMap};
+    const value = event.target.value;
+    // Allow multiple selection and deletion
+    setOrganisedBy(
+      // On autofill, we get a stringified value.
+      typeof value === "string" ? value.split(",") : value
+    );
+  };
 
-    newOrganisedBy.forEach((option) => {
-      if (!colorMap[option]) {
-        newColorMap[option] = getRandomColor();
-      }
-    });
-
-    setOrganisedBy(newOrganisedBy);
-    setColorMap(newColorMap); // Update the color map
+  const handleOrganisedByDelete = (organiserToDelete) => () => {
+    setOrganisedBy((currentOrganisers) =>
+      currentOrganisers.filter((organiser) => organiser !== organiserToDelete)
+    );
   };
 
   useEffect(() => {
     const fetchMarketingProgramOptions = async () => {
       try {
-        const response = await getEventData('marketingProgramQuery');
+        const response = await getEventData("marketingProgramQuery");
         if (response && Array.isArray(response)) {
           const options = response.map((row) => row.Sandbox_Program_Id);
           const sortedOptions = options.sort(); // Sort the options alphabetically
           setMarketingProgramOptions(sortedOptions);
         } else {
-          console.error('Invalid response format:', response);
+          console.error("Invalid response format:", response);
         }
       } catch (error) {
-        console.error('Error fetching marketing program options:', error);
+        console.error("Error fetching marketing program options:", error);
       }
     };
 
@@ -172,22 +176,21 @@ export default function EventForm() {
     }
   }, [formData.marketingProgramInstanceId]);
 
-
   useEffect(() => {
     const fetchOrganisedByOptions = async () => {
       try {
-        const response = await getEventData('organisedByOptionsQuery');
+        const response = await getEventData("organisedByOptionsQuery");
         if (response && Array.isArray(response)) {
           const options = response.map((row) => row.title).sort();
           setOrganisedByOptions(options);
         } else {
-          console.error('Invalid response format:', response);
+          console.error("Invalid response format:", response);
         }
       } catch (error) {
-        console.error('Error fetching organisedBy options:', error);
+        console.error("Error fetching organisedBy options:", error);
       }
     };
-  
+
     fetchOrganisedByOptions();
   }, []);
 
@@ -195,18 +198,18 @@ export default function EventForm() {
     const eventId = uuidv4(); // Generate a unique event ID
 
     if (!isValidUrl(landingPageLink)) {
-      setSnackbarMessage('Please enter a valid URL for the landing page.');
+      setSnackbarMessage("Please enter a valid URL for the landing page.");
       setSnackbarOpen(true);
       return; // Stop form submission
     }
 
     // Save current form state to cache
-    const isTitleValid = title.trim() !== '';
+    const isTitleValid = title.trim() !== "";
     const isorganisedByValid = organisedBy.length > 0; // Check if the array is not empty
-    const isEventTypeValid = eventType.trim() !== '';
-    const isDescriptionValid = description.trim() !== '';
+    const isEventTypeValid = eventType.trim() !== "";
+    const isDescriptionValid = description.trim() !== "";
     const isMarketingProgramInstanceIdValid =
-      marketingProgramInstanceId.trim() !== '';
+      marketingProgramInstanceId.trim() !== "";
 
     const formIsValid =
       isTitleValid &&
@@ -221,7 +224,6 @@ export default function EventForm() {
       // Prevent navigation if form is invalid
       return;
     }
- 
 
     const newFormData = {
       landingPageLink,
@@ -241,7 +243,7 @@ export default function EventForm() {
 
     updateFormData(newFormData); // Update the global form data
 
-    navigate('/location');
+    navigate("/location");
   };
 
   const onEmojiClick = (emojiData, event) => {
@@ -259,25 +261,25 @@ export default function EventForm() {
     <div className="h-screen flex flex-col">
       <CalendarHeaderForm />
 
-      <div className="form-container" >
-        <div className="event-form" >
+      <div className="form-container">
+        <div className="event-form">
           <Grid
             container
             justifyContent="space-between"
             alignItems="center"
-            style={{marginBottom: '15px'}}
+            style={{ marginBottom: "15px" }}
           >
             <Grid item>
               <Typography variant="h4">
-                <span style={{display: 'flex', alignItems: 'center'}}>
+                <span style={{ display: "flex", alignItems: "center" }}>
                   <CalendarMonthIcon
-                    style={{marginRight: '10px', color: blue[500]}}
+                    style={{ marginRight: "10px", color: blue[500] }}
                   />
                   <span className="mr-1 text-xl text-black  cursor-pointer">
-                  {title.trim() !== '' ? title : 'Activity'}
+                    {title.trim() !== "" ? title : "Activity"}
                   </span>
 
-                  <span style={{fontSize: '1.5rem', marginLeft: '10px'}}>
+                  <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
                     {emoji}
                   </span>
                 </span>
@@ -297,10 +299,10 @@ export default function EventForm() {
               container
               spacing={2}
               alignItems="center"
-              style={{marginBottom: '20px'}}
+              style={{ marginBottom: "20px" }}
             >
               <Grid item xs={30}>
-                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
+                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   Name
                 </Typography>
 
@@ -313,32 +315,34 @@ export default function EventForm() {
                 />
               </Grid>
               <Grid item xs={12}>
-              <Typography variant="subtitle1">Link to landing page</Typography>
+                <Typography variant="subtitle1">
+                  Link to landing page
+                </Typography>
 
-              <TextField
-                label=""
-                value={landingPageLink}
-                onChange={(e) => setLandingPageLink(e.target.value)}
-                variant="outlined"
-                fullWidth
-                margin="normal"
-              />
-            </Grid>
+                <TextField
+                  label=""
+                  value={landingPageLink}
+                  onChange={(e) => setLandingPageLink(e.target.value)}
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                />
+              </Grid>
               <Grid item xs={2}>
-                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
+                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   Emoji
                 </Typography>
                 <Button onClick={toggleEmojiPicker}>
-                  {'Choose emoji '}
+                  {"Choose emoji "}
                   {emoji && (
-                    <span style={{fontSize: '1.5rem', marginLeft: '10px'}}>
+                    <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
                       {emoji}
                     </span>
                   )}
                 </Button>
                 {isClient && isEmojiPickerOpen && (
                   <EmojiPicker onEmojiClick={onEmojiClick} />
-                )}{' '}
+                )}{" "}
               </Grid>
             </Grid>
 
@@ -347,13 +351,12 @@ export default function EventForm() {
               container
               spacing={2}
               alignItems="center"
-              style={{marginBottom: '20px'}}
+              style={{ marginBottom: "20px" }}
             >
               <Grid item xs={6}>
-                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
+                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   Organised by
                 </Typography>
-
                 <FormControl fullWidth>
                   <Select
                     labelId="organised-by-label"
@@ -362,21 +365,25 @@ export default function EventForm() {
                     value={organisedBy}
                     onChange={handleOrganisedByChange}
                     renderValue={(selected) => (
-                      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                        {selected.map((value) => (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "5px",
+                        }}
+                      >
+                        {selected.map((organiser) => (
                           <Chip
-                            key={value}
-                            label={value}
-                            style={{
-                              margin: 2,
-                              backgroundColor: colorMap[value],
-                            }}
+                            key={organiser}
+                            label={organiser}
+                            onDelete={handleOrganisedByDelete(organiser)}
+                            onMouseDown={(event) => event.stopPropagation()}
+                            style={{ margin: "2px" }}
                           />
                         ))}
                       </div>
                     )}
                   >
-                    {/* Populate dropdown options */}
                     {organisedByOptions.map((option) => (
                       <MenuItem key={option} value={option}>
                         {option}
@@ -387,8 +394,8 @@ export default function EventForm() {
               </Grid>
 
               <Grid item xs={6}>
-                <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
-      Activity type
+                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                  Activity type
                 </Typography>
                 <FormControl fullWidth>
                   <Select
@@ -404,9 +411,8 @@ export default function EventForm() {
                   </Select>
                 </FormControl>
               </Grid>
-
             </Grid>
-            <Grid item xs={6} style={{marginBottom: '20px'}}>
+            <Grid item xs={6} style={{ marginBottom: "20px" }}>
               <FormGroup row>
                 <FormControlLabel
                   control={
@@ -420,9 +426,9 @@ export default function EventForm() {
                   label={
                     <Typography
                       variant="subtitle1"
-                      style={{display: 'flex', alignItems: 'center'}}
+                      style={{ display: "flex", alignItems: "center" }}
                     >
-                      <WhatshotIcon style={{color: red[500]}} />
+                      <WhatshotIcon style={{ color: red[500] }} />
                       High priority status
                     </Typography>
                   }
@@ -433,17 +439,17 @@ export default function EventForm() {
               container
               spacing={2}
               alignItems="center"
-              style={{marginBottom: '20px'}}
+              style={{ marginBottom: "20px" }}
             >
               {/* Event Start Date */}
               <Grid item xs={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  {eventType === 'Blog Post' ? (
+                  {eventType === "Blog Post" ? (
                     <DatePicker
                       label="Event Start Date"
                       inputFormat="MM/dd/yyyy"
                       defaultValue={new Date()}
-                      value= {new Date(startDate)}
+                      value={new Date(startDate)}
                       onChange={handleStartDateChange}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
@@ -464,7 +470,7 @@ export default function EventForm() {
               </Grid>
 
               {/* Event End Date - Conditionally Rendered */}
-              {eventType !== 'Blog Post' && (
+              {eventType !== "Blog Post" && (
                 <Grid item xs={6}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DateTimePicker
@@ -481,8 +487,8 @@ export default function EventForm() {
               )}
             </Grid>
 
-            <Grid item xs={12} style={{marginBottom: '20px'}}>
-              <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
+            <Grid item xs={12} style={{ marginBottom: "20px" }}>
+              <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                 Description
               </Typography>
               <TextField
@@ -494,33 +500,33 @@ export default function EventForm() {
                 variant="outlined"
                 fullWidth
                 margin="dense" // Reduced margin
-                inputProps={{maxLength: 400}}
+                inputProps={{ maxLength: 400 }}
                 helperText={`${description.length}/400`}
               />
             </Grid>
 
-            <Grid item xs={12} style={{marginBottom: '20px'}}>
-              <Typography variant="subtitle1" style={{marginBottom: '4px'}}>
+            <Grid item xs={12} style={{ marginBottom: "20px" }}>
+              <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                 Marketing Program Instance ID
               </Typography>
               <TextField
-                  label=""
-                  value={marketingProgramInstanceId}
-                  onChange={(e) => setMarketingProgramInstanceId(e.target.value)}
-                  variant="outlined"
-                  fullWidth
-                  margin="dense"
-                />
+                label=""
+                value={marketingProgramInstanceId}
+                onChange={(e) => setMarketingProgramInstanceId(e.target.value)}
+                variant="outlined"
+                fullWidth
+                margin="dense"
+              />
             </Grid>
             <Snackbar
-  open={snackbarOpen}
-  autoHideDuration={6000}
-  onClose={() => setSnackbarOpen(false)}
-  message={snackbarMessage}
-/>
+              open={snackbarOpen}
+              autoHideDuration={6000}
+              onClose={() => setSnackbarOpen(false)}
+              message={snackbarMessage}
+            />
 
             {!isFormValid && (
-              <Typography color="error" style={{marginBottom: '10px'}}>
+              <Typography color="error" style={{ marginBottom: "10px" }}>
                 Please fill in all required fields.
               </Typography>
             )}
@@ -529,10 +535,10 @@ export default function EventForm() {
               variant="contained"
               onClick={handleNext}
               style={{
-                backgroundColor: '#4285F4',
-                color: 'white',
-                float: 'right',
-                margin: '10px',
+                backgroundColor: "#4285F4",
+                color: "white",
+                float: "right",
+                margin: "10px",
               }}
             >
               Next

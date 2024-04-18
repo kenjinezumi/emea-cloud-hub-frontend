@@ -8,6 +8,7 @@ import {
   Radio,
   FormControlLabel,
   InputLabel,
+  Chip,
   Select,
   MenuItem,
   Typography,
@@ -57,6 +58,15 @@ export default function AudiencePersonaForm() {
     selectedEvent ? selectedEvent.peopleMeetingCriteria: formData.peopleMeetingCriteria || '',
   );
   const navigate = useNavigate();
+
+  const handleAudiencePersonaDelete = (personaToDelete) => () => {
+    setAudiencePersona((currentPersonas) => currentPersonas.filter((persona) => persona !== personaToDelete));
+  };
+  
+  const handleAudienceSeniorityDelete = (seniorityToDelete) => () => {
+    setAudienceSeniority((currentSeniorities) => currentSeniorities.filter((seniority) => seniority !== seniorityToDelete));
+  };
+
 
   const handleMaxEventCapacityChange = (e) => {
     const value = e.target.value;
@@ -161,40 +171,65 @@ export default function AudiencePersonaForm() {
               Audience
             </span>
           </Typography>
-          <Grid container spacing={2}>
-            {/* Multiple Select for Audience Persona */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1">Audience persona</Typography>
-              <FormControl fullWidth>
-                <Select
-                  multiple
-                  value={audiencePersona}
-                  onChange={(e) => setAudiencePersona(e.target.value)}
-                  renderValue={(selected) => selected.join(', ')}
-                >
-                  {audiencePersonaOptions}
-                </Select>
-              </FormControl>
-            </Grid>
+            <Grid container spacing={2}>
+              {/* Multiple Select for Audience Persona */}
 
             <Grid item xs={12}>
-              <Typography variant="subtitle1">Audience Seniority</Typography>
-              <FormControl fullWidth>
-                <Select
-                  multiple
-                  value={audienceSeniority}
-                  onChange={handleAudienceSeniorityChange}
-                  renderValue={(selected) => selected.join(', ')}
-                >
-                  {audienceSeniorityOptions.map((option, idx) => (
-                    <MenuItem key={idx} value={option.label}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
+  <Typography variant="subtitle1">Audience persona</Typography>
+  <FormControl fullWidth>
+    <Select
+      multiple
+      value={audiencePersona}
+      onChange={(e) => setAudiencePersona(e.target.value)}
+      renderValue={(selected) => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+          {selected.map((persona) => (
+            <Chip
+              key={persona}
+              label={persona}
+              onDelete={handleAudiencePersonaDelete(persona)}
+              onMouseDown={(event) => event.stopPropagation()}
+            />
+          ))}
+        </div>
+      )}
+    >
+      {audienceRoles.map((role, idx) => (
+        <MenuItem key={idx} value={role}>
+          {role}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
+<Grid item xs={12}>
+  <Typography variant="subtitle1">Audience Seniority</Typography>
+  <FormControl fullWidth>
+    <Select
+      multiple
+      value={audienceSeniority}
+      onChange={(e) => setAudienceSeniority(e.target.value)}
+      renderValue={(selected) => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+          {selected.map((seniority) => (
+            <Chip
+              key={seniority}
+              label={seniority}
+              onDelete={handleAudienceSeniorityDelete(seniority)}
+              onMouseDown={(event) => event.stopPropagation()}
+            />
+          ))}
+        </div>
+      )}
+    >
+      {audienceSeniorityOptions.map((option, idx) => (
+        <MenuItem key={idx} value={option.label}>
+          {option.label}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
             {/* Radio Buttons for Account Sectors */}
             <Grid item xs={12}>
               <FormControl component="fieldset">
