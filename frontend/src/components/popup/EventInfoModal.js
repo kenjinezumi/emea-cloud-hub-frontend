@@ -61,6 +61,22 @@ export default function EventInfoPopup() {
   };
   isEventNew();
 
+  // TODO put it in an external file
+  const googleColors = [
+    'rgba(66, 133, 244, 0.6)', // Google Blue 
+    'rgba(234, 67, 53, 0.6)',  // Google Red 
+    'rgba(251, 188, 5, 0.6)',  // Google Yellow
+    'rgba(52, 168, 83, 0.6)',  // Google Green 
+    'rgba(255, 112, 67, 0.6)', // Deep Orange 
+    'rgba(156, 39, 176, 0.6)', // Purple 
+    'rgba(0, 172, 193, 0.6)',  // Cyan
+    'rgba(255, 235, 59, 0.6)', // Yellow
+    'rgba(121, 85, 72, 0.6)',  // Brown
+  ];
+  const getRandomColor = () => {
+    const index = Math.floor(Math.random() * googleColors.length);
+    return googleColors[index];
+  };
   return (
     <Draggable handle=".handle">
 
@@ -70,7 +86,8 @@ export default function EventInfoPopup() {
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
-        minWidth: 500,
+        minWidth: 600,
+        maxWidth:600,
         zIndex: 6000,
         boxShadow: "0px 4px 10px rgba(0,0,0,0.5)", // Enhanced shadow effect
         borderRadius: "20px", // More pronounced rounded corners
@@ -128,17 +145,17 @@ export default function EventInfoPopup() {
         </Stack>
         {/* Add other event details with Typography */}
         <Typography variant="body2">
-          <TravelExploreIcon style={{ marginRight: "5px" }} />
+          <TravelExploreIcon style={{ marginRight: "5px", color: '#757575' }} />
           {selectedEvent.region}
-          <MyLocationIcon style={{ marginRight: "5px", marginLeft: "40px" }} />
+          <MyLocationIcon style={{ marginRight: "5px", marginLeft: "40px",  color: '#757575' }} />
           {selectedEvent.subRegion.toString()}
         </Typography>
         <Typography variant="body2">
-          <LocationOnIcon style={{ marginRight: "5px" }} />
+          <LocationOnIcon style={{ marginRight: "5px",  color: '#757575' }} />
           {selectedEvent.country.toString()}
         </Typography>
         <Typography variant="body2">
-          <LinkIcon style={{ marginRight: "5px" }} />
+          <LinkIcon style={{ marginRight: "5px",  color: '#757575' }} />
           <a
             href={selectedEvent.landingPageLink}
             target="_blank"
@@ -148,15 +165,30 @@ export default function EventInfoPopup() {
           </a>
         </Typography>
         <Typography variant="body2">
-          <PeopleIcon style={{ marginRight: "10px" }} />
+          <PeopleIcon style={{ marginRight: "10px",  color: '#757575' }} />
           Max event capacity: {selectedEvent.maxEventCapacity}
         </Typography>
+          <Typography variant="body2">
+            <LabelIcon style={{ marginRight: "5px",  color: '#757575' }} />
+            Organised by: 
+            {selectedEvent.organisedBy.map((organiser, index) => (
+    <Chip 
+      key={index} 
+      label={organiser} 
+      sx={{ 
+        marginLeft: "5px", 
+        backgroundColor: getRandomColor(), 
+        color: 'white', // Keeping text white for better contrast
+        border: '1px solid rgba(255, 255, 255, 0.3)', // Adjusting border transparency as well
+        '&:hover': {
+          backgroundColor: 'rgba(255, 255, 255, 0.2)' // Lighter hover effect for a subtler transition
+        }
+      }}
+    />
+  ))}
+          </Typography>
         <Typography variant="body2">
-          <LabelIcon style={{ marginRight: "5px" }} />
-          Organised by: {selectedEvent.organisedBy}
-        </Typography>
-        <Typography variant="body2">
-          <DescriptionIcon style={{ marginRight: "5px" }} />
+          <DescriptionIcon style={{ marginRight: "5px",  color: '#757575' }} />
           Description: {selectedEvent.description}
         </Typography>
       </Stack>
