@@ -81,20 +81,18 @@ export default function EventInfoPopup() {
     <Draggable handle=".handle">
 
     <Paper
-      sx={{
-        position: "fixed",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        minWidth: 600,
-        maxWidth:600,
-        zIndex: 6000,
-        boxShadow: "0px 4px 10px rgba(0,0,0,0.5)", // Enhanced shadow effect
-        borderRadius: "20px", // More pronounced rounded corners
-        bgcolor: 'background.paper' 
-        
-      }}
-
+sx={{
+  position: "fixed",
+  top: "25vh",  // 50% of the viewport height
+  left: "40vw", // 50% of the viewport width
+  transform: "translate(-50%, -50%)",
+  minWidth: 600,
+  maxWidth: 600,
+  zIndex: 6000,
+  boxShadow: "0px 4px 10px rgba(0,0,0,0.5)",
+  borderRadius: "20px",
+  bgcolor: 'background.paper'
+}}
     >
       <IconButton
         onClick={handleClose}
@@ -180,9 +178,9 @@ export default function EventInfoPopup() {
         backgroundColor: getRandomColor(), 
         color: 'white', // Keeping text white for better contrast
         border: '1px solid rgba(255, 255, 255, 0.3)', // Adjusting border transparency as well
-        '&:hover': {
-          backgroundColor: 'rgba(255, 255, 255, 0.2)' // Lighter hover effect for a subtler transition
-        }
+        // '&:hover': {
+        //   backgroundColor: 'rgba(255, 255, 255, 0.3)' // Lighter hover effect for a subtler transition
+        // }
       }}
     />
   ))}
