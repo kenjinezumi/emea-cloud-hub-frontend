@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import dayjs from "dayjs";
 import GlobalContext from "../../context/GlobalContext";
+import Draggable from 'react-draggable';
 import {
   Button,
   Typography,
@@ -61,6 +62,8 @@ export default function EventInfoPopup() {
   isEventNew();
 
   return (
+    <Draggable handle=".handle">
+
     <Paper
       sx={{
         position: "fixed",
@@ -74,6 +77,7 @@ export default function EventInfoPopup() {
         bgcolor: 'background.paper' 
         
       }}
+
     >
       <IconButton
         onClick={handleClose}
@@ -82,7 +86,7 @@ export default function EventInfoPopup() {
       >
         <CloseIcon />
       </IconButton>
-      <Stack direction="row" spacing={1} sx={{ p: 2, alignItems: "center" }}>
+      <Stack direction="row" spacing={1} sx={{ p: 2, alignItems: "center" }} className="handle">
         {/* Render the emoji if available */}
         <Avatar>{selectedEvent.emoji}</Avatar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -178,5 +182,6 @@ export default function EventInfoPopup() {
         </Button>
       </Stack>
     </Paper>
+    </Draggable>
   );
 }
