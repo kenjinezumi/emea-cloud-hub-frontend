@@ -61,7 +61,14 @@ export default function EventInfoPopup() {
   };
   isEventNew();
 
-  // TODO put it in an external file
+  const cleanOrganiserName = (name) => {
+    let cleanedName = name.replace(/[()]/g, '').trim();
+    const uniqueParts = new Set(cleanedName.split(/\s+/));
+    return Array.from(uniqueParts).join(' ');
+  };
+  
+  
+  
   const googleColors = [
     'rgba(66, 133, 244, 0.6)', // Google Blue 
     'rgba(234, 67, 53, 0.6)',  // Google Red 
@@ -172,15 +179,17 @@ sx={{
             {selectedEvent.organisedBy.map((organiser, index) => (
     <Chip 
       key={index} 
-      label={organiser} 
+      label={cleanOrganiserName(organiser)} 
+      component="a" 
+      href={`https://moma.corp.google.com/person/${encodeURIComponent(cleanOrganiserName(organiser))}`} 
+      clickable
+      target="_blank" 
+      rel="noopener noreferrer" 
       sx={{ 
         marginLeft: "5px", 
         backgroundColor: getRandomColor(), 
-        color: 'white', // Keeping text white for better contrast
-        border: '1px solid rgba(255, 255, 255, 0.3)', // Adjusting border transparency as well
-        // '&:hover': {
-        //   backgroundColor: 'rgba(255, 255, 255, 0.3)' // Lighter hover effect for a subtler transition
-        // }
+        color: 'white',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
       }}
     />
   ))}
