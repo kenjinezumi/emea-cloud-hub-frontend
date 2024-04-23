@@ -3,10 +3,10 @@ runtime: nodejs20
 instance_class: F4_1G
 
 automatic_scaling:
-  min_instances: 1
-  max_instances: 10
-  min_idle_instances: 1
-  max_idle_instances: 5
+  min_instances: 10
+  max_instances: 20
+  min_idle_instances: 10
+  max_idle_instances: 20
   min_pending_latency: 30ms
   max_pending_latency: 50ms
 
