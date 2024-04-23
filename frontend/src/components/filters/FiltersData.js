@@ -76,7 +76,7 @@ export const subregionsData = [
   },
   {
     subregion: 'UK/IE',
-    countries: ['GB'],
+    countries: ['UK'],
   },
 
 ];
@@ -114,7 +114,7 @@ export const countriesData = [
     subregion: 'France',
   },
   {
-    country: 'GB',
+    country: 'UK',
     region: ['EMEA', 'GLOBAL'],
     subregion: 'UK/IE',
   },
@@ -177,7 +177,7 @@ export const countryOptions = [
   'DE',
   'ES',
   'FR',
-  'GB',
+  'UK',
   'IL',
   'IT',
   'NL',

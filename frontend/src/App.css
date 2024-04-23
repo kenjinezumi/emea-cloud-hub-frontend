@@ -1,14 +1,14 @@
 /* Base styles to set font and text alignment */
 .App {
   text-align: center;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Product Sans', sans-serif;
   color: #3c4043; /* Google Calendar's primary text color */
   background-color: #ffffff; /* Google Calendar's background color */
 }
 
 /* Body styling to maintain consistent font */
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Product Sans', sans-serif;
   margin: 0;
   padding: 0;
   background-color: #ffffff; /* Consistent background color */

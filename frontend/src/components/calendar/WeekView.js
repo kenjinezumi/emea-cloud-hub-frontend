@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState, useRef} from 'react';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import GlobalContext from '../../context/GlobalContext';
@@ -21,6 +21,15 @@ export default function WeekView() {
   const [events, setEvents] = useState([]);
   const {filters} = useContext(GlobalContext);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const hourGridRef = useRef(null);
+
+  useEffect(() => {
+    // Set the initial scroll position to 7 AM after component mounts
+    if (hourGridRef.current) {
+      const hourHeight = 60;  // Adjust this if the height of your hour slots differs
+      hourGridRef.current.scrollTop = hourHeight * 16;  // Scroll to 7 AM
+    }
+  }, []);
 
   useEffect(() => {
     const applyFilters = async (events, filters) => {
@@ -136,7 +145,7 @@ export default function WeekView() {
 
   return (
     <Paper sx={{width: '80%', overflowY: 'auto', padding: 2, border: 'none'}}>
-      <Grid container>
+      <Grid container >
         {/* Hours Column */}
         <Grid
           item
@@ -147,6 +156,9 @@ export default function WeekView() {
             borderRight: 1,
             borderColor: 'divider',
           }}
+          ref={hourGridRef}
+
+          
         >
           {hoursOfDay.map((hour) => (
             <div

@@ -20,8 +20,15 @@ const NavigationSidebar = () => {
     navigate(path);
   };
 
+
   const handleCancel = () => {
     // Navigate to the main calendar view
+    const userConfirmed = window.confirm('Are you sure you want to leave this page?');
+
+    // If the user clicks "OK", redirect to the home page
+    if (userConfirmed) {
+      window.location.href = '/';
+    }
     navigate('/');
   };
 

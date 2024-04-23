@@ -5,8 +5,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import beta from '../../assets/svg/beta.svg';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ColorLensIcon from '@mui/icons-material/ColorLens';
+
 import {eventTypeOptions} from '../filters/FiltersData';
 import Input from '@mui/material/Input';
 import {useNavigate} from 'react-router-dom';
@@ -15,6 +14,7 @@ import {Select, MenuItem, Menu} from '@mui/material';
 import GlobalContext from '../../context/GlobalContext';
 import ThemePopup from '../popup/Themepopup';
 import ListView from '../calendar/ListView';
+import versionInfo from '../../version.json';
 
 import {getEventData} from '../../api/getEventData'; // Assuming this is your API call
 
@@ -136,7 +136,9 @@ export default function CalendarHeader() {
         <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
           EMEA Cloud Hub
         </h1>
-        <img src={beta} alt="beta" className="mr-4 w-12 h-12" />
+        <img src={beta} alt="beta" className="mr-2 w-12 h-12" />
+        <span className="mr-4 text-xs text-gray-400">V. {versionInfo.version}</span>
+
         <button onClick={handleReset} className="border rounded py-2 px-4 mr-2">
           Today
         </button>
