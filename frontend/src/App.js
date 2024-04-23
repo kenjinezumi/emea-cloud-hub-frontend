@@ -14,7 +14,6 @@ import EventFormExtra from "./components/forms/EventFormExtra";
 import EventFormAudience from "./components/forms/EventFormAudience";
 import EventFormLinks from "./components/forms/EventFormLinks";
 import EventSharePage from "./components/forms/EventSharePage";
-import NotFoundPage from './components/error/NotFound';
 
 
 import GlobalContext from "./context/GlobalContext";
@@ -62,7 +61,6 @@ function App() {
             <Route path="/audience" element={<EventFormAudience/>} />
             <Route path="/links" element={<EventFormLinks/>} />
             <Route path="/event/:eventId" element={<EventSharePage />} />
-            {/* <Route path="/*" element={<NotFoundPage />} /> */}
 
           </Routes>
    
