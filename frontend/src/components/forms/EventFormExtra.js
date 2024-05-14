@@ -19,11 +19,20 @@ import {
   FormControlLabel,
   TextField,
   Chip,
+  Autocomplete,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  InputLabel,
+  OutlinedInput,
+  ListItemText
 } from "@mui/material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'; // Corrected import
+
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
 import InfoIcon from "@mui/icons-material/Info";
-import { blue } from "@mui/material/colors";
+import { blue, grey } from "@mui/material/colors";
 
 export default function ExtraDetailsForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -67,6 +76,24 @@ export default function ExtraDetailsForm() {
           { language: "English", template: "" },
         ]
   );
+
+  const [okrSelections, setOkrSelections] = useState(okrOptions.map(option => ({
+    label: option.label,
+    selected: false
+  })));
+
+  const handleToggleOkr = (label) => {
+    const newOkrSelections = okrSelections.map(option => ({
+      ...option,
+      selected: option.label === label ? !option.selected : option.selected
+    }));
+    setOkrSelections(newOkrSelections);
+  
+    // Update the main OKR state
+    const selectedOkrs = newOkrSelections.filter(option => option.selected).map(option => option.label);
+    setOkr(selectedOkrs);
+  };
+
   const navigate = useNavigate();
 
   const handlePrevious = () => {
@@ -85,8 +112,9 @@ export default function ExtraDetailsForm() {
 
   const handleNext = () => {
     // Validate only the mandatory fields
-    const formIsValid =
-      customerUse && okr.length > 0 && gep.length > 0 && activityType;
+    const selectedOkr = okrSelections.filter(option => option.selected).map(option => option.label);
+
+    const formIsValid = customerUse && selectedOkr.length > 0 && gep.length > 0 && activityType;
 
     setIsFormValid(formIsValid);
 
@@ -101,7 +129,7 @@ export default function ExtraDetailsForm() {
       emailLanguage,
       emailText,
       customerUse,
-      okr,
+      okr: selectedOkr, 
       gep,
       activityType,
       languagesAndTemplates,
@@ -138,10 +166,9 @@ export default function ExtraDetailsForm() {
     setLanguagesAndTemplates(updatedItems);
   };
 
-  const handleOkrChange = (event) => {
-    const value = event.target.value;
-    setOkr(typeof value === "string" ? value.split(",") : value);
-  };
+
+
+  
 
   return (
     <div className="h-screen flex flex-col">
@@ -167,61 +194,71 @@ export default function ExtraDetailsForm() {
           <Grid container spacing={2}>
             {/* Dynamically rendered Email Language and Template Inputs */}
             {languagesAndTemplates.map((item, index) => (
-              <Grid
-                container
-                spacing={2}
-                key={index}
-                style={{ marginTop: "20px", marginLeft: "1px" }}
-              >
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <Typography variant="subtitle1">Email Language</Typography>
-                    <Select
-                      value={item.language}
-                      onChange={(e) =>
-                        handleLanguageChange(e.target.value, index)
-                      }
-                    >
-                      {languageOptions.map((language, idx) => (
-                        <MenuItem key={idx} value={language}>
-                          {language}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1">Email Template</Typography>
-                  <TextField
-                    label="Email Text"
-                    multiline
-                    rows={4}
-                    value={item.template}
-                    onChange={(e) =>
-                      handleTemplateChange(e.target.value, index)
-                    }
-                    variant="outlined"
-                    fullWidth
-                  />
-                </Grid>
-                {index > 0 && (
-                  <Grid item xs={12}>
-                    <Button
-                      variant="outlined"
-                      onClick={() => handleRemoveLanguageAndTemplate(index)}
-                      style={{
-                        color: "#d32f2f",
-                        borderColor: "#d32f2f",
-                        marginTop: "1px",
-                        textTransform: "none",
-                      }}
-                    >
-                      Remove
-                    </Button>
-                  </Grid>
+            <Accordion key={index} style={{ width: '100%', marginBottom: '8px' }}>
+            <AccordionSummary
+      expandIcon={<ExpandMoreIcon />}
+      aria-controls="panel-content"
+      id={`panel-header-${index}`}
+    >
+<Typography>
+        Email language: {item.language}
+      </Typography>    </AccordionSummary>
+    <AccordionDetails>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <Typography variant="subtitle1">Email language</Typography>
+            {index === 0 ? (
+              <TextField
+                value={item.language}
+                fullWidth
+                InputProps={{ readOnly: true }}
+                variant="outlined"
+                style={{ backgroundColor: '#e0e0e0' }}
+              />
+            ) : (
+              <Autocomplete
+                value={item.language}
+                onChange={(event, newValue) => {
+                  handleLanguageChange(newValue, index);
+                }}
+                freeSolo
+                options={languageOptions.map((option) => option)}
+                renderInput={(params) => (
+                  <TextField {...params} label="" variant="outlined" />
                 )}
-              </Grid>
-            ))}
+              />
+            )}
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <Typography variant="subtitle1">Email template</Typography>
+          <TextField
+            label="Email Text"
+            multiline
+            rows={4}
+            value={item.template}
+            onChange={(e) => handleTemplateChange(e.target.value, index)}
+            variant="outlined"
+            fullWidth
+          />
+        </Grid>
+        {index > 0 && (
+          <Grid item xs={12}>
+            <Button
+              variant="outlined"
+              onClick={() => handleRemoveLanguageAndTemplate(index)}
+              style={{ color: "#d32f2f", borderColor: "#d32f2f", marginTop: "1px", textTransform: "none" }}
+            >
+              Remove
+            </Button>
+          </Grid>
+        )}
+      </Grid>
+    </AccordionDetails>
+  </Accordion>
+))}
+
 
             {/* Add Button */}
             <Grid item xs={12}>
@@ -251,35 +288,18 @@ export default function ExtraDetailsForm() {
             </Grid>
             {/* OKR Dropdown */}
             <Grid item xs={12}>
-              <FormControl fullWidth>
-                <Typography variant="subtitle1">OKR</Typography>
-                <Select
-                  multiple
-                  value={okr}
-                  onChange={handleOkrChange}
-                  renderValue={(selected) => (
-                    <div
-                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
-                    >
-                      {selected.map((okrItem) => (
-                        <Chip
-                          key={okrItem}
-                          label={okrItem}
-                          onDelete={handleOkrDelete(okrItem)}
-                          onMouseDown={(event) => event.stopPropagation()}
-                        />
-                      ))}
-                    </div>
-                  )}
-                >
-                  {okrOptions.map((option, idx) => (
-                    <MenuItem key={idx} value={option.label}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+              <Typography variant="subtitle1">OKR Selection</Typography>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {okrSelections.map(option => (
+                  <Chip
+                    key={option.label}
+                    label={option.label}
+                    onClick={() => handleToggleOkr(option.label)}
+                    style={{ backgroundColor: option.selected ? blue[500] : grey[300], color: option.selected ? 'white' : 'black' }}
+                  />
+                ))}
+              </div>
+            </Grid>          
 
             {/* GEP Dropdown */}
             <Grid item xs={12}>

@@ -41,9 +41,11 @@ export default function AudiencePersonaForm() {
   const [audienceSeniority, setAudienceSeniority] = useState(
     selectedEvent ? selectedEvent.audienceSeniority : formData.audienceSeniority || [],
   );
-  const [accountSectors, setAccountSectors] = useState(
-    selectedEvent ? selectedEvent.accountSectors : formData.accountSectors || '',
-  );
+  const [accountSectors, setAccountSectors] = useState({
+    commercial: selectedEvent ? selectedEvent.accountSectors.commercial : false,
+    public: selectedEvent ? selectedEvent.accountSectors.public : false,
+  });
+
   const [accountSegments, setAccountSegments] = useState(
     selectedEvent ? selectedEvent.accountSegments : formData.accountSegments || {
       enterprise: false,
@@ -93,6 +95,15 @@ export default function AudiencePersonaForm() {
       [event.target.name]: event.target.checked,
     });
   };
+
+  const handleCheckboxChangeAccountSectors = (event) => {
+    const { name, checked } = event.target;
+    setAccountSectors(prevSectors => ({
+      ...prevSectors,
+      [name]: checked
+    }));
+  };
+
   const audiencePersonaOptions = audienceRoles.map((role) => (
     <MenuItem key={role} value={role}>
       {role}
@@ -103,9 +114,9 @@ export default function AudiencePersonaForm() {
     // Retrieve previous form data
     const isAudiencePersonaValid = audiencePersona.length > 0;
     const isAudienceSeniorityValid = audienceSeniority.length > 0;
-    const isAccountSectorsValid = accountSectors.trim() !== '';
+    const isAccountSectorsValid = Object.values(accountSectors).some(value => value);
     const isMaxEventCapacityValid = maxEventCapacity.trim() !== '';
-    const isPeopleMeetingCriteriaValid = peopleMeetingCriteria.trim() !== '';
+    // const isPeopleMeetingCriteriaValid = peopleMeetingCriteria.trim() !== '';
     const isAccountSegmentsSelected =
       Object.values(accountSegments).some(Boolean);
 
@@ -114,7 +125,7 @@ export default function AudiencePersonaForm() {
       isAudienceSeniorityValid &&
       isAccountSectorsValid &&
       isMaxEventCapacityValid &&
-      isPeopleMeetingCriteriaValid &&
+      // isPeopleMeetingCriteriaValid &&
       isAccountSegmentsSelected;
 
     setIsFormValid(formIsValid); // Update form validity state
@@ -232,27 +243,20 @@ export default function AudiencePersonaForm() {
 </Grid>
             {/* Radio Buttons for Account Sectors */}
             <Grid item xs={12}>
+              <Typography variant="subtitle1">Account Sectors</Typography>
               <FormControl component="fieldset">
-                <Typography variant="subtitle1">Account sectors</Typography>
-                <RadioGroup
-                  value={accountSectors}
-                  onChange={(e) => setAccountSectors(e.target.value)}
-                >
-                  <FormControlLabel
-                    value="commercial sector"
-                    control={<Radio />}
-                    label="Commercial sector"
-                  />
-                  <Grid item xs={12} />
-                  <FormControlLabel
-                    value="public sector"
-                    control={<Radio />}
-                    label="Public sector"
-                  />
-                </RadioGroup>
+                 <FormGroup>
+                <FormControlLabel
+                  control={<Checkbox checked={accountSectors.commercial} onChange={handleCheckboxChangeAccountSectors} name="commercial" />}
+                  label="Commercial Sector"
+                />
+                <FormControlLabel
+                  control={<Checkbox checked={accountSectors.public} onChange={handleCheckboxChangeAccountSectors} name="public" />}
+                  label="Public Sector"
+                />
+              </FormGroup>
               </FormControl>
             </Grid>
-
             {/* Checkboxes for Account Segments */}
             <Grid item xs={12}>
               <Typography variant="subtitle1">Account segments</Typography>
@@ -312,11 +316,15 @@ export default function AudiencePersonaForm() {
               </Typography>
               <TextField
                 type="number"
-                value={peopleMeetingCriteria}
+                // value={peopleMeetingCriteria}
+                value={0}
                 onChange={handlePeopleMeetingCriteriaChange}
                 error={!!peopleMeetingCriteriaError}
                 helperText={peopleMeetingCriteriaError}
                 fullWidth
+                InputProps={{
+                  readOnly: true, // This makes the TextField read-only
+                }}
               />
             </Grid>
           </Grid>

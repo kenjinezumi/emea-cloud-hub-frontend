@@ -95,6 +95,7 @@ const handleCountryDelete = (countryToDelete) => (event) => {
 
     const currentFormData = { region, subRegion, country };
     updateFormData({ ...formData, ...currentFormData });
+    console.log(currentFormData)
     navigate("/extra");
   };
 
@@ -124,8 +125,7 @@ const handleCountryDelete = (countryToDelete) => (event) => {
           ?.countries || []
     );
     setAvailableCountries(countriesForSubregions);  // Make sure this is set to update available countries
-    setCountry([]);  // Optionally clear countries when subregions change
-  };
+    setCountry([...new Set(countriesForSubregions)]);  };
   
 
   return (
@@ -170,7 +170,7 @@ const handleCountryDelete = (countryToDelete) => (event) => {
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Sub-Region
+                  Sub-region
                 </Typography>
                 <Select
                   multiple

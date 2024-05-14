@@ -15,6 +15,9 @@ import {
   FormGroup,
   Snackbar,
 } from "@mui/material";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import IconButton from "@mui/material/IconButton";
+
 import "../styles/Forms.css";
 import EmojiPicker from "emoji-picker-react";
 import { FormControl, Select, MenuItem } from "@mui/material";
@@ -65,11 +68,7 @@ export default function EventForm() {
     updateFormData,
     formData,
   } = useContext(GlobalContext);
-  const [landingPageLink, setLandingPageLink] = useState(
-    selectedEvent
-      ? selectedEvent.landingPageLink
-      : formData.landingPageLink || ""
-  );
+
   const [eventType, setEventType] = useState(
     formData.eventType || eventTypeOptions[0].label
   );
@@ -197,12 +196,6 @@ export default function EventForm() {
   const handleNext = () => {
     const eventId = uuidv4(); // Generate a unique event ID
 
-    if (!isValidUrl(landingPageLink)) {
-      setSnackbarMessage("Please enter a valid URL for the landing page.");
-      setSnackbarOpen(true);
-      return; // Stop form submission
-    }
-
     // Save current form state to cache
     const isTitleValid = title.trim() !== "";
     const isorganisedByValid = organisedBy.length > 0; // Check if the array is not empty
@@ -226,7 +219,6 @@ export default function EventForm() {
     }
 
     const newFormData = {
-      landingPageLink,
       eventId,
       title,
       description,
@@ -252,7 +244,7 @@ export default function EventForm() {
   };
 
   const toggleEmojiPicker = () => {
-    setIsEmojiPickerOpen(!isEmojiPickerOpen);
+    setIsEmojiPickerOpen((prev) => !prev); // This ensures it toggles based on the previous state
   };
 
   console.log(startDate);
@@ -272,19 +264,28 @@ export default function EventForm() {
             <Grid item>
               <Typography variant="h4">
                 <span style={{ display: "flex", alignItems: "center" }}>
-                  <CalendarMonthIcon
-                    style={{ marginRight: "10px", color: blue[500] }}
+                <span
+                          style={{ marginRight: "10px", fontSize: "1.5rem" }}
+                        >
+                          {emoji}
+                        </span>
+                  <TextField
+                    id="standard-basic"
+                    variant="standard"
+                    fullWidth
+                    placeholder="Enter activity name"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+  
                   />
-                  <span className="mr-1 text-xl text-black  cursor-pointer">
-                    {title.trim() !== "" ? title : "Activity"}
-                  </span>
-
-                  <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
-                    {emoji}
-                  </span>
+                   <IconButton onClick={toggleEmojiPicker}>
+                          <EmojiEmotionsIcon />
+                        </IconButton>
                 </span>
               </Typography>
+              {isEmojiPickerOpen && <EmojiPicker onEmojiClick={onEmojiClick} />}
             </Grid>
+
             <Grid item>
               {selectedEvent ? (
                 <Typography variant="subtitle1">Edit Activity</Typography>
@@ -295,57 +296,6 @@ export default function EventForm() {
           </Grid>
 
           <form noValidate>
-            <Grid
-              container
-              spacing={2}
-              alignItems="center"
-              style={{ marginBottom: "20px" }}
-            >
-              <Grid item xs={30}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Name
-                </Typography>
-
-                <TextField
-                  label=""
-                  variant="outlined"
-                  fullWidth
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">
-                  Link to landing page
-                </Typography>
-
-                <TextField
-                  label=""
-                  value={landingPageLink}
-                  onChange={(e) => setLandingPageLink(e.target.value)}
-                  variant="outlined"
-                  fullWidth
-                  margin="normal"
-                />
-              </Grid>
-              <Grid item xs={2}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Emoji
-                </Typography>
-                <Button onClick={toggleEmojiPicker}>
-                  {"Choose emoji "}
-                  {emoji && (
-                    <span style={{ fontSize: "1.5rem", marginLeft: "10px" }}>
-                      {emoji}
-                    </span>
-                  )}
-                </Button>
-                {isClient && isEmojiPickerOpen && (
-                  <EmojiPicker onEmojiClick={onEmojiClick} />
-                )}{" "}
-              </Grid>
-            </Grid>
-
             {/* Dropdown 1 */}
             <Grid
               container
@@ -446,7 +396,7 @@ export default function EventForm() {
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   {eventType === "Blog Post" ? (
                     <DatePicker
-                      label="Event Start Date"
+                      label="Event start date"
                       inputFormat="MM/dd/yyyy"
                       defaultValue={new Date()}
                       value={new Date(startDate)}
@@ -457,7 +407,7 @@ export default function EventForm() {
                     />
                   ) : (
                     <DateTimePicker
-                      label="Event Start Date"
+                      label="Event start date"
                       inputFormat="MM/dd/yyyy hh:mm a"
                       value={new Date(startDate)}
                       onChange={handleStartDateChange}
@@ -474,7 +424,7 @@ export default function EventForm() {
                 <Grid item xs={6}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DateTimePicker
-                      label="Event End Date"
+                      label="Event end date"
                       inputFormat="MM/dd/yyyy hh:mm a"
                       value={new Date(endDate)}
                       onChange={setEndDate}
@@ -507,7 +457,7 @@ export default function EventForm() {
 
             <Grid item xs={12} style={{ marginBottom: "20px" }}>
               <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                Marketing Program Instance ID
+                Marketing program instance ID
               </Typography>
               <TextField
                 label=""
