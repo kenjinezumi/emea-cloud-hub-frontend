@@ -194,19 +194,19 @@ export default function EventForm() {
   }, []);
 
   const handleNext = () => {
-    const eventId = uuidv4(); // Generate a unique event ID
+    const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
+    const eventId = existingEventId || uuidv4(); // Use existing eventId or generate a new one
 
     // Save current form state to cache
     const isTitleValid = title.trim() !== "";
-    const isorganisedByValid = organisedBy.length > 0; // Check if the array is not empty
+    const isOrganisedByValid = organisedBy.length > 0; // Check if the array is not empty
     const isEventTypeValid = eventType.trim() !== "";
     const isDescriptionValid = description.trim() !== "";
-    const isMarketingProgramInstanceIdValid =
-      marketingProgramInstanceId.trim() !== "";
+    const isMarketingProgramInstanceIdValid = marketingProgramInstanceId.trim() !== "";
 
     const formIsValid =
       isTitleValid &&
-      // isorganisedByValid &&
+      // isOrganisedByValid &&
       isEventTypeValid &&
       isDescriptionValid &&
       isMarketingProgramInstanceIdValid;
@@ -248,7 +248,11 @@ export default function EventForm() {
   };
 
   const handleSaveAsDraft = () => {
+    const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
+    const eventId = existingEventId || uuidv4(); // Use existing eventId or generate a new one
+
     const draftData = {
+      eventId,
       title,
       description,
       organisedBy,
@@ -259,6 +263,8 @@ export default function EventForm() {
       isHighPriority,
       emoji,
     };
+
+    updateFormData(draftData); // Update the global form data
 
     setSnackbarMessage("Draft saved successfully!");
     setSnackbarOpen(true);

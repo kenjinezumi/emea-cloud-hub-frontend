@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
-import dayjs from "dayjs";
 import {
   Button,
   TextField,
@@ -11,18 +10,21 @@ import {
   Chip,
   InputAdornment,
   IconButton,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-
-import { sendDataToAPI } from "../../api/pushData"; // Adjust the path as per your project structure
 import LinkIcon from "@mui/icons-material/Link";
 import { blue } from "@mui/material/colors";
 
 const isValidUrl = (urlString) => {
   try {
-    // new URL(urlString);
+    new URL(urlString);
     return true;
   } catch (e) {
     return false;
@@ -31,6 +33,8 @@ const isValidUrl = (urlString) => {
 
 export default function LinksForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
+
+  // Initialize state with default values or empty arrays if undefined
   const [links, setLinks] = useState({
     LandingPageLinks:
       selectedEvent?.landingPageLinks || formData?.landingPageLinks || [],
@@ -40,15 +44,18 @@ export default function LinksForm() {
     OtherDocumentsLinks:
       selectedEvent?.otherDocumentsLinks || formData?.otherDocumentsLinks || [],
   });
+
   const [newLink, setNewLink] = useState({
     landingPage: "",
     salesKit: "",
     hailo: "",
     otherDocuments: "",
   });
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isError, setIsError] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLinkChange = (type, value) => {
@@ -65,7 +72,7 @@ export default function LinksForm() {
     } else {
       setSnackbarMessage("Invalid URL. Please enter a valid URL.");
       setSnackbarOpen(true);
-      setIsError(true);
+      // setIsError(true);
     }
   };
 
@@ -82,33 +89,40 @@ export default function LinksForm() {
     navigate("/audience"); // Adjust according to your route
   };
 
-  const handleFinalSave = () => {
-    if (!Object.values(links).every((category) => category.length > 0)) {
-      setSnackbarMessage("Please add at least one link in each category.");
-      setSnackbarOpen(true);
-      setIsError(true);
-      return;
-    }
-    updateFormData({ ...formData, ...links });
+  const handleSave = () => {
+   
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
+  const handleSaveAndPublish = () => {
+    const draftData = {
+      ...links,
+      approved_for_customer_use: true,
+    };
+    updateFormData({ ...formData, ...draftData });
+    setSnackbarMessage("Details saved and published successfully!");
+    setSnackbarOpen(true);
+    setIsError(false); // Set to false assuming no error in saving
+    setDialogOpen(false);
     navigate("/"); // Navigate to the home page after saving
+  };
+
+  const handleSaveAsDraft = () => {
+    const draftData = {
+      ...links,
+    };
+    updateFormData({ ...formData, ...draftData });
+    setSnackbarMessage("Draft saved successfully!");
+    setSnackbarOpen(true);
+    setIsError(false); // Set to false assuming no error in saving draft
   };
 
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
-  };
-
-  const fieldNames = {
-    landingPage: "Landing Page",
-    salesKit: "Sales Kit",
-    socialPromotion: "Social Promotion",
-    otherDocuments: "Other Documents",
-  };
-
-  const handleSaveAsDraft = () => {
-    localStorage.setItem("linksDraft", JSON.stringify(links));
-    setSnackbarMessage("Draft saved successfully!");
-    setSnackbarOpen(true);
-    setIsError(false); // Set to false assuming no error in saving draft
   };
 
   return (
@@ -210,7 +224,7 @@ export default function LinksForm() {
             </Button>
             <Button
               variant="contained"
-              onClick={handleFinalSave}
+              onClick={handleSave}
               style={{
                 backgroundColor: blue[500],
                 color: "white",
@@ -232,17 +246,32 @@ export default function LinksForm() {
             style: { backgroundColor: isError ? "red" : "green" },
           }}
         />
-        <Snackbar
-          open={snackbarOpen}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-          message={snackbarMessage}
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          ContentProps={{
-            style: { backgroundColor: isError ? "red" : "green" },
-          }}
-        />
       </div>
+
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Confirm Save and Publish"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            The details you are saving need to be accurate because we are going
+            to save it for customers. Are you sure you want to save and publish?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleSaveAndPublish} color="primary" autoFocus>
+            Save and Publish
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
