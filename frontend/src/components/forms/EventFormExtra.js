@@ -6,6 +6,7 @@ import {
   gepOptions,
 } from "../filters/FiltersData";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+import Snackbar from '@mui/material/Snackbar';
 
 import {
   Button,
@@ -36,7 +37,8 @@ import { blue, grey } from "@mui/material/colors";
 
 export default function ExtraDetailsForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
-
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isFormValid, setIsFormValid] = useState(true);
   const [activityOwner, setActivityOwner] = useState(
     selectedEvent ? selectedEvent.activityOwner : formData.activityOwner || []
@@ -166,9 +168,24 @@ export default function ExtraDetailsForm() {
     setLanguagesAndTemplates(updatedItems);
   };
 
-
-
+  const handleSaveAsDraft = () => {
+    const draftData = {
+      activityOwner,
+      speakers,
+      eventSeries,
+      emailLanguage,
+      emailText,
+      customerUse,
+      okr,
+      gep,
+      activityType,
+      languagesAndTemplates,
+    };
+    setSnackbarMessage("Draft saved successfully!");
+    setSnackbarOpen(true);
+    };
   
+
 
   return (
     <div className="h-screen flex flex-col">
@@ -377,14 +394,32 @@ export default function ExtraDetailsForm() {
               variant="contained"
               onClick={handleNext}
               style={{
-                backgroundColor: "#4285F4",
+                backgroundColor: blue[500],
                 color: "white",
-                float: "right",
+                float: "left",
                 margin: "10px",
               }}
             >
               Next
             </Button>
+            <Button
+    variant="contained"
+    onClick={handleSaveAsDraft}
+    style={{
+      backgroundColor: blue[500],
+      color: "white",
+      float: "right",
+      margin: "10px",
+    }}
+  >
+    Save as Draft
+  </Button>
+  <Snackbar
+  open={snackbarOpen}
+  autoHideDuration={6000}
+  onClose={() => setSnackbarOpen(false)}
+  message={snackbarMessage}
+/>
           </div>
         </div>
       </div>

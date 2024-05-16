@@ -5,6 +5,7 @@ import {
   regionsData,
   subregionsData,
 } from "../filters/FiltersData";
+import Snackbar from '@mui/material/Snackbar';
 import {
   Button,
   FormControl,
@@ -13,11 +14,9 @@ import {
   Select,
   MenuItem,
   Chip,
-  OutlinedInput,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
-import { ReactComponent as LocationLogo } from "../../assets/svg/location.svg";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 
@@ -44,6 +43,9 @@ export default function LocationFormPage() {
   );
   const [availableCountries, setAvailableCountries] = useState(formData.availableCountries || []);
   const [isFormValid, setIsFormValid] = useState(true);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
   const navigate = useNavigate();
 
   const handlePrevious = () => {
@@ -127,6 +129,16 @@ const handleCountryDelete = (countryToDelete) => (event) => {
     setAvailableCountries(countriesForSubregions);  // Make sure this is set to update available countries
     setCountry([...new Set(countriesForSubregions)]);  };
   
+    const handleSaveAsDraft = () => {
+      const draftData = {
+        region,
+        subRegion,
+        country
+      };
+      setSnackbarMessage("Draft saved successfully!");
+      setSnackbarOpen(true);
+        };
+    
 
   return (
     <div className="h-screen flex flex-col">
@@ -254,24 +266,42 @@ const handleCountryDelete = (countryToDelete) => (event) => {
                 border: "1px solid #dadce0",
                 boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                 float: "left",
-                margin: "10px",
+                margin: "5px",
               }}
             >
               Previous
             </Button>
             <Button
-              variant="outlined"
+              variant="contained"
               onClick={handleNext}
               className="next-button"
               style={{
-                backgroundColor: "#4285F4",
+                backgroundColor:  blue[500],
                 color: "white",
                 float: "right",
-                margin: "10px",
+                margin: "5px",
               }}
             >
               Next
             </Button>
+            <Button
+                variant="contained"
+                onClick={handleSaveAsDraft}
+                style={{
+                  backgroundColor: blue[500], // using MUI's blue color
+                  color: "white",
+                  float: "left", // Align it to the left of the Next button
+                  margin: "5px",
+                }}
+              >
+                Save as Draft
+              </Button>
+              <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={6000}
+              onClose={() => setSnackbarOpen(false)}
+              message={snackbarMessage}
+            />
           </div>
         </div>
       </div>

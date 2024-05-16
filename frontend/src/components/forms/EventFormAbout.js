@@ -247,7 +247,22 @@ export default function EventForm() {
     setIsEmojiPickerOpen((prev) => !prev); // This ensures it toggles based on the previous state
   };
 
-  console.log(startDate);
+  const handleSaveAsDraft = () => {
+    const draftData = {
+      title,
+      description,
+      organisedBy,
+      eventType,
+      startDate,
+      endDate,
+      marketingProgramInstanceId,
+      isHighPriority,
+      emoji,
+    };
+
+    setSnackbarMessage("Draft saved successfully!");
+    setSnackbarOpen(true);
+  };
 
   return (
     <div className="h-screen flex flex-col">
@@ -264,11 +279,9 @@ export default function EventForm() {
             <Grid item>
               <Typography variant="h4">
                 <span style={{ display: "flex", alignItems: "center" }}>
-                <span
-                          style={{ marginRight: "10px", fontSize: "1.5rem" }}
-                        >
-                          {emoji}
-                        </span>
+                  <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>
+                    {emoji}
+                  </span>
                   <TextField
                     id="standard-basic"
                     variant="standard"
@@ -276,11 +289,10 @@ export default function EventForm() {
                     placeholder="Enter activity name"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-  
                   />
-                   <IconButton onClick={toggleEmojiPicker}>
-                          <EmojiEmotionsIcon />
-                        </IconButton>
+                  <IconButton onClick={toggleEmojiPicker}>
+                    <EmojiEmotionsIcon />
+                  </IconButton>
                 </span>
               </Typography>
               {isEmojiPickerOpen && <EmojiPicker onEmojiClick={onEmojiClick} />}
@@ -480,19 +492,32 @@ export default function EventForm() {
                 Please fill in all required fields.
               </Typography>
             )}
-
-            <Button
-              variant="contained"
-              onClick={handleNext}
-              style={{
-                backgroundColor: "#4285F4",
-                color: "white",
-                float: "right",
-                margin: "10px",
-              }}
-            >
-              Next
-            </Button>
+            <div style={{ marginTop: "20px", float: "right" }}>
+              <Button
+                variant="contained"
+                onClick={handleNext}
+                style={{
+                  backgroundColor: blue[500],
+                  color: "white",
+                  float: "left",
+                  margin: "10px",
+                }}
+              >
+                Next
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleSaveAsDraft}
+                style={{
+                  backgroundColor: blue[500], // using MUI's blue color
+                  color: "white",
+                  float: "left", // Align it to the left of the Next button
+                  margin: "10px",
+                }}
+              >
+                Save as Draft
+              </Button>
+            </div>
           </form>
         </div>
       </div>

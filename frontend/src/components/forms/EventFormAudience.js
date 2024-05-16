@@ -1,5 +1,6 @@
-import React, {useContext, useEffect, useState} from 'react';
-import CalendarHeaderForm from '../commons/CalendarHeaderForm';
+import React, { useContext, useEffect, useState } from "react";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+import Snackbar from "@mui/material/Snackbar";
 
 import {
   Button,
@@ -16,30 +17,34 @@ import {
   Checkbox,
   FormGroup,
   TextField,
-} from '@mui/material';
-import {useNavigate} from 'react-router-dom';
-import '../styles/Forms.css';
-import {ReactComponent as UsersLogo} from '../../assets/svg/users.svg';
-import GlobalContext from '../../context/GlobalContext';
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import "../styles/Forms.css";
+import { ReactComponent as UsersLogo } from "../../assets/svg/users.svg";
+import GlobalContext from "../../context/GlobalContext";
 import {
   audienceRoles,
   audienceSeniorityOptions,
-} from '../filters/FiltersData';
-import PeopleIcon from '@mui/icons-material/People';
-import {blue} from '@mui/material/colors';
+} from "../filters/FiltersData";
+import PeopleIcon from "@mui/icons-material/People";
+import { blue } from "@mui/material/colors";
 
 export default function AudiencePersonaForm() {
-  const {formData, updateFormData, selectedEvent} = useContext(GlobalContext);
+  const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
 
-  const [maxEventCapacityError, setMaxEventCapacityError] = useState('');
+  const [maxEventCapacityError, setMaxEventCapacityError] = useState("");
   const [peopleMeetingCriteriaError, setPeopleMeetingCriteriaError] =
-    useState('');
+    useState("");
   const [isFormValid, setIsFormValid] = useState(true);
   const [audiencePersona, setAudiencePersona] = useState(
-    selectedEvent ? selectedEvent.audiencePersona : formData.audiencePersona || [],
+    selectedEvent
+      ? selectedEvent.audiencePersona
+      : formData.audiencePersona || []
   );
   const [audienceSeniority, setAudienceSeniority] = useState(
-    selectedEvent ? selectedEvent.audienceSeniority : formData.audienceSeniority || [],
+    selectedEvent
+      ? selectedEvent.audienceSeniority
+      : formData.audienceSeniority || []
   );
   const [accountSectors, setAccountSectors] = useState({
     commercial: selectedEvent ? selectedEvent.accountSectors.commercial : false,
@@ -47,36 +52,47 @@ export default function AudiencePersonaForm() {
   });
 
   const [accountSegments, setAccountSegments] = useState(
-    selectedEvent ? selectedEvent.accountSegments : formData.accountSegments || {
-      enterprise: false,
-      corporate: false,
-      smb: false,
-    },
+    selectedEvent
+      ? selectedEvent.accountSegments
+      : formData.accountSegments || {
+          enterprise: false,
+          corporate: false,
+          smb: false,
+        }
   );
   const [maxEventCapacity, setMaxEventCapacity] = useState(
-    selectedEvent ? selectedEvent.maxEventCapacity: formData.maxEventCapacity || '',
+    selectedEvent
+      ? selectedEvent.maxEventCapacity
+      : formData.maxEventCapacity || ""
   );
   const [peopleMeetingCriteria, setPeopleMeetingCriteria] = useState(
-    selectedEvent ? selectedEvent.peopleMeetingCriteria: formData.peopleMeetingCriteria || '',
+    selectedEvent
+      ? selectedEvent.peopleMeetingCriteria
+      : formData.peopleMeetingCriteria || ""
   );
   const navigate = useNavigate();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const handleAudiencePersonaDelete = (personaToDelete) => () => {
-    setAudiencePersona((currentPersonas) => currentPersonas.filter((persona) => persona !== personaToDelete));
-  };
-  
-  const handleAudienceSeniorityDelete = (seniorityToDelete) => () => {
-    setAudienceSeniority((currentSeniorities) => currentSeniorities.filter((seniority) => seniority !== seniorityToDelete));
+    setAudiencePersona((currentPersonas) =>
+      currentPersonas.filter((persona) => persona !== personaToDelete)
+    );
   };
 
+  const handleAudienceSeniorityDelete = (seniorityToDelete) => () => {
+    setAudienceSeniority((currentSeniorities) =>
+      currentSeniorities.filter((seniority) => seniority !== seniorityToDelete)
+    );
+  };
 
   const handleMaxEventCapacityChange = (e) => {
     const value = e.target.value;
     if (!value || /^\d+$/.test(value)) {
       setMaxEventCapacity(value);
-      setMaxEventCapacityError('');
+      setMaxEventCapacityError("");
     } else {
-      setMaxEventCapacityError('Please enter a valid number');
+      setMaxEventCapacityError("Please enter a valid number");
     }
   };
 
@@ -84,9 +100,9 @@ export default function AudiencePersonaForm() {
     const value = e.target.value;
     if (!value || /^\d+$/.test(value)) {
       setPeopleMeetingCriteria(value);
-      setPeopleMeetingCriteriaError('');
+      setPeopleMeetingCriteriaError("");
     } else {
-      setPeopleMeetingCriteriaError('Please enter a valid number');
+      setPeopleMeetingCriteriaError("Please enter a valid number");
     }
   };
   const handleCheckboxChange = (event) => {
@@ -98,9 +114,9 @@ export default function AudiencePersonaForm() {
 
   const handleCheckboxChangeAccountSectors = (event) => {
     const { name, checked } = event.target;
-    setAccountSectors(prevSectors => ({
+    setAccountSectors((prevSectors) => ({
       ...prevSectors,
-      [name]: checked
+      [name]: checked,
     }));
   };
 
@@ -114,8 +130,10 @@ export default function AudiencePersonaForm() {
     // Retrieve previous form data
     const isAudiencePersonaValid = audiencePersona.length > 0;
     const isAudienceSeniorityValid = audienceSeniority.length > 0;
-    const isAccountSectorsValid = Object.values(accountSectors).some(value => value);
-    const isMaxEventCapacityValid = maxEventCapacity.trim() !== '';
+    const isAccountSectorsValid = Object.values(accountSectors).some(
+      (value) => value
+    );
+    const isMaxEventCapacityValid = maxEventCapacity.trim() !== "";
     // const isPeopleMeetingCriteriaValid = peopleMeetingCriteria.trim() !== '';
     const isAccountSegmentsSelected =
       Object.values(accountSegments).some(Boolean);
@@ -144,21 +162,35 @@ export default function AudiencePersonaForm() {
       peopleMeetingCriteria,
     };
 
-    updateFormData({...formData, ...currentFormData});
+    updateFormData({ ...formData, ...currentFormData });
 
     // Save combined data to localStorage
 
     // Navigate to the next screen, passing combined data if using React Router state
     // navigate("/links", { state: combinedData });
-    navigate('/links'); // Adjust according to your route
+    navigate("/links"); // Adjust according to your route
   };
 
   const handlePrevious = () => {
-    navigate('/extra'); // Adjust according to your route
+    navigate("/extra"); // Adjust according to your route
   };
 
   const handleAudienceSeniorityChange = (event) => {
     setAudienceSeniority(event.target.value);
+  };
+
+  const handleSaveAsDraft = () => {
+    const draftData = {
+      audiencePersona,
+      audienceSeniority,
+      accountSectors,
+      accountSegments,
+      maxEventCapacity,
+      peopleMeetingCriteria,
+    };
+    localStorage.setItem("audiencePersonaDraft", JSON.stringify(draftData));
+    setSnackbarMessage("Draft saved successfully!");
+    setSnackbarOpen(true);
   };
 
   return (
@@ -170,91 +202,107 @@ export default function AudiencePersonaForm() {
             variant="h4"
             className="form-title"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '15px',
+              display: "flex",
+              alignItems: "center",
+              marginBottom: "15px",
             }}
           >
             <PeopleIcon
-              style={{marginRight: '10px', color: blue[500], height: '40px'}}
+              style={{ marginRight: "10px", color: blue[500], height: "40px" }}
             />
             <span className="mr-1 text-xl text-black  cursor-pointer">
               Audience
             </span>
           </Typography>
-            <Grid container spacing={2}>
-              {/* Multiple Select for Audience Persona */}
+          <Grid container spacing={2}>
+            {/* Multiple Select for Audience Persona */}
 
             <Grid item xs={12}>
-  <Typography variant="subtitle1">Audience persona</Typography>
-  <FormControl fullWidth>
-    <Select
-      multiple
-      value={audiencePersona}
-      onChange={(e) => setAudiencePersona(e.target.value)}
-      renderValue={(selected) => (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-          {selected.map((persona) => (
-            <Chip
-              key={persona}
-              label={persona}
-              onDelete={handleAudiencePersonaDelete(persona)}
-              onMouseDown={(event) => event.stopPropagation()}
-            />
-          ))}
-        </div>
-      )}
-    >
-      {audienceRoles.map((role, idx) => (
-        <MenuItem key={idx} value={role}>
-          {role}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-</Grid>
-<Grid item xs={12}>
-  <Typography variant="subtitle1">Audience Seniority</Typography>
-  <FormControl fullWidth>
-    <Select
-      multiple
-      value={audienceSeniority}
-      onChange={(e) => setAudienceSeniority(e.target.value)}
-      renderValue={(selected) => (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-          {selected.map((seniority) => (
-            <Chip
-              key={seniority}
-              label={seniority}
-              onDelete={handleAudienceSeniorityDelete(seniority)}
-              onMouseDown={(event) => event.stopPropagation()}
-            />
-          ))}
-        </div>
-      )}
-    >
-      {audienceSeniorityOptions.map((option, idx) => (
-        <MenuItem key={idx} value={option.label}>
-          {option.label}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-</Grid>
+              <Typography variant="subtitle1">Audience persona</Typography>
+              <FormControl fullWidth>
+                <Select
+                  multiple
+                  value={audiencePersona}
+                  onChange={(e) => setAudiencePersona(e.target.value)}
+                  renderValue={(selected) => (
+                    <div
+                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
+                    >
+                      {selected.map((persona) => (
+                        <Chip
+                          key={persona}
+                          label={persona}
+                          onDelete={handleAudiencePersonaDelete(persona)}
+                          onMouseDown={(event) => event.stopPropagation()}
+                        />
+                      ))}
+                    </div>
+                  )}
+                >
+                  {audienceRoles.map((role, idx) => (
+                    <MenuItem key={idx} value={role}>
+                      {role}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
+              <Typography variant="subtitle1">Audience Seniority</Typography>
+              <FormControl fullWidth>
+                <Select
+                  multiple
+                  value={audienceSeniority}
+                  onChange={(e) => setAudienceSeniority(e.target.value)}
+                  renderValue={(selected) => (
+                    <div
+                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
+                    >
+                      {selected.map((seniority) => (
+                        <Chip
+                          key={seniority}
+                          label={seniority}
+                          onDelete={handleAudienceSeniorityDelete(seniority)}
+                          onMouseDown={(event) => event.stopPropagation()}
+                        />
+                      ))}
+                    </div>
+                  )}
+                >
+                  {audienceSeniorityOptions.map((option, idx) => (
+                    <MenuItem key={idx} value={option.label}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
             {/* Radio Buttons for Account Sectors */}
             <Grid item xs={12}>
               <Typography variant="subtitle1">Account Sectors</Typography>
               <FormControl component="fieldset">
-                 <FormGroup>
-                <FormControlLabel
-                  control={<Checkbox checked={accountSectors.commercial} onChange={handleCheckboxChangeAccountSectors} name="commercial" />}
-                  label="Commercial Sector"
-                />
-                <FormControlLabel
-                  control={<Checkbox checked={accountSectors.public} onChange={handleCheckboxChangeAccountSectors} name="public" />}
-                  label="Public Sector"
-                />
-              </FormGroup>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={accountSectors.commercial}
+                        onChange={handleCheckboxChangeAccountSectors}
+                        name="commercial"
+                      />
+                    }
+                    label="Commercial Sector"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={accountSectors.public}
+                        onChange={handleCheckboxChangeAccountSectors}
+                        name="public"
+                      />
+                    }
+                    label="Public Sector"
+                  />
+                </FormGroup>
               </FormControl>
             </Grid>
             {/* Checkboxes for Account Segments */}
@@ -329,21 +377,21 @@ export default function AudiencePersonaForm() {
             </Grid>
           </Grid>
           {!isFormValid && (
-            <Typography color="error" style={{marginBottom: '10px'}}>
+            <Typography color="error" style={{ marginBottom: "10px" }}>
               Please fill in all required fields.
             </Typography>
           )}
-          <div style={{marginTop: '20px', float: 'right'}}>
+          <div style={{ marginTop: "20px", float: "right" }}>
             <Button
               variant="outlined"
               onClick={handlePrevious}
               style={{
-                backgroundColor: 'white',
-                color: '#202124', // Google's typical text color
-                border: '1px solid #dadce0', // Google's border color
-                boxShadow: '0 1px 2px 0 rgba(60,64,67,0.302)',
-                float: 'left', // Changed to 'left' to separate it from the 'Next' button
-                margin: '10px',
+                backgroundColor: "white",
+                color: "#202124", // Google's typical text color
+                border: "1px solid #dadce0", // Google's border color
+                boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
+                float: "left",
+                margin: "10px",
               }}
             >
               Previous
@@ -352,14 +400,33 @@ export default function AudiencePersonaForm() {
               variant="contained"
               onClick={handleNext}
               style={{
-                backgroundColor: '#4285F4',
-                color: 'white',
-                float: 'right',
-                margin: '10px',
+                backgroundColor: blue[500],
+                color: "white",
+                float: "left",
+                margin: "10px",
               }}
             >
               Next
             </Button>
+            <Button
+              variant="contained"
+              onClick={handleSaveAsDraft}
+              style={{
+                backgroundColor: blue[500],
+                color: "white",
+                float: "left", // Align it to the left of the Next button
+                margin: "10px",
+              }}
+            >
+              Save as Draft
+            </Button>
+
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={6000}
+              onClose={() => setSnackbarOpen(false)}
+              message={snackbarMessage}
+            />
           </div>
         </div>
       </div>
