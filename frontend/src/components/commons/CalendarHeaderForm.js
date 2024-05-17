@@ -1,102 +1,85 @@
-import React from 'react';
-import {useNavigate} from 'react-router-dom';
-import logo from '../../assets/logo/logo.png';
-import beta from '../../assets/svg/beta.svg';
-import {useLocation} from 'react-router-dom';
+import React, { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LinkIcon from '@mui/icons-material/Link';
 import PeopleIcon from '@mui/icons-material/People';
 import InfoIcon from '@mui/icons-material/Info';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import {blue} from '@mui/material/colors';
-
+import { blue } from '@mui/material/colors';
+import GlobalContext from "../../context/GlobalContext"; // Import GlobalContext
 
 const NavigationSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { formData, updateFormData } = useContext(GlobalContext); // Get form data and update function from context
 
-  const navigateTo = (path) => {
+  const navigateTo = (path, currentFormData) => {
+    updateFormData({ ...formData, ...currentFormData }); // Save current form data to global context
+    console.log("Initial form data:", JSON.stringify(formData, null, 2));
+
     navigate(path);
   };
 
-
   const handleCancel = () => {
-    // Navigate to the main calendar view
     const userConfirmed = window.confirm('Are you sure you want to leave this page?');
-
-    // If the user clicks "OK", redirect to the home page
     if (userConfirmed) {
       window.location.href = '/';
     }
     navigate('/');
   };
 
-  // Function to check if the current path matches the button's path
   const isCurrentPath = (path) => location.pathname === path;
-
 
   return (
     <div className="fixed right-0 top-16 h-[calc(100vh-64px)] w-60 bg-white shadow-md p-4">
       <div className="text-lg mb-2">Sections</div>{' '}
       <button
-        onClick={() => navigateTo('/create-event')}
+        onClick={() => navigateTo('/create-event', { /* add current form data here */ })}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/create-event') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
-          <CalendarMonthIcon
-            style={{color: blue[500]}}
-          />
+          <CalendarMonthIcon style={{ color: blue[500] }} />
         </span>{' '}
         <span>About</span>
       </button>
       <button
-        onClick={() => navigateTo('/location')}
-        className={`block w-full text-left p-2 rounded flex items-center ${
-          isCurrentPath('/location') ? 'text-black' : 'text-gray-400'
-        }`} >
+        onClick={() => navigateTo('/location', { /* add current form data here */ })}
+        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/location') ? 'text-black' : 'text-gray-400'}`}
+      >
         <span className="mr-2">
-          <LocationOnIcon
-            style={{color: blue[500]}}
-          />        </span>
+          <LocationOnIcon style={{ color: blue[500] }} />
+        </span>
         <span>Location</span>
       </button>
       <button
-        onClick={() => navigateTo('/extra')}
+        onClick={() => navigateTo('/extra', { /* add current form data here */ })}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/extra') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
-          <InfoIcon
-            style={{color: blue[500]}}
-          />        </span>
+          <InfoIcon style={{ color: blue[500] }} />
+        </span>
         <span>Extra details</span>
       </button>
-
       <button
-        onClick={() => navigateTo('/audience')}
-        className={`block w-full text-left p-2 rounded flex items-center ${
-          isCurrentPath('/audience') ? 'text-black' : 'text-gray-400'
-        }`}
+        onClick={() => navigateTo('/audience', { /* add current form data here */ })}
+        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/audience') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
-          <PeopleIcon
-            style={{color: blue[500]}}
-          />        </span>
+          <PeopleIcon style={{ color: blue[500] }} />
+        </span>
         <span>Audience</span>
       </button>
-
       <button
-        onClick={() => navigateTo('/links')}
+        onClick={() => navigateTo('/links', { /* add current form data here */ })}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/links') ? 'text-black' : 'text-gray-400'}`}
       >
         <span className="mr-2">
-          <LinkIcon
-            style={{color: blue[500]}}
-          />        </span>
+          <LinkIcon style={{ color: blue[500] }} />
+        </span>
         <span>Links</span>
       </button>
-
-
       <hr className="my-4" />
       <button
         onClick={handleCancel}
@@ -108,30 +91,4 @@ const NavigationSidebar = () => {
   );
 };
 
-export default function CalendarHeaderForm() {
-  const navigate = useNavigate();
-  const navigateToHome = () => {
-    // Redirect to the home page
-    const userConfirmed = window.confirm('Are you sure you want to leave this page?');
-
-    // If the user clicks "OK", redirect to the home page
-    if (userConfirmed) {
-      window.location.href = '/';
-    }
-  };
-
-  return (
-    <>
-      <NavigationSidebar />
-      <header className="fixed px-4 py-2 flex items-center justify-between bg-white" style={{width: '100%', marginBottom: '100px', zIndex: 1000}}>
-        <div className="flex items-center">
-          <img src={logo} alt="calendar" className="mr-2 w-8 h-8 cursor-pointer" onClick={navigateToHome}/>
-          <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
-          EMEA Cloud Hub
-          </h1>
-          <img src={beta} alt="beta" className="mr-2 w-12 h-12" />
-        </div>
-      </header>
-    </>
-  );
-}
+export default NavigationSidebar;

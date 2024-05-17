@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import {
@@ -16,12 +16,12 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import "../styles/Forms.css";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import LinkIcon from "@mui/icons-material/Link";
 import { blue } from "@mui/material/colors";
-import { sendDataToAPI } from "../../api/pushData"; // Ensure the correct path
+import { sendDataToAPI } from "../../api/pushData";
+import { useFormNavigation } from "../../hooks/useFormNavigation";
+import "../styles/Forms.css";
 
 const isValidUrl = (urlString) => {
   try {
@@ -35,7 +35,6 @@ const isValidUrl = (urlString) => {
 export default function LinksForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
 
-  // Initialize state with default values or empty arrays if undefined
   const [links, setLinks] = useState({
     LandingPageLinks:
       selectedEvent?.landingPageLinks || formData?.landingPageLinks || [],
@@ -57,7 +56,12 @@ export default function LinksForm() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const navigate = useNavigate();
+  const saveAndNavigate = useFormNavigation();
+
+  // Log form data on initial load
+  useEffect(() => {
+    console.log("Initial form data:", JSON.stringify(formData, null, 2));
+  }, [formData]);
 
   const handleLinkChange = (type, value) => {
     setNewLink({ ...newLink, [type]: value });
@@ -73,7 +77,6 @@ export default function LinksForm() {
     } else {
       setSnackbarMessage("Invalid URL. Please enter a valid URL.");
       setSnackbarOpen(true);
-      // setIsError(true);
     }
   };
 
@@ -87,7 +90,11 @@ export default function LinksForm() {
   };
 
   const handlePrevious = () => {
-    navigate("/audience"); // Adjust according to your route
+    const currentFormData = {
+      ...links,
+    };
+    console.log("Form data before navigating to previous:", JSON.stringify(currentFormData, null, 2));
+    saveAndNavigate(currentFormData, "/audience");
   };
 
   const handleSave = () => {
@@ -99,14 +106,15 @@ export default function LinksForm() {
   };
 
   const handleSaveAndPublish = async () => {
-    const newFormData = { 
-      ...formData, 
-      ...links, 
+    const newFormData = {
+      ...formData,
+      ...links,
       approved_for_customer_use: true,
-      isDraft: false 
+      isDraft: false,
     };
 
     updateFormData(newFormData);
+    console.log("Form data before saving and publishing:", JSON.stringify(newFormData, null, 2));
 
     try {
       const response = await sendDataToAPI(newFormData, "publish");
@@ -122,7 +130,7 @@ export default function LinksForm() {
       setSnackbarOpen(true);
     } finally {
       setDialogOpen(false);
-      navigate("/"); // Navigate to the home page after saving
+      saveAndNavigate({}, "/");
     }
   };
 
@@ -134,6 +142,8 @@ export default function LinksForm() {
     };
 
     updateFormData(newFormData);
+
+    console.log("Form data before saving as draft:", JSON.stringify(newFormData, null, 2));
 
     try {
       const response = await sendDataToAPI(newFormData, "draft");

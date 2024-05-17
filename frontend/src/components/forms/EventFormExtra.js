@@ -25,11 +25,11 @@ import {
   AccordionDetails,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
 import InfoIcon from "@mui/icons-material/Info";
 import { blue, grey } from "@mui/material/colors";
-import { sendDataToAPI } from "../../api/pushData"; // Ensure the correct path
+import { sendDataToAPI } from "../../api/pushData";
+import { useFormNavigation } from "../../hooks/useFormNavigation";
 
 export default function ExtraDetailsForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -89,17 +89,30 @@ export default function ExtraDetailsForm() {
     }));
     setOkrSelections(newOkrSelections);
 
-    // Update the main OKR state
     const selectedOkrs = newOkrSelections
       .filter((option) => option.selected)
       .map((option) => option.label);
     setOkr(selectedOkrs);
   };
 
-  const navigate = useNavigate();
+  const saveAndNavigate = useFormNavigation();
 
   const handlePrevious = () => {
-    navigate("/location");
+    saveAndNavigate(
+      {
+        activityOwner,
+        speakers,
+        eventSeries,
+        emailLanguage,
+        emailText,
+        customerUse,
+        okr,
+        gep,
+        activityType,
+        languagesAndTemplates,
+      },
+      "/location"
+    );
   };
 
   const handleOkrDelete = (okrToDelete) => (event) => {
@@ -139,9 +152,7 @@ export default function ExtraDetailsForm() {
       languagesAndTemplates,
     };
 
-    updateFormData({ ...formData, ...currentFormData });
-
-    navigate("/audience");
+    saveAndNavigate(currentFormData, "/audience");
   };
 
   const handleAddLanguageAndTemplate = () => {
@@ -229,14 +240,14 @@ export default function ExtraDetailsForm() {
             </span>
           </Typography>
           <Grid container spacing={2}>
-            {/* Dynamically rendered Email Language and Template Inputs */}
             {languagesAndTemplates.map((item, index) => (
               <Accordion key={index} style={{ width: "100%", marginBottom: "8px" }}>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls="panel-content"
                   id={`panel-header-${index}`}
-                ><Typography>Email language: </Typography>
+                >
+                  <Typography>Email language: </Typography>
                   {item.language && <Typography>{item.language}</Typography>}
                 </AccordionSummary>
                 <AccordionDetails>
@@ -299,13 +310,11 @@ export default function ExtraDetailsForm() {
                 </AccordionDetails>
               </Accordion>
             ))}
-            {/* Add Button */}
             <Grid item xs={12}>
               <Button variant="outlined" onClick={handleAddLanguageAndTemplate}>
                 Add
               </Button>
             </Grid>
-            {/* Approve for Customer Use Radio Buttons */}
             <Grid item xs={12}>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">
@@ -324,7 +333,6 @@ export default function ExtraDetailsForm() {
                 </RadioGroup>
               </FormControl>
             </Grid>
-            {/* OKR Dropdown */}
             <Grid item xs={12}>
               <Typography variant="subtitle1">OKR Selection</Typography>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -341,7 +349,6 @@ export default function ExtraDetailsForm() {
                 ))}
               </div>
             </Grid>
-            {/* GEP Dropdown */}
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <Typography variant="subtitle1">GEP</Typography>
@@ -370,7 +377,6 @@ export default function ExtraDetailsForm() {
                 </Select>
               </FormControl>
             </Grid>
-            {/* Direct/Partner Activity Button */}
             <Grid item xs={12}>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">

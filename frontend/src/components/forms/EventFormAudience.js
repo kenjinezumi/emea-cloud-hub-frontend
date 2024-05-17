@@ -1,29 +1,29 @@
-import React, { useContext, useEffect, useState } from "react";
-import CalendarHeaderForm from "../commons/CalendarHeaderForm";
-import Snackbar from "@mui/material/Snackbar";
-import {
-  Button,
-  FormControl,
-  FormControlLabel,
-  Chip,
-  Select,
-  MenuItem,
-  Typography,
-  Grid,
-  Checkbox,
-  FormGroup,
-  TextField,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import "../styles/Forms.css";
+import React, { useContext, useState } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import {
   audienceRoles,
   audienceSeniorityOptions,
 } from "../filters/FiltersData";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+import Snackbar from "@mui/material/Snackbar";
+import {
+  Button,
+  FormControl,
+  Select,
+  MenuItem,
+  Typography,
+  Grid,
+  Chip,
+  FormControlLabel,
+  Checkbox,
+  FormGroup,
+  TextField,
+} from "@mui/material";
 import PeopleIcon from "@mui/icons-material/People";
 import { blue } from "@mui/material/colors";
-import { sendDataToAPI } from "../../api/pushData"; // Ensure the correct path
+import { sendDataToAPI } from "../../api/pushData";
+import { useFormNavigation } from "../../hooks/useFormNavigation";
+import "../styles/Forms.css";
 
 export default function AudiencePersonaForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -66,9 +66,10 @@ export default function AudiencePersonaForm() {
       ? selectedEvent.peopleMeetingCriteria
       : formData.peopleMeetingCriteria || ""
   );
-  const navigate = useNavigate();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const saveAndNavigate = useFormNavigation();
 
   const handleAudiencePersonaDelete = (personaToDelete) => () => {
     setAudiencePersona((currentPersonas) =>
@@ -118,7 +119,6 @@ export default function AudiencePersonaForm() {
   };
 
   const handleNext = () => {
-    // Retrieve previous form data
     const isAudiencePersonaValid = audiencePersona.length > 0;
     const isAudienceSeniorityValid = audienceSeniority.length > 0;
     const isAccountSectorsValid = Object.values(accountSectors).some(
@@ -136,14 +136,12 @@ export default function AudiencePersonaForm() {
       isMaxEventCapacityValid &&
       isAccountSegmentsSelected;
 
-    setIsFormValid(formIsValid); // Update form validity state
+    setIsFormValid(formIsValid);
 
     if (!formIsValid) {
-      // If the form is not valid, stop the function execution
       return;
     }
 
-    // Combine current form data with previous form data
     const currentFormData = {
       audiencePersona,
       audienceSeniority,
@@ -153,14 +151,20 @@ export default function AudiencePersonaForm() {
       peopleMeetingCriteria,
     };
 
-    updateFormData({ ...formData, ...currentFormData });
-
-    // Navigate to the next screen
-    navigate("/links"); // Adjust according to your route
+    saveAndNavigate(currentFormData, "/links");
   };
 
   const handlePrevious = () => {
-    navigate("/extra"); // Adjust according to your route
+    const currentFormData = {
+      audiencePersona,
+      audienceSeniority,
+      accountSectors,
+      accountSegments,
+      maxEventCapacity,
+      peopleMeetingCriteria,
+    };
+
+    saveAndNavigate(currentFormData, "/extra");
   };
 
   const handleSaveAsDraft = async () => {
@@ -228,9 +232,7 @@ export default function AudiencePersonaForm() {
                   value={audiencePersona}
                   onChange={(e) => setAudiencePersona(e.target.value)}
                   renderValue={(selected) => (
-                    <div
-                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
-                    >
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
                       {selected.map((persona) => (
                         <Chip
                           key={persona}
@@ -258,9 +260,7 @@ export default function AudiencePersonaForm() {
                   value={audienceSeniority}
                   onChange={(e) => setAudienceSeniority(e.target.value)}
                   renderValue={(selected) => (
-                    <div
-                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
-                    >
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
                       {selected.map((seniority) => (
                         <Chip
                           key={seniority}
@@ -416,7 +416,6 @@ export default function AudiencePersonaForm() {
             >
               Save as Draft
             </Button>
-
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}

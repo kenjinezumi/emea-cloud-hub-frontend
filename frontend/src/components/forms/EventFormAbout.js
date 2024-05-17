@@ -1,10 +1,5 @@
 import React, { useEffect, useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import GlobalContext from "../../context/GlobalContext";
-import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import { v4 as uuidv4 } from "uuid";
-import { getEventData } from "../../api/getEventData";
-import { sendDataToAPI } from "../../api/pushData";
 import {
   Button,
   TextField,
@@ -14,54 +9,41 @@ import {
   Switch,
   FormGroup,
   Snackbar,
+  FormControl,
+  Select,
+  MenuItem,
+  Chip,
+  IconButton,
 } from "@mui/material";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import IconButton from "@mui/material/IconButton";
-import "../styles/Forms.css";
-import EmojiPicker from "emoji-picker-react";
-import { FormControl, Select, MenuItem } from "@mui/material";
-import {
-  LocalizationProvider,
-  DateTimePicker,
-  DatePicker,
-} from "@mui/x-date-pickers";
-import Chip from "@mui/material/Chip";
+import { LocalizationProvider, DateTimePicker, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { eventTypeOptions } from "../filters/FiltersData";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import { red, blue } from "@mui/material/colors";
+import EmojiPicker from "emoji-picker-react";
+import { getEventData } from "../../api/getEventData";
+import { sendDataToAPI } from "../../api/pushData";
+import GlobalContext from "../../context/GlobalContext";
+import { eventTypeOptions } from "../filters/FiltersData";
+import CalendarHeaderForm from "../commons/CalendarHeaderForm";
+import { useFormNavigation } from "../../hooks/useFormNavigation";
+import "../styles/Forms.css";
 
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
-const getRandomColor = () => {
-  const r = Math.floor(Math.random() * 256);
-  const g = Math.floor(Math.random() * 256);
-  const b = Math.floor(Math.random() * 256);
-  const alpha = 0.3; // Set the opacity
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
-export default function EventForm() {
-  const [colorMap, setColorMap] = useState({}); // New state to store colors
-  const [organisedByOptions, setOrganisedByOptions] = useState([]); // State to store dropdown options
+const EventForm = () => {
+  const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
+  const [colorMap, setColorMap] = useState({});
+  const [organisedByOptions, setOrganisedByOptions] = useState([]);
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const {
-    daySelected,
-    dispatchCalEvent,
-    selectedEvent,
-    updateFormData,
-    formData,
-  } = useContext(GlobalContext);
-
   const [eventType, setEventType] = useState(
     formData.eventType || eventTypeOptions[0].label
   );
   const [title, setTitle] = useState(
     selectedEvent ? selectedEvent.title : formData.title || ""
   );
-
   const [description, setDescription] = useState(
     selectedEvent ? selectedEvent.description : formData.description || ""
   );
@@ -76,13 +58,10 @@ export default function EventForm() {
   const [isClient, setIsClient] = useState(
     selectedEvent ? selectedEvent.isClient : false
   );
-
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-
   const [organisedBy, setOrganisedBy] = useState(
     selectedEvent ? selectedEvent.organisedBy : formData.organisedBy || []
   );
-
   const [dropdownValue2] = useState(formData.dropdownValue2 || "");
   const [marketingActivityType, setMarketingActivityType] = useState(
     formData.marketingActivityType || ""
@@ -104,7 +83,7 @@ export default function EventForm() {
       : formData.marketingProgramInstanceId || ""
   );
   const [isFormValid, setIsFormValid] = useState(true);
-  const navigate = useNavigate();
+  const saveAndNavigate = useFormNavigation();
 
   const handleStartDateChange = (newDate) => {
     setStartDate(newDate);
@@ -122,11 +101,7 @@ export default function EventForm() {
 
   const handleOrganisedByChange = (event) => {
     const value = event.target.value;
-    // Allow multiple selection and deletion
-    setOrganisedBy(
-      // On autofill, we get a stringified value.
-      typeof value === "string" ? value.split(",") : value
-    );
+    setOrganisedBy(typeof value === "string" ? value.split(",") : value);
   };
 
   const handleOrganisedByDelete = (organiserToDelete) => () => {
@@ -141,7 +116,7 @@ export default function EventForm() {
         const response = await getEventData("marketingProgramQuery");
         if (response && Array.isArray(response)) {
           const options = response.map((row) => row.Sandbox_Program_Id);
-          const sortedOptions = options.sort(); // Sort the options alphabetically
+          const sortedOptions = options.sort();
           setMarketingProgramOptions(sortedOptions);
         } else {
           console.error("Invalid response format:", response);
@@ -155,7 +130,6 @@ export default function EventForm() {
   }, []);
 
   useEffect(() => {
-    // Prepopulate marketing program instance ID if available in formData
     if (formData.marketingProgramInstanceId) {
       setMarketingProgramInstanceId(formData.marketingProgramInstanceId);
     }
@@ -181,11 +155,9 @@ export default function EventForm() {
 
   const handleNext = () => {
     const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
-    const eventId = existingEventId || uuidv4(); // Use existing eventId or generate a new one
+    const eventId = existingEventId || uuidv4();
 
-    // Save current form state to cache
     const isTitleValid = title.trim() !== "";
-    const isOrganisedByValid = organisedBy.length > 0; // Check if the array is not empty
     const isEventTypeValid = eventType.trim() !== "";
     const isDescriptionValid = description.trim() !== "";
     const isMarketingProgramInstanceIdValid = marketingProgramInstanceId.trim() !== "";
@@ -199,7 +171,6 @@ export default function EventForm() {
     setIsFormValid(formIsValid);
 
     if (!formIsValid) {
-      // Prevent navigation if form is invalid
       return;
     }
 
@@ -218,23 +189,21 @@ export default function EventForm() {
       eventType,
     };
 
-    updateFormData(newFormData); // Update the global form data
-
-    navigate("/location");
+    saveAndNavigate(newFormData, "/location");
   };
 
   const onEmojiClick = (emojiData, event) => {
-    setEmoji(emojiData.emoji); // emojiData.emoji should be the emoji character
+    setEmoji(emojiData.emoji);
     setIsEmojiPickerOpen(false);
   };
 
   const toggleEmojiPicker = () => {
-    setIsEmojiPickerOpen((prev) => !prev); // This ensures it toggles based on the previous state
+    setIsEmojiPickerOpen((prev) => !prev);
   };
 
   const handleSaveAsDraft = async () => {
     const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
-    const eventId = existingEventId || uuidv4(); // Use existing eventId or generate a new one
+    const eventId = existingEventId || uuidv4();
     const isDraft = true;
     const newFormData = {
       eventId,
@@ -249,7 +218,7 @@ export default function EventForm() {
       endDate,
       marketingProgramInstanceId,
       eventType,
-      isDraft
+      isDraft,
     };
 
     updateFormData(newFormData);
@@ -257,7 +226,7 @@ export default function EventForm() {
     try {
       const response = await sendDataToAPI(newFormData);
       if (response.success) {
-        updateFormData(newFormData); 
+        updateFormData(newFormData);
         setSnackbarMessage("Draft saved successfully!");
         setSnackbarOpen(true);
       } else {
@@ -314,7 +283,6 @@ export default function EventForm() {
           </Grid>
 
           <form noValidate>
-            {/* Dropdown 1 */}
             <Grid
               container
               spacing={2}
@@ -409,7 +377,6 @@ export default function EventForm() {
               alignItems="center"
               style={{ marginBottom: "20px" }}
             >
-              {/* Event Start Date */}
               <Grid item xs={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   {eventType === "Blog Post" ? (
@@ -437,7 +404,6 @@ export default function EventForm() {
                 </LocalizationProvider>
               </Grid>
 
-              {/* Event End Date - Conditionally Rendered */}
               {eventType !== "Blog Post" && (
                 <Grid item xs={6}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -467,7 +433,7 @@ export default function EventForm() {
                 onChange={(e) => setDescription(e.target.value)}
                 variant="outlined"
                 fullWidth
-                margin="dense" // Reduced margin
+                margin="dense"
                 inputProps={{ maxLength: 400 }}
                 helperText={`${description.length}/400`}
               />
@@ -515,9 +481,9 @@ export default function EventForm() {
                 variant="contained"
                 onClick={handleSaveAsDraft}
                 style={{
-                  backgroundColor: blue[500], // using MUI's blue color
+                  backgroundColor: blue[500],
                   color: "white",
-                  float: "left", // Align it to the left of the Next button
+                  float: "left",
                   margin: "10px",
                 }}
               >
@@ -529,4 +495,6 @@ export default function EventForm() {
       </div>
     </div>
   );
-}
+};
+
+export default EventForm;

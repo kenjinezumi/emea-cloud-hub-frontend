@@ -15,12 +15,12 @@ import {
   MenuItem,
   Chip,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { blue } from "@mui/material/colors";
 import { sendDataToAPI } from "../../api/pushData"; 
+import { useFormNavigation } from "../../hooks/useFormNavigation";
 
 export default function LocationFormPage() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -48,10 +48,10 @@ export default function LocationFormPage() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  const navigate = useNavigate();
+  const saveAndNavigate = useFormNavigation();
 
   const handlePrevious = () => {
-    navigate("/create-event");
+    saveAndNavigate({ region, subRegion, country }, "/create-event");
   };
 
   const handleDelete = (subRegionToDelete) => (event) => {
@@ -73,7 +73,6 @@ export default function LocationFormPage() {
       target: { value },
     } = event;
     setSubRegion(
-      // On autofill we get a stringified value.
       typeof value === "string" ? value.split(",") : value
     );
   };
@@ -83,33 +82,24 @@ export default function LocationFormPage() {
       ? region.map(String).join("").trim()
       : String(region).trim();
 
-    // Check if form is valid
-    if (!formIsValid) {
-      setIsFormValid(false);
-      return;
-    }
-
-    if (!subRegion.length || !country.length) {
+    if (!formIsValid || !subRegion.length || !country.length) {
       setIsFormValid(false);
       return;
     }
 
     const currentFormData = { region, subRegion, country };
-    updateFormData({ ...formData, ...currentFormData });
-    navigate("/extra");
+    saveAndNavigate(currentFormData, "/extra");
   };
 
   const handleRegionChange = (e) => {
     const selectedRegion = e.target.value;
     setRegion(selectedRegion);
 
-    // Filter available subregions based on the selected region
     const subregionsForRegion =
       regionsData.find((data) => data.region === selectedRegion)?.subregions ||
       [];
     setAvailableSubregions(subregionsForRegion);
 
-    // Clear the selected subregions and countries
     setSubRegion([]);
     setCountry([]);
   };
@@ -118,13 +108,12 @@ export default function LocationFormPage() {
     const selectedSubregions = e.target.value;
     setSubRegion(selectedSubregions);
 
-    // Filter available countries based on the selected subregions
     const countriesForSubregions = selectedSubregions.flatMap(
       (selectedSubregion) =>
         subregionsData.find((data) => data.subregion === selectedSubregion)
           ?.countries || []
     );
-    setAvailableCountries(countriesForSubregions); // Make sure this is set to update available countries
+    setAvailableCountries(countriesForSubregions);
     setCountry([...new Set(countriesForSubregions)]);
   };
 
@@ -210,7 +199,7 @@ export default function LocationFormPage() {
                         <Chip
                           key={subRegion}
                           label={subRegion}
-                          onDelete={handleDelete(subRegion)} // Pass the subRegion directly to handleDelete
+                          onDelete={handleDelete(subRegion)}
                           style={{ margin: "2px" }}
                           onMouseDown={(event) => {
                             event.stopPropagation();
@@ -301,9 +290,9 @@ export default function LocationFormPage() {
               variant="contained"
               onClick={handleSaveAsDraft}
               style={{
-                backgroundColor: blue[500], // using MUI's blue color
+                backgroundColor: blue[500],
                 color: "white",
-                float: "left", // Align it to the left of the Next button
+                float: "left",
                 margin: "5px",
               }}
             >

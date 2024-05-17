@@ -27,15 +27,15 @@ import ShareIcon from "@mui/icons-material/Share";
 
 export default function EventInfoPopup() {
   const navigate = useNavigate();
-  const { selectedEvent, setShowInfoEventModal } = useContext(GlobalContext);
+  const { formData, selectedEvent, setShowInfoEventModal, updateFormData } = useContext(GlobalContext);
   const [currentSection, setCurrentSection] = useState('About');
 
   const handleClose = () => {
-    setShowInfoEventModal(false); // Close the pop-up by setting showEventInfoModal to false
+    setShowInfoEventModal(false);
   };
 
   if (!selectedEvent) {
-    return null; // Don't render the pop-up if no event is selected
+    return null;
   }
 
   const handleShareEvent = () => {
@@ -45,10 +45,9 @@ export default function EventInfoPopup() {
   };
 
   const handleEditEvent = () => {
-    console.log("Whats going on")
     if (selectedEvent) {
-
-      console.log(`Selected event is: ${selectedEvent.startDate}`);
+      // Update the global context with the selected event data
+      updateFormData({ ...formData, ...selectedEvent });
       navigate("/create-event");
     }
   };
