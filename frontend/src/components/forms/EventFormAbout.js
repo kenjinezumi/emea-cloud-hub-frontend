@@ -28,20 +28,10 @@ import {
 import Chip from "@mui/material/Chip";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { eventTypeOptions } from "../filters/FiltersData";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
-import { red } from "@mui/material/colors";
-import { blue } from "@mui/material/colors";
-const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
+import { red, blue } from "@mui/material/colors";
 
-const isValidUrl = (urlString) => {
-  try {
-    new URL(urlString);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
+const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
 const getRandomColor = () => {
   const r = Math.floor(Math.random() * 256);
@@ -129,7 +119,7 @@ export default function EventForm() {
   useEffect(() => {
     setIsClient(true);
   }, []);
-  useEffect(() => {}, [startDate, endDate]);
+
   const handleOrganisedByChange = (event) => {
     const value = event.target.value;
     // Allow multiple selection and deletion
@@ -202,7 +192,6 @@ export default function EventForm() {
 
     const formIsValid =
       isTitleValid &&
-      // isOrganisedByValid &&
       isEventTypeValid &&
       isDescriptionValid &&
       isMarketingProgramInstanceIdValid;
