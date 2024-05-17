@@ -24,6 +24,10 @@ import LabelIcon from "@mui/icons-material/Label";
 import PeopleIcon from "@mui/icons-material/People";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import ShareIcon from "@mui/icons-material/Share";
+import EventIcon from '@mui/icons-material/Event';
+import InfoIcon from '@mui/icons-material/Info';
+import GroupIcon from '@mui/icons-material/Group';
+import LanguageIcon from '@mui/icons-material/Language';
 
 export default function EventInfoPopup() {
   const navigate = useNavigate();
@@ -46,7 +50,6 @@ export default function EventInfoPopup() {
 
   const handleEditEvent = () => {
     if (selectedEvent) {
-      // Update the global context with the selected event data
       updateFormData({ ...formData, ...selectedEvent });
       navigate("/create-event");
     }
@@ -78,11 +81,45 @@ export default function EventInfoPopup() {
   const sections = {
     'About': (
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Typography variant="body1">
+        <Typography variant="body1" display="flex" alignItems="center">
+          <EventIcon style={{ marginRight: "5px", color: '#757575' }} />
           {dayjs(selectedEvent.startDate).format("dddd, MMMM D, YYYY h:mm A")}
         </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <InfoIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Description:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.description}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <LabelIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Organised by:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.organisedBy.map((organiser, index) => {
+            const cleanedName = cleanOrganiserName(organiser);
+            return (
+              <Chip
+                key={index}
+                label={cleanedName}
+                component="a"
+                href={`https://moma.corp.google.com/person/${encodeURIComponent(cleanedName)}`}
+                clickable
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  margin: "5px",
+                  backgroundColor: getRandomColor(),
+                  color: 'white',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                }}
+              />
+            );
+          })}
+        </Typography>
         <Stack direction="row" spacing={1}>
-          <Chip label="Online Event" color="primary" size="small" />
+          <Chip label={selectedEvent.eventType} color="primary" size="small" />
           {selectedEvent.isHighPriority && (
             <Chip label="High Priority" color="error" size="small" />
           )}
@@ -99,65 +136,190 @@ export default function EventInfoPopup() {
     ),
     'Location': (
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Typography variant="body2">
+        <Typography variant="body2" display="flex" alignItems="center">
           <TravelExploreIcon style={{ marginRight: "5px", color: '#757575' }} />
-          {selectedEvent.region}
-          <MyLocationIcon style={{ marginRight: "5px", marginLeft: "40px", color: '#757575' }} />
-          {selectedEvent.subRegion.toString()}
+          Region:
         </Typography>
-        <Typography variant="body2">
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.region.join(', ')}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <MyLocationIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Sub-region:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.subRegion.join(', ')}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
           <LocationOnIcon style={{ marginRight: "5px", color: '#757575' }} />
-          {selectedEvent.country.toString()}
+          Country:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.country.join(', ')}
         </Typography>
       </Stack>
     ),
     'Extra Details': (
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Typography variant="body2">
-          <LabelIcon style={{ marginRight: "5px", color: '#757575' }} />
-          Organised by:
-          {selectedEvent.organisedBy.map((organiser, index) => (
+        <Typography variant="body2" display="flex" alignItems="center">
+          <GroupIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Activity Owner:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.activityOwner.map((owner, index) => (
             <Chip
               key={index}
-              label={cleanOrganiserName(organiser)}
-              component="a"
-              href={`https://moma.corp.google.com/person/${encodeURIComponent(cleanOrganiserName(organiser))}`}
-              clickable
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                marginLeft: "5px",
-                backgroundColor: getRandomColor(),
-                color: 'white',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-              }}
+              label={owner}
+              sx={{ marginLeft: "5px", backgroundColor: getRandomColor(), color: 'white' }}
             />
           ))}
         </Typography>
-        <Typography variant="body2">
+        <Typography variant="body2" display="flex" alignItems="center">
+          <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Speakers:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.speakers.join(', ')}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
           <DescriptionIcon style={{ marginRight: "5px", color: '#757575' }} />
-          Description: {selectedEvent.description}
+          Event Series:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.eventSeries}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <LanguageIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Email Language:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.emailLanguage}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <DescriptionIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Customer Use:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.customerUse}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <DescriptionIcon style={{ marginRight: "5px", color: '#757575' }} />
+          OKR:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.okr.join(', ')}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <DescriptionIcon style={{ marginRight: "5px", color: '#757575' }} />
+          GEP:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.gep.join(', ')}
         </Typography>
       </Stack>
     ),
     'Audience': (
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Typography variant="body2">
-          <PeopleIcon style={{ marginRight: "10px", color: '#757575' }} />
-          Max event capacity: {selectedEvent.maxEventCapacity}
+        <Typography variant="body2" display="flex" alignItems="center">
+          <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Audience Persona:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.audiencePersona.join(', ')}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Audience Seniority:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.audienceSeniority.join(', ')}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Account Sectors:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.accountSectors}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Account Segments:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {Object.entries(JSON.parse(selectedEvent.accountSegments)).map(([key, value]) => value ? key : null).filter(Boolean).join(', ')}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Max Event Capacity:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.maxEventCapacity}
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
+          People Meeting Criteria:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          {selectedEvent.peopleMeetingCriteria}
         </Typography>
       </Stack>
     ),
     'Links': (
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Typography variant="body2">
+        <Typography variant="body2" display="flex" alignItems="center">
           <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Landing Page Link:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
           <a
             href={selectedEvent.landingPageLink}
             target="_blank"
             rel="noopener noreferrer"
+            style={{ color: '#4285F4' }}
           >
             {selectedEvent.landingPageLink}
+          </a>
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Sales Kit Link:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          <a
+            href={selectedEvent.salesKitLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#4285F4' }}
+          >
+            {selectedEvent.salesKitLink}
+          </a>
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Hailo Link:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          <a
+            href={selectedEvent.hailoLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#4285F4' }}
+          >
+            {selectedEvent.hailoLink}
+          </a>
+        </Typography>
+        <Typography variant="body2" display="flex" alignItems="center">
+          <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
+          Other Documents Link:
+        </Typography>
+        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+          <a
+            href={selectedEvent.otherDocumentsLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#4285F4' }}
+          >
+            {selectedEvent.otherDocumentsLink}
           </a>
         </Typography>
       </Stack>
@@ -174,6 +336,8 @@ export default function EventInfoPopup() {
           transform: "translate(-50%, -50%)",
           minWidth: 600,
           maxWidth: 600,
+          maxHeight: '70vh', // Set max height to 70vh for scrollable content
+          overflowY: 'auto', // Enable vertical scrolling
           zIndex: 6000,
           boxShadow: "0px 4px 10px rgba(0,0,0,0.5)",
           borderRadius: "7px",
@@ -188,7 +352,7 @@ export default function EventInfoPopup() {
           <CloseIcon />
         </IconButton>
         <Stack direction="row" spacing={1} sx={{ p: 2, alignItems: "center" }} className="handle">
-          <Typography variant="h6" component="div" >
+          <Typography variant="h6" component="div">
             {selectedEvent.emoji}
           </Typography>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -202,7 +366,7 @@ export default function EventInfoPopup() {
               key={section}
               color={currentSection === section ? "text.primary" : "inherit"}
               onClick={() => setCurrentSection(section)}
-              sx={{ cursor: "pointer" }}
+              sx={{ cursor: "pointer", fontWeight: currentSection === section ? 'bold' : 'normal' }}
             >
               {section}
             </Link>
