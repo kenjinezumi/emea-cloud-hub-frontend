@@ -16,6 +16,7 @@
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.5.1",
     "axios": "^1.6.7",
+    "date-fns": "^3.6.0",
     "dayjs": "^1.11.9",
     "emoji-picker-react": "^4.5.16",
     "fs": "^0.0.1-security",
