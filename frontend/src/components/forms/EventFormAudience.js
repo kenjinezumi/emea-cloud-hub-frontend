@@ -1,14 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import Snackbar from "@mui/material/Snackbar";
-
 import {
   Button,
   FormControl,
-  RadioGroup,
-  Radio,
   FormControlLabel,
-  InputLabel,
   Chip,
   Select,
   MenuItem,
@@ -20,7 +16,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
-import { ReactComponent as UsersLogo } from "../../assets/svg/users.svg";
 import GlobalContext from "../../context/GlobalContext";
 import {
   audienceRoles,
@@ -28,6 +23,7 @@ import {
 } from "../filters/FiltersData";
 import PeopleIcon from "@mui/icons-material/People";
 import { blue } from "@mui/material/colors";
+import { sendDataToAPI } from "../../api/pushData"; // Ensure the correct path
 
 export default function AudiencePersonaForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -105,6 +101,7 @@ export default function AudiencePersonaForm() {
       setPeopleMeetingCriteriaError("Please enter a valid number");
     }
   };
+
   const handleCheckboxChange = (event) => {
     setAccountSegments({
       ...accountSegments,
@@ -120,12 +117,6 @@ export default function AudiencePersonaForm() {
     }));
   };
 
-  const audiencePersonaOptions = audienceRoles.map((role) => (
-    <MenuItem key={role} value={role}>
-      {role}
-    </MenuItem>
-  ));
-
   const handleNext = () => {
     // Retrieve previous form data
     const isAudiencePersonaValid = audiencePersona.length > 0;
@@ -134,16 +125,15 @@ export default function AudiencePersonaForm() {
       (value) => value
     );
     const isMaxEventCapacityValid = maxEventCapacity.trim() !== "";
-    // const isPeopleMeetingCriteriaValid = peopleMeetingCriteria.trim() !== '';
-    const isAccountSegmentsSelected =
-      Object.values(accountSegments).some(Boolean);
+    const isAccountSegmentsSelected = Object.values(accountSegments).some(
+      Boolean
+    );
 
     const formIsValid =
       isAudiencePersonaValid &&
       isAudienceSeniorityValid &&
       isAccountSectorsValid &&
       isMaxEventCapacityValid &&
-      // isPeopleMeetingCriteriaValid &&
       isAccountSegmentsSelected;
 
     setIsFormValid(formIsValid); // Update form validity state
@@ -152,6 +142,7 @@ export default function AudiencePersonaForm() {
       // If the form is not valid, stop the function execution
       return;
     }
+
     // Combine current form data with previous form data
     const currentFormData = {
       audiencePersona,
@@ -164,10 +155,7 @@ export default function AudiencePersonaForm() {
 
     updateFormData({ ...formData, ...currentFormData });
 
-    // Save combined data to localStorage
-
-    // Navigate to the next screen, passing combined data if using React Router state
-    // navigate("/links", { state: combinedData });
+    // Navigate to the next screen
     navigate("/links"); // Adjust according to your route
   };
 
@@ -175,11 +163,9 @@ export default function AudiencePersonaForm() {
     navigate("/extra"); // Adjust according to your route
   };
 
-  const handleAudienceSeniorityChange = (event) => {
-    setAudienceSeniority(event.target.value);
-  };
+  const handleSaveAsDraft = async () => {
+    const isDraft = formData.isDraft !== undefined ? formData.isDraft : true;
 
-  const handleSaveAsDraft = () => {
     const draftData = {
       audiencePersona,
       audienceSeniority,
@@ -187,10 +173,29 @@ export default function AudiencePersonaForm() {
       accountSegments,
       maxEventCapacity,
       peopleMeetingCriteria,
+      isDraft,
     };
-    localStorage.setItem("audiencePersonaDraft", JSON.stringify(draftData));
-    setSnackbarMessage("Draft saved successfully!");
-    setSnackbarOpen(true);
+
+    const updatedFormData = { ...formData, ...draftData };
+    updateFormData(updatedFormData);
+
+    try {
+      const response = await sendDataToAPI(updatedFormData, "draft");
+      if (response.success) {
+        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save draft.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleAudienceSeniorityChange = (event) => {
+    setAudienceSeniority(event.target.value);
   };
 
   return (
@@ -210,13 +215,11 @@ export default function AudiencePersonaForm() {
             <PeopleIcon
               style={{ marginRight: "10px", color: blue[500], height: "40px" }}
             />
-            <span className="mr-1 text-xl text-black  cursor-pointer">
+            <span className="mr-1 text-xl text-black cursor-pointer">
               Audience
             </span>
           </Typography>
           <Grid container spacing={2}>
-            {/* Multiple Select for Audience Persona */}
-
             <Grid item xs={12}>
               <Typography variant="subtitle1">Audience persona</Typography>
               <FormControl fullWidth>
@@ -277,7 +280,6 @@ export default function AudiencePersonaForm() {
                 </Select>
               </FormControl>
             </Grid>
-            {/* Radio Buttons for Account Sectors */}
             <Grid item xs={12}>
               <Typography variant="subtitle1">Account Sectors</Typography>
               <FormControl component="fieldset">
@@ -305,14 +307,13 @@ export default function AudiencePersonaForm() {
                 </FormGroup>
               </FormControl>
             </Grid>
-            {/* Checkboxes for Account Segments */}
             <Grid item xs={12}>
               <Typography variant="subtitle1">Account segments</Typography>
               <FormGroup>
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={accountSegments.segment1}
+                      checked={accountSegments.enterprise}
                       onChange={handleCheckboxChange}
                       name="enterprise"
                     />
@@ -322,7 +323,7 @@ export default function AudiencePersonaForm() {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={accountSegments.segment2}
+                      checked={accountSegments.corporate}
                       onChange={handleCheckboxChange}
                       name="corporate"
                     />
@@ -332,7 +333,7 @@ export default function AudiencePersonaForm() {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={accountSegments.segment3}
+                      checked={accountSegments.smb}
                       onChange={handleCheckboxChange}
                       name="smb"
                     />
@@ -341,8 +342,6 @@ export default function AudiencePersonaForm() {
                 />
               </FormGroup>
             </Grid>
-
-            {/* Integer Input for Maximum Event Capacity */}
             <Grid item xs={12}>
               <Typography variant="subtitle1">
                 Maximum event capacity
@@ -356,22 +355,19 @@ export default function AudiencePersonaForm() {
                 fullWidth
               />
             </Grid>
-
-            {/* Integer Input for People Meeting the Audience Criteria */}
             <Grid item xs={12}>
               <Typography variant="subtitle1">
                 People meeting the audience criteria
               </Typography>
               <TextField
                 type="number"
-                // value={peopleMeetingCriteria}
                 value={0}
                 onChange={handlePeopleMeetingCriteriaChange}
                 error={!!peopleMeetingCriteriaError}
                 helperText={peopleMeetingCriteriaError}
                 fullWidth
                 InputProps={{
-                  readOnly: true, // This makes the TextField read-only
+                  readOnly: true,
                 }}
               />
             </Grid>
@@ -387,8 +383,8 @@ export default function AudiencePersonaForm() {
               onClick={handlePrevious}
               style={{
                 backgroundColor: "white",
-                color: "#202124", // Google's typical text color
-                border: "1px solid #dadce0", // Google's border color
+                color: "#202124",
+                border: "1px solid #dadce0",
                 boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                 float: "left",
                 margin: "10px",
@@ -414,7 +410,7 @@ export default function AudiencePersonaForm() {
               style={{
                 backgroundColor: blue[500],
                 color: "white",
-                float: "left", // Align it to the left of the Next button
+                float: "left",
                 margin: "10px",
               }}
             >

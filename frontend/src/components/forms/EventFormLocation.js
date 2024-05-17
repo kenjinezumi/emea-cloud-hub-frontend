@@ -5,7 +5,7 @@ import {
   regionsData,
   subregionsData,
 } from "../filters/FiltersData";
-import Snackbar from '@mui/material/Snackbar';
+import Snackbar from "@mui/material/Snackbar";
 import {
   Button,
   FormControl,
@@ -19,8 +19,8 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Forms.css";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-
 import { blue } from "@mui/material/colors";
+import { sendDataToAPI } from "../../api/pushData"; 
 
 export default function LocationFormPage() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -41,7 +41,9 @@ export default function LocationFormPage() {
   const [availableSubregions, setAvailableSubregions] = useState(
     formData.availableSubregions || []
   );
-  const [availableCountries, setAvailableCountries] = useState(formData.availableCountries || []);
+  const [availableCountries, setAvailableCountries] = useState(
+    formData.availableCountries || []
+  );
   const [isFormValid, setIsFormValid] = useState(true);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -53,21 +55,18 @@ export default function LocationFormPage() {
   };
 
   const handleDelete = (subRegionToDelete) => (event) => {
-    event.stopPropagation(); 
-    setSubRegion((currentSubRegions) => 
-        currentSubRegions.filter((subRegion) => subRegion !== subRegionToDelete)
+    event.stopPropagation();
+    setSubRegion((currentSubRegions) =>
+      currentSubRegions.filter((subRegion) => subRegion !== subRegionToDelete)
     );
-};
+  };
 
-const handleCountryDelete = (countryToDelete) => (event) => {
-  event.stopPropagation(); 
-  setCountry((currentCountries) => 
+  const handleCountryDelete = (countryToDelete) => (event) => {
+    event.stopPropagation();
+    setCountry((currentCountries) =>
       currentCountries.filter((country) => country !== countryToDelete)
-  );
-};
-
-
-
+    );
+  };
 
   const handleChange = (event) => {
     const {
@@ -97,7 +96,6 @@ const handleCountryDelete = (countryToDelete) => (event) => {
 
     const currentFormData = { region, subRegion, country };
     updateFormData({ ...formData, ...currentFormData });
-    console.log(currentFormData)
     navigate("/extra");
   };
 
@@ -119,26 +117,44 @@ const handleCountryDelete = (countryToDelete) => (event) => {
   const handleSubRegionChange = (e) => {
     const selectedSubregions = e.target.value;
     setSubRegion(selectedSubregions);
-  
+
     // Filter available countries based on the selected subregions
     const countriesForSubregions = selectedSubregions.flatMap(
       (selectedSubregion) =>
         subregionsData.find((data) => data.subregion === selectedSubregion)
           ?.countries || []
     );
-    setAvailableCountries(countriesForSubregions);  // Make sure this is set to update available countries
-    setCountry([...new Set(countriesForSubregions)]);  };
-  
-    const handleSaveAsDraft = () => {
-      const draftData = {
-        region,
-        subRegion,
-        country
-      };
-      setSnackbarMessage("Draft saved successfully!");
+    setAvailableCountries(countriesForSubregions); // Make sure this is set to update available countries
+    setCountry([...new Set(countriesForSubregions)]);
+  };
+
+  const handleSaveAsDraft = async () => {
+    const isDraft = formData.isDraft !== undefined ? formData.isDraft : true;
+
+    const draftData = {
+      region,
+      subRegion,
+      country,
+      isDraft,
+    };
+
+    const updatedFormData = { ...formData, ...draftData };
+    updateFormData(updatedFormData);
+
+    try {
+      const response = await sendDataToAPI(updatedFormData, "draft");
+      if (response.success) {
+        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save draft.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving the draft.");
       setSnackbarOpen(true);
-        };
-    
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col">
@@ -157,7 +173,7 @@ const handleCountryDelete = (countryToDelete) => (event) => {
             <LocationOnIcon
               style={{ marginRight: "10px", color: blue[500], height: "40px" }}
             />
-            <span className="mr-1 text-xl text-black  cursor-pointer">
+            <span className="mr-1 text-xl text-black cursor-pointer">
               Location
             </span>
           </Typography>
@@ -189,9 +205,7 @@ const handleCountryDelete = (countryToDelete) => (event) => {
                   value={subRegion}
                   onChange={handleSubRegionChange}
                   renderValue={(selected) => (
-                    <div
-                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
-                    >
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
                       {selected.map((subRegion) => (
                         <Chip
                           key={subRegion}
@@ -217,39 +231,38 @@ const handleCountryDelete = (countryToDelete) => (event) => {
             </Grid>
             {/* Country Dropdown */}
             <Grid item xs={12}>
-  <FormControl fullWidth>
-    <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-      Country
-    </Typography>
-    <Select
-      multiple
-      value={country}
-      onChange={(e) => setCountry(e.target.value)}
-      renderValue={(selected) => (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-          {selected.map((country) => (
-            <Chip
-              key={country}
-              label={country}
-              onDelete={handleCountryDelete(country)}
-              style={{ margin: "2px" }}
-              onMouseDown={(event) => {
-                event.stopPropagation();
-              }}
-            />
-          ))}
-        </div>
-      )}
-    >
-      {availableCountries.map((country, idx) => (
-        <MenuItem key={idx} value={country}>
-          {country}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-</Grid>
-
+              <FormControl fullWidth>
+                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                  Country
+                </Typography>
+                <Select
+                  multiple
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  renderValue={(selected) => (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+                      {selected.map((country) => (
+                        <Chip
+                          key={country}
+                          label={country}
+                          onDelete={handleCountryDelete(country)}
+                          style={{ margin: "2px" }}
+                          onMouseDown={(event) => {
+                            event.stopPropagation();
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                >
+                  {availableCountries.map((country, idx) => (
+                    <MenuItem key={idx} value={country}>
+                      {country}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
           {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>
@@ -276,7 +289,7 @@ const handleCountryDelete = (countryToDelete) => (event) => {
               onClick={handleNext}
               className="next-button"
               style={{
-                backgroundColor:  blue[500],
+                backgroundColor: blue[500],
                 color: "white",
                 float: "right",
                 margin: "5px",
@@ -285,18 +298,18 @@ const handleCountryDelete = (countryToDelete) => (event) => {
               Next
             </Button>
             <Button
-                variant="contained"
-                onClick={handleSaveAsDraft}
-                style={{
-                  backgroundColor: blue[500], // using MUI's blue color
-                  color: "white",
-                  float: "left", // Align it to the left of the Next button
-                  margin: "5px",
-                }}
-              >
-                Save as Draft
-              </Button>
-              <Snackbar
+              variant="contained"
+              onClick={handleSaveAsDraft}
+              style={{
+                backgroundColor: blue[500], // using MUI's blue color
+                color: "white",
+                float: "left", // Align it to the left of the Next button
+                margin: "5px",
+              }}
+            >
+              Save as Draft
+            </Button>
+            <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}
               onClose={() => setSnackbarOpen(false)}

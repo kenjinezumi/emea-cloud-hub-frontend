@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import { v4 as uuidv4 } from "uuid";
-
 import { getEventData } from "../../api/getEventData";
+import { sendDataToAPI } from "../../api/pushData";
 import {
   Button,
   TextField,
@@ -17,7 +17,6 @@ import {
 } from "@mui/material";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import IconButton from "@mui/material/IconButton";
-
 import "../styles/Forms.css";
 import EmojiPicker from "emoji-picker-react";
 import { FormControl, Select, MenuItem } from "@mui/material";
@@ -26,14 +25,11 @@ import {
   DateTimePicker,
   DatePicker,
 } from "@mui/x-date-pickers";
-
 import Chip from "@mui/material/Chip";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-
 import { eventTypeOptions } from "../filters/FiltersData";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
-
 import { red } from "@mui/material/colors";
 import { blue } from "@mui/material/colors";
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
@@ -247,27 +243,42 @@ export default function EventForm() {
     setIsEmojiPickerOpen((prev) => !prev); // This ensures it toggles based on the previous state
   };
 
-  const handleSaveAsDraft = () => {
+  const handleSaveAsDraft = async () => {
     const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
     const eventId = existingEventId || uuidv4(); // Use existing eventId or generate a new one
-
-    const draftData = {
+    const isDraft = true;
+    const newFormData = {
       eventId,
       title,
       description,
+      emoji,
       organisedBy,
-      eventType,
+      dropdownValue2,
+      marketingActivityType,
+      isHighPriority,
       startDate,
       endDate,
       marketingProgramInstanceId,
-      isHighPriority,
-      emoji,
+      eventType,
+      isDraft
     };
 
-    updateFormData(draftData); // Update the global form data
+    updateFormData(newFormData);
 
-    setSnackbarMessage("Draft saved successfully!");
-    setSnackbarOpen(true);
+    try {
+      const response = await sendDataToAPI(newFormData);
+      if (response.success) {
+        updateFormData(newFormData); 
+        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save draft.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarOpen(true);
+    }
   };
 
   return (

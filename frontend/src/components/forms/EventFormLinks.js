@@ -21,6 +21,7 @@ import "../styles/Forms.css";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import LinkIcon from "@mui/icons-material/Link";
 import { blue } from "@mui/material/colors";
+import { sendDataToAPI } from "../../api/pushData"; // Ensure the correct path
 
 const isValidUrl = (urlString) => {
   try {
@@ -90,7 +91,6 @@ export default function LinksForm() {
   };
 
   const handleSave = () => {
-   
     setDialogOpen(true);
   };
 
@@ -98,27 +98,56 @@ export default function LinksForm() {
     setDialogOpen(false);
   };
 
-  const handleSaveAndPublish = () => {
-    const draftData = {
-      ...links,
+  const handleSaveAndPublish = async () => {
+    const newFormData = { 
+      ...formData, 
+      ...links, 
       approved_for_customer_use: true,
+      isDraft: false 
     };
-    updateFormData({ ...formData, ...draftData });
-    setSnackbarMessage("Details saved and published successfully!");
-    setSnackbarOpen(true);
-    setIsError(false); // Set to false assuming no error in saving
-    setDialogOpen(false);
-    navigate("/"); // Navigate to the home page after saving
+
+    updateFormData(newFormData);
+
+    try {
+      const response = await sendDataToAPI(newFormData, "publish");
+      if (response.success) {
+        setSnackbarMessage("Details saved and published successfully!");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save and publish.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving and publishing.");
+      setSnackbarOpen(true);
+    } finally {
+      setDialogOpen(false);
+      navigate("/"); // Navigate to the home page after saving
+    }
   };
 
-  const handleSaveAsDraft = () => {
-    const draftData = {
+  const handleSaveAsDraft = async () => {
+    const newFormData = {
+      ...formData,
       ...links,
+      isDraft: true,
     };
-    updateFormData({ ...formData, ...draftData });
-    setSnackbarMessage("Draft saved successfully!");
-    setSnackbarOpen(true);
-    setIsError(false); // Set to false assuming no error in saving draft
+
+    updateFormData(newFormData);
+
+    try {
+      const response = await sendDataToAPI(newFormData, "draft");
+      if (response.success) {
+        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save draft.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarOpen(true);
+    }
   };
 
   const handleCloseSnackbar = () => {
