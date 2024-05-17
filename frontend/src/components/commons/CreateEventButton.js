@@ -9,7 +9,7 @@ export default function CreateEventButton() {
   const navigate = useNavigate();
 
   const handleButtonClick = () => {
-    resetFormData();
+    resetFormData(); // Reset form data
     navigate('/create-event');
   };
 

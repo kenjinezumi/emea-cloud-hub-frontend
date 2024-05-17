@@ -1,4 +1,5 @@
 import React, {useState, createContext} from 'react';
+import { initialFormData, initialContext } from './InitialState';
 
 const GlobalContext = createContext({
   monthIndex: 0,
@@ -65,6 +66,9 @@ export const GlobalProvider = ({children}) => {
   const updateFilters = (newFilters) => {
     setFilters(newFilters);
   };
+  const resetFormData = () => {
+    setFormData(initialFormData);
+  };
 
   return (
     <GlobalContext.Provider
@@ -100,7 +104,9 @@ export const GlobalProvider = ({children}) => {
         searchText,
         setSearchText,
         eventDetails, 
-        setEventDetails
+        setEventDetails,
+        resetFormData,
+
 
 
       }}
