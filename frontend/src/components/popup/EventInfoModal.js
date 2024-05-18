@@ -357,6 +357,9 @@ export default function EventInfoPopup() {
           </Typography>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {selectedEvent.title}
+            {selectedEvent.isDraft && (
+              <Chip label="Draft" color="default" size="small" sx={{ ml: 1 }} />
+            )}
           </Typography>
         </Stack>
         <Divider />
