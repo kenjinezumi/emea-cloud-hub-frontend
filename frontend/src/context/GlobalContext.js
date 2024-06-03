@@ -1,5 +1,5 @@
-import React, {useState, createContext} from 'react';
-import { initialFormData, initialContext } from './InitialState';
+import React, { useState, createContext } from 'react';
+import { initialFormData } from './InitialState';
 
 const GlobalContext = createContext({
   monthIndex: 0,
@@ -10,9 +10,9 @@ const GlobalContext = createContext({
   setDaySelected: (day) => {},
   showEventModal: false,
   setShowEventModal: () => {},
-  showEventListModal:false,
+  showEventListModal: false,
   setShowEventListModal: () => {},
-  dispatchCalEvent: ({type, payload}) => {},
+  dispatchCalEvent: ({ type, payload }) => {},
   savedEvents: [],
   selectedEvent: null,
   setSelectedEvent: () => {},
@@ -30,9 +30,10 @@ const GlobalContext = createContext({
   setShowInfoEventModal: () => {},
   setSearchText: () => {},
   searchText: null,
+  resetFormData: () => {}, // Ensure this is included
 });
 
-export const GlobalProvider = ({children}) => {
+export const GlobalProvider = ({ children }) => {
   const [currentView, setCurrentView] = useState('month'); // Default to 'month'
   const [monthIndex, setMonthIndex] = useState(0);
   const [smallCalendarMonth, setSmallCalendarMonth] = useState(0);
@@ -40,7 +41,7 @@ export const GlobalProvider = ({children}) => {
   const [showEventModal, setShowEventModal] = useState(false);
   const [showEventListModal, setShowEventListModal] = useState(false);
   const [showEventInfoModal, setShowInfoEventModal] = useState(false);
-  const [searchText, setSearchText] = useState(''); // Add searchText state
+  const [searchText, setSearchText] = useState('');
   const [eventDetails, setEventDetails] = useState(null);
 
   const [savedEvents, setSavedEvents] = useState([]);
@@ -59,9 +60,10 @@ export const GlobalProvider = ({children}) => {
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
-  const [formData, setFormData] = useState({});
+
+  const [formData, setFormData] = useState(initialFormData); // Initialize with initialFormData
   const updateFormData = (newData) => {
-    setFormData({...formData, ...newData});
+    setFormData({ ...formData, ...newData });
   };
   const updateFilters = (newFilters) => {
     setFilters(newFilters);
@@ -85,7 +87,7 @@ export const GlobalProvider = ({children}) => {
         setShowEventListModal,
         showEventInfoModal,
         setShowInfoEventModal,
-        selectedEvents, 
+        selectedEvents,
         setSelectedEvents,
         savedEvents,
         selectedEvent,
@@ -103,12 +105,9 @@ export const GlobalProvider = ({children}) => {
         updateFilters,
         searchText,
         setSearchText,
-        eventDetails, 
+        eventDetails,
         setEventDetails,
-        resetFormData,
-
-
-
+        resetFormData, // Ensure this is included
       }}
     >
       {children}

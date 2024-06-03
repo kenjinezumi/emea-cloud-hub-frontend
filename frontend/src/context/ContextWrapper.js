@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import GlobalContext from './GlobalContext';
 import dayjs from 'dayjs';
+import { initialFormData } from './InitialState'; // Make sure to import initialFormData
 
 function savedEventsReducer(state, {type, payload}) {
   switch (type) {
@@ -22,6 +23,7 @@ function savedEventsReducer(state, {type, payload}) {
       throw new Error();
   }
 }
+
 function initEvents() {
   const storageEvents = localStorage.getItem('savedEvents');
   const parsedEvents = storageEvents ? JSON.parse(storageEvents) : [];
@@ -49,14 +51,19 @@ export default function ContextWrapper(props) {
       [],
       initEvents,
   );
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState(initialFormData); // Initialize with initialFormData
+
   const updateFormData = (newData) => {
     setFormData({...formData, ...newData});
   };
+
+  const resetFormData = () => {
+    setFormData(initialFormData);
+  };
+
   const updateFilters = useCallback((newFilters) => {
     setFilters(newFilters);
   }, [setFilters]);
-
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -109,7 +116,6 @@ export default function ContextWrapper(props) {
     }
   }, [showEventListModal]);
 
-
   useEffect(() => {
     if (!showEventInfoModal) {
       setSelectedEvent(null);
@@ -123,7 +129,6 @@ export default function ContextWrapper(props) {
   }
 
   const [currentView, setCurrentView] = useState('month'); // Default to month view
-
 
   return (
     <GlobalContext.Provider
@@ -156,17 +161,15 @@ export default function ContextWrapper(props) {
         setCurrentView,
         formData,
         updateFormData,
+        resetFormData, 
         filters,
         updateFilters,
         searchText,
         setSearchText,
-       eventDetails, 
-       setEventDetails
-
-
+        eventDetails, 
+        setEventDetails
       }}
     >
-
       {props.children}
     </GlobalContext.Provider>
   );
