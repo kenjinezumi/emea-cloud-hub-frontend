@@ -1,5 +1,6 @@
 const API_URL = 'https://backend-dot-cloudhub.googleplex.com/'; 
-const sendDataToAPI = async (data, type) => {
+const sendDataToAPI = async (data) => {
+  console.log(data);
   try {
     const response = await fetch(API_URL, {
       method: 'POST',

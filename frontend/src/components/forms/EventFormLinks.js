@@ -58,10 +58,7 @@ export default function LinksForm() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const saveAndNavigate = useFormNavigation();
 
-  // Log form data on initial load
-  useEffect(() => {
-    console.log("Initial form data:", JSON.stringify(formData, null, 2));
-  }, [formData]);
+
 
   const handleLinkChange = (type, value) => {
     setNewLink({ ...newLink, [type]: value });
@@ -117,7 +114,7 @@ export default function LinksForm() {
     console.log("Form data before saving and publishing:", JSON.stringify(newFormData, null, 2));
 
     try {
-      const response = await sendDataToAPI(newFormData, "publish");
+      const response = await sendDataToAPI(newFormData);
       if (response.success) {
         setSnackbarMessage("Details saved and published successfully!");
         setSnackbarOpen(true);
