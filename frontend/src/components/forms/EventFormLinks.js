@@ -36,12 +36,12 @@ export default function LinksForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
 
   const [links, setLinks] = useState({
-    LandingPageLinks:
+    landingPageLinks:
       selectedEvent?.landingPageLinks || formData?.landingPageLinks || [],
-    SalesKitLinks:
+    salesKitLinks:
       selectedEvent?.salesKitLinks || formData?.salesKitLinks || [],
-    HailoLinks: selectedEvent?.hailoLinks || formData?.hailoLinks || [],
-    OtherDocumentsLinks:
+    hailoLinks: selectedEvent?.hailoLinks || formData?.hailoLinks || [],
+    otherDocumentsLinks:
       selectedEvent?.otherDocumentsLinks || formData?.otherDocumentsLinks || [],
   });
 
@@ -106,7 +106,7 @@ export default function LinksForm() {
     const newFormData = {
       ...formData,
       ...links,
-      approved_for_customer_use: true,
+      approvedForCustomerUse: true,
       isDraft: false,
     };
 
