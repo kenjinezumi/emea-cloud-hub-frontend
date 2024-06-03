@@ -67,7 +67,7 @@ export async function getEventData(queryEventData) {
     return [
       {
         "eventId": "cb6e5934-96c6-420e-ab4d-9a867a52022a",
-        "title": "TEST",
+        "title": "TEST2",
         "description": "adfdsf",
         "emoji": "😃",
         "organisedBy": [
