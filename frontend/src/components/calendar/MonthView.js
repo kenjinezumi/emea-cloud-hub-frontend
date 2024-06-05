@@ -1,15 +1,14 @@
-import Day from '../Day/DayMonth';
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import GlobalContext from '../../context/GlobalContext';
-import {useLocation} from 'react-router-dom';
-import {getEventData} from '../../api/getEventData'; // Assuming this is your API call
+import { useLocation } from 'react-router-dom';
+import { getEventData } from '../../api/getEventData'; // Assuming this is your API call
 import EventPopup from '../popup/EventInfoModal'; // Import the EventPopup component
+import Day from '../Day/DayMonth';
 
-export default function MonthView({month, isYearView = false}) {
-  const {setDaySelected, setShowEventModal, setShowInfoEventModal} = useContext(GlobalContext);
+export default function MonthView({ month, isYearView = false }) {
+  const { setDaySelected, setShowEventModal, setShowInfoEventModal, filters } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const location = useLocation();
-  const {filters} = useContext(GlobalContext);
   const [filteredEvents, setFilteredEvents] = useState([]);
 
   useEffect(() => {
@@ -32,31 +31,28 @@ export default function MonthView({month, isYearView = false}) {
         console.error("applyFilters was called with 'events' that is not an array:", events);
         return [];
       }
-      
-  
+
       const filterPromises = events.map(event => {
         // Immediately invoked asynchronous function to handle possible async conditions inside the filter logic
         return (async () => {
-          const regionMatch = filters.regions.some(region => region.checked && event.region.includes(region.label));
+          const regionMatch = filters.regions.some(region => region.checked && event.region && event.region.includes(region.label));
           const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-          const okrMatch = filters.okr.some(okr => okr.checked && event.okr.includes(okr.label));
-          const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority.includes(seniority.label));
-  
+          const okrMatch = filters.okr.some(okr => okr.checked && event.okr && event.okr.includes(okr.label));
+          const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority && event.audienceSeniority.includes(seniority.label));
+
           return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
         })();
       });
-  
+
       const results = await Promise.all(filterPromises);
       return events.filter((_, index) => results[index]);
     };
-  
+
     (async () => {
       const filteredEvents = await applyFilters(events, filters);
       setFilteredEvents(filteredEvents);
     })();
   }, [events, filters]);
-  
-
 
   useEffect(() => {
     setShowEventModal(false);

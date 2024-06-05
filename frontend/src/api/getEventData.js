@@ -64,128 +64,207 @@ export async function getEventData(queryEventData) {
       console.log('Data is not empty', JSON.stringify(data.data, null, 2));
       return data.data;
     }
-    // return [
-    //   {
-    //     "eventId": "cb6e5934-96c6-420e-ab4d-9a867a52022a",
-    //     "title": "TEST2",
-    //     "description": "adfdsf",
-    //     "emoji": "😃",
-    //     "organisedBy": [
-    //       "(aayushsharmaa)"
-    //     ],
-    //     "startDate": "2024-04-13T12:43:07.748Z",
-    //     "endDate": "2024-04-13T12:43:07.748Z",
-    //     "marketingProgramInstanceId": "sdfdsfd",
-    //     "eventType": "Online Event",
-    //     "region": [
-    //       "GLOBAL"
-    //     ],
-    //     "subRegion": [
-    //       "Benelux"
-    //     ],
-    //     "country": [
-    //       "BE",
-    //       "NL"
-    //     ],
-    //     "activityOwner": [],
-    //     "speakers": [],
-    //     "eventSeries": "no",
-    //     "emailLanguage": "English",
-    //     "emailText": "",
-    //     "languagesAndTemplates": [],
-    //     "customerUse": "yes",
-    //     "okr": [
-    //       "CHAMPION DEI & CULTURE"
-    //     ],
-    //     "gep": [
-    //       "Infrastructure Modernization",
-    //       "Not Application (Not tied to Any Global Engagement Plays)"
-    //     ],
-    //     "audiencePersona": [
-    //       "Developer",
-    //       "Finance Decision Maker",
-    //       "Finance Executive"
-    //     ],
-    //     "audienceSeniority": [
-    //       "Practitioner"
-    //     ],
-    //     "accountSectors": "commercial sector",
-    //     "accountSegments": "{\"corporate\":true,\"enterprise\":true,\"smb\":false}",
-    //     "maxEventCapacity": "342",
-    //     "peopleMeetingCriteria": "424324",
-    //     "landingPageLink": "https://cloudhub.googleplex.com/create-event",
-    //     "salesKitLink": "https://cloudhub.googleplex.com/links",
-    //     "hailoLink": "https://cloudhub.googleplex.com/links",
-    //     "otherDocumentsLink": "https://cloudhub.googleplex.com/links",
-    //     "isHighPriority": "true",
-    //     "marketingActivityType": ""
-    //   },
-    //   {
-    //     "eventId": "63963647-8aae-42f1-8a3e-3fa50c1e9cd9",
-    //     "title": "Test 2",
-    //     "description": "this is a test, this is a test,this is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a testthis is a test",
-    //     "emoji": "🐵",
-    //     "organisedBy": [
-    //       "(abigailvasquez)",   "(abigailvasquez)"
-    //     ],
-    //     "startDate": "2024-04-14T10:29:52.886Z",
-    //     "endDate": "2024-04-20T10:15:52.000Z",
-    //     "marketingProgramInstanceId": "abcdefg",
-    //     "eventType": "Physical Event",
-    //     "region": [
-    //       "GLOBAL"
-    //     ],
-    //     "subRegion": [
-    //       "Alps",
-    //       "Benelux",
-    //       "CEE",
-    //       "France"
-    //     ],
-    //     "country": [
-    //       "AT",
-    //       "CH",
-    //       "BE",
-    //       "NL",
-    //       "PL",
-    //       "FR"
-    //     ],
-    //     "activityOwner": [],
-    //     "speakers": [],
-    //     "eventSeries": "no",
-    //     "emailLanguage": "English",
-    //     "emailText": "Hello world",
-    //     "languagesAndTemplates": [],
-    //     "customerUse": "no",
-    //     "okr": [
-    //       "LIFT MINDSHARE",
-    //       "SOURCE DEMAND",
-    //       "SCALED ACQUISITION"
-    //     ],
-    //     "gep": [
-    //       "Infrastructure Modernization",
-    //       "Not Application (Not tied to Any Global Engagement Plays)"
-    //     ],
-    //     "audiencePersona": [
-    //       "Data Executive",
-    //       "Developer",
-    //       "Finance Decision Maker"
-    //     ],
-    //     "audienceSeniority": [
-    //       "Practitioner",
-    //       "Executive"
-    //     ],
-    //     "accountSectors": "commercial sector",
-    //     "accountSegments": "{\"corporate\":true,\"enterprise\":true,\"smb\":false}",
-    //     "maxEventCapacity": "1000000",
-    //     "peopleMeetingCriteria": "2332",
-    //     "landingPageLink": "https://cloudhub.googleplex.com/create-event",
-    //     "salesKitLink": "https://cloudhub.googleplex.com/create-event",
-    //     "hailoLink": "https://cloudhub.googleplex.com/create-event",
-    //     "otherDocumentsLink": "https://cloudhub.googleplex.com/create-event",
-    //     "isHighPriority": "false",
-    //     "marketingActivityType": ""
-    //   }
-    // ]
+    return [
+      {
+        "eventId": "d8a0567a-44c6-479e-9474-0e44877e0966",
+        "title": "test",
+        "description": "TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST",
+        "emoji": "",
+        "organisedBy": [
+          "(abduljelil)",
+          "(abemiller)",
+          "(abgentile)",
+          "(abhishekpande)"
+        ],
+        "startDate": "2024-06-05T16:51:57.906Z",
+        "endDate": "2024-06-05T16:51:57.906Z",
+        "marketingProgramInstanceId": "TTEST",
+        "eventType": "Physical Event",
+        "region": "GLOBAL",
+        "subRegion": [
+          "Alps",
+          "Benelux"
+        ],
+        "country": [
+          "AT",
+          "CH",
+          "BE",
+          "NL"
+        ],
+        "activityOwner": [],
+        "speakers": [],
+        "eventSeries": "no",
+        "languagesAndTemplates": [
+          {
+            "language": "",
+            "template": "FSFSF"
+          },
+          {
+            "language": "Spanish",
+            "template": "ASFSDFSD"
+          }
+        ],
+        "customerUse": "yes",
+        "okr": [
+          "LIFT MINDSHARE",
+          "SOURCE DEMAND"
+        ],
+        "gep": [
+          "Infrastructure Modernization",
+          "Not Application (Not tied to Any Global Engagement Plays)",
+          "Reimagine FSI"
+        ],
+        "audiencePersona": [
+          "Industry LOB - Edu",
+          "Industry LOB - Gaming",
+          "Industry LOB - Gov"
+        ],
+        "audienceSeniority": [
+          "Practitioner",
+          "Executive"
+        ],
+        "accountSectors": {
+          "commercial": true,
+          "public": true
+        },
+        "accountSegments": {
+          "enterprise": true,
+          "corporate": true
+        },
+        "maxEventCapacity": "232432432",
+        "peopleMeetingCriteria": "",
+        "landingPageLinks": [],
+        "salesKitLinks": [],
+        "hailoLinks": [],
+        "otherDocumentsLinks": [],
+        "isDraft": false
+      },
+      {
+        "eventId": "073dcb2f-b2af-4d6b-81a7-0fe1afa72600",
+        "title": "234234",
+        "description": "",
+        "emoji": "",
+        "organisedBy": [],
+        "startDate": "2024-06-05T21:38:27.950Z",
+        "endDate": "2024-06-05T21:38:27.950Z",
+        "marketingProgramInstanceId": "",
+        "eventType": "Online Event",
+        "region": null,
+        "subRegion": [],
+        "country": [],
+        "activityOwner": [],
+        "speakers": [],
+        "eventSeries": null,
+        "languagesAndTemplates": [],
+        "customerUse": null,
+        "okr": [],
+        "gep": [],
+        "audiencePersona": [],
+        "audienceSeniority": [],
+        "accountSectors": null,
+        "accountSegments": null,
+        "maxEventCapacity": null,
+        "peopleMeetingCriteria": null,
+        "landingPageLinks": [],
+        "salesKitLinks": [],
+        "hailoLinks": [],
+        "otherDocumentsLinks": [],
+        "isDraft": true
+      },
+      {
+        "eventId": "563c7134-0031-46e2-9583-959e6b335110",
+        "title": "TEST",
+        "description": "SFSFDSFDSA",
+        "emoji": "🎆",
+        "organisedBy": [
+          "(abemiller)",
+          "(abgentile)",
+          "(abhineetk)",
+          "(abhishekpande)",
+          "(abigailvasquez)",
+          "(abiodunb)"
+        ],
+        "startDate": "2024-06-05T21:53:36.736Z",
+        "endDate": "2024-06-05T21:53:36.736Z",
+        "marketingProgramInstanceId": "23423432",
+        "eventType": "Online Event",
+        "region": "GLOBAL",
+        "subRegion": [
+          "Benelux",
+          "CEE",
+          "France",
+          "Iberia"
+        ],
+        "country": [
+          "BE",
+          "NL",
+          "PL",
+          "FR",
+          "ES",
+          "PT"
+        ],
+        "activityOwner": [],
+        "speakers": [],
+        "eventSeries": "no",
+        "languagesAndTemplates": [
+          {
+            "language": "",
+            "template": "SFSDF"
+          },
+          {
+            "language": "Spanish",
+            "template": "SDFSFD"
+          }
+        ],
+        "customerUse": "yes",
+        "okr": [
+          "CHAMPION DEI & CULTURE",
+          "SCALED ACQUISITION"
+        ],
+        "gep": [
+          "Infrastructure Modernization",
+          "Not Application (Not tied to Any Global Engagement Plays)"
+        ],
+        "audiencePersona": [
+          "HR",
+          "Industry LOB - FinServ",
+          "Industry LOB - Gaming"
+        ],
+        "audienceSeniority": [
+          "Decision Maker",
+          "Practitioner",
+          "Executive"
+        ],
+        "accountSectors": {
+          "commercial": true,
+          "public": true
+        },
+        "accountSegments": {
+          "enterprise": true,
+          "corporate": true
+        },
+        "maxEventCapacity": "4335345",
+        "peopleMeetingCriteria": "",
+        "landingPageLinks": [
+          "https://cloudhub.googleplex.com/links",
+          "https://cloudhub.googleplex.com/links",
+          "https://cloudhub.googleplex.com/links"
+        ],
+        "salesKitLinks": [
+          "https://cloudhub.googleplex.com/links",
+          "https://cloudhub.googleplex.com/links"
+        ],
+        "hailoLinks": [
+          "https://cloudhub.googleplex.com/links",
+          "https://cloudhub.googleplex.com/links"
+        ],
+        "otherDocumentsLinks": [
+          "https://cloudhub.googleplex.com/links",
+          "https://cloudhub.googleplex.com/links"
+        ],
+        "isDraft": false
+      }
+    ]
     
     
   } catch (error) {
