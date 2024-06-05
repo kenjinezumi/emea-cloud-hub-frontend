@@ -35,15 +35,9 @@ function ShareEventPage() {
       });
   }, [eventId]);
 
-  useEffect(() => {
-    if (eventDetails) {
-    }
-  }, [eventDetails]);
-
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography color="error">{error}</Typography>;
 
-  // Display event details with improved structure
   return (
     <div className="h-screen flex flex-col">
       <CalendarHeaderEventShare />
@@ -125,21 +119,30 @@ function ShareEventPage() {
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Regions:</Typography>
-                {eventDetails.region.map((region, index) => (
-                  <Chip key={index} label={region} style={{ margin: 2 }} />
-                ))}
+                {Array.isArray(eventDetails.region)
+                  ? eventDetails.region.map((region, index) => (
+                      <Chip key={index} label={region} style={{ margin: 2 }} />
+                    ))
+                  : <Typography variant="body1" gutterBottom>N/A</Typography>
+                }
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Sub Regions:</Typography>
-                {eventDetails.subRegion.map((subRegion, index) => (
-                  <Chip key={index} label={subRegion} style={{ margin: 2 }} />
-                ))}
+                {Array.isArray(eventDetails.subRegion)
+                  ? eventDetails.subRegion.map((subRegion, index) => (
+                      <Chip key={index} label={subRegion} style={{ margin: 2 }} />
+                    ))
+                  : <Typography variant="body1" gutterBottom>N/A</Typography>
+                }
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Countries:</Typography>
-                {eventDetails.country.map((country, index) => (
-                  <Chip key={index} label={country} style={{ margin: 2 }} />
-                ))}
+                {Array.isArray(eventDetails.country)
+                  ? eventDetails.country.map((country, index) => (
+                      <Chip key={index} label={country} style={{ margin: 2 }} />
+                    ))
+                  : <Typography variant="body1" gutterBottom>N/A</Typography>
+                }
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
@@ -157,9 +160,12 @@ function ShareEventPage() {
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Audience Persona:</Typography>
-                {eventDetails.audiencePersona.map((persona, index) => (
-                  <Chip key={index} label={persona} style={{ margin: 2 }} />
-                ))}
+                {Array.isArray(eventDetails.audiencePersona)
+                  ? eventDetails.audiencePersona.map((persona, index) => (
+                      <Chip key={index} label={persona} style={{ margin: 2 }} />
+                    ))
+                  : <Typography variant="body1" gutterBottom>N/A</Typography>
+                }
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">

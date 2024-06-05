@@ -46,6 +46,7 @@ export default function EventInfoPopup() {
     if (selectedEvent && selectedEvent.eventId) {
       navigate(`/event/${selectedEvent.eventId}`);
     }
+    console.log(selectedEvent.isDraft)
   };
 
   const handleEditEvent = () => {
@@ -141,21 +142,21 @@ export default function EventInfoPopup() {
           Region:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.region.join(', ')}
+          {Array.isArray(selectedEvent.region) ? selectedEvent.region.join(', ') : selectedEvent.region || 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <MyLocationIcon style={{ marginRight: "5px", color: '#757575' }} />
           Sub-region:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.subRegion.join(', ')}
+          {selectedEvent.subRegion ? selectedEvent.subRegion.join(', ') : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <LocationOnIcon style={{ marginRight: "5px", color: '#757575' }} />
           Country:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.country.join(', ')}
+          {selectedEvent.country ? selectedEvent.country.join(', ') : 'N/A'}
         </Typography>
       </Stack>
     ),
@@ -166,55 +167,63 @@ export default function EventInfoPopup() {
           Activity Owner:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.activityOwner.map((owner, index) => (
-            <Chip
-              key={index}
-              label={owner}
-              sx={{ marginLeft: "5px", backgroundColor: getRandomColor(), color: 'white' }}
-            />
-          ))}
+          {selectedEvent.activityOwner && selectedEvent.activityOwner.length > 0
+            ? selectedEvent.activityOwner.map((owner, index) => (
+                <Chip
+                  key={index}
+                  label={owner}
+                  sx={{ marginLeft: "5px", backgroundColor: getRandomColor(), color: 'white' }}
+                />
+              ))
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
           Speakers:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.speakers.join(', ')}
+          {selectedEvent.speakers && selectedEvent.speakers.length > 0
+            ? selectedEvent.speakers.join(', ')
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <DescriptionIcon style={{ marginRight: "5px", color: '#757575' }} />
           Event Series:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.eventSeries}
+          {selectedEvent.eventSeries || 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <LanguageIcon style={{ marginRight: "5px", color: '#757575' }} />
           Email Language:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.emailLanguage}
+          {selectedEvent.emailLanguage || 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <DescriptionIcon style={{ marginRight: "5px", color: '#757575' }} />
           Customer Use:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.customerUse}
+          {selectedEvent.customerUse || 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <DescriptionIcon style={{ marginRight: "5px", color: '#757575' }} />
           OKR:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.okr.join(', ')}
+          {selectedEvent.okr && selectedEvent.okr.length > 0
+            ? selectedEvent.okr.join(', ')
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <DescriptionIcon style={{ marginRight: "5px", color: '#757575' }} />
           GEP:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.gep.join(', ')}
+          {selectedEvent.gep && selectedEvent.gep.length > 0
+            ? selectedEvent.gep.join(', ')
+            : 'N/A'}
         </Typography>
       </Stack>
     ),
@@ -225,42 +234,50 @@ export default function EventInfoPopup() {
           Audience Persona:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.audiencePersona.join(', ')}
+          {selectedEvent.audiencePersona && selectedEvent.audiencePersona.length > 0
+            ? selectedEvent.audiencePersona.join(', ')
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
           Audience Seniority:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.audienceSeniority.join(', ')}
+          {selectedEvent.audienceSeniority && selectedEvent.audienceSeniority.length > 0
+            ? selectedEvent.audienceSeniority.join(', ')
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
           Account Sectors:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.accountSectors}
+          {selectedEvent.accountSectors
+            ? Object.entries(selectedEvent.accountSectors).map(([key, value]) => (value ? key : null)).filter(Boolean).join(', ')
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
           Account Segments:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {Object.entries(JSON.parse(selectedEvent.accountSegments)).map(([key, value]) => value ? key : null).filter(Boolean).join(', ')}
+          {selectedEvent.accountSegments
+            ? Object.entries(selectedEvent.accountSegments).map(([key, value]) => (value ? key : null)).filter(Boolean).join(', ')
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
           Max Event Capacity:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.maxEventCapacity}
+          {selectedEvent.maxEventCapacity || 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <PeopleIcon style={{ marginRight: "5px", color: '#757575' }} />
           People Meeting Criteria:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          {selectedEvent.peopleMeetingCriteria}
+          {selectedEvent.peopleMeetingCriteria || 'N/A'}
         </Typography>
       </Stack>
     ),
@@ -271,56 +288,80 @@ export default function EventInfoPopup() {
           Landing Page Link:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          <a
-            href={selectedEvent.landingPageLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#4285F4' }}
-          >
-            {selectedEvent.landingPageLink}
-          </a>
+          {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
+            ? selectedEvent.landingPageLinks.map((link, index) => (
+                <div key={index}>
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#4285F4' }}
+                  >
+                    {link}
+                  </a>
+                </div>
+              ))
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
           Sales Kit Link:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          <a
-            href={selectedEvent.salesKitLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#4285F4' }}
-          >
-            {selectedEvent.salesKitLink}
-          </a>
+          {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
+            ? selectedEvent.salesKitLinks.map((link, index) => (
+                <div key={index}>
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#4285F4' }}
+                  >
+                    {link}
+                  </a>
+                </div>
+              ))
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
           Hailo Link:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          <a
-            href={selectedEvent.hailoLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#4285F4' }}
-          >
-            {selectedEvent.hailoLink}
-          </a>
+          {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
+            ? selectedEvent.hailoLinks.map((link, index) => (
+                <div key={index}>
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#4285F4' }}
+                  >
+                    {link}
+                  </a>
+                </div>
+              ))
+            : 'N/A'}
         </Typography>
         <Typography variant="body2" display="flex" alignItems="center">
           <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
           Other Documents Link:
         </Typography>
         <Typography variant="body2" sx={{ marginLeft: '30px' }}>
-          <a
-            href={selectedEvent.otherDocumentsLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: '#4285F4' }}
-          >
-            {selectedEvent.otherDocumentsLink}
-          </a>
+          {selectedEvent.otherDocumentsLinks && selectedEvent.otherDocumentsLinks.length > 0
+            ? selectedEvent.otherDocumentsLinks.map((link, index) => (
+                <div key={index}>
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#4285F4' }}
+                  >
+                    {link}
+                  </a>
+                </div>
+              ))
+            : 'N/A'}
         </Typography>
       </Stack>
     ),
@@ -357,10 +398,8 @@ export default function EventInfoPopup() {
           </Typography>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {selectedEvent.title}
-            {selectedEvent.isDraft && (
-              <Chip label="Draft" color="default" size="small" sx={{ ml: 1 }} />
-            )}
           </Typography>
+
         </Stack>
         <Divider />
         <Breadcrumbs aria-label="breadcrumb" sx={{ p: 2 }}>

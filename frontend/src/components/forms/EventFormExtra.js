@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import {
   languageOptions,
@@ -36,44 +36,18 @@ export default function ExtraDetailsForm() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isFormValid, setIsFormValid] = useState(true);
-  const [activityOwner, setActivityOwner] = useState(
-    selectedEvent ? selectedEvent.activityOwner : formData.activityOwner || []
-  );
-  const [speakers, setSpeakers] = useState(
-    selectedEvent ? selectedEvent.speaker : formData.speakers || []
-  );
-  const [eventSeries, setEventSeries] = useState(
-    selectedEvent ? selectedEvent.eventSeries : formData.eventSeries || "no"
-  );
-  const [emailLanguage, setEmailLanguage] = useState(
-    selectedEvent
-      ? selectedEvent.emailLanguage
-      : formData.emailLanguage || "English"
-  );
-  const [emailText, setEmailText] = useState(
-    selectedEvent ? selectedEvent.emailText : formData.emailText || ""
-  );
-  const [customerUse, setCustomerUse] = useState(
-    selectedEvent ? selectedEvent.customerUse : formData.customerUse || "no"
-  );
-  const [okr, setOkr] = useState(
-    selectedEvent ? selectedEvent.okr : formData.okr || []
-  );
-  const [gep, setGep] = useState(
-    selectedEvent ? selectedEvent.gep : formData.gep || []
-  );
-  const [activityType, setActivityType] = useState(
-    selectedEvent
-      ? selectedEvent.activityType
-      : formData.activityType || "direct"
-  );
-  const [languagesAndTemplates, setLanguagesAndTemplates] = useState(
-    selectedEvent
-      ? selectedEvent.languagesAndTemplates
-      : formData.languagesAndTemplates || [
-          { language: "English", template: "" },
-        ]
-  );
+  const [activityOwner, setActivityOwner] = useState([]);
+  const [speakers, setSpeakers] = useState([]);
+  const [eventSeries, setEventSeries] = useState("no");
+  const [emailLanguage, setEmailLanguage] = useState("English");
+  const [emailText, setEmailText] = useState("");
+  const [customerUse, setCustomerUse] = useState("no");
+  const [okr, setOkr] = useState([]);
+  const [gep, setGep] = useState([]);
+  const [activityType, setActivityType] = useState("direct");
+  const [languagesAndTemplates, setLanguagesAndTemplates] = useState([
+    { language: "English", template: "" },
+  ]);
 
   const [okrSelections, setOkrSelections] = useState(
     okrOptions.map((option) => ({
@@ -81,6 +55,48 @@ export default function ExtraDetailsForm() {
       selected: false,
     }))
   );
+
+  useEffect(() => {
+    if (selectedEvent) {
+      setActivityOwner(selectedEvent.activityOwner || []);
+      setSpeakers(selectedEvent.speakers || []);
+      setEventSeries(selectedEvent.eventSeries || "no");
+      setEmailLanguage(selectedEvent.emailLanguage || "English");
+      setEmailText(selectedEvent.emailText || "");
+      setCustomerUse(selectedEvent.customerUse || "no");
+      setOkr(selectedEvent.okr || []);
+      setGep(selectedEvent.gep || []);
+      setActivityType(selectedEvent.activityType || "direct");
+      setLanguagesAndTemplates(
+        selectedEvent.languagesAndTemplates || [{ language: "English", template: "" }]
+      );
+
+      const newOkrSelections = okrOptions.map((option) => ({
+        label: option.label,
+        selected: selectedEvent.okr ? selectedEvent.okr.includes(option.label) : false,
+      }));
+      setOkrSelections(newOkrSelections);
+    } else {
+      setActivityOwner(formData.activityOwner || []);
+      setSpeakers(formData.speakers || []);
+      setEventSeries(formData.eventSeries || "no");
+      setEmailLanguage(formData.emailLanguage || "English");
+      setEmailText(formData.emailText || "");
+      setCustomerUse(formData.customerUse || "no");
+      setOkr(formData.okr || []);
+      setGep(formData.gep || []);
+      setActivityType(formData.activityType || "direct");
+      setLanguagesAndTemplates(
+        formData.languagesAndTemplates || [{ language: "English", template: "" }]
+      );
+
+      const newOkrSelections = okrOptions.map((option) => ({
+        label: option.label,
+        selected: formData.okr ? formData.okr.includes(option.label) : false,
+      }));
+      setOkrSelections(newOkrSelections);
+    }
+  }, [selectedEvent, formData]);
 
   const handleToggleOkr = (label) => {
     const newOkrSelections = okrSelections.map((option) => ({
@@ -247,8 +263,12 @@ export default function ExtraDetailsForm() {
                   aria-controls="panel-content"
                   id={`panel-header-${index}`}
                 >
-                  <Typography>Email language: </Typography>
-                  {item.language && <Typography>{item.language}</Typography>}
+                  <Typography>Email language: {index === 0 && <span> English</span>}</Typography>
+                  {item.language && (
+                    <Typography>
+                      <span>&nbsp;{item.language}</span>
+                    </Typography>
+                  )}
                 </AccordionSummary>
                 <AccordionDetails>
                   <Grid container spacing={2}>

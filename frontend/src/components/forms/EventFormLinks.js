@@ -34,31 +34,41 @@ const isValidUrl = (urlString) => {
 
 export default function LinksForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
-
   const [links, setLinks] = useState({
-    landingPageLinks:
-      selectedEvent?.landingPageLinks || formData?.landingPageLinks || [],
-    salesKitLinks:
-      selectedEvent?.salesKitLinks || formData?.salesKitLinks || [],
-    hailoLinks: selectedEvent?.hailoLinks || formData?.hailoLinks || [],
-    otherDocumentsLinks:
-      selectedEvent?.otherDocumentsLinks || formData?.otherDocumentsLinks || [],
+    landingPageLinks: [],
+    salesKitLinks: [],
+    hailoLinks: [],
+    otherDocumentsLinks: [],
   });
-
   const [newLink, setNewLink] = useState({
     landingPage: "",
     salesKit: "",
     hailo: "",
     otherDocuments: "",
   });
-
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const saveAndNavigate = useFormNavigation();
 
-
+  useEffect(() => {
+    if (selectedEvent) {
+      setLinks({
+        landingPageLinks: selectedEvent.landingPageLinks || [],
+        salesKitLinks: selectedEvent.salesKitLinks || [],
+        hailoLinks: selectedEvent.hailoLinks || [],
+        otherDocumentsLinks: selectedEvent.otherDocumentsLinks || [],
+      });
+    } else {
+      setLinks({
+        landingPageLinks: formData.landingPageLinks || [],
+        salesKitLinks: formData.salesKitLinks || [],
+        hailoLinks: formData.hailoLinks || [],
+        otherDocumentsLinks: formData.otherDocumentsLinks || [],
+      });
+    }
+  }, [selectedEvent, formData]);
 
   const handleLinkChange = (type, value) => {
     setNewLink({ ...newLink, [type]: value });
@@ -90,7 +100,10 @@ export default function LinksForm() {
     const currentFormData = {
       ...links,
     };
-    console.log("Form data before navigating to previous:", JSON.stringify(currentFormData, null, 2));
+    console.log(
+      "Form data before navigating to previous:",
+      JSON.stringify(currentFormData, null, 2)
+    );
     saveAndNavigate(currentFormData, "/audience");
   };
 
@@ -111,7 +124,10 @@ export default function LinksForm() {
     };
 
     updateFormData(newFormData);
-    console.log("Form data before saving and publishing:", JSON.stringify(newFormData, null, 2));
+    console.log(
+      "Form data before saving and publishing:",
+      JSON.stringify(newFormData, null, 2)
+    );
 
     try {
       const response = await sendDataToAPI(newFormData);
@@ -140,7 +156,10 @@ export default function LinksForm() {
 
     updateFormData(newFormData);
 
-    console.log("Form data before saving as draft:", JSON.stringify(newFormData, null, 2));
+    console.log(
+      "Form data before saving as draft:",
+      JSON.stringify(newFormData, null, 2)
+    );
 
     try {
       const response = await sendDataToAPI(newFormData, "draft");
@@ -181,7 +200,7 @@ export default function LinksForm() {
             Links
           </Typography>
           <Grid container spacing={2}>
-            {Object.entries(links).map(([key, value], index) => (
+            {Object.entries(links).map(([key, value]) => (
               <Grid item xs={12} key={key}>
                 <Typography variant="subtitle1">
                   {key.replace("Links", "").replace(/([A-Z])/g, " $1")}
