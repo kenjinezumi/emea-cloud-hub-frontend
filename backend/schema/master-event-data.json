@@ -1,0 +1,163 @@
+[
+    {
+      "column_name": "eventId",
+      "is_nullable": "NO",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "description",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "emoji",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "organisedBy",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "startDate",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "endDate",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "marketingProgramInstanceId",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "eventType",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "region",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "subRegion",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "country",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "activityOwner",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "title",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "speakers",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "eventSeries",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "languagesAndTemplates",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<JSON>"
+    },
+    {
+      "column_name": "customerUse",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "okr",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "gep",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "audiencePersona",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "audienceSeniority",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "accountSectors",
+      "is_nullable": "YES",
+      "data_type": "JSON"
+    },
+    {
+      "column_name": "accountSegments",
+      "is_nullable": "YES",
+      "data_type": "JSON"
+    },
+    {
+      "column_name": "maxEventCapacity",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "peopleMeetingCriteria",
+      "is_nullable": "YES",
+      "data_type": "STRING"
+    },
+    {
+      "column_name": "landingPageLinks",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "salesKitLinks",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "hailoLinks",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "otherDocumentsLinks",
+      "is_nullable": "YES",
+      "data_type": "ARRAY<STRING>"
+    },
+    {
+      "column_name": "approvedForCustomerUse",
+      "is_nullable": "YES",
+      "data_type": "BOOL"
+    },
+    {
+      "column_name": "isDraft",
+      "is_nullable": "YES",
+      "data_type": "BOOL"
+    },
+    {
+      "column_name": "isHighPriority",
+      "is_nullable": "YES",
+      "data_type": "BOOL"
+    }
+  ]
+  

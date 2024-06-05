@@ -50,8 +50,6 @@ async function updateBigQuery(formData, datasetId, tableId) {
         activityOwner = @activityOwner,
         speakers = @speakers,
         eventSeries = @eventSeries,
-        emailLanguage = @emailLanguage,
-        emailText = @emailText,
         languagesAndTemplates = @languagesAndTemplates,
         customerUse = @customerUse,
         okr = @okr,
@@ -63,11 +61,12 @@ async function updateBigQuery(formData, datasetId, tableId) {
         accountSegments = @accountSegments,
         maxEventCapacity = @maxEventCapacity,
         peopleMeetingCriteria = @peopleMeetingCriteria,
-        landingPageLink = @landingPageLink,
-        salesKitLink = @salesKitLink,
-        hailoLink = @hailoLink,
+        landingPageLinks = @landingPageLinks,
+        salesKitLinks = @salesKitLink,
+        hailoLinks = @hailoLinks,
         publishedDate = @publishedDate,
-        lastEditedDate = @lastEditedDate
+        lastEditedDate = @lastEditedDate,
+        isDraft = @isDraft
     WHERE eventId = @eventId
   `;
 
@@ -90,8 +89,6 @@ async function updateBigQuery(formData, datasetId, tableId) {
       activityOwner: formData.activityOwner,
       speakers: formData.speakers,
       eventSeries: formData.eventSeries,
-      emailLanguage: formData.emailLanguage,
-      emailText: formData.emailText,
       languagesAndTemplates: JSON.stringify(formData.languagesAndTemplates),
       customerUse: formData.customerUse,
       okr: formData.okr,
@@ -103,11 +100,12 @@ async function updateBigQuery(formData, datasetId, tableId) {
       accountSegments: JSON.stringify(formData.accountSegments),
       maxEventCapacity: formData.maxEventCapacity,
       peopleMeetingCriteria: formData.peopleMeetingCriteria,
-      landingPageLink: formData.landingPageLink,
-      salesKitLink: formData.salesKitLink,
-      hailoLink: formData.hailoLink,
+      landingPageLinks: formData.landingPageLinks,
+      salesKitLinks: formData.salesKitLinks,
+      hailoLinks: formData.hailoLinks,
       publishedDate: formData.publishedDate ? new Date(formData.publishedDate).toISOString() : null,
       lastEditedDate: formData.lastEditedDate ? new Date(formData.lastEditedDate).toISOString() : null,
+      isDraft: formData.isDraft
     },
     location: 'US',
   };
