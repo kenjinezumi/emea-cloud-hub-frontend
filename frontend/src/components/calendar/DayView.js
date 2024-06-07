@@ -1,20 +1,20 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import GlobalContext from '../../context/GlobalContext';
-import {Typography, Paper} from '@mui/material';
+import { Typography, Paper } from '@mui/material';
 import dayjs from 'dayjs';
-import {useLocation} from 'react-router-dom';
-import {getEventData} from '../../api/getEventData';
+import { useLocation } from 'react-router-dom';
+import { getEventData } from '../../api/getEventData';
 import minMax from 'dayjs/plugin/minMax';
 
 import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 dayjs.extend(minMax);
 
 export default function DayView() {
-  const {daySelected} = useContext(GlobalContext);
+  const { daySelected } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const [eventGroups, setEventGroups] = useState([]);
   const location = useLocation();
-  const {setShowEventModal, showEventModal} = useContext(GlobalContext);
+  const { setShowEventModal, showEventModal } = useContext(GlobalContext);
   const {
     setDaySelected,
     showEventInfoModal,
@@ -22,27 +22,25 @@ export default function DayView() {
     setShowInfoEventModal,
   } = useContext(GlobalContext);
 
-
-  const {filters} = useContext(GlobalContext);
+  const { filters } = useContext(GlobalContext);
   const [Eventsfiltered, setFilteredEvents] = useState([]);
+  
   useEffect(() => {
     const applyFilters = async (events, filters) => {
-      // Ensure 'events' is an array before proceeding
       if (!Array.isArray(events)) {
         console.error("applyFilters was called with 'events' that is not an array:", events);
         return [];
       }
-      
   
       const filterPromises = events.map(event => {
-        // Immediately invoked asynchronous function to handle possible async conditions inside the filter logic
         return (async () => {
-          const regionMatch = filters.regions.some(region => region.checked && event.region.includes(region.label));
+          const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
           const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-          const okrMatch = filters.okr.some(okr => okr.checked && event.okr.includes(okr.label));
-          const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority.includes(seniority.label));
+          const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.includes(okr.label));
+          const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
+          const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
   
-          return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
+          return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
         })();
       });
   
@@ -56,7 +54,6 @@ export default function DayView() {
     })();
   }, [events, filters]);
 
-
   const handleEventClick = (eventData) => {
     setSelectedEvent(eventData);
     setShowInfoEventModal(true);
@@ -65,11 +62,11 @@ export default function DayView() {
   const handleAddEvent = () => {
     setShowEventModal(true);
   };
+
   useEffect(() => {
     setShowEventModal(false);
     setShowInfoEventModal(false);
   }, [location]);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -99,7 +96,7 @@ export default function DayView() {
       console.error("calculateOverlapGroups was called with 'events' that is not an array:", events);
       return [];
     }
-    
+
     events.forEach((event) => {
       let added = false;
       for (const group of eventGroups) {
@@ -146,16 +143,13 @@ export default function DayView() {
     const left = width * index;
 
     return { top, height, left, width };
-};
+  };
 
-
-const dayEvents = Eventsfiltered.filter(evt =>
-  dayjs(evt.startDate).isSame(daySelected, 'day') ||
-  dayjs(evt.endDate).isSame(daySelected, 'day') ||
-  (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
-);
-
-
+  const dayEvents = Eventsfiltered.filter(evt =>
+    dayjs(evt.startDate).isSame(daySelected, 'day') ||
+    dayjs(evt.endDate).isSame(daySelected, 'day') ||
+    (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
+  );
 
   return (
     <Paper
@@ -271,50 +265,48 @@ const dayEvents = Eventsfiltered.filter(evt =>
           ))}
 
           {/* Event rendering */}
-          {/* Event rendering */}
-{dayEvents.map((event) => {
-  const { top, height, left, width } = calculateEventBlockStyles(event);
-  return (
-    <div
-      key={event.id}
-      style={{
-        position: 'absolute',
-                                  top: `${top}px`,
-                                  left: `${left}%`,
-                                  width: `${width}%`,
-                                  height: `${height}px`,
-                                  backgroundColor: '#fff', // White background for the event block
-                                  color: '#5f6368', // Dark text color for contrast
-                                  padding: '2px 4px', // Padding inside the event block
-                                  borderRadius: '4px', // Rounded corners like Google Calendar events
-                                  display: 'flex',
-                                  alignItems: 'top',
-                                  justifyContent: 'flex-start',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  cursor: 'pointer',
-                                  zIndex: 2,
-                                  boxSizing: 'border-box',
-                                  borderLeft: '4px solid #1a73e8', // Blue left border as an indicator of event type
-                                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Subtle shadow for a 3D effect
-                                  margin: '4px 0', // Margin for spacing between events
-                                  marginLeft: '4px', // Left margin to align with the grid
-                                  transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transitions for hover effects
-                                  fontSize: '0.875rem', // 14px for text size
-                                  fontWeight: '500', // Medium font weight for readability
-      }}
-      onClick={() => handleEventClick(event)}
-    >
-      <Typography>{event.title}</Typography>
-    </div>
-  );
-})}
+          {dayEvents.map((event) => {
+            const { top, height, left, width } = calculateEventBlockStyles(event);
+            return (
+              <div
+                key={event.eventId}
+                style={{
+                  position: 'absolute',
+                  top: `${top}px`,
+                  left: `${left}%`,
+                  width: `${width}%`,
+                  height: `${height}px`,
+                  backgroundColor: '#fff',
+                  color: '#5f6368',
+                  padding: '2px 4px',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'top',
+                  justifyContent: 'flex-start',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  zIndex: 2,
+                  boxSizing: 'border-box',
+                  borderLeft: '4px solid #1a73e8',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                  margin: '4px 0',
+                  marginLeft: '4px',
+                  transition: 'background-color 0.2s, box-shadow 0.2s',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                }}
+                onClick={() => handleEventClick(event)}
+              >
+                <Typography>{event.title}</Typography>
+              </div>
+            );
+          })}
 
         </div>
       </div>
       {showEventInfoModal && <EventInfoPopup />}
-
     </Paper>
   );
 }

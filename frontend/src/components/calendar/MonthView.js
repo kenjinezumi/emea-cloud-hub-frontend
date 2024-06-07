@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import { useLocation } from 'react-router-dom';
-import { getEventData } from '../../api/getEventData'; // Assuming this is your API call
-import EventPopup from '../popup/EventInfoModal'; // Import the EventPopup component
+import { getEventData } from '../../api/getEventData'; 
+import EventPopup from '../popup/EventInfoModal'; 
 import Day from '../Day/DayMonth';
 
 export default function MonthView({ month, isYearView = false }) {
@@ -26,21 +26,20 @@ export default function MonthView({ month, isYearView = false }) {
 
   useEffect(() => {
     const applyFilters = async (events, filters) => {
-      // Ensure 'events' is an array before proceeding
       if (!Array.isArray(events)) {
         console.error("applyFilters was called with 'events' that is not an array:", events);
         return [];
       }
 
       const filterPromises = events.map(event => {
-        // Immediately invoked asynchronous function to handle possible async conditions inside the filter logic
         return (async () => {
           const regionMatch = filters.regions.some(region => region.checked && event.region && event.region.includes(region.label));
           const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
           const okrMatch = filters.okr.some(okr => okr.checked && event.okr && event.okr.includes(okr.label));
           const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority && event.audienceSeniority.includes(seniority.label));
+          const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
 
-          return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
+          return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
         })();
       });
 
@@ -65,7 +64,7 @@ export default function MonthView({ month, isYearView = false }) {
         <React.Fragment key={i}>
           {row.map((day, idx) => (
             <Day
-              key={`day-${i}-${idx}`} // Add a unique key prop
+              key={`day-${i}-${idx}`} 
               day={day}
               events={filteredEvents}
               setDaySelected={setDaySelected}

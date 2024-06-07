@@ -25,7 +25,6 @@ app.use(function(req, res, next) {
       res.header('Access-Control-Max-Age', 60 * 60 * 24 * 365);
   }
 
-  // intercept OPTIONS method
   if (oneof && req.method == 'OPTIONS') {
       res.send(200);
   }
@@ -43,10 +42,8 @@ app.use((req, res, next) => {
     });
     req.on('end', () => {
       try {
-        // Attempt to parse the text as JSON
         req.body = JSON.parse(data);
       } catch (error) {
-        // If parsing fails, log an error or handle it as needed
         console.error('Error parsing JSON from text/plain request body:', error);
       }
       next();

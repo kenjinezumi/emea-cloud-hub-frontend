@@ -1,4 +1,3 @@
-// InitialState.js
 const initialFormData = {
   eventId: '',
   title: '',
@@ -33,6 +32,7 @@ const initialFormData = {
   otherDocumentsLink: '',
   isHighPriority: false,
   marketingActivityType: '',
+  isDraft: true,
 };
 
 export { initialFormData };

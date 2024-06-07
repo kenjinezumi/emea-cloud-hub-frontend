@@ -2,6 +2,7 @@ import React, { useState, createContext } from 'react';
 import { initialFormData } from './InitialState';
 
 const GlobalContext = createContext({
+  isDraft: true,
   monthIndex: 0,
   setMonthIndex: (index) => {},
   smallCalendarMonth: 0,
@@ -24,17 +25,23 @@ const GlobalContext = createContext({
   toggleSidebar: () => {},
   currentView: () => {},
   setCurrentView: () => {},
-  filters: [], // Add filters to the initial context
-  updateFilters: () => {}, // Function to update filters
+  filters: {
+    regions: [],
+    eventType: [],
+    okr: [],
+    audienceSeniority: [],
+    isDraft: [] // Add isDraft filter to initial context
+  },
+  updateFilters: () => {},
   showEventInfoModal: false,
   setShowInfoEventModal: () => {},
   setSearchText: () => {},
   searchText: null,
-  resetFormData: () => {}, // Ensure this is included
+  resetFormData: () => {},
 });
 
 export const GlobalProvider = ({ children }) => {
-  const [currentView, setCurrentView] = useState('month'); // Default to 'month'
+  const [currentView, setCurrentView] = useState('month');
   const [monthIndex, setMonthIndex] = useState(0);
   const [smallCalendarMonth, setSmallCalendarMonth] = useState(0);
   const [daySelected, setDaySelected] = useState(null);
@@ -43,6 +50,7 @@ export const GlobalProvider = ({ children }) => {
   const [showEventInfoModal, setShowInfoEventModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [eventDetails, setEventDetails] = useState(null);
+  const [isDraft, setIsDraft] = useState(true);
 
   const [savedEvents, setSavedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -55,13 +63,14 @@ export const GlobalProvider = ({ children }) => {
     eventType: [],
     okr: [],
     audienceSeniority: [],
+    isDraft: [] // Add isDraft to the filters
   });
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  const [formData, setFormData] = useState(initialFormData); // Initialize with initialFormData
+  const [formData, setFormData] = useState(initialFormData);
   const updateFormData = (newData) => {
     setFormData({ ...formData, ...newData });
   };
@@ -107,7 +116,7 @@ export const GlobalProvider = ({ children }) => {
         setSearchText,
         eventDetails,
         setEventDetails,
-        resetFormData, // Ensure this is included
+        resetFormData,
       }}
     >
       {children}

@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import GlobalContext from './GlobalContext';
 import dayjs from 'dayjs';
-import { initialFormData } from './InitialState'; // Make sure to import initialFormData
+import { initialFormData } from './InitialState';
 
 function savedEventsReducer(state, {type, payload}) {
   switch (type) {
@@ -43,18 +43,24 @@ export default function ContextWrapper(props) {
   const [selectedEvents, setSelectedEvents] = useState([]);
 
   const [labels, setLabels] = useState([]);
-  const [filters, setFilters] = useState([]); // State for filters
-  const [searchText, setSearchText] = useState(''); // Add searchText state
+  const [filters, setFilters] = useState({
+    regions: [],
+    eventType: [],
+    okr: [],
+    audienceSeniority: [],
+    isDraft: [] // Add isDraft to the filters state
+  });
+  const [searchText, setSearchText] = useState('');
 
   const [savedEvents, dispatchCalEvent] = useReducer(
-      savedEventsReducer,
-      [],
-      initEvents,
+    savedEventsReducer,
+    [],
+    initEvents,
   );
-  const [formData, setFormData] = useState(initialFormData); // Initialize with initialFormData
+  const [formData, setFormData] = useState(initialFormData);
 
   const updateFormData = (newData) => {
-    setFormData({...formData, ...newData});
+    setFormData({ ...formData, ...newData });
   };
 
   const resetFormData = () => {
@@ -72,9 +78,9 @@ export default function ContextWrapper(props) {
   const filteredEvents = useMemo(() => {
     return savedEvents.filter((evt) =>
       labels
-          .filter((lbl) => lbl.checked)
-          .map((lbl) => lbl.label)
-          .includes(evt.label),
+        .filter((lbl) => lbl.checked)
+        .map((lbl) => lbl.label)
+        .includes(evt.label),
     );
   }, [savedEvents, labels]);
 
@@ -85,15 +91,15 @@ export default function ContextWrapper(props) {
   useEffect(() => {
     setLabels((prevLabels) => {
       return [...new Set(savedEvents.map((evt) => evt.label))].map(
-          (label) => {
-            const currentLabel = prevLabels.find(
-                (lbl) => lbl.label === label,
-            );
-            return {
-              label,
-              checked: currentLabel ? currentLabel.checked : true,
-            };
-          },
+        (label) => {
+          const currentLabel = prevLabels.find(
+            (lbl) => lbl.label === label,
+          );
+          return {
+            label,
+            checked: currentLabel ? currentLabel.checked : true,
+          };
+        },
       );
     });
   }, [savedEvents]);
@@ -124,11 +130,11 @@ export default function ContextWrapper(props) {
 
   function updateLabel(label) {
     setLabels(
-        labels.map((lbl) => (lbl.label === label.label ? label : lbl)),
+      labels.map((lbl) => (lbl.label === label.label ? label : lbl)),
     );
   }
 
-  const [currentView, setCurrentView] = useState('month'); // Default to month view
+  const [currentView, setCurrentView] = useState('month');
 
   return (
     <GlobalContext.Provider
