@@ -38,6 +38,7 @@ const GlobalContext = createContext({
   setSearchText: () => {},
   searchText: null,
   resetFormData: () => {},
+  isAuthenticated: false,
 });
 
 export const GlobalProvider = ({ children }) => {
@@ -51,6 +52,8 @@ export const GlobalProvider = ({ children }) => {
   const [searchText, setSearchText] = useState('');
   const [eventDetails, setEventDetails] = useState(null);
   const [isDraft, setIsDraft] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
 
   const [savedEvents, setSavedEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -117,6 +120,9 @@ export const GlobalProvider = ({ children }) => {
         eventDetails,
         setEventDetails,
         resetFormData,
+        isAuthenticated, 
+        setIsAuthenticated,
+
       }}
     >
       {children}
