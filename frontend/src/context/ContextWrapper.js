@@ -41,6 +41,8 @@ export default function ContextWrapper(props) {
   const [showEventInfoModal, setShowInfoEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedEvents, setSelectedEvents] = useState([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
 
   const [labels, setLabels] = useState([]);
   const [filters, setFilters] = useState({
@@ -173,7 +175,10 @@ export default function ContextWrapper(props) {
         searchText,
         setSearchText,
         eventDetails, 
-        setEventDetails
+        setEventDetails,
+        isAuthenticated, 
+        setIsAuthenticated
+
       }}
     >
       {props.children}
