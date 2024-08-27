@@ -28,11 +28,11 @@ export const regionOptions = [
 export const regionsData = [
   {
     region: 'GLOBAL',
-    subregions: ['Alps', 'Benelux', 'CEE', 'France', 'Iberia', 'Israel', 'Italy', 'MEA', 'Nordics', 'UK/IE'],
+    subregions: ['Alps', 'Benelux', 'CEE', 'France', 'Germany' , 'Iberia', 'Israel', 'Italy', 'MEA', 'Nordics', 'UK/IE'],
   },
   {
     region: 'EMEA',
-    subregions: ['Alps', 'Benelux', 'CEE', 'France', 'Iberia', 'Israel', 'Italy', 'MEA', 'Nordics', 'UK/IE'],
+    subregions: ['Alps', 'Benelux', 'CEE', 'France', 'Germany' , 'Iberia', 'Israel', 'Italy', 'MEA', 'Nordics', 'UK/IE'],
   },
   // Add more regions with their respective subregions here
 ];
@@ -55,6 +55,10 @@ export const subregionsData = [
     countries: ['FR'],
   },
   {
+    subregion: 'Germany',
+    countries: ['DE'],
+  },
+  {
     subregion: 'Iberia',
     countries: ['ES', 'PT'],
   },
@@ -72,7 +76,7 @@ export const subregionsData = [
   },
   {
     subregion: 'Nordics',
-    countries: ['DE', 'NO', 'SE'],
+    countries: ['NO', 'SE'],
   },
   {
     subregion: 'UK/IE',
@@ -101,7 +105,7 @@ export const countriesData = [
   {
     country: 'DE',
     region: ['EMEA', 'GLOBAL'],
-    subregion: 'Nordics',
+    subregion: 'Germany',
   },
   {
     country: 'ES',
@@ -161,6 +165,7 @@ export const subRegionOptions = [
   'Benelux',
   'CEE',
   'France',
+  'Germany',
   'Iberia',
   'Israel',
   'Italy',
