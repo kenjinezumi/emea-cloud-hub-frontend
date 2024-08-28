@@ -3,15 +3,16 @@ import dayjs from "dayjs";
 import { Link } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
 import EventInfoPopup from "../popup/EventInfoModal";
-import EventListPopup from "../popup/EventListModal"; // Import the EventInfoPopup component
-
+import EventListPopup from "../popup/EventListModal";
 import { useLocation } from "react-router-dom";
 
 export default function Day({ day, events, isYearView }) {
   const maxEventsToShow = 3;
+  // Filter events that either start on this day or span this day
   const dayEvents = events.filter((evt) =>
-    dayjs(evt.startDate).isSame(day, "day")
+    dayjs(evt.startDate).isBefore(day.endOf('day')) && dayjs(evt.endDate).isAfter(day.startOf('day'))
   );
+
   const hasEvents = dayEvents.length > 0;
   const location = useLocation();
   const PopupState = {
@@ -37,7 +38,7 @@ export default function Day({ day, events, isYearView }) {
     setSelectedEvents,
   } = useContext(GlobalContext);
 
-  const [showAddEventModal, setShowAddEventModal] = useState(false); // Local state for Add Event modal
+  const [showAddEventModal, setShowAddEventModal] = useState(false);
 
   useEffect(() => {
     setShowEventModal(false);
@@ -46,15 +47,14 @@ export default function Day({ day, events, isYearView }) {
   }, [location]);
 
   const handleDayClick = (e) => {
-    setDaySelected(day); // Always set the selected day
+    setDaySelected(day);
 
     if (isYearView) {
-      e.preventDefault(); // Prevent the default action
-      e.stopPropagation(); // Stop the event from propagating
+      e.preventDefault();
+      e.stopPropagation();
 
       setShowInfoEventModal(false);
-
-      setSelectedEvents(dayEvents); // Assuming this sets the events for the list popup
+      setSelectedEvents(dayEvents);
       setActivePopup(PopupState.EVENT_LIST);
       setShowEventListModal(true);
       setShowEventModal(false);
@@ -65,16 +65,16 @@ export default function Day({ day, events, isYearView }) {
   };
 
   const handleEventsClick = (e) => {
-    setDaySelected(day); // Always set the selected day
+    setDaySelected(day);
 
     if (isYearView) {
-      e.preventDefault(); // Prevent the default action
-      e.stopPropagation(); // Stop the event from propagating
+      e.preventDefault();
+      e.stopPropagation();
 
       setShowInfoEventModal(false);
       setSelectedEvents(dayEvents);
       setShowEventListModal(true);
-    }else {
+    } else {
       setSelectedEvent(null);
       setShowEventModal(true);
     }
@@ -109,7 +109,6 @@ export default function Day({ day, events, isYearView }) {
     width: "25px",
   };
 
-
   return (
     <div
       className="flex flex-col"
@@ -131,7 +130,7 @@ export default function Day({ day, events, isYearView }) {
         </p>
       </header>
       {!isYearView && (
-        <div className="flex-1 flex flex-col" >
+        <div className="flex-1 flex flex-col">
           {dayEvents.length > 0 ? (
             <div>
               {dayEvents.slice(0, maxEventsToShow).map((evt, idx) => (
@@ -139,14 +138,14 @@ export default function Day({ day, events, isYearView }) {
                   key={idx}
                   className="p-1 mb-1 text-gray-600 text-sm rounded truncate cursor-pointer"
                   style={{
-                    backgroundColor: "#fff", // White background
+                    backgroundColor: "#fff",
                     pointerEvents: "auto",
-                    fontSize: "0.875rem", // 14px
-                    borderLeft: "4px solid #1a73e8", // Blue left border for event type indication
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
-                    margin: "4px 0", // Slightly more space between events
+                    fontSize: "0.875rem",
+                    borderLeft: "4px solid #1a73e8",
+                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                    margin: "4px 0",
                     marginLeft: "4px",
-                    transition: "background-color 0.2s, box-shadow 0.2s", // Smooth transitions for hover effects
+                    transition: "background-color 0.2s, box-shadow 0.2s",
                   }}
                   onClick={() => handleEventClick(evt)}
                 >
@@ -182,7 +181,6 @@ export default function Day({ day, events, isYearView }) {
       )}
 
       {/* Conditionally render the EventInfoPopup */}
-
       <div>
         {activePopup === PopupState.EVENT_INFO && (
           <EventInfoPopup
