@@ -320,7 +320,7 @@ export default function LinksForm() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} color="primary">
-            Cancel
+            Exit
           </Button>
           <Button onClick={handleSaveAndPublish} color="primary" autoFocus>
             Save and Publish
