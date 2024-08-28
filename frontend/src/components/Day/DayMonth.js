@@ -8,9 +8,12 @@ import { useLocation } from "react-router-dom";
 
 export default function Day({ day, events, isYearView }) {
   const maxEventsToShow = 3;
+
   // Filter events that either start on this day or span this day
-  const dayEvents = events.filter((evt) =>
-    dayjs(evt.startDate).isBefore(day.endOf('day')) && dayjs(evt.endDate).isAfter(day.startOf('day'))
+  const dayEvents = events.filter(
+    (evt) =>
+      dayjs(evt.startDate).isBefore(day.endOf("day")) &&
+      dayjs(evt.endDate).isAfter(day.startOf("day"))
   );
 
   const hasEvents = dayEvents.length > 0;
@@ -136,18 +139,32 @@ export default function Day({ day, events, isYearView }) {
               {dayEvents.slice(0, maxEventsToShow).map((evt, idx) => (
                 <div
                   key={idx}
-                  className="p-1 mb-1 text-gray-600 text-sm rounded truncate cursor-pointer"
+                  className="p-1 mb-1 text-gray-800 text-sm rounded-md truncate cursor-pointer"
                   style={{
-                    backgroundColor: "#fff",
+                    backgroundColor: "#e3f2fd", // Light blue background for event, similar to Google Calendar
+                    color: "#1a73e8", // Google blue text color
                     pointerEvents: "auto",
-                    fontSize: "0.875rem",
-                    borderLeft: "4px solid #1a73e8",
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                    margin: "4px 0",
+                    fontSize: "0.875rem", // 14px
+                    borderLeft: "4px solid #1a73e8", // Blue left border for event type indication
+                    margin: "4px 0", // Spacing between events
                     marginLeft: "4px",
-                    transition: "background-color 0.2s, box-shadow 0.2s",
+                    padding: "2px 8px", // Padding for a better look
+                    borderRadius: "4px", // Rounded corners like Gmail events
+                    transition: "background-color 0.2s, box-shadow 0.2s", // Smooth transitions for hover effects
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
                   }}
                   onClick={() => handleEventClick(evt)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#c5e1f9"; // Darker blue on hover
+                    e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#e3f2fd"; // Original light blue background
+                    e.currentTarget.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.1)";
+                  }}
                 >
                   {evt.title}
                 </div>
@@ -188,7 +205,7 @@ export default function Day({ day, events, isYearView }) {
             onClose={() => setActivePopup(PopupState.NONE)}
           />
         )}
-        
+
         {activePopup === PopupState.EVENT_LIST && (
           <EventListPopup
             events={selectedEvents}

@@ -2,74 +2,34 @@ import React, { useContext, useEffect, useState } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import { Typography, Paper } from '@mui/material';
 import dayjs from 'dayjs';
+import minMax from 'dayjs/plugin/minMax';
 import { useLocation } from 'react-router-dom';
 import { getEventData } from '../../api/getEventData';
-import minMax from 'dayjs/plugin/minMax';
+import EventInfoPopup from '../popup/EventInfoModal';
 
-import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 dayjs.extend(minMax);
 
 export default function DayView() {
-  const { daySelected } = useContext(GlobalContext);
-  const [events, setEvents] = useState([]);
-  const [eventGroups, setEventGroups] = useState([]);
-  const location = useLocation();
-  const { setShowEventModal, showEventModal } = useContext(GlobalContext);
   const {
-    setDaySelected,
-    showEventInfoModal,
+    daySelected,
+    setShowEventModal,
     setSelectedEvent,
     setShowInfoEventModal,
+    filters,
+    showEventInfoModal
   } = useContext(GlobalContext);
 
-  const { filters } = useContext(GlobalContext);
-  const [Eventsfiltered, setFilteredEvents] = useState([]);
-  
-  useEffect(() => {
-    const applyFilters = async (events, filters) => {
-      if (!Array.isArray(events)) {
-        console.error("applyFilters was called with 'events' that is not an array:", events);
-        return [];
-      }
-  
-      const filterPromises = events.map(event => {
-        return (async () => {
-          const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
-          const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-          const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.includes(okr.label));
-          const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
-          const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
-  
-          return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
-        })();
-      });
-  
-      const results = await Promise.all(filterPromises);
-      return events.filter((_, index) => results[index]);
-    };
-  
-    (async () => {
-      const filteredEvents = await applyFilters(events, filters);
-      setFilteredEvents(filteredEvents);
-    })();
-  }, [events, filters]);
+  const [events, setEvents] = useState([]);
+  const [eventGroups, setEventGroups] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const location = useLocation();
 
-  const handleEventClick = (eventData) => {
-    setSelectedEvent(eventData);
-    setShowInfoEventModal(true);
-  };
-
-  const handleAddEvent = () => {
-    setShowEventModal(true);
-  };
+  const hourHeight = 90; // Height of one hour slot in pixels
+  const startHour = 0;
+  const endHour = 24;
 
   useEffect(() => {
-    setShowEventModal(false);
-    setShowInfoEventModal(false);
-  }, [location]);
-
-  useEffect(() => {
-    const fetchData = async () => {
+    async function fetchEvents() {
       try {
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
@@ -77,17 +37,43 @@ export default function DayView() {
       } catch (error) {
         console.error('Error fetching event data:', error);
       }
-    };
-    fetchData();
+    }
+    fetchEvents();
   }, [location, daySelected]);
+
+  useEffect(() => {
+    const applyFilters = async (events, filters) => {
+      if (!Array.isArray(events)) {
+        console.error("applyFilters was called with 'events' that is not an array:", events);
+        return [];
+      }
+
+      const results = await Promise.all(events.map(async (event) => {
+        const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
+        const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
+        const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.includes(okr.label));
+        const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
+        const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
+        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
+      }));
+
+      return events.filter((_, index) => results[index]);
+    };
+
+    (async () => {
+      const filteredEvents = await applyFilters(events, filters);
+      setFilteredEvents(filteredEvents);
+    })();
+  }, [events, filters]);
+
+  useEffect(() => {
+    setShowEventModal(false);
+    setShowInfoEventModal(false);
+  }, [location]);
 
   useEffect(() => {
     setEventGroups(calculateOverlapGroups(events));
   }, [events]);
-
-  const hourHeight = 90; // Height of one hour slot in pixels
-  const startHour = 0; // Define startHour here
-  const endHour = 24; // Define endHour here
 
   const calculateOverlapGroups = (events) => {
     const eventGroups = [];
@@ -126,9 +112,7 @@ export default function DayView() {
     const startOfDay = daySelected.startOf('day');
     const endOfDay = daySelected.endOf('day');
 
-    // Ensure the event starts at or after the start of the day or at the event start time, whichever is later
     const displayStart = dayjs.max(startOfDay, eventStart);
-    // Ensure the event ends at or before the end of the day or at the event end time, whichever is earlier
     const displayEnd = dayjs.min(endOfDay, eventEnd);
 
     const minutesFromMidnight = displayStart.diff(startOfDay, 'minutes');
@@ -145,7 +129,18 @@ export default function DayView() {
     return { top, height, left, width };
   };
 
-  const dayEvents = Eventsfiltered.filter(evt =>
+  // Function to handle adding a new event
+  const handleAddEvent = () => {
+    setShowEventModal(true);
+  };
+
+  // Function to handle clicking an existing event
+  const handleEventClick = (event) => {
+    setSelectedEvent(event);
+    setShowInfoEventModal(true);
+  };
+
+  const dayEvents = filteredEvents.filter(evt =>
     dayjs(evt.startDate).isSame(daySelected, 'day') ||
     dayjs(evt.endDate).isSame(daySelected, 'day') ||
     (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
@@ -159,31 +154,29 @@ export default function DayView() {
         overflowY: 'auto',
         position: 'relative',
         padding: '50px 0',
+        backgroundColor: 'background.default'
       }}
     >
       <Typography
         variant="h6"
         align="center"
         gutterBottom
-        marginBottom={'20px'}
-        marginTop={'0px'}
+        sx={{ mb: '20px', mt: '0px' }}
       >
         {daySelected.format('dddd, MMMM D, YYYY')}
       </Typography>
       <div
         className="flex-1 cursor-pointer"
-        onClick={() => {
-          setShowEventModal(true);
-        }}
+        onClick={handleAddEvent} // Use handleAddEvent function
       ></div>
-      <div style={{display: 'flex', alignItems: 'flex-start'}}>
+      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+        {/* Hours Column */}
         <div
           style={{
             flex: '0 0 auto',
             marginRight: '10px',
             fontWeight: '400',
             textAlign: 'right',
-            marginLeft: '10px',
             paddingRight: '10px',
             borderRight: '1px solid #ddd',
             height: '100%',
@@ -193,10 +186,7 @@ export default function DayView() {
             color: 'rgba(0, 0, 0, 0.6)',
           }}
         >
-          {Array.from(
-              {length: endHour - startHour},
-              (_, i) => i + startHour,
-          ).map((hour) => (
+          {Array.from({ length: endHour - startHour }, (_, i) => i + startHour).map((hour) => (
             <div
               key={hour}
               style={{
@@ -207,32 +197,27 @@ export default function DayView() {
                 fontSize: '12px',
               }}
             >
-
               {dayjs().hour(hour).minute(0).format('HH:mm')}
             </div>
           ))}
         </div>
+
         {/* Event Column */}
-        <div style={{flex: 3, position: 'relative'}}>
+        <div style={{ flex: 3, position: 'relative' }}>
           {/* Hour and half-hour tickers */}
-          {Array.from(
-              {length: (endHour - startHour) * 4},
-              (_, i) => i + startHour * 4,
-          ).map((quarter) => (
+          {Array.from({ length: (endHour - startHour) * 4 }, (_, i) => i + startHour * 4).map((quarter) => (
             <div
               key={quarter}
               style={{
                 height: `${hourHeight / 4}px`,
-                borderTop: `1px solid ${
-                  quarter % 4 === 0 ?
-                    'rgba(0, 0, 0, 0.2)' :
-                    'rgba(0, 0, 0, 0.1)'
-                }`,
+                borderTop: `1px solid ${quarter % 4 === 0 ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
                 position: 'relative',
-              }} onClick={() => handleAddEvent()}
+                cursor: 'pointer',
+              }}
+              onClick={handleAddEvent} // Use handleAddEvent function
             >
-              {/* Show a small tick for quarters and a bigger tick for half-hours */}
-              {quarter % 4 === 0 ? (
+              {/* Show ticks for each quarter-hour */}
+              {quarter % 4 === 0 && (
                 <div
                   style={{
                     position: 'absolute',
@@ -242,29 +227,13 @@ export default function DayView() {
                     width: '1px',
                     height: '5px',
                     backgroundColor: 'rgba(0, 0, 0, 0.2)',
-
-
-                  }}onClick={() => handleAddEvent()}
-                />
-              ) : (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: '0',
-                    top: '0',
-                    transform: 'translateY(-50%)',
-                    width: '1px',
-                    height: '3px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                    cursor: 'pointer',
-
-                  }}onClick={() => handleAddEvent()}
+                  }}
                 />
               )}
             </div>
           ))}
 
-          {/* Event rendering */}
+          {/* Render Events */}
           {dayEvents.map((event) => {
             const { top, height, left, width } = calculateEventBlockStyles(event);
             return (
@@ -276,34 +245,38 @@ export default function DayView() {
                   left: `${left}%`,
                   width: `${width}%`,
                   height: `${height}px`,
-                  backgroundColor: '#fff',
-                  color: '#5f6368',
+                  backgroundColor: '#e3f2fd', // Light blue background for events
+                  color: '#1a73e8', // Blue text color
                   padding: '2px 4px',
                   borderRadius: '4px',
                   display: 'flex',
-                  alignItems: 'top',
-                  justifyContent: 'flex-start',
+                  alignItems: 'center',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   cursor: 'pointer',
                   zIndex: 2,
                   boxSizing: 'border-box',
-                  borderLeft: '4px solid #1a73e8',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                  margin: '4px 0',
-                  marginLeft: '4px',
+                  borderLeft: '4px solid #1a73e8', // Blue border on the left for events
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Subtle shadow
                   transition: 'background-color 0.2s, box-shadow 0.2s',
                   fontSize: '0.875rem',
                   fontWeight: '500',
                 }}
-                onClick={() => handleEventClick(event)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#c5e1f9'; // Hover effect with a darker blue
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)'; // Elevated shadow on hover
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#e3f2fd'; // Revert background on leave
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)'; // Revert shadow on leave
+                }}
+                onClick={() => handleEventClick(event)} // Use handleEventClick function
               >
                 <Typography>{event.title}</Typography>
               </div>
             );
           })}
-
         </div>
       </div>
       {showEventInfoModal && <EventInfoPopup />}
