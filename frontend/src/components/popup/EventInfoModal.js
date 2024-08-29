@@ -11,6 +11,8 @@ import {
   Stack,
   Button,
   Link as MuiLink,
+  AppBar,
+  Toolbar,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -82,34 +84,36 @@ export default function EventInfoPopup() {
   const sections = {
     'Overview': (
       <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
-        <Typography variant="body1" display="flex" alignItems="center" sx={{ pl: 2, pr: 2 }}>
-          <Event style={{ marginRight: "5px", color: '#757575' }} />
-          {dayjs(selectedEvent.startDate).format("dddd, MMMM D, YYYY h:mm A")}
-        </Typography>
-        {/* Full width Divider */}
-        <Divider sx={{ width: '100%' }} />
-
-        {/* Region, Subregion, Country - in the same line */}
-        <Typography variant="body2" display="flex" alignItems="center" sx={{ pl: 2, pr: 2 }}>
-          <TravelExploreIcon style={{ marginRight: "5px", color: '#757575' }} />
-          {`${selectedEvent.region || 'N/A'} - ${selectedEvent.subRegion || 'N/A'} - ${selectedEvent.country || 'N/A'}`}
-        </Typography>
-
         {/* Description */}
-        <Typography variant="body2" display="flex" alignItems="center" sx={{ pl: 2, pr: 2 }}>
-          <InfoIcon style={{ marginRight: "5px", color: '#757575' }} />
+        <Typography 
+          variant="body2" 
+          display="flex" 
+          alignItems="center" 
+          sx={{ pl: 2, pr: 2, color: '#5f6368', mt: 1, wordBreak: 'break-word', whiteSpace: 'normal' }}
+        >
+          <InfoIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
           {selectedEvent.description}
         </Typography>
         
         {/* Number of Registered Attendees */}
-        <Typography variant="body2" display="flex" alignItems="center" sx={{ pl: 2, pr: 2 }}>
-          <PersonIcon style={{ marginRight: "5px", color: '#757575' }} />
+        <Typography 
+          variant="body2" 
+          display="flex" 
+          alignItems="center" 
+          sx={{ pl: 2, pr: 2, color: '#5f6368', mt: 1, wordBreak: 'break-word', whiteSpace: 'normal' }}
+        >
+          <PersonIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
           Number of Registered: {selectedEvent.registeredCount || 0}
         </Typography>
 
         {/* Landing Page Link */}
-        <Typography variant="body2" display="flex" alignItems="center" sx={{ pl: 2, pr: 2 }}>
-          <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
+        <Typography 
+          variant="body2" 
+          display="flex" 
+          alignItems="center" 
+          sx={{ pl: 2, pr: 2, color: '#5f6368', mt: 1, wordBreak: 'break-word', whiteSpace: 'normal' }}
+        >
+          <LinkIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
           {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
             ? selectedEvent.landingPageLinks.map((link, index) => (
                 <MuiLink
@@ -117,18 +121,25 @@ export default function EventInfoPopup() {
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#4285F4' }}
+                  style={{ color: '#1a73e8', marginLeft: '5px', wordBreak: 'break-word', whiteSpace: 'normal' }}
                 >
                   {link}
                 </MuiLink>
               ))
             : 'No landing page'}
         </Typography>
-       
 
         {/* Organized By */}
-        <Typography variant="body2" display="flex" alignItems="center" sx={{ pl: 2, pr: 2 }}>
-          <LabelIcon style={{ marginRight: "5px", color: '#757575' }} />
+        <Typography 
+          variant="body2" 
+          display="flex" 
+          alignItems="center" 
+          sx={{ pl: 2, pr: 2, color: '#5f6368', mt: 1, wordBreak: 'break-word', whiteSpace: 'normal' }}
+        >
+          <LabelIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
+          Organized by:
+        </Typography>
+        <Stack direction="row" spacing={1} sx={{ pl: 4, pr: 2, flexWrap: 'wrap' }}>
           {selectedEvent.organisedBy.map((organiser, index) => {
             const cleanedName = cleanOrganiserName(organiser);
             return (
@@ -145,15 +156,17 @@ export default function EventInfoPopup() {
                   backgroundColor: getRandomColor(),
                   color: 'white',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
+                  cursor: 'pointer',
+                  wordBreak: 'break-word', // Ensure text wrapping
+                  whiteSpace: 'normal' // Ensure text wrapping
                 }}
               />
             );
           })}
-        </Typography>
-       
+        </Stack>
 
         {/* Event Type and Priority Chips */}
-        <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2 }}>
+        <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>
           <Chip label={selectedEvent.eventType} color="primary" size="small" />
           {selectedEvent.isHighPriority && (
             <Chip label="High Priority" color="error" size="small" />
@@ -171,26 +184,26 @@ export default function EventInfoPopup() {
     ),
     'Details': (
       <Stack spacing={2} sx={{ p: 3 }}>
-        {/* Keep the "Details" section unchanged */}
-        <Typography variant="body2" display="flex" alignItems="center">
-          <TravelExploreIcon style={{ marginRight: "5px", color: '#757575' }} />
+        {/* Details Section */}
+        <Typography variant="body2" display="flex" alignItems="center" sx={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+          <TravelExploreIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
           Region:
         </Typography>
-        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+        <Typography variant="body2" sx={{ marginLeft: '30px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
           {Array.isArray(selectedEvent.region) ? selectedEvent.region.join(', ') : selectedEvent.region || 'N/A'}
         </Typography>
-        <Typography variant="body2" display="flex" alignItems="center">
-          <MyLocationIcon style={{ marginRight: "5px", color: '#757575' }} />
+        <Typography variant="body2" display="flex" alignItems="center" sx={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+          <MyLocationIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
           Sub-region:
         </Typography>
-        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+        <Typography variant="body2" sx={{ marginLeft: '30px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
           {selectedEvent.subRegion ? selectedEvent.subRegion.join(', ') : 'N/A'}
         </Typography>
-        <Typography variant="body2" display="flex" alignItems="center">
-          <LocationOnIcon style={{ marginRight: "5px", color: '#757575' }} />
+        <Typography variant="body2" display="flex" alignItems="center" sx={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+          <LocationOnIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
           Country:
         </Typography>
-        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+        <Typography variant="body2" sx={{ marginLeft: '30px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
           {selectedEvent.country ? selectedEvent.country.join(', ') : 'N/A'}
         </Typography>
         {/* ...rest of the Details section remains unchanged... */}
@@ -198,11 +211,11 @@ export default function EventInfoPopup() {
     ),
     'Links': (
       <Stack spacing={2} sx={{ p: 3 }}>
-        <Typography variant="body2" display="flex" alignItems="center">
-          <LinkIcon style={{ marginRight: "5px", color: '#757575' }} />
+        <Typography variant="body2" display="flex" alignItems="center" sx={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+          <LinkIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
           Landing Page Link:
         </Typography>
-        <Typography variant="body2" sx={{ marginLeft: '30px' }}>
+        <Typography variant="body2" sx={{ marginLeft: '30px', wordBreak: 'break-word', whiteSpace: 'normal' }}>
           {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
             ? selectedEvent.landingPageLinks.map((link, index) => (
                 <MuiLink
@@ -210,7 +223,7 @@ export default function EventInfoPopup() {
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: '#4285F4' }}
+                  style={{ color: '#4285F4', wordBreak: 'break-word', whiteSpace: 'normal' }}
                 >
                   {link}
                 </MuiLink>
@@ -223,7 +236,7 @@ export default function EventInfoPopup() {
   };
 
   return (
-    <Draggable handle=".handle">
+    <Draggable handle=".drag-handle">
       <Paper
         sx={{
           position: "fixed",
@@ -234,17 +247,29 @@ export default function EventInfoPopup() {
           maxWidth: 600,
           maxHeight: '70vh', // Set max height to 70vh for scrollable content
           overflowY: 'auto', // Enable vertical scrolling
+          overflowX: 'hidden', // Disable horizontal scrolling
           zIndex: 6000,
           boxShadow: "0px 4px 10px rgba(0,0,0,0.5)",
-          borderRadius: "7px",
-          bgcolor: 'background.paper'
+          borderRadius: "8px", // Slightly larger radius for rounded corners
+          bgcolor: 'background.paper',
+          paddingBottom: '16px', // Extra padding at the bottom
         }}
       >
-        <Stack direction="row" spacing={1} sx={{ p: 2, alignItems: "center" }} className="handle">
+        {/* Thin Header that is draggable */}
+        <AppBar position="static" sx={{ bgcolor: '#f5f5f5', color: '#5f6368', boxShadow: 'none', borderBottom: '1px solid #e0e0e0' }} className="drag-handle">
+          <Toolbar variant="dense" sx={{ minHeight: '36px' }}>
+            <IconButton size="small" color="inherit" onClick={handleClose}>
+              <CloseIcon />
+            </IconButton>
+          </Toolbar>
+        </AppBar>
+
+        {/* Main Content */}
+        <Stack direction="row" spacing={1} sx={{ p: 2, alignItems: "center", borderBottom: '1px solid #e0e0e0' }}>
           <Typography variant="h6" component="div">
             {selectedEvent.emoji}
           </Typography>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '1.2rem', wordBreak: 'break-word', whiteSpace: 'normal' }}>
             {selectedEvent.title}
           </Typography>
           {selectedEvent.isDraft && (
@@ -257,11 +282,21 @@ export default function EventInfoPopup() {
           <IconButton onClick={handleEditEvent} size="small">
             <EditIcon />
           </IconButton>
-          <IconButton onClick={handleClose} size="small">
-            <CloseIcon />
-          </IconButton>
         </Stack>
-        {/* Replace Breadcrumbs with Buttons */}
+
+        {/* Fixed Date Display */}
+        <Typography 
+          variant="body1" 
+          display="flex" 
+          alignItems="center" 
+          sx={{ pl: 2, pr: 2, mt: 2, color: '#5f6368', wordBreak: 'break-word', whiteSpace: 'normal' }}
+        >
+          <Event style={{ marginRight: "5px", color: '#1a73e8' }} />
+          {dayjs(selectedEvent.startDate).format("dddd, MMMM D, YYYY h:mm A")}
+        </Typography>
+        <Divider sx={{ width: '100%', my: 1 }} />
+
+        {/* Buttons for Sections */}
         <Stack direction="row" spacing={1} sx={{ p: 2, justifyContent: 'flex-start' }}>
           {Object.keys(sections).map((section) => (
             <Button
@@ -282,9 +317,9 @@ export default function EventInfoPopup() {
             </Button>
           ))}
         </Stack>
-        <Divider />
+        <Divider sx={{ width: '100%' }} />
         {sections[currentSection]}
-        <Divider />
+        <Divider sx={{ width: '100%' }} />
       </Paper>
     </Draggable>
   );
