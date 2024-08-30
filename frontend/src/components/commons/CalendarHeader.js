@@ -5,10 +5,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import beta from '../../assets/svg/beta.svg';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
-import { Select, MenuItem, Button, Typography, Input } from '@mui/material';
+import { Select, MenuItem, Typography, Input } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import GlobalContext from '../../context/GlobalContext';
-import ThemePopup from '../popup/Themepopup';
 import versionInfo from '../../version.json';
 import { getEventData } from '../../api/getEventData';
 
@@ -27,8 +26,6 @@ export default function CalendarHeader() {
   } = useContext(GlobalContext);
   
   const [view, setView] = useState('month');
-  const [isThemePopupOpen, setIsThemePopupOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [showSearchInput, setShowSearchInput] = useState(false);
   const navigate = useNavigate();
 
@@ -64,28 +61,32 @@ export default function CalendarHeader() {
 
   function handlePrevMonth() {
     if (monthIndex === 0) {
-      setDaySelected(daySelected.subtract(1, 'year').month(11));
+      const newDate = daySelected.subtract(1, 'year').month(11); // December of the previous year
+      setDaySelected(newDate);
       setMonthIndex(11);
     } else {
-      setDaySelected(daySelected.subtract(1, 'month'));
+      const newDate = daySelected.subtract(1, 'month');
+      setDaySelected(newDate);
       setMonthIndex(monthIndex - 1);
     }
   }
 
   function handleNextMonth() {
     if (monthIndex === 11) {
-      setDaySelected(daySelected.add(1, 'year').month(0));
+      const newDate = daySelected.add(1, 'year').month(0); // January of the next year
+      setDaySelected(newDate);
       setMonthIndex(0);
     } else {
-      setDaySelected(daySelected.add(1, 'month'));
+      const newDate = daySelected.add(1, 'month');
+      setDaySelected(newDate);
       setMonthIndex(monthIndex + 1);
     }
   }
 
   function handleReset() {
     const today = dayjs();
-    setMonthIndex(today.month());
     setDaySelected(today);
+    setMonthIndex(today.month());
   }
 
   const handleViewChange = (event) => {
@@ -111,7 +112,7 @@ export default function CalendarHeader() {
           onClick={navigateToHome}
         />
         <h1
-          className="text-xl text-black  cursor-pointer overflow-hidden whitespace-nowrap"
+          className="text-xl text-black cursor-pointer overflow-hidden whitespace-nowrap"
           style={{ maxWidth: '200px', textOverflow: 'ellipsis' }}
           onClick={navigateToHome}
         >
@@ -130,7 +131,7 @@ export default function CalendarHeader() {
           <span className="material-icons-outlined text-gray-600">chevron_right</span>
         </IconButton>
         <Typography variant="h6" className="text-lg font-semibold">
-          {dayjs(new Date(dayjs().year(), monthIndex)).format('MMMM YYYY')}
+          {dayjs(new Date(daySelected.year(), monthIndex)).format('MMMM YYYY')}
         </Typography>
       </div>
 

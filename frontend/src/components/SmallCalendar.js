@@ -8,6 +8,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 export default function SmallCalendar() {
   const [currentMonthIdx, setCurrentMonthIdx] = useState(dayjs().month());
+  const [currentYear, setCurrentYear] = useState(dayjs().year()); // Add year state
   const [currentMonth, setCurrentMonth] = useState(getMonth());
 
   const {
@@ -18,19 +19,32 @@ export default function SmallCalendar() {
   } = useContext(GlobalContext);
 
   useEffect(() => {
-    setCurrentMonth(getMonth(currentMonthIdx));
-  }, [currentMonthIdx]);
+    setCurrentMonth(getMonth(currentMonthIdx, currentYear)); // Pass both month and year
+  }, [currentMonthIdx, currentYear]); // Watch both month index and year
 
   useEffect(() => {
     setCurrentMonthIdx(monthIndex);
-  }, [monthIndex]);
+    setCurrentYear(daySelected.year()); // Synchronize with global state's selected year
+  }, [monthIndex, daySelected]);
 
   function handlePrevMonth() {
-    setCurrentMonthIdx(currentMonthIdx - 1);
+    if (currentMonthIdx === 0) {
+      // If currently in January, move to December of the previous year
+      setCurrentMonthIdx(11);
+      setCurrentYear(currentYear - 1);
+    } else {
+      setCurrentMonthIdx(currentMonthIdx - 1);
+    }
   }
 
   function handleNextMonth() {
-    setCurrentMonthIdx(currentMonthIdx + 1);
+    if (currentMonthIdx === 11) {
+      // If currently in December, move to January of the next year
+      setCurrentMonthIdx(0);
+      setCurrentYear(currentYear + 1);
+    } else {
+      setCurrentMonthIdx(currentMonthIdx + 1);
+    }
   }
 
   function getDayClass(day) {
@@ -57,7 +71,7 @@ export default function SmallCalendar() {
     <div className="mt-9">
       <header className="flex justify-between items-center">
         <p className="text-black ml-2 text-sm">
-          {dayjs(new Date(dayjs().year(), currentMonthIdx)).format('MMMM YYYY')}
+          {dayjs(new Date(currentYear, currentMonthIdx)).format('MMMM YYYY')}
         </p>
         <div>
           <IconButton size="small" onClick={handlePrevMonth}>
