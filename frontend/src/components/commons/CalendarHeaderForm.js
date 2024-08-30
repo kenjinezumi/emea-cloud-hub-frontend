@@ -1,24 +1,22 @@
 import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
-
+import { useNavigate, useLocation } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LinkIcon from '@mui/icons-material/Link';
 import PeopleIcon from '@mui/icons-material/People';
 import InfoIcon from '@mui/icons-material/Info';
+import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { blue } from '@mui/material/colors';
-import GlobalContext from "../../context/GlobalContext"; // Import GlobalContext
+import GlobalContext from "../../context/GlobalContext";
 
 const NavigationSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { formData, updateFormData } = useContext(GlobalContext); // Get form data and update function from context
+  const { formData, updateFormData } = useContext(GlobalContext);
 
   const navigateTo = (path, currentFormData) => {
-    updateFormData({ ...formData, ...currentFormData }); // Save current form data to global context
+    updateFormData({ ...formData, ...currentFormData });
     console.log("Initial form data:", JSON.stringify(formData, null, 2));
-
     navigate(path);
   };
 
@@ -27,65 +25,54 @@ const NavigationSidebar = () => {
     if (userConfirmed) {
       window.location.href = '/';
     }
-    navigate('/');
   };
 
   const isCurrentPath = (path) => location.pathname === path;
 
   return (
     <div className="fixed right-0 top-16 h-[calc(100vh-64px)] w-60 bg-white shadow-md p-4">
-      <div className="text-lg mb-2">Sections</div>{' '}
+      <div className="text-lg mb-2">Sections</div>
       <button
-        onClick={() => navigateTo('/create-event', { /* add current form data here */ })}
+        onClick={() => navigateTo('/create-event')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/create-event') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <CalendarMonthIcon style={{ color: blue[500] }} />
-        </span>{' '}
-        <span>About</span>
+        <CalendarMonthIcon style={{ color: blue[500] }} />
+        <span className="ml-2">About</span>
       </button>
       <button
-        onClick={() => navigateTo('/location', { /* add current form data here */ })}
+        onClick={() => navigateTo('/location')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/location') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <LocationOnIcon style={{ color: blue[500] }} />
-        </span>
-        <span>Location</span>
+        <LocationOnIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Location</span>
       </button>
       <button
-        onClick={() => navigateTo('/extra', { /* add current form data here */ })}
+        onClick={() => navigateTo('/extra')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/extra') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <InfoIcon style={{ color: blue[500] }} />
-        </span>
-        <span>Extra details</span>
+        <InfoIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Extra details</span>
       </button>
       <button
-        onClick={() => navigateTo('/audience', { /* add current form data here */ })}
-        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/audience') ? 'text-black' : 'text-gray-400'}`}
+        onClick={() => navigateTo('/email-invitation')}
+        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/email-invitation') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <PeopleIcon style={{ color: blue[500] }} />
-        </span>
-        <span>Audience</span>
+        <EmailIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Email Invitation</span>
       </button>
       <button
-        onClick={() => navigateTo('/links', { /* add current form data here */ })}
+        onClick={() => navigateTo('/links')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/links') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <LinkIcon style={{ color: blue[500] }} />
-        </span>
-        <span>Links</span>
+        <LinkIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Links</span>
       </button>
       <hr className="my-4" />
       <button
         onClick={handleCancel}
         className="block w-full text-left p-2 hover:bg-gray-200 rounded text-red-500"
       >
-        Cancel
+        Exit
       </button>
     </div>
   );

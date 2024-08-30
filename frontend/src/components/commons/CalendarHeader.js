@@ -59,27 +59,57 @@ export default function CalendarHeader() {
     setCurrentView('list');
   };
 
-  function handlePrevMonth() {
-    if (monthIndex === 0) {
-      const newDate = daySelected.subtract(1, 'year').month(11); // December of the previous year
-      setDaySelected(newDate);
-      setMonthIndex(11);
-    } else {
-      const newDate = daySelected.subtract(1, 'month');
-      setDaySelected(newDate);
-      setMonthIndex(monthIndex - 1);
+  function handlePrev() {
+    switch (view) {
+      case 'day':
+        setDaySelected(daySelected.subtract(1, 'day'));
+        break;
+      case 'week':
+        setDaySelected(daySelected.subtract(1, 'week'));
+        break;
+      case 'month':
+        if (monthIndex === 0) {
+          const newDate = daySelected.subtract(1, 'year').month(11); // December of the previous year
+          setDaySelected(newDate);
+          setMonthIndex(11);
+        } else {
+          const newDate = daySelected.subtract(1, 'month');
+          setDaySelected(newDate);
+          setMonthIndex(monthIndex - 1);
+        }
+        break;
+      case 'year':
+        setDaySelected(daySelected.subtract(1, 'year'));
+        break;
+      default:
+        break;
     }
   }
 
-  function handleNextMonth() {
-    if (monthIndex === 11) {
-      const newDate = daySelected.add(1, 'year').month(0); // January of the next year
-      setDaySelected(newDate);
-      setMonthIndex(0);
-    } else {
-      const newDate = daySelected.add(1, 'month');
-      setDaySelected(newDate);
-      setMonthIndex(monthIndex + 1);
+  function handleNext() {
+    switch (view) {
+      case 'day':
+        setDaySelected(daySelected.add(1, 'day'));
+        break;
+      case 'week':
+        setDaySelected(daySelected.add(1, 'week'));
+        break;
+      case 'month':
+        if (monthIndex === 11) {
+          const newDate = daySelected.add(1, 'year').month(0); // January of the next year
+          setDaySelected(newDate);
+          setMonthIndex(0);
+        } else {
+          const newDate = daySelected.add(1, 'month');
+          setDaySelected(newDate);
+          setMonthIndex(monthIndex + 1);
+        }
+        break;
+      case 'year':
+        setDaySelected(daySelected.add(1, 'year'));
+        break;
+      default:
+        break;
     }
   }
 
@@ -124,10 +154,10 @@ export default function CalendarHeader() {
         <button onClick={handleReset} className="border rounded py-2 px-4 mr-2">
           Today
         </button>
-        <IconButton onClick={handlePrevMonth}>
+        <IconButton onClick={handlePrev}>
           <span className="material-icons-outlined text-gray-600">chevron_left</span>
         </IconButton>
-        <IconButton onClick={handleNextMonth}>
+        <IconButton onClick={handleNext}>
           <span className="material-icons-outlined text-gray-600">chevron_right</span>
         </IconButton>
         <Typography variant="h6" className="text-lg font-semibold">
