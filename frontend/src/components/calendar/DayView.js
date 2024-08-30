@@ -174,7 +174,7 @@ export default function DayView() {
   return (
     <Paper
       sx={{
-        width: '80%',
+        width: '90%',
         maxHeight: '100vh',
         overflow: 'hidden', // Prevent the whole Paper from scrolling
         position: 'relative',

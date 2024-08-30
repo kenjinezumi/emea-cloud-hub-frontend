@@ -104,7 +104,7 @@ export default function YearView() {
   }, [location]);
 
   return (
-    <div style={{ padding: 16, marginLeft: "40px", width: "100%", align: "center" }}>
+    <div style={{ padding: 16, marginLeft: "40px", width: "90%", align: "center" }}>
       <Typography variant="h6" align="center" gutterBottom style={{ marginBottom: "30px" }}>
         Year Overview - {year}
       </Typography>

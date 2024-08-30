@@ -1,4 +1,3 @@
-// WeekView.js
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import { Paper, Typography, Box } from '@mui/material';
@@ -60,11 +59,11 @@ export default function WeekView() {
   };
 
   return (
-    <Paper sx={{ width: '100%', height: '100vh', overflow: 'hidden', padding: 2, display: 'flex', flexDirection: 'column', border: 'none' }}>
+    <Paper sx={{ width: '90%', height: '100vh', overflow: 'hidden', padding: 2, display: 'flex', flexDirection: 'column', border: 'none' }}>
       <Typography variant="h6" align="center" gutterBottom>
         Week of {dayjs(daySelected).startOf('week').format('MMMM D, YYYY')} ({userTimezone})
       </Typography>
-      <Box ref={weekViewRef} sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflowY: 'auto', position: 'relative' }}>
+      <Box ref={weekViewRef} sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflowY: 'auto', position: 'relative', width: '100%' }}>
         <Box sx={{ flex: '0 0 50px', borderRight: '2px solid #bbb', display: 'flex', flexDirection: 'column' }}>
           {Array.from({ length: 24 }, (_, i) => (
             <Typography key={i} align="right" sx={{ height: `${hourHeight}px`, lineHeight: `${hourHeight}px`, paddingRight: '5px', fontSize: '12px', color: 'grey.500' }}>
