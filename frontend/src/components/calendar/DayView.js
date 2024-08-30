@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import GlobalContext from '../../context/GlobalContext';
-import { Typography, Paper } from '@mui/material';
+import { Typography, Paper, Box } from '@mui/material';
 import dayjs from 'dayjs';
 import minMax from 'dayjs/plugin/minMax';
 import { useLocation } from 'react-router-dom';
@@ -22,9 +22,9 @@ export default function DayView() {
   const [events, setEvents] = useState([]);
   const [eventGroups, setEventGroups] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [currentTimePosition, setCurrentTimePosition] = useState(0); // State for current time position
   const location = useLocation();
   const dayViewRef = useRef(null); // Reference for auto-scroll
-  const currentHour = dayjs().hour(); // Get the current hour for auto-scroll
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // Retrieve user's timezone
 
   const hourHeight = 90; // Height of one hour slot in pixels
@@ -81,13 +81,26 @@ export default function DayView() {
   useEffect(() => {
     // Auto-scroll to current hour when the day view is loaded
     if (dayViewRef.current) {
-      const currentHourOffset = currentHour * hourHeight; // Calculate the offset based on the current hour
+      const currentHourOffset = dayjs().hour() * hourHeight; // Calculate the offset based on the current hour
       dayViewRef.current.scrollTo({
         top: currentHourOffset - hourHeight / 2, // Scroll to a position just above the current time for better visibility
         behavior: 'smooth',
       });
     }
-  }, [currentHour]);
+
+    const updateCurrentTimePosition = () => {
+      const now = dayjs();
+      const currentHour = now.hour();
+      const currentMinute = now.minute();
+      const position = currentHour * hourHeight + (currentMinute / 60) * hourHeight;
+      setCurrentTimePosition(position);
+    };
+
+    updateCurrentTimePosition(); // Initial update
+    const interval = setInterval(updateCurrentTimePosition, 60000); // Update every minute
+
+    return () => clearInterval(interval); // Clean up interval on unmount
+  }, []);
 
   const calculateOverlapGroups = (events) => {
     const eventGroups = [];
@@ -160,124 +173,178 @@ export default function DayView() {
 
   return (
     <Paper
-      ref={dayViewRef}
       sx={{
         width: '80%',
         maxHeight: '100vh',
-        overflowY: 'auto',
+        overflow: 'hidden', // Prevent the whole Paper from scrolling
         position: 'relative',
-        padding: '50px 0',
         backgroundColor: 'background.default',
         marginLeft: '20px',  // Adjust margin to avoid affecting the sidebar
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      <Typography
-        variant="h6"
-        align="center"
-        gutterBottom
-        sx={{ mb: '20px', mt: '0px' }}
-      >
-        {`${daySelected.format('dddd, MMMM D, YYYY')} (${userTimezone})`}
-      </Typography>
+      {/* Sticky Date Header */}
       <div
-        style={{ position: 'relative', height: `${hourHeight * (endHour - startHour)}px`, width: 'calc(100% - 40px)' }}
+        style={{
+          position: 'sticky',
+          top: 0,
+          backgroundColor: 'white', // Set the background color to ensure the date is readable
+          zIndex: 10, // Higher z-index to ensure it stays above other elements
+          padding: '10px 0',
+          borderBottom: '1px solid #ddd',
+        }}
       >
-        {/* Hour Labels */}
+        <Typography
+          variant="h6"
+          align="center"
+          gutterBottom
+        >
+          {`${daySelected.format('dddd, MMMM D, YYYY')} (${userTimezone})`}
+        </Typography>
+      </div>
+
+      {/* Scrollable Calendar Grid */}
+      <div
+        ref={dayViewRef}
+        style={{
+          overflowY: 'auto', // Only this part will scroll
+          height: 'calc(100vh - 100px)', // Adjust height based on your layout needs
+          position: 'relative', // Ensure relative positioning for the dot and line to be absolute within this container
+        }}
+      >
+        {/* Event Grid Container */}
         <div
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '40px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            alignItems: 'flex-end',
-            paddingRight: '10px',
-            color: 'rgba(0, 0, 0, 0.6)',
-            borderRight: '1px solid #ddd',
-            boxSizing: 'border-box',
+            position: 'relative',
+            height: `${hourHeight * (endHour - startHour)}px`,
+            width: 'calc(100% - 40px)',
+            marginLeft: '50px', // Ensures the grid aligns properly with hour labels
           }}
         >
-          {Array.from({ length: endHour - startHour }, (_, i) => i + startHour).map((hour) => (
-            <div
-              key={hour}
-              style={{
-                height: `${hourHeight}px`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                fontSize: '12px',
-              }}
-            >
-              {dayjs().hour(hour).minute(0).format('HH:mm')}
-            </div>
-          ))}
-        </div>
-
-        {/* Event Grid */}
-        <div style={{ flex: 1, marginLeft: '50px', position: 'relative' }}>
-          {Array.from({ length: (endHour - startHour) * 2 }, (_, i) => i).map((quarter) => (
-            <div
-              key={quarter}
-              style={{
-                height: `${hourHeight / 2}px`,
-                borderTop: `1px solid ${quarter % 2 === 0 ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
-                position: 'relative',
-                cursor: 'pointer',
-              }}
-              onClick={handleAddEvent}
-            ></div>
-          ))}
-
-          {/* Render Events */}
-          {dayEvents.map((event) => {
-            const { top, height, left, width } = calculateEventBlockStyles(event);
-            return (
+          {/* Hour Labels */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: '-50px', // Moves hour labels to the left
+              width: '40px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              alignItems: 'flex-end',
+              paddingRight: '10px',
+              color: 'rgba(0, 0, 0, 0.6)',
+              borderRight: '1px solid #ddd',
+              boxSizing: 'border-box',
+            }}
+          >
+            {Array.from({ length: endHour - startHour }, (_, i) => i + startHour).map((hour) => (
               <div
-                key={event.eventId}
+                key={hour}
                 style={{
-                  position: 'absolute',
-                  top: `${top}px`,
-                  left: `${left}%`,
-                  width: `${width}%`,
-                  height: `${height}px`,
-                  backgroundColor: '#e3f2fd',
-                  color: '#1a73e8',
-                  padding: '2px 4px',
-                  borderRadius: '4px',
+                  height: `${hourHeight}px`,
                   display: 'flex',
                   alignItems: 'center',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  cursor: 'pointer',
-                  zIndex: 2,
-                  boxSizing: 'border-box',
-                  borderLeft: '2px solid #1a73e8',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                  transition: 'background-color 0.2s, box-shadow 0.2s',
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
+                  justifyContent: 'flex-end',
+                  fontSize: '12px',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#c5e1f9';
-                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#e3f2fd';
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-                }}
-                onClick={() => handleEventClick(event)}
               >
-                <Typography>{event.title}</Typography>
+                {dayjs().hour(hour).minute(0).format('HH:mm')}
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Event Grid */}
+          <div style={{ position: 'relative' }}>
+            {Array.from({ length: (endHour - startHour) * 2 }, (_, i) => i).map((quarter) => (
+              <div
+                key={quarter}
+                style={{
+                  height: `${hourHeight / 2}px`,
+                  borderTop: `1px solid ${quarter % 2 === 0 ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+                  position: 'relative',
+                  cursor: 'pointer',
+                }}
+                onClick={handleAddEvent}
+              ></div>
+            ))}
+
+            {/* Render Events */}
+            {dayEvents.map((event) => {
+              const { top, height, left, width } = calculateEventBlockStyles(event);
+              return (
+                <div
+                  key={event.eventId}
+                  style={{
+                    position: 'absolute',
+                    top: `${top}px`,
+                    left: `${left}%`,
+                    width: `${width}%`,
+                    height: `${height}px`,
+                    backgroundColor: '#e3f2fd',
+                    color: '#1a73e8',
+                    padding: '2px 4px',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    zIndex: 2,
+                    boxSizing: 'border-box',
+                    borderLeft: '2px solid #1a73e8',
+                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                    transition: 'background-color 0.2s, box-shadow 0.2s',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#c5e1f9';
+                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e3f2fd';
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                  }}
+                  onClick={() => handleEventClick(event)}
+                >
+                  <Typography>{event.title}</Typography>
+                </div>
+              );
+            })}
+
+            {/* Current Time Line */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: `${currentTimePosition}px`, // Position based on current time
+                left: '0', // Start the line right after the hour labels
+                right: '0',
+                height: '1px',
+                backgroundColor: '#d32f2f', // Red color for the line, similar to Google Calendar
+                zIndex: 5,
+              }}
+            />
+
+            {/* Single Dot for Current Time Line */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: `${currentTimePosition - 4}px`, // Position the dot centered vertically on the line
+                left: '0', // Position the dot right after the hour labels
+                width: '8px',
+                height: '8px',
+                backgroundColor: '#d32f2f', // Same red color for the dot
+                borderRadius: '50%',
+                zIndex: 6, // Ensure it appears above the time line
+              }}
+            />
+          </div>
         </div>
       </div>
+
       {showEventInfoModal && <EventInfoPopup />}
     </Paper>
   );

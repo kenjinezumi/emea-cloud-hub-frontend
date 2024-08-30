@@ -3,6 +3,7 @@ import { Avatar, Button, TextField, Grid, Paper, Typography, Box } from "@mui/ma
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
+import logo from '../../assets/logo/logo.png';
 
 function Login() {
   const navigate = useNavigate(); // for programmatic navigation
@@ -46,9 +47,8 @@ function Login() {
           alignItems: 'center',
         }}
       >
-        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-          <LockOutlinedIcon />
-        </Avatar>
+        <img src={logo} alt="calendar" className="mr-2 w-12 h-12 cursor-pointer"/>
+
         <Typography component="h1" variant="h5">
           Sign in
         </Typography>
