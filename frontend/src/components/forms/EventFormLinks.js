@@ -194,10 +194,12 @@ export default function LinksForm() {
               marginBottom: "15px",
             }}
           >
+            
             <LinkIcon
               style={{ marginRight: "10px", color: blue[500], height: "40px" }}
             />
-            Links
+            <span className="mr-1 text-xl text-black cursor-pointer">Links</span>
+
           </Typography>
           <Grid container spacing={2}>
             {Object.entries(links).map(([key, value]) => (

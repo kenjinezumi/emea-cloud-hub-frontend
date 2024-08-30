@@ -138,8 +138,7 @@ export default function EventInfoPopup() {
         >
           <LabelIcon style={{ marginRight: "5px", color: '#1a73e8' }} />
           Organized by:
-        </Typography>
-        <Stack direction="row" spacing={1} sx={{ pl: 4, pr: 2, flexWrap: 'wrap' }}>
+          <Stack direction="row" spacing={1} sx={{ pl: 4, pr: 2, flexWrap: 'wrap' }}>
           {selectedEvent.organisedBy.map((organiser, index) => {
             const cleanedName = cleanOrganiserName(organiser);
             return (
@@ -164,6 +163,8 @@ export default function EventInfoPopup() {
             );
           })}
         </Stack>
+        </Typography>
+        
 
         {/* Event Type and Priority Chips */}
         <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>

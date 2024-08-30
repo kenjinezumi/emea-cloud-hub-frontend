@@ -145,7 +145,7 @@ export default function Day({ day, events, isYearView }) {
                     color: "#1a73e8", // Google blue text color
                     pointerEvents: "auto",
                     fontSize: "0.875rem", // 14px
-                    borderLeft: "4px solid #1a73e8", // Blue left border for event type indication
+                    borderLeft: "2px solid #1a73e8", // Blue left border for event type indication
                     margin: "4px 0", // Spacing between events
                     marginLeft: "4px",
                     padding: "2px 8px", // Padding for a better look

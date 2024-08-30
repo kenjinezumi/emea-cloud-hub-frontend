@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import { Typography, Paper } from '@mui/material';
 import dayjs from 'dayjs';
@@ -16,13 +16,16 @@ export default function DayView() {
     setSelectedEvent,
     setShowInfoEventModal,
     filters,
-    showEventInfoModal
+    showEventInfoModal,
   } = useContext(GlobalContext);
 
   const [events, setEvents] = useState([]);
   const [eventGroups, setEventGroups] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const location = useLocation();
+  const dayViewRef = useRef(null); // Reference for auto-scroll
+  const currentHour = dayjs().hour(); // Get the current hour for auto-scroll
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // Retrieve user's timezone
 
   const hourHeight = 90; // Height of one hour slot in pixels
   const startHour = 0;
@@ -74,6 +77,17 @@ export default function DayView() {
   useEffect(() => {
     setEventGroups(calculateOverlapGroups(events));
   }, [events]);
+
+  useEffect(() => {
+    // Auto-scroll to current hour when the day view is loaded
+    if (dayViewRef.current) {
+      const currentHourOffset = currentHour * hourHeight; // Calculate the offset based on the current hour
+      dayViewRef.current.scrollTo({
+        top: currentHourOffset - hourHeight / 2, // Scroll to a position just above the current time for better visibility
+        behavior: 'smooth',
+      });
+    }
+  }, [currentHour]);
 
   const calculateOverlapGroups = (events) => {
     const eventGroups = [];
@@ -129,12 +143,10 @@ export default function DayView() {
     return { top, height, left, width };
   };
 
-  // Function to handle adding a new event
   const handleAddEvent = () => {
     setShowEventModal(true);
   };
 
-  // Function to handle clicking an existing event
   const handleEventClick = (event) => {
     setSelectedEvent(event);
     setShowInfoEventModal(true);
@@ -148,13 +160,17 @@ export default function DayView() {
 
   return (
     <Paper
+      ref={dayViewRef}
       sx={{
-        width: '100%',
+        width: '80%',
         maxHeight: '100vh',
         overflowY: 'auto',
         position: 'relative',
         padding: '50px 0',
-        backgroundColor: 'background.default'
+        backgroundColor: 'background.default',
+        marginLeft: '20px',  // Adjust margin to avoid affecting the sidebar
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Typography
@@ -163,37 +179,36 @@ export default function DayView() {
         gutterBottom
         sx={{ mb: '20px', mt: '0px' }}
       >
-        {daySelected.format('dddd, MMMM D, YYYY')}
+        {`${daySelected.format('dddd, MMMM D, YYYY')} (${userTimezone})`}
       </Typography>
       <div
-        className="flex-1 cursor-pointer"
-        onClick={handleAddEvent} // Use handleAddEvent function
-      ></div>
-      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-        {/* Hours Column */}
+        style={{ position: 'relative', height: `${hourHeight * (endHour - startHour)}px`, width: 'calc(100% - 40px)' }}
+      >
+        {/* Hour Labels */}
         <div
           style={{
-            flex: '0 0 auto',
-            marginRight: '10px',
-            fontWeight: '400',
-            textAlign: 'right',
-            paddingRight: '10px',
-            borderRight: '1px solid #ddd',
-            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '40px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-start',
+            alignItems: 'flex-end',
+            paddingRight: '10px',
             color: 'rgba(0, 0, 0, 0.6)',
+            borderRight: '1px solid #ddd',
+            boxSizing: 'border-box',
           }}
         >
           {Array.from({ length: endHour - startHour }, (_, i) => i + startHour).map((hour) => (
             <div
               key={hour}
               style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'flex-end',
                 height: `${hourHeight}px`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
                 fontSize: '12px',
               }}
             >
@@ -202,35 +217,19 @@ export default function DayView() {
           ))}
         </div>
 
-        {/* Event Column */}
-        <div style={{ flex: 3, position: 'relative' }}>
-          {/* Hour and half-hour tickers */}
-          {Array.from({ length: (endHour - startHour) * 4 }, (_, i) => i + startHour * 4).map((quarter) => (
+        {/* Event Grid */}
+        <div style={{ flex: 1, marginLeft: '50px', position: 'relative' }}>
+          {Array.from({ length: (endHour - startHour) * 2 }, (_, i) => i).map((quarter) => (
             <div
               key={quarter}
               style={{
-                height: `${hourHeight / 4}px`,
-                borderTop: `1px solid ${quarter % 4 === 0 ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+                height: `${hourHeight / 2}px`,
+                borderTop: `1px solid ${quarter % 2 === 0 ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
                 position: 'relative',
                 cursor: 'pointer',
               }}
-              onClick={handleAddEvent} // Use handleAddEvent function
-            >
-              {/* Show ticks for each quarter-hour */}
-              {quarter % 4 === 0 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: '0',
-                    top: '0',
-                    transform: 'translateY(-50%)',
-                    width: '1px',
-                    height: '5px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                  }}
-                />
-              )}
-            </div>
+              onClick={handleAddEvent}
+            ></div>
           ))}
 
           {/* Render Events */}
@@ -245,8 +244,8 @@ export default function DayView() {
                   left: `${left}%`,
                   width: `${width}%`,
                   height: `${height}px`,
-                  backgroundColor: '#e3f2fd', // Light blue background for events
-                  color: '#1a73e8', // Blue text color
+                  backgroundColor: '#e3f2fd',
+                  color: '#1a73e8',
                   padding: '2px 4px',
                   borderRadius: '4px',
                   display: 'flex',
@@ -257,21 +256,21 @@ export default function DayView() {
                   cursor: 'pointer',
                   zIndex: 2,
                   boxSizing: 'border-box',
-                  borderLeft: '4px solid #1a73e8', // Blue border on the left for events
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Subtle shadow
+                  borderLeft: '2px solid #1a73e8',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
                   transition: 'background-color 0.2s, box-shadow 0.2s',
                   fontSize: '0.875rem',
                   fontWeight: '500',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#c5e1f9'; // Hover effect with a darker blue
-                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)'; // Elevated shadow on hover
+                  e.currentTarget.style.backgroundColor = '#c5e1f9';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#e3f2fd'; // Revert background on leave
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)'; // Revert shadow on leave
+                  e.currentTarget.style.backgroundColor = '#e3f2fd';
+                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
                 }}
-                onClick={() => handleEventClick(event)} // Use handleEventClick function
+                onClick={() => handleEventClick(event)}
               >
                 <Typography>{event.title}</Typography>
               </div>

@@ -203,9 +203,9 @@ export default function AudiencePersonaForm() {
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col" style={{ overscrollBehavior: "contain" }}>
       <CalendarHeaderForm />
-      <div className="form-container">
+      <div className="form-container" style={{ overscrollBehavior: "contain" }}>
         <div className="event-form">
           <Typography
             variant="h4"
