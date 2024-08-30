@@ -3,25 +3,23 @@ import GlobalContext from '../../context/GlobalContext';
 import dayjs from 'dayjs';
 import minMax from 'dayjs/plugin/minMax';
 import { getEventData } from '../../api/getEventData';
-import EventInfoPopup from '../popup/EventInfoModal';
 import { Box, Typography } from '@mui/material';
 
 dayjs.extend(minMax);
 
-export default function DayColumn({ daySelected }) {
+export default function DayColumn({ daySelected, onEventClick }) {
   const {
     setShowEventModal,
     setDaySelected,
     setSelectedEvent,
     setShowInfoEventModal,
     filters,
-    showEventInfoModal,
   } = useContext(GlobalContext);
 
   const [events, setEvents] = useState([]);
   const [eventGroups, setEventGroups] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const hourHeight = 60; // Height of one hour slot in pixels
+  const hourHeight = 60;
   const startHour = 0;
   const endHour = 24;
 
@@ -126,9 +124,11 @@ export default function DayColumn({ daySelected }) {
     return { top, height, left, width };
   };
 
-  const handleEventClick = (event) => {
-    setSelectedEvent(event);
-    setShowInfoEventModal(true);
+  const handleEventClickInternal = (event) => {
+    console.log("Internal Event Click:", event); // Debug log
+    if (onEventClick) {
+      onEventClick(event);  // Ensure this line calls the prop function
+    }
   };
 
   const handleSlotClick = (hour) => {
@@ -147,7 +147,7 @@ export default function DayColumn({ daySelected }) {
       sx={{
         position: 'relative',
         height: `${hourHeight * (endHour - startHour)}px`,
-        borderRight: '2px solid #bbb',  // Thicker border for more distinct separation
+        borderRight: '2px solid #bbb',
         borderBottom: '1px solid #ddd',
         backgroundColor: '#ffffff',
       }}
@@ -162,7 +162,7 @@ export default function DayColumn({ daySelected }) {
             left: 0,
             right: 0,
             height: `${hourHeight}px`,
-            borderTop: '1px solid #ddd', // Light gray line for hours
+            borderTop: '1px solid #ddd',
             cursor: 'pointer',
           }}
           onClick={() => handleSlotClick(i + startHour)}
@@ -211,14 +211,13 @@ export default function DayColumn({ daySelected }) {
             }}
             onClick={(e) => {
               e.stopPropagation();
-              handleEventClick(event);
+              handleEventClickInternal(event);  // Use the internal handler
             }}
           >
             <Typography>{event.title}</Typography>
           </div>
         );
       })}
-      {showEventInfoModal && <EventInfoPopup />}
     </Box>
   );
 }

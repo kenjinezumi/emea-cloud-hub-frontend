@@ -106,7 +106,7 @@ export default function Day({ day, events, isYearView }) {
 
   const dayNumberCircleStyle = {
     ...dayNumberStyle,
-    backgroundColor: hasEvents ? "green" : "transparent",
+    backgroundColor: hasEvents ?  "#4285F4" : "transparent",
     color: hasEvents ? "white" : "inherit",
     borderRadius: "50%",
     width: "25px",

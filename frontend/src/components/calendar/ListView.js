@@ -113,7 +113,7 @@ export default function ListView({}) {
               cursor: 'pointer',
               margin: '4px 0',
               padding: '10px',
-              borderLeft: '4px solid #1a73e8', // Blue left border for event type indication
+              borderLeft: '2px solid #1a73e8', // Blue left border for event type indication
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
               transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transitions for hover effects
             }}

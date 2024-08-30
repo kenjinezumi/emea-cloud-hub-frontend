@@ -4,6 +4,7 @@ import { Paper, Typography, Box } from '@mui/material';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import DayColumn from '../Day/DayColumn'; // Import the DayColumn component
+import EventInfoPopup from '../popup/EventInfoModal'; // Import the EventInfoPopup component
 
 dayjs.extend(utc);
 
@@ -11,6 +12,8 @@ export default function WeekView() {
   const { daySelected } = useContext(GlobalContext);
   const [currentWeek, setCurrentWeek] = useState([]);
   const [currentTimePosition, setCurrentTimePosition] = useState(0);
+  const [selectedEvent, setSelectedEvent] = useState(null); // State for selected event
+  const [showEventInfoModal, setShowInfoEventModal] = useState(false); // State for modal visibility
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const hourHeight = 60; // Define the height of each hour slot in pixels
   const weekViewRef = useRef(null); // Reference to the scrollable container
@@ -46,6 +49,17 @@ export default function WeekView() {
     return () => clearInterval(interval); // Clean up interval on unmount
   }, []);
 
+  const handleEventClick = (event) => {
+    console.log("Event clicked:", event); // Debug log
+    setSelectedEvent(event);  // Set the selected event
+    setShowInfoEventModal(true);  // Open the modal
+  };
+
+  const closeEventModal = () => {
+    setShowInfoEventModal(false); // Close the modal
+    setSelectedEvent(null); // Clear the selected event
+  };
+
   return (
     <Paper sx={{ width: '100%', height: '100vh', overflow: 'hidden', padding: 2, display: 'flex', flexDirection: 'column', border: 'none' }}>
       <Typography variant="h6" align="center" gutterBottom>
@@ -67,7 +81,8 @@ export default function WeekView() {
             <Typography align="center" variant="subtitle1" sx={{ padding: '5px 0', borderBottom: '1px solid #ddd', backgroundColor: 'white', position: 'sticky', top: 0, zIndex: 1 }}>
               {day.format('ddd, D MMM')}
             </Typography>
-            <DayColumn daySelected={day} />
+            {/* Pass handleEventClick to DayColumn */}
+            <DayColumn daySelected={day} onEventClick={handleEventClick} />
 
             {/* Current Time Line inside each day column */}
             <Box
@@ -98,6 +113,10 @@ export default function WeekView() {
           }}
         />
       </Box>
+      {/* Conditionally render EventInfoPopup */}
+      {showEventInfoModal && selectedEvent && (
+        <EventInfoPopup event={selectedEvent} onClose={closeEventModal} />
+      )}
     </Paper>
   );
 }

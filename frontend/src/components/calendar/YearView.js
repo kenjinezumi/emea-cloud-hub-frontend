@@ -74,18 +74,23 @@ export default function YearView() {
 
   if (Array.isArray(filteredEvents)) {
     filteredEvents.forEach((event) => {
-      if (event.startDate && event.eventType) {
-        const eventDate = dayjs(event.startDate);
-        const monthIndex = eventDate.month();
+      if (event.startDate && event.endDate && event.eventType) {
+        const startDate = dayjs(event.startDate);
+        const endDate = dayjs(event.endDate);
+        const startMonth = startDate.month();
+        const endMonth = endDate.month();
         const eventType = event.eventType;
 
         if (!eventTypeCounts[eventType]) {
           eventTypeCounts[eventType] = Array(12).fill(0);
         }
 
-        eventTypeCounts[eventType][monthIndex]++;
+        // Increment the event count for all months from startMonth to endMonth
+        for (let monthIndex = startMonth; monthIndex <= endMonth; monthIndex++) {
+          eventTypeCounts[eventType][monthIndex]++;
+        }
       } else {
-        console.warn("Encountered an event with missing startDate or eventType", event);
+        console.warn("Encountered an event with missing startDate, endDate, or eventType", event);
       }
     });
   } else {
@@ -99,11 +104,11 @@ export default function YearView() {
   }, [location]);
 
   return (
-    <div style={{ padding: 16, marginLeft: "40px", width: "90%", align: "center" }}>
-      <Typography variant="h6" align="center" gutterBottom style={{ marginBottom: "20px" }}>
+    <div style={{ padding: 16, marginLeft: "40px", width: "100%", align: "center" }}>
+      <Typography variant="h6" align="center" gutterBottom style={{ marginBottom: "30px" }}>
         Year Overview - {year}
       </Typography>
-      <Grid container spacing={8}>
+      <Grid container spacing={2}>
         {yearData.map((month, index) => (
           <Grid key={index} item xs={12} sm={6} md={4}>
             <Paper className="month-container">
@@ -113,19 +118,74 @@ export default function YearView() {
                 </Typography>
                 <Box display="flex" justifyContent="center" alignItems="center" flexWrap="wrap" gap={2}>
                   <Tooltip title="Online event">
-                    <Chip icon={<CameraIndoorIcon />} label={eventTypeCounts["Online Event"][index]} variant="outlined" size="small" style={{ margin: "4px" }} />
+                    <Chip
+                      icon={<CameraIndoorIcon style={{ color: "#FFFFFF" }} />}
+                      label={eventTypeCounts["Online Event"][index]}
+                      size="small"
+                      style={{
+                        backgroundColor: "#4285F4",
+                        color: "#FFFFFF",
+                        margin: "4px",
+                        fontWeight: "bold",
+                        borderRadius: "4px",
+                      }}
+                    />
                   </Tooltip>
                   <Tooltip title="Blog post">
-                    <Chip icon={<LaptopIcon />} label={eventTypeCounts["Blog Post"][index]} variant="outlined" size="small" style={{ margin: "4px" }} />
+                    <Chip
+                      icon={<LaptopIcon style={{ color: "#FFFFFF" }} />}
+                      label={eventTypeCounts["Blog Post"][index]}
+                      size="small"
+                      style={{
+                        backgroundColor: "#DB4437",
+                        color: "#FFFFFF",
+                        margin: "4px",
+                        fontWeight: "bold",
+                        borderRadius: "4px",
+                      }}
+                    />
                   </Tooltip>
                   <Tooltip title="Customer story">
-                    <Chip icon={<CampaignIcon />} label={eventTypeCounts["Customer Story"][index]} variant="outlined" size="small" style={{ margin: "4px" }} />
+                    <Chip
+                      icon={<CampaignIcon style={{ color: "#FFFFFF" }} />}
+                      label={eventTypeCounts["Customer Story"][index]}
+                      size="small"
+                      style={{
+                        backgroundColor: "#F4B400",
+                        color: "#FFFFFF",
+                        margin: "4px",
+                        fontWeight: "bold",
+                        borderRadius: "4px",
+                      }}
+                    />
                   </Tooltip>
                   <Tooltip title="Hybrid event">
-                    <Chip icon={<EmojiPeopleIcon />} label={eventTypeCounts["Hybrid Event"][index]} variant="outlined" size="small" style={{ margin: "4px" }} />
+                    <Chip
+                      icon={<EmojiPeopleIcon style={{ color: "#FFFFFF" }} />}
+                      label={eventTypeCounts["Hybrid Event"][index]}
+                      size="small"
+                      style={{
+                        backgroundColor: "#0F9D58",
+                        color: "#FFFFFF",
+                        margin: "4px",
+                        fontWeight: "bold",
+                        borderRadius: "4px",
+                      }}
+                    />
                   </Tooltip>
                   <Tooltip title="Physical event">
-                    <Chip icon={<MeetingRoomIcon />} label={eventTypeCounts["Physical Event"][index]} variant="outlined" size="small" style={{ margin: "4px" }} />
+                    <Chip
+                      icon={<MeetingRoomIcon style={{ color: "#FFFFFF" }} />}
+                      label={eventTypeCounts["Physical Event"][index]}
+                      size="small"
+                      style={{
+                        backgroundColor: "#AB47BC",
+                        color: "#FFFFFF",
+                        margin: "4px",
+                        fontWeight: "bold",
+                        borderRadius: "4px",
+                      }}
+                    />
                   </Tooltip>
                 </Box>
                 <div style={{ padding: "8px" }}>

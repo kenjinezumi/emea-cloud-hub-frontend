@@ -13,21 +13,29 @@ export default function EventModal() {
   };
 
   return (
-    <div className="h-screen w-full fixed left-0 top-0 flex justify-center items-center" style={{ zIndex: 1000 }}>
-      <div className="bg-white rounded-lg shadow-md w-1/4">
-        <header className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
-          <span className="text-gray-600 font-semibold">Add Event</span>
-          <button onClick={() => setShowEventModal(false)}>
-            <span className="material-icons-outlined text-gray-600 hover:text-gray-800">close</span>
+    <div
+      className="h-screen w-full fixed left-0 top-0 flex justify-center items-center bg-black bg-opacity-40"
+      style={{ zIndex: 1000 }}
+    >
+      <div className="bg-white rounded-lg shadow-lg w-1/4">
+        <header className="bg-gray-100 px-4 py-3 flex justify-between items-center border-b border-gray-300">
+          <span className="text-gray-700 font-medium text-lg">Add Event</span>
+          <button
+            onClick={() => setShowEventModal(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <span className="material-icons-outlined">close</span>
           </button>
         </header>
-        <div className="text-gray-700 text-sm mb-2 p-3">
-          Do you want to add an event?
+        <div className="p-4">
+          <p className="text-gray-600 text-sm">
+            Do you want to add an event?
+          </p>
         </div>
-        <footer className="flex justify-end border-t p-3">
+        <footer className="flex justify-end border-t border-gray-300 p-4">
           <button
             onClick={handleAddEventClick}
-            className="bg-blue-500 hover:bg-blue-600 px-6 py-2 rounded text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow-sm transition duration-150 ease-in-out"
           >
             Add
           </button>
