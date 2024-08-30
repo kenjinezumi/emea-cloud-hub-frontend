@@ -75,11 +75,24 @@ export default function WeekView() {
 
         {currentWeek.map((day) => (
           <Box key={day.format('YYYY-MM-DD')} sx={{ flex: 1, position: 'relative' }}>
-            <Typography align="center" variant="subtitle1" sx={{ padding: '5px 0', borderBottom: '1px solid #ddd', backgroundColor: 'white', position: 'sticky', top: 0, zIndex: 1 }}>
+            {/* Sticky Header for Day and Date */}
+            <Typography 
+              align="center" 
+              variant="subtitle1" 
+              sx={{ 
+                padding: '5px 0', 
+                borderBottom: '1px solid #ddd', 
+                backgroundColor: 'white', 
+                position: 'sticky', 
+                top: 0, 
+                zIndex: 10 // Increase z-index to ensure it stays above other elements
+              }}
+            >
               {day.format('ddd, D MMM')}
             </Typography>
             <DayColumn daySelected={day} onEventClick={handleEventClick} />
 
+            {/* Current Time Line inside each day column */}
             <Box
               sx={{
                 position: 'absolute',
@@ -94,6 +107,7 @@ export default function WeekView() {
           </Box>
         ))}
 
+        {/* Single Dot for Current Time Line */}
         <Box
           sx={{
             position: 'absolute',
