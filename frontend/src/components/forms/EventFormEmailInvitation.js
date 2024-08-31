@@ -147,7 +147,9 @@ const EventFormEmailInvitation = () => {
                     aria-controls={`panel-content-${index}`}
                     id={`panel-header-${index}`}
                   >
-                    <Typography>Email language: {item.language || "Select Language"}</Typography>
+                    <Typography>
+                      {item.language ? `Email language: ${item.language}` : "Select Language"}
+                    </Typography>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Grid container spacing={2}>
@@ -156,7 +158,7 @@ const EventFormEmailInvitation = () => {
                           <Typography variant="subtitle1">Email language</Typography>
                           {index === 0 ? (
                             <TextField
-                              value={"English"}
+                              value={item.language || "Select Language"}
                               fullWidth
                               InputProps={{ readOnly: true }}
                               variant="outlined"

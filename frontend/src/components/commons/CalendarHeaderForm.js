@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LinkIcon from '@mui/icons-material/Link';
@@ -6,13 +6,18 @@ import PeopleIcon from '@mui/icons-material/People';
 import InfoIcon from '@mui/icons-material/Info';
 import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
+import ExitToAppIcon from '@mui/icons-material/ExitToApp'; // Import Exit Icon
 import { blue } from '@mui/material/colors';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
 import GlobalContext from "../../context/GlobalContext";
 
 const NavigationSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { formData, updateFormData } = useContext(GlobalContext);
+  const [exitDialogOpen, setExitDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const navigateTo = (path, currentFormData) => {
     updateFormData({ ...formData, ...currentFormData });
@@ -20,11 +25,32 @@ const NavigationSidebar = () => {
     navigate(path);
   };
 
-  const handleCancel = () => {
-    const userConfirmed = window.confirm('Are you sure you want to leave this page?');
-    if (userConfirmed) {
-      window.location.href = '/';
-    }
+  const handleExitOpen = () => {
+    setExitDialogOpen(true);
+  };
+
+  const handleExitClose = () => {
+    setExitDialogOpen(false);
+  };
+
+  const handleDeleteOpen = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteClose = () => {
+    setDeleteDialogOpen(false);
+  };
+
+  const handleExitConfirm = () => {
+    setExitDialogOpen(false);
+    window.location.href = '/';
+  };
+
+  const handleDeleteConfirm = () => {
+    setDeleteDialogOpen(false);
+    // Add your delete logic here
+    console.log('Event deleted'); // Placeholder for actual delete functionality
+    window.location.href = '/';
   };
 
   const isCurrentPath = (path) => location.pathname === path;
@@ -69,11 +95,69 @@ const NavigationSidebar = () => {
       </button>
       <hr className="my-4" />
       <button
-        onClick={handleCancel}
-        className="block w-full text-left p-2 hover:bg-gray-200 rounded text-red-500"
+        onClick={handleExitOpen}
+        className="block w-full text-left p-2 hover:bg-gray-200 rounded text-red-500 flex items-center"
       >
-        Exit
+        <ExitToAppIcon style={{ color: 'red' }} />
+        <span className="ml-2">Exit</span>
       </button>
+      <button
+        onClick={handleDeleteOpen}
+        className="block w-full text-left p-2 hover:bg-gray-200 rounded text-red-500 flex items-center"
+      >
+        <DeleteIcon style={{ color: 'red' }} />
+        <span className="ml-2">Delete</span>
+      </button>
+
+      {/* Exit Confirmation Dialog */}
+      <Dialog
+        open={exitDialogOpen}
+        onClose={handleExitClose}
+        aria-labelledby="exit-dialog-title"
+        aria-describedby="exit-dialog-description"
+      >
+        <DialogTitle id="exit-dialog-title">
+          {"Confirm Exit"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="exit-dialog-description">
+            Are you sure you want to leave this page? All unsaved data will be lost.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleExitClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleExitConfirm} color="primary" autoFocus>
+            Exit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteClose}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          {"Confirm Delete"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this event? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="primary" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
