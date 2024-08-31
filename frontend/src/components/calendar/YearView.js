@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import MonthView from "./MonthView";
 import { createYearData } from "../../util";
@@ -14,66 +14,64 @@ import CampaignIcon from "@mui/icons-material/Campaign";
 import LaptopIcon from "@mui/icons-material/Laptop";
 
 export default function YearView() {
-  const { daySelected, setShowEventModal, setDaySelected, filters } =
-    useContext(GlobalContext);
+  const { daySelected, setShowEventModal, setDaySelected, filters } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const location = useLocation();
 
   const year = daySelected.year();
-  const yearData = createYearData(year);
-
-  const fetchData = async () => {
-    try {
-      const eventData = await getEventData("eventDataQuery");
-      setEvents(eventData);
-    } catch (error) {
-      console.error("Error fetching event data:", error);
-    }
-  };
-
-  const eventTypeCounts = {
-    "Online Event": Array(12).fill(0),
-    "Blog Post": Array(12).fill(0),
-    "Customer Story": Array(12).fill(0),
-    "Hybrid Event": Array(12).fill(0),
-    "Physical Event": Array(12).fill(0),
-  };
+  const yearData = useMemo(() => createYearData(year), [year]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    const fetchAndFilterEvents = async () => {
+      try {
+        const eventData = await getEventData("eventDataQuery");
+        setEvents(eventData);
 
-  useEffect(() => {
-    const applyFilters = async (events, filters) => {
-      if (!Array.isArray(events)) {
-        console.error("applyFilters was called with 'events' that is not an array:", events);
-        return [];
+        if (!Array.isArray(eventData)) {
+          console.error("Fetched data is not an array:", eventData);
+          return;
+        }
+
+        const filtered = await applyFilters(eventData, filters);
+        setFilteredEvents(filtered);
+      } catch (error) {
+        console.error("Error fetching event data:", error);
       }
-
-      const filterPromises = events.map(event => {
-        return (async () => {
-          const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
-          const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-          const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.includes(okr.label));
-          const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
-          const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === "Draft" ? event.isDraft : !event.isDraft));
-
-          return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
-        })();
-      });
-
-      const results = await Promise.all(filterPromises);
-      return events.filter((_, index) => results[index]);
     };
 
-    (async () => {
-      const filteredEvents = await applyFilters(events, filters);
-      setFilteredEvents(filteredEvents);
-    })();
-  }, [events, filters]);
+    fetchAndFilterEvents();
+  }, [filters]);
 
-  if (Array.isArray(filteredEvents)) {
-    filteredEvents.forEach((event) => {
+  const applyFilters = useCallback(async (events, filters) => {
+    if (!Array.isArray(events)) {
+      console.error("applyFilters was called with 'events' that is not an array:", events);
+      return [];
+    }
+
+    const results = await Promise.all(events.map(async (event) => {
+      const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
+      const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
+      const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.includes(okr.label));
+      const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
+      const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === "Draft" ? event.isDraft : !event.isDraft));
+
+      return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
+    }));
+
+    return events.filter((_, index) => results[index]);
+  }, []);
+
+  const eventTypeCounts = useMemo(() => {
+    const counts = {
+      "Online Event": Array(12).fill(0),
+      "Blog Post": Array(12).fill(0),
+      "Customer Story": Array(12).fill(0),
+      "Hybrid Event": Array(12).fill(0),
+      "Physical Event": Array(12).fill(0),
+    };
+
+    filteredEvents.forEach(event => {
       if (event.startDate && event.endDate && event.eventType) {
         const startDate = dayjs(event.startDate);
         const endDate = dayjs(event.endDate);
@@ -81,30 +79,69 @@ export default function YearView() {
         const endMonth = endDate.month();
         const eventType = event.eventType;
 
-        if (!eventTypeCounts[eventType]) {
-          eventTypeCounts[eventType] = Array(12).fill(0);
-        }
-
-        // Increment the event count for all months from startMonth to endMonth
         for (let monthIndex = startMonth; monthIndex <= endMonth; monthIndex++) {
-          eventTypeCounts[eventType][monthIndex]++;
+          counts[eventType][monthIndex]++;
         }
-      } else {
-        console.warn("Encountered an event with missing startDate, endDate, or eventType", event);
       }
     });
-  } else {
-    console.error("Expected events to be an array", events);
-  }
 
-  const location = useLocation();
+    return counts;
+  }, [filteredEvents]);
 
   useEffect(() => {
     setShowEventModal(false);
   }, [location]);
 
+  // Define a helper function to map event types to their corresponding colors and icons
+  const getEventTypeChip = (eventType, count, index) => {
+    let icon = null;
+    let backgroundColor = "";
+
+    switch (eventType) {
+      case "Online Event":
+        icon = <LaptopIcon style={{ color: "#FFFFFF" }} />;
+        backgroundColor = "#4285F4"; // Blue for online events
+        break;
+      case "Blog Post":
+        icon = <CameraIndoorIcon style={{ color: "#FFFFFF" }} />;
+        backgroundColor = "#DB4437"; // Red for blog posts
+        break;
+      case "Customer Story":
+        icon = <CampaignIcon style={{ color: "#FFFFFF" }} />;
+        backgroundColor = "#F4B400"; // Yellow for customer stories
+        break;
+      case "Hybrid Event":
+        icon = <EmojiPeopleIcon style={{ color: "#FFFFFF" }} />;
+        backgroundColor = "#0F9D58"; // Green for hybrid events
+        break;
+      case "Physical Event":
+        icon = <MeetingRoomIcon style={{ color: "#FFFFFF" }} />;
+        backgroundColor = "#AB47BC"; // Purple for physical events
+        break;
+      default:
+        break;
+    }
+
+    return (
+      <Tooltip title={eventType} key={index}>
+        <Chip
+          icon={icon}
+          label={count}
+          size="small"
+          style={{
+            backgroundColor,
+            color: "#FFFFFF",
+            margin: "4px",
+            fontWeight: "bold",
+            borderRadius: "4px",
+          }}
+        />
+      </Tooltip>
+    );
+  };
+
   return (
-    <div style={{ padding: 16, marginLeft: "40px", width: "90%", align: "center" }}>
+    <div style={{ padding: 16, marginLeft: "40px", width: "90%", textAlign: "center" }}>
       <Typography variant="h6" align="center" gutterBottom style={{ marginBottom: "30px" }}>
         Year Overview - {year}
       </Typography>
@@ -117,76 +154,9 @@ export default function YearView() {
                   {dayjs(new Date(year, index)).format("MMMM")}
                 </Typography>
                 <Box display="flex" justifyContent="center" alignItems="center" flexWrap="wrap" gap={2}>
-                  <Tooltip title="Online event">
-                    <Chip
-                      icon={<CameraIndoorIcon style={{ color: "#FFFFFF" }} />}
-                      label={eventTypeCounts["Online Event"][index]}
-                      size="small"
-                      style={{
-                        backgroundColor: "#4285F4",
-                        color: "#FFFFFF",
-                        margin: "4px",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Blog post">
-                    <Chip
-                      icon={<LaptopIcon style={{ color: "#FFFFFF" }} />}
-                      label={eventTypeCounts["Blog Post"][index]}
-                      size="small"
-                      style={{
-                        backgroundColor: "#DB4437",
-                        color: "#FFFFFF",
-                        margin: "4px",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Customer story">
-                    <Chip
-                      icon={<CampaignIcon style={{ color: "#FFFFFF" }} />}
-                      label={eventTypeCounts["Customer Story"][index]}
-                      size="small"
-                      style={{
-                        backgroundColor: "#F4B400",
-                        color: "#FFFFFF",
-                        margin: "4px",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Hybrid event">
-                    <Chip
-                      icon={<EmojiPeopleIcon style={{ color: "#FFFFFF" }} />}
-                      label={eventTypeCounts["Hybrid Event"][index]}
-                      size="small"
-                      style={{
-                        backgroundColor: "#0F9D58",
-                        color: "#FFFFFF",
-                        margin: "4px",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Physical event">
-                    <Chip
-                      icon={<MeetingRoomIcon style={{ color: "#FFFFFF" }} />}
-                      label={eventTypeCounts["Physical Event"][index]}
-                      size="small"
-                      style={{
-                        backgroundColor: "#AB47BC",
-                        color: "#FFFFFF",
-                        margin: "4px",
-                        fontWeight: "bold",
-                        borderRadius: "4px",
-                      }}
-                    />
-                  </Tooltip>
+                  {Object.entries(eventTypeCounts).map(([eventType, counts]) => (
+                    getEventTypeChip(eventType, counts[index], index)
+                  ))}
                 </Box>
                 <div style={{ padding: "8px" }}>
                   <MonthView month={month} daySelected={daySelected} isYearView={true} />

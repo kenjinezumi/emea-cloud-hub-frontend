@@ -1,24 +1,26 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import { Link, Typography } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
 import EventInfoPopup from "../popup/EventInfoModal";
 import EventListPopup from "../popup/EventListModal";
 import { useLocation } from "react-router-dom";
-import EventIcon from '@mui/icons-material/Event';
-import LanguageIcon from '@mui/icons-material/Language';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import ArticleIcon from '@mui/icons-material/Article';
+import EventIcon from "@mui/icons-material/Event";
+import LanguageIcon from "@mui/icons-material/Language";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import ArticleIcon from "@mui/icons-material/Article";
 
 export default function Day({ day, events, isYearView }) {
   const maxEventsToShow = 3;
 
-  // Filter events that either start on this day or span this day
-  const dayEvents = events.filter(
-    (evt) =>
-      dayjs(evt.startDate).isBefore(day.endOf("day")) &&
-      dayjs(evt.endDate).isAfter(day.startOf("day"))
-  );
+  // Memoize dayEvents to avoid recalculations on every render
+  const dayEvents = useMemo(() => {
+    return events.filter(
+      (evt) =>
+        dayjs(evt.startDate).isBefore(day.endOf("day")) &&
+        dayjs(evt.endDate).isAfter(day.startOf("day"))
+    );
+  }, [events, day]);
 
   const hasEvents = dayEvents.length > 0;
   const location = useLocation();
@@ -30,91 +32,121 @@ export default function Day({ day, events, isYearView }) {
 
   const [activePopup, setActivePopup] = useState(PopupState.NONE);
 
+  // Get necessary context variables including selectedEvent and selectedEvents
   const {
     setDaySelected,
     setShowEventModal,
-    showEventModal,
     setCurrentView,
-    selectedEvent,
     setSelectedEvent,
-    showEventInfoModal,
     setShowInfoEventModal,
-    showEventListModal,
     setShowEventListModal,
-    selectedEvents,
     setSelectedEvents,
+    selectedEvent,   // Add selectedEvent from context
+    selectedEvents,  // Add selectedEvents from context
   } = useContext(GlobalContext);
-
-  const [showAddEventModal, setShowAddEventModal] = useState(false);
 
   useEffect(() => {
     setShowEventModal(false);
     setShowInfoEventModal(false);
     setShowEventListModal(false);
-  }, [location]);
+  }, [location, setShowEventModal, setShowInfoEventModal, setShowEventListModal]);
 
-  const handleDayClick = (e) => {
-    setDaySelected(day);
+  // Memoized event handlers to prevent re-creation on each render
+  const handleDayClick = useCallback(
+    (e) => {
+      setDaySelected(day);
 
-    if (isYearView) {
-      e.preventDefault();
+      if (isYearView) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowInfoEventModal(false);
+        setSelectedEvents(dayEvents);
+        setActivePopup(PopupState.EVENT_LIST);
+        setShowEventListModal(true);
+        setShowEventModal(false);
+      } else {
+        setSelectedEvent(null);
+        setShowEventModal(true);
+      }
+    },
+    [day, isYearView, dayEvents, setDaySelected, setSelectedEvents, setActivePopup, setShowEventListModal, setShowEventModal, setSelectedEvent, setShowInfoEventModal]
+  );
+
+  const handleEventsClick = useCallback(
+    (e) => {
+      setDaySelected(day);
+
+      if (isYearView) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowInfoEventModal(false);
+        setSelectedEvents(dayEvents);
+        setShowEventListModal(true);
+      } else {
+        setSelectedEvent(null);
+        setShowEventModal(true);
+      }
+    },
+    [day, isYearView, dayEvents, setDaySelected, setSelectedEvents, setShowInfoEventModal, setShowEventListModal, setShowEventModal, setSelectedEvent]
+  );
+
+  const handleSeeMoreClick = useCallback(
+    (e) => {
       e.stopPropagation();
+      setDaySelected(day);
+      setCurrentView("day");
+    },
+    [day, setDaySelected, setCurrentView]
+  );
 
-      setShowInfoEventModal(false);
-      setSelectedEvents(dayEvents);
-      setActivePopup(PopupState.EVENT_LIST);
-      setShowEventListModal(true);
-      setShowEventModal(false);
-    } else {
-      setSelectedEvent(null);
-      setShowEventModal(true);
-    }
-  };
-
-  const handleEventsClick = (e) => {
-    setDaySelected(day);
-
-    if (isYearView) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      setShowInfoEventModal(false);
-      setSelectedEvents(dayEvents);
-      setShowEventListModal(true);
-    } else {
-      setSelectedEvent(null);
-      setShowEventModal(true);
-    }
-  };
-
-  const handleSeeMoreClick = (e) => {
-    e.stopPropagation();
-    setDaySelected(day);
-    setCurrentView("day");
-  };
-
-  const handleEventClick = (evt) => {
-    if (!isYearView) {
-      setSelectedEvent(evt);
-      setShowInfoEventModal(true);
-      setShowAddEventModal(false);
-    }
-  };
+  const handleEventClick = useCallback(
+    (evt) => {
+      if (!isYearView) {
+        setSelectedEvent(evt);
+        setShowInfoEventModal(true);
+      }
+    },
+    [isYearView, setSelectedEvent, setShowInfoEventModal]
+  );
 
   const getEventStyleAndIcon = (eventType) => {
     switch (eventType) {
-      case 'Online Event':
-        return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <LanguageIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      case 'Physical Event':
-        return { backgroundColor: '#fce4ec', color: '#d32f2f', icon: <LocationOnIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      case 'Hybrid Event':
-        return { backgroundColor: '#f3e5f5', color: '#6a1b9a', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      case 'Customer Story':
-        return { backgroundColor: '#e8f5e9', color: '#2e7d32', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      case 'Blog Post':
-        return { backgroundColor: '#fffde7', color: '#f57f17', icon: <ArticleIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case "Online Event":
+        return {
+          backgroundColor: "#e3f2fd",
+          color: "#1a73e8",
+          icon: <LanguageIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      case "Physical Event":
+        return {
+          backgroundColor: "#fce4ec",
+          color: "#d32f2f",
+          icon: <LocationOnIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      case "Hybrid Event":
+        return {
+          backgroundColor: "#f3e5f5",
+          color: "#6a1b9a",
+          icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      case "Customer Story":
+        return {
+          backgroundColor: "#e8f5e9",
+          color: "#2e7d32",
+          icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      case "Blog Post":
+        return {
+          backgroundColor: "#fffde7",
+          color: "#f57f17",
+          icon: <ArticleIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
       default:
-        return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+        return {
+          backgroundColor: "#e3f2fd",
+          color: "#1a73e8",
+          icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
     }
   };
 
@@ -132,6 +164,27 @@ export default function Day({ day, events, isYearView }) {
     borderRadius: "50%",
     width: "25px",
   };
+
+  const renderPopup = useMemo(() => {
+    switch (activePopup) {
+      case PopupState.EVENT_INFO:
+        return (
+          <EventInfoPopup
+            event={selectedEvent}
+            onClose={() => setActivePopup(PopupState.NONE)}
+          />
+        );
+      case PopupState.EVENT_LIST:
+        return (
+          <EventListPopup
+            events={selectedEvents}
+            onClose={() => setActivePopup(PopupState.NONE)}
+          />
+        );
+      default:
+        return null;
+    }
+  }, [activePopup, selectedEvent, selectedEvents, setActivePopup]);
 
   return (
     <div
@@ -223,21 +276,7 @@ export default function Day({ day, events, isYearView }) {
       )}
 
       {/* Conditionally render the EventInfoPopup */}
-      <div>
-        {activePopup === PopupState.EVENT_INFO && (
-          <EventInfoPopup
-            event={selectedEvent}
-            onClose={() => setActivePopup(PopupState.NONE)}
-          />
-        )}
-
-        {activePopup === PopupState.EVENT_LIST && (
-          <EventListPopup
-            events={selectedEvents}
-            onClose={() => setActivePopup(PopupState.NONE)}
-          />
-        )}
-      </div>
+      <div>{renderPopup}</div>
     </div>
   );
 }

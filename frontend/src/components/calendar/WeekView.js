@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, { useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import { Paper, Typography, Box } from '@mui/material';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import DayColumn from '../Day/DayColumn';
 import EventInfoPopup from '../popup/EventInfoModal';
-import { getEventData } from '../../api/getEventData';  // Import getEventData to fetch events
+import { getEventData } from '../../api/getEventData';
 
 dayjs.extend(utc);
 
@@ -16,16 +16,16 @@ export default function WeekView() {
     setShowInfoEventModal, 
     showEventInfoModal, 
     selectedEvent, 
-    filters  // Use filters from GlobalContext
+    filters 
   } = useContext(GlobalContext);
 
   const [currentWeek, setCurrentWeek] = useState([]);
-  const [events, setEvents] = useState([]);  // State to store all events
-  const [filteredEvents, setFilteredEvents] = useState([]);  // State to store filtered events
-  const [currentTimePosition, setCurrentTimePosition] = useState(0);
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const hourHeight = 60; // Define the height of each hour slot in pixels
-  const weekViewRef = useRef(null); // Reference to the scrollable container
+  const [events, setEvents] = useState([]);
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [currentTimePosition, setCurrentTimePosition] = useState(0); // State for auto-scroll
+  const userTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
+  const hourHeight = 60;
+  const weekViewRef = useRef(null);
 
   useEffect(() => {
     const startOfWeek = dayjs(daySelected).startOf('week');
@@ -34,52 +34,42 @@ export default function WeekView() {
   }, [daySelected]);
 
   useEffect(() => {
-    async function fetchEvents() {
+    const fetchAndFilterEvents = async () => {
       try {
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
+        const filtered = await applyFilters(eventData, filters);
+        setFilteredEvents(filtered);
       } catch (error) {
         console.error('Error fetching event data:', error);
       }
+    };
+
+    fetchAndFilterEvents();
+  }, [filters]);
+
+  const applyFilters = useCallback(async (events, filters) => {
+    if (!Array.isArray(events)) {
+      console.error("applyFilters was called with 'events' that is not an array:", events);
+      return [];
     }
-    fetchEvents();
+
+    const results = await Promise.all(events.map(async (event) => {
+      const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
+      const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
+      const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label));
+      const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
+      const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
+
+      return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
+    }));
+
+    return events.filter((_, index) => results[index]);
   }, []);
 
   useEffect(() => {
-    const applyFilters = async (events, filters) => {
-      if (!Array.isArray(events)) {
-        console.error("applyFilters was called with 'events' that is not an array:", events);
-        return [];
-      }
-
-      const results = await Promise.all(events.map(async (event) => {
-        const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
-        const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-
-        // Update okrMatch to reflect the new OKR data structure
-        const okrMatch = filters.okr.some(okr => 
-          okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label)
-        );
-
-        const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
-        const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
-
-        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
-      }));
-
-      return events.filter((_, index) => results[index]);
-    };
-
-    (async () => {
-      const filteredEvents = await applyFilters(events, filters);
-      setFilteredEvents(filteredEvents);
-    })();
-  }, [events, filters]);
-
-  useEffect(() => {
     if (weekViewRef.current) {
-      const currentHour = dayjs().hour();
-      const currentHourOffset = currentHour * hourHeight;
+      const currentHourOffset = dayjs().hour() * hourHeight;
       weekViewRef.current.scrollTo({
         top: currentHourOffset - hourHeight / 2,
         behavior: 'smooth',
@@ -88,9 +78,7 @@ export default function WeekView() {
 
     const updateCurrentTimePosition = () => {
       const now = dayjs();
-      const currentHour = now.hour();
-      const currentMinute = now.minute();
-      const position = currentHour * hourHeight + (currentMinute / 60) * hourHeight;
+      const position = now.hour() * hourHeight + (now.minute() / 60) * hourHeight;
       setCurrentTimePosition(position);
     };
 
@@ -98,19 +86,25 @@ export default function WeekView() {
     const interval = setInterval(updateCurrentTimePosition, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [hourHeight]);
 
-  const handleEventClick = (event) => {
-    console.log("Event clicked:", event); // Debug log
-    setSelectedEvent(event);  // Set the selected event
-    setShowInfoEventModal(true);  // Open the modal
-    console.log("Modal should be open:", showEventInfoModal); // Check the state change
-  };
+  const handleEventClick = useCallback((event) => {
+    setSelectedEvent(event);
+    setShowInfoEventModal(true);
+  }, [setSelectedEvent, setShowInfoEventModal]);
 
-  const closeEventModal = () => {
+  const closeEventModal = useCallback(() => {
     setShowInfoEventModal(false);
     setSelectedEvent(null);
-  };
+  }, [setShowInfoEventModal, setSelectedEvent]);
+
+  const timeSlotLabels = useMemo(() => (
+    Array.from({ length: 24 }, (_, i) => (
+      <Typography key={i} align="right" sx={{ height: `${hourHeight}px`, lineHeight: `${hourHeight}px`, paddingRight: '5px', fontSize: '12px', color: 'grey.500' }}>
+        {dayjs().hour(i).minute(0).format('HH:mm')}
+      </Typography>
+    ))
+  ), [hourHeight]);
 
   return (
     <Paper sx={{ width: '90%', height: '100vh', overflow: 'hidden', padding: 2, display: 'flex', flexDirection: 'column', border: 'none' }}>
@@ -118,17 +112,40 @@ export default function WeekView() {
         Week of {dayjs(daySelected).startOf('week').format('MMMM D, YYYY')} ({userTimezone})
       </Typography>
       <Box ref={weekViewRef} sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflowY: 'auto', position: 'relative', width: '100%' }}>
+        {/* Hour Labels */}
         <Box sx={{ flex: '0 0 50px', borderRight: '2px solid #bbb', display: 'flex', flexDirection: 'column' }}>
+          {timeSlotLabels}
+        </Box>
+
+        {/* Horizontal Lines */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 50,
+            right: 0,
+            height: '100%',
+            zIndex: 1,
+            pointerEvents: 'none', // Ensure lines do not intercept clicks
+          }}
+        >
           {Array.from({ length: 24 }, (_, i) => (
-            <Typography key={i} align="right" sx={{ height: `${hourHeight}px`, lineHeight: `${hourHeight}px`, paddingRight: '5px', fontSize: '12px', color: 'grey.500' }}>
-              {dayjs().hour(i).minute(0).format('HH:mm')}
-            </Typography>
+            <Box
+              key={i}
+              sx={{
+                position: 'absolute',
+                top: `${i * hourHeight}px`,
+                left: 0,
+                right: 0,
+                height: '1px',
+                borderTop: '1px solid #ddd',
+              }}
+            />
           ))}
         </Box>
 
         {currentWeek.map((day) => (
           <Box key={day.format('YYYY-MM-DD')} sx={{ flex: 1, position: 'relative' }}>
-            {/* Sticky Header for Day and Date */}
             <Typography 
               align="center" 
               variant="subtitle1" 
@@ -138,7 +155,7 @@ export default function WeekView() {
                 backgroundColor: 'white', 
                 position: 'sticky', 
                 top: 0, 
-                zIndex: 10 // Increase z-index to ensure it stays above other elements
+                zIndex: 10
               }}
             >
               {day.format('ddd, D MMM')}
@@ -152,35 +169,8 @@ export default function WeekView() {
               )}
               onEventClick={handleEventClick} 
             />
-
-            {/* Current Time Line inside each day column */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: `${currentTimePosition}px`,
-                left: '0',
-                right: '0',
-                height: '1px',
-                backgroundColor: '#d32f2f',
-                zIndex: 5,
-              }}
-            />
           </Box>
         ))}
-
-        {/* Single Dot for Current Time Line */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: `${currentTimePosition - 4}px`,
-            left: '50px',
-            width: '8px',
-            height: '8px',
-            backgroundColor: '#d32f2f',
-            borderRadius: '50%',
-            zIndex: 6,
-          }}
-        />
       </Box>
 
       {/* Conditionally render EventInfoPopup */}

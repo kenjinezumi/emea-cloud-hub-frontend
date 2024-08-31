@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, { useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import { Typography, Paper, Box } from '@mui/material';
 import dayjs from 'dayjs';
@@ -65,6 +65,7 @@ export default function DayView() {
   const startHour = 0;
   const endHour = 24;
 
+  // Fetch events and calculate overlap groups on location or daySelected change
   useEffect(() => {
     async function fetchEvents() {
       try {
@@ -78,6 +79,7 @@ export default function DayView() {
     fetchEvents();
   }, [location, daySelected]);
 
+  // Apply filters to events
   useEffect(() => {
     const applyFilters = async (events, filters) => {
       if (!Array.isArray(events)) {
@@ -105,15 +107,18 @@ export default function DayView() {
     })();
   }, [events, filters]);
 
+  // Reset modals when location changes
   useEffect(() => {
     setShowEventModal(false);
     setShowInfoEventModal(false);
-  }, [location]);
+  }, [location, setShowEventModal, setShowInfoEventModal]);
 
+  // Recalculate event groups whenever events change
   useEffect(() => {
     setEventGroups(calculateOverlapGroups(events));
   }, [events]);
 
+  // Automatically scroll to the current hour and update current time position
   useEffect(() => {
     if (dayViewRef.current) {
       const currentHourOffset = dayjs().hour() * hourHeight;
@@ -125,9 +130,8 @@ export default function DayView() {
 
     const updateCurrentTimePosition = () => {
       const now = dayjs();
-      const currentHour = now.hour();
-      const currentMinute = now.minute();
-      const position = currentHour * hourHeight + (currentMinute / 60) * hourHeight;
+      const minutesFromMidnight = now.diff(now.startOf('day'), 'minutes'); // Calculate minutes from midnight accurately
+      const position = (minutesFromMidnight / 60) * hourHeight; // Convert minutes into the vertical position
       setCurrentTimePosition(position);
     };
 
@@ -135,9 +139,10 @@ export default function DayView() {
     const interval = setInterval(updateCurrentTimePosition, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [hourHeight]);
 
-  const calculateOverlapGroups = (events) => {
+  // Memoized function to calculate overlapping event groups
+  const calculateOverlapGroups = useCallback((events) => {
     const eventGroups = [];
 
     if (!Array.isArray(events)) {
@@ -159,16 +164,18 @@ export default function DayView() {
       }
     });
     return eventGroups;
-  };
+  }, []);
 
-  const isOverlapping = (event, group) => {
+  // Helper function to determine if events overlap
+  const isOverlapping = useCallback((event, group) => {
     return group.some((groupEvent) => {
       return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
              dayjs(groupEvent.startDate).isBefore(event.endDate);
     });
-  };
+  }, []);
 
-  const calculateEventBlockStyles = (event) => {
+  // Memoized function to calculate styles for event blocks
+  const calculateEventBlockStyles = useCallback((event) => {
     const eventStart = dayjs(event.startDate);
     const eventEnd = dayjs(event.endDate);
     const startOfDay = daySelected.startOf('day');
@@ -189,22 +196,27 @@ export default function DayView() {
     const left = width * index;
 
     return { top, height, left, width };
-  };
+  }, [daySelected, eventGroups]);
 
-  const handleAddEvent = () => {
+  // Memoized event handler for adding events
+  const handleAddEvent = useCallback(() => {
     setShowEventModal(true);
-  };
+  }, [setShowEventModal]);
 
-  const handleEventClick = (event) => {
+  // Memoized event handler for clicking events
+  const handleEventClick = useCallback((event) => {
     setSelectedEvent(event);
     setShowInfoEventModal(true);
-  };
+  }, [setSelectedEvent, setShowInfoEventModal]);
 
-  const dayEvents = filteredEvents.filter(evt =>
-    dayjs(evt.startDate).isSame(daySelected, 'day') ||
-    dayjs(evt.endDate).isSame(daySelected, 'day') ||
-    (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
-  );
+  // Memoized filtered day events
+  const dayEvents = useMemo(() => {
+    return filteredEvents.filter(evt =>
+      dayjs(evt.startDate).isSame(daySelected, 'day') ||
+      dayjs(evt.endDate).isSame(daySelected, 'day') ||
+      (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
+    );
+  }, [filteredEvents, daySelected]);
 
   return (
     <Paper
@@ -363,20 +375,6 @@ export default function DayView() {
                 height: '2px',
                 backgroundColor: '#d32f2f',
                 zIndex: 5,
-              }}
-            />
-
-            {/* Single Dot for Current Time Line */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: `${currentTimePosition - 4}px`,
-                left: '-5px',
-                width: '8px',
-                height: '8px',
-                backgroundColor: '#d32f2f',
-                borderRadius: '50%',
-                zIndex: 6,
               }}
             />
           </div>

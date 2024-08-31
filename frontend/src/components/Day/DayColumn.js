@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import dayjs from 'dayjs';
 import minMax from 'dayjs/plugin/minMax';
@@ -23,9 +23,11 @@ export default function DayColumn({ daySelected, onEventClick }) {
   const [events, setEvents] = useState([]);
   const [eventGroups, setEventGroups] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [currentTimePosition, setCurrentTimePosition] = useState(0); // State for current time position
   const hourHeight = 60;
   const startHour = 0;
   const endHour = 24;
+  const dayColumnRef = useRef(null); // Reference for auto-scroll
 
   useEffect(() => {
     async function fetchEvents() {
@@ -68,13 +70,27 @@ export default function DayColumn({ daySelected, onEventClick }) {
   useEffect(() => {
     setShowEventModal(false);
     setShowInfoEventModal(false);
-  }, []);
+  }, [setShowEventModal, setShowInfoEventModal]);
 
   useEffect(() => {
     setEventGroups(calculateOverlapGroups(events));
   }, [events]);
 
-  const calculateOverlapGroups = (events) => {
+  useEffect(() => {
+    // Update current time position
+    const updateCurrentTimePosition = () => {
+      const now = dayjs();
+      const position = now.hour() * hourHeight + (now.minute() / 60) * hourHeight;
+      setCurrentTimePosition(position);
+    };
+
+    updateCurrentTimePosition(); // Initial update
+    const interval = setInterval(updateCurrentTimePosition, 60000); // Update every minute
+
+    return () => clearInterval(interval); // Cleanup interval on unmount
+  }, [hourHeight]);
+
+  const calculateOverlapGroups = useCallback((events) => {
     const eventGroups = [];
 
     if (!Array.isArray(events)) {
@@ -96,16 +112,16 @@ export default function DayColumn({ daySelected, onEventClick }) {
       }
     });
     return eventGroups;
-  };
+  }, []);
 
-  const isOverlapping = (event, group) => {
+  const isOverlapping = useCallback((event, group) => {
     return group.some((groupEvent) => {
       return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
              dayjs(groupEvent.startDate).isBefore(event.endDate);
     });
-  };
+  }, []);
 
-  const calculateEventBlockStyles = (event) => {
+  const calculateEventBlockStyles = useCallback((event) => {
     const eventStart = dayjs(event.startDate);
     const eventEnd = dayjs(event.endDate);
     const startOfDay = daySelected.startOf('day');
@@ -126,26 +142,28 @@ export default function DayColumn({ daySelected, onEventClick }) {
     const left = width * index;
 
     return { top, height, left, width };
-  };
+  }, [daySelected, eventGroups]);
 
-  const handleEventClickInternal = (event) => {
+  const handleEventClickInternal = useCallback((event) => {
     if (onEventClick) {
       onEventClick(event);
     }
-  };
+  }, [onEventClick]);
 
-  const handleSlotClick = (hour) => {
+  const handleSlotClick = useCallback((hour) => {
     setDaySelected(daySelected.hour(hour).minute(0));
     setShowEventModal(true);
-  };
+  }, [daySelected, setDaySelected, setShowEventModal]);
 
-  const dayEvents = filteredEvents.filter(evt =>
-    dayjs(evt.startDate).isSame(daySelected, 'day') ||
-    dayjs(evt.endDate).isSame(daySelected, 'day') ||
-    (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
-  );
+  const dayEvents = useMemo(() => {
+    return filteredEvents.filter(evt =>
+      dayjs(evt.startDate).isSame(daySelected, 'day') ||
+      dayjs(evt.endDate).isSame(daySelected, 'day') ||
+      (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
+    );
+  }, [filteredEvents, daySelected]);
 
-  const getEventStyleAndIcon = (eventType) => {
+  const getEventStyleAndIcon = useCallback((eventType) => {
     switch (eventType) {
       case 'Online Event':
         return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <LanguageIcon fontSize="small" style={{ marginRight: '5px' }} /> };
@@ -160,7 +178,7 @@ export default function DayColumn({ daySelected, onEventClick }) {
       default:
         return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
     }
-  };
+  }, []);
 
   return (
     <Box
@@ -169,8 +187,9 @@ export default function DayColumn({ daySelected, onEventClick }) {
         height: `${hourHeight * (endHour - startHour)}px`,
         borderRight: '2px solid #bbb',
         borderBottom: '1px solid #ddd',
-        backgroundColor: '#ffffff',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',  // Adjusted for transparency
       }}
+      ref={dayColumnRef}
     >
       {/* Render Hour Lines and Clickable Slots */}
       {Array.from({ length: endHour - startHour }, (_, i) => (
@@ -183,11 +202,25 @@ export default function DayColumn({ daySelected, onEventClick }) {
             right: 0,
             height: `${hourHeight}px`,
             borderTop: '1px solid #ddd',
+            borderBottom: i === (endHour - startHour - 1) ? 'none' : '1px solid rgba(0, 0, 0, 0.1)', // Add a bottom border for visibility
             cursor: 'pointer',
           }}
           onClick={() => handleSlotClick(i + startHour)}
         />
       ))}
+
+      {/* Current Time Line */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: `${currentTimePosition}px`,
+          left: '0',
+          right: '0',
+          height: '2px',  // Make the line thicker
+          backgroundColor: '#d32f2f',
+          zIndex: 5,
+        }}
+      />
 
       {/* Render Events */}
       {dayEvents.map((event) => {
