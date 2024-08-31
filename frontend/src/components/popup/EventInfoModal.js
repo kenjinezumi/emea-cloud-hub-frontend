@@ -24,12 +24,13 @@ import LabelIcon from "@mui/icons-material/Label";
 import PeopleIcon from "@mui/icons-material/People";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import LanguageIcon from "@mui/icons-material/Language";
+import PublicIcon from "@mui/icons-material/Public"; // Added for world icon
 import DescriptionIcon from "@mui/icons-material/Description";
 import LinkIcon from "@mui/icons-material/Link";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
-import { red } from "@mui/material/colors";
+import { red, blue } from "@mui/material/colors";
 
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
@@ -61,7 +62,7 @@ export default function EventInfoPopup({ event, close }) {
 
   const formatListWithSpaces = (list) => {
     if (!list) return "";
-    if (typeof list === "string") return list;
+    if (typeof list === "string") return list.replace(/,/g, ", ");
     if (!Array.isArray(list)) return "";
     return list.map((item) => item.replace(/,/g, ", ")).join(", ");
   };
@@ -222,28 +223,27 @@ export default function EventInfoPopup({ event, close }) {
     ),
     Details: (
       <Stack spacing={2} sx={{ p: 3 }}>
-       {/* Audience */}
-<Typography
-  variant="body2"
-  display="flex"
-  alignItems="center"
-  sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
->
-  <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Audience:
-</Typography>
-<Typography
-  variant="body2"
-  sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
->
-  {(selectedEvent.audienceSeniority && selectedEvent.audienceSeniority.length > 0
-    ? selectedEvent.audienceSeniority.join(", ")
-    : "N/A") +
-    (selectedEvent.accountSectors && Array.isArray(selectedEvent.accountSectors) && selectedEvent.accountSectors.length > 0
-    ? `, ${selectedEvent.accountSectors.join(", ")}`
-    : selectedEvent.accountSectors ? `, ${selectedEvent.accountSectors}` : "")}
-</Typography>
-
+        {/* Audience */}
+        <Typography
+          variant="body2"
+          display="flex"
+          alignItems="center"
+          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+        >
+          <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Audience:<Typography
+          variant="body2"
+          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
+        >
+          {(selectedEvent.audienceSeniority && selectedEvent.audienceSeniority.length > 0
+            ? selectedEvent.audienceSeniority.join(", ")
+            : "N/A") +
+            (selectedEvent.accountSectors && Array.isArray(selectedEvent.accountSectors) && selectedEvent.accountSectors.length > 0
+            ? `, ${selectedEvent.accountSectors.join(", ")}`
+            : selectedEvent.accountSectors ? `, ${selectedEvent.accountSectors}` : "")}
+        </Typography>
+        </Typography>
+        
 
         {/* OKR Information */}
         <Typography
@@ -254,8 +254,7 @@ export default function EventInfoPopup({ event, close }) {
         >
           <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
           OKR:
-        </Typography>
-        <Typography
+          <Typography
           variant="body2"
           sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
         >
@@ -265,6 +264,8 @@ export default function EventInfoPopup({ event, close }) {
               ).join(", ")
             : "N/A"}
         </Typography>
+        </Typography>
+       
 
         {/* Event Series and Customer Use */}
         <Typography
@@ -274,14 +275,10 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Part of an event series?
+          Part of an event series?           {selectedEvent.eventSeries ? "Yes" : "No"}
+
         </Typography>
-        <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.eventSeries ? "Yes" : "No"}
-        </Typography>
+       
 
         <Typography
           variant="body2"
@@ -290,14 +287,10 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <CheckCircleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Approved for customer use?
+          Approved for customer use?           {selectedEvent.customerUse ? "Yes" : "No"}
+
         </Typography>
-        <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.customerUse ? "Yes" : "No"}
-        </Typography>
+     
       </Stack>
     ),
     Links: (
@@ -310,13 +303,7 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Landing Page Links:
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
+          Landing Page Links:  {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
             ? selectedEvent.landingPageLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -335,6 +322,7 @@ export default function EventInfoPopup({ event, close }) {
             : "N/A"}
         </Typography>
 
+
         {/* Sales Kit Links */}
         <Typography
           variant="body2"
@@ -343,13 +331,7 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Sales Kit Links:
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
+          Sales Kit Links: {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
             ? selectedEvent.salesKitLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -367,6 +349,7 @@ export default function EventInfoPopup({ event, close }) {
               ))
             : "N/A"}
         </Typography>
+       
 
         {/* Hailo Links */}
         <Typography
@@ -376,13 +359,7 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Hailo Links:
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
+          Hailo Links: {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
             ? selectedEvent.hailoLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -401,6 +378,7 @@ export default function EventInfoPopup({ event, close }) {
             : "N/A"}
         </Typography>
 
+
         {/* Other Documents Links */}
         <Typography
           variant="body2"
@@ -409,13 +387,7 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Other Documents:
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.otherDocumentsLinks && selectedEvent.otherDocumentsLinks.length > 0
+          Other Documents: {selectedEvent.otherDocumentsLinks && selectedEvent.otherDocumentsLinks.length > 0
             ? selectedEvent.otherDocumentsLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -433,6 +405,7 @@ export default function EventInfoPopup({ event, close }) {
               ))
             : "N/A"}
         </Typography>
+        
       </Stack>
     ),
   };
@@ -529,12 +502,30 @@ export default function EventInfoPopup({ event, close }) {
               }}
             >
               <EventIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-              {dayjs(selectedEvent.startDate).format("dddd, MMMM D, YYYY h:mm A")} - {dayjs(selectedEvent.endDate).format("h:mm A")}
+              {dayjs(selectedEvent.startDate).format("dddd, MMMM D, YYYY h:mm A")} - {dayjs(selectedEvent.endDate).format("dddd, MMMM D, YYYY h:mm A")}
               {selectedEvent.isHighPriority && (
                 <Tooltip title="High Priority">
                   <WhatshotIcon style={{ color: red[500], marginLeft: "auto" }} />
                 </Tooltip>
               )}
+            </Typography>
+
+            {/* Region and Location Details */}
+            <Typography
+              variant="body2"
+              display="flex"
+              alignItems="center"
+              sx={{
+                pl: 2,
+                pr: 2,
+                mt: 1,
+                color: "#5f6368",
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+              }}
+            >
+              <PublicIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+              {formatListWithSpaces(selectedEvent.region)}, {formatListWithSpaces(selectedEvent.subregion)}, {formatListWithSpaces(selectedEvent.country)}
             </Typography>
 
             <Divider sx={{ width: "100%", my: 1 }} />
@@ -572,6 +563,40 @@ export default function EventInfoPopup({ event, close }) {
             </Stack>
             <Divider sx={{ width: "100%" }} />
             {sections[currentSection]}
+
+            {/* Add Buttons to Bottom */}
+            <Divider sx={{ width: "100%", my: 1 }} />
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ p: 2, justifyContent: "flex-end" }}
+            >
+              <IconButton>
+                <LanguageIcon />
+              </IconButton>
+              <Button
+                variant="contained"
+                style={{
+                  backgroundColor: blue[500],
+                  color: "white",
+                  boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
+                  margin: "10px",
+                }}
+              >
+                Gmail Invite
+              </Button>
+              <Button
+                variant="contained"
+                style={{
+                  backgroundColor: blue[500],
+                  color: "white",
+                  boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
+                  margin: "10px",
+                }}
+              >
+                Salesloft Invite
+              </Button>
+            </Stack>
           </Paper>
         </div>
       </Draggable>
