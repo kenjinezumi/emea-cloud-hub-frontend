@@ -6,8 +6,42 @@ import minMax from 'dayjs/plugin/minMax';
 import { useLocation } from 'react-router-dom';
 import { getEventData } from '../../api/getEventData';
 import EventInfoPopup from '../popup/EventInfoModal';
+import OnlineEventIcon from '@mui/icons-material/Computer';
+import PhysicalEventIcon from '@mui/icons-material/LocationOn';
+import HybridEventIcon from '@mui/icons-material/Autorenew';
+import CustomerStoryIcon from '@mui/icons-material/LibraryBooks';
+import BlogPostIcon from '@mui/icons-material/Create';
 
 dayjs.extend(minMax);
+
+// Define styles for each event type
+const eventTypeStyles = {
+  'Online Event': {
+    color: '#1E88E5',
+    icon: <OnlineEventIcon style={{ marginRight: '5px', color: '#1E88E5' }} />,
+    backgroundColor: '#E3F2FD',
+  },
+  'Physical Event': {
+    color: '#43A047',
+    icon: <PhysicalEventIcon style={{ marginRight: '5px', color: '#43A047' }} />,
+    backgroundColor: '#E8F5E9',
+  },
+  'Hybrid Event': {
+    color: '#FB8C00',
+    icon: <HybridEventIcon style={{ marginRight: '5px', color: '#FB8C00' }} />,
+    backgroundColor: '#FFF3E0',
+  },
+  'Customer Story': {
+    color: '#E53935',
+    icon: <CustomerStoryIcon style={{ marginRight: '5px', color: '#E53935' }} />,
+    backgroundColor: '#FFEBEE',
+  },
+  'Blog Post': {
+    color: '#8E24AA',
+    icon: <BlogPostIcon style={{ marginRight: '5px', color: '#8E24AA' }} />,
+    backgroundColor: '#F3E5F5',
+  },
+};
 
 export default function DayView() {
   const {
@@ -22,12 +56,12 @@ export default function DayView() {
   const [events, setEvents] = useState([]);
   const [eventGroups, setEventGroups] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const [currentTimePosition, setCurrentTimePosition] = useState(0); // State for current time position
+  const [currentTimePosition, setCurrentTimePosition] = useState(0);
   const location = useLocation();
-  const dayViewRef = useRef(null); // Reference for auto-scroll
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // Retrieve user's timezone
+  const dayViewRef = useRef(null);
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  const hourHeight = 90; // Height of one hour slot in pixels
+  const hourHeight = 90;
   const startHour = 0;
   const endHour = 24;
 
@@ -54,7 +88,9 @@ export default function DayView() {
       const results = await Promise.all(events.map(async (event) => {
         const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
         const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-        const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.includes(okr.label));
+        const okrMatch = filters.okr.some(okr => 
+          okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label)
+        );        
         const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
         const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
         return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
@@ -79,11 +115,10 @@ export default function DayView() {
   }, [events]);
 
   useEffect(() => {
-    // Auto-scroll to current hour when the day view is loaded
     if (dayViewRef.current) {
-      const currentHourOffset = dayjs().hour() * hourHeight; // Calculate the offset based on the current hour
+      const currentHourOffset = dayjs().hour() * hourHeight;
       dayViewRef.current.scrollTo({
-        top: currentHourOffset - hourHeight / 2, // Scroll to a position just above the current time for better visibility
+        top: currentHourOffset - hourHeight / 2,
         behavior: 'smooth',
       });
     }
@@ -96,10 +131,10 @@ export default function DayView() {
       setCurrentTimePosition(position);
     };
 
-    updateCurrentTimePosition(); // Initial update
-    const interval = setInterval(updateCurrentTimePosition, 60000); // Update every minute
+    updateCurrentTimePosition();
+    const interval = setInterval(updateCurrentTimePosition, 60000);
 
-    return () => clearInterval(interval); // Clean up interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   const calculateOverlapGroups = (events) => {
@@ -176,10 +211,10 @@ export default function DayView() {
       sx={{
         width: '90%',
         maxHeight: '100vh',
-        overflow: 'hidden', // Prevent the whole Paper from scrolling
+        overflow: 'hidden',
         position: 'relative',
         backgroundColor: 'background.default',
-        marginLeft: '20px',  // Adjust margin to avoid affecting the sidebar
+        marginLeft: '20px',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -189,8 +224,8 @@ export default function DayView() {
         style={{
           position: 'sticky',
           top: 0,
-          backgroundColor: 'white', // Set the background color to ensure the date is readable
-          zIndex: 10, // Higher z-index to ensure it stays above other elements
+          backgroundColor: 'white',
+          zIndex: 10,
           padding: '10px 0',
           borderBottom: '1px solid #ddd',
         }}
@@ -208,9 +243,9 @@ export default function DayView() {
       <div
         ref={dayViewRef}
         style={{
-          overflowY: 'auto', // Only this part will scroll
-          height: 'calc(100vh - 100px)', // Adjust height based on your layout needs
-          position: 'relative', // Ensure relative positioning for the dot and line to be absolute within this container
+          overflowY: 'auto',
+          height: 'calc(100vh - 100px)',
+          position: 'relative',
         }}
       >
         {/* Event Grid Container */}
@@ -219,7 +254,7 @@ export default function DayView() {
             position: 'relative',
             height: `${hourHeight * (endHour - startHour)}px`,
             width: 'calc(100% - 40px)',
-            marginLeft: '50px', // Ensures the grid aligns properly with hour labels
+            marginLeft: '50px',
           }}
         >
           {/* Hour Labels */}
@@ -227,7 +262,7 @@ export default function DayView() {
             style={{
               position: 'absolute',
               top: 0,
-              left: '-50px', // Moves hour labels to the left
+              left: '-50px',
               width: '40px',
               display: 'flex',
               flexDirection: 'column',
@@ -262,7 +297,8 @@ export default function DayView() {
                 key={quarter}
                 style={{
                   height: `${hourHeight / 2}px`,
-                  borderTop: `1px solid ${quarter % 2 === 0 ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+                  borderTop: `1px solid rgba(0, 0, 0, 0.1)`,
+                  backgroundColor: '#f5f5f5',
                   position: 'relative',
                   cursor: 'pointer',
                 }}
@@ -273,6 +309,7 @@ export default function DayView() {
             {/* Render Events */}
             {dayEvents.map((event) => {
               const { top, height, left, width } = calculateEventBlockStyles(event);
+              const eventTypeStyle = eventTypeStyles[event.eventType] || {};
               return (
                 <div
                   key={event.eventId}
@@ -282,10 +319,10 @@ export default function DayView() {
                     left: `${left}%`,
                     width: `${width}%`,
                     height: `${height}px`,
-                    backgroundColor: '#e3f2fd',
-                    color: '#1a73e8',
+                    backgroundColor: eventTypeStyle.backgroundColor,
+                    color: eventTypeStyle.color,
                     padding: '2px 4px',
-                    borderRadius: '4px',
+                    borderRadius: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     overflow: 'hidden',
@@ -294,23 +331,24 @@ export default function DayView() {
                     cursor: 'pointer',
                     zIndex: 2,
                     boxSizing: 'border-box',
-                    borderLeft: '2px solid #1a73e8',
-                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                    borderLeft: `4px solid ${eventTypeStyle.color}`,
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
                     transition: 'background-color 0.2s, box-shadow 0.2s',
                     fontSize: '0.875rem',
                     fontWeight: '500',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#c5e1f9';
-                    e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
+                    e.currentTarget.style.backgroundColor = eventTypeStyle.color ? `${eventTypeStyle.color}33` : '#c5e1f9';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#e3f2fd';
-                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                    e.currentTarget.style.backgroundColor = eventTypeStyle.backgroundColor;
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
                   }}
                   onClick={() => handleEventClick(event)}
                 >
-                  <Typography>{event.title}</Typography>
+                  {eventTypeStyle.icon}
+                  <Typography variant="body2" noWrap>{event.title}</Typography>
                 </div>
               );
             })}
@@ -319,11 +357,11 @@ export default function DayView() {
             <Box
               sx={{
                 position: 'absolute',
-                top: `${currentTimePosition}px`, // Position based on current time
-                left: '0', // Start the line right after the hour labels
+                top: `${currentTimePosition}px`,
+                left: '0',
                 right: '0',
-                height: '1px',
-                backgroundColor: '#d32f2f', // Red color for the line, similar to Google Calendar
+                height: '2px',
+                backgroundColor: '#d32f2f',
                 zIndex: 5,
               }}
             />
@@ -332,13 +370,13 @@ export default function DayView() {
             <Box
               sx={{
                 position: 'absolute',
-                top: `${currentTimePosition - 4}px`, // Position the dot centered vertically on the line
-                left: '0', // Position the dot right after the hour labels
+                top: `${currentTimePosition - 4}px`,
+                left: '-5px',
                 width: '8px',
                 height: '8px',
-                backgroundColor: '#d32f2f', // Same red color for the dot
+                backgroundColor: '#d32f2f',
                 borderRadius: '50%',
-                zIndex: 6, // Ensure it appears above the time line
+                zIndex: 6,
               }}
             />
           </div>

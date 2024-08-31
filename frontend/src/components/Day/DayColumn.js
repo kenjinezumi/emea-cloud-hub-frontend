@@ -4,6 +4,10 @@ import dayjs from 'dayjs';
 import minMax from 'dayjs/plugin/minMax';
 import { getEventData } from '../../api/getEventData';
 import { Box, Typography } from '@mui/material';
+import EventIcon from '@mui/icons-material/Event';
+import LanguageIcon from '@mui/icons-material/Language';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ArticleIcon from '@mui/icons-material/Article';
 
 dayjs.extend(minMax);
 
@@ -46,7 +50,7 @@ export default function DayColumn({ daySelected, onEventClick }) {
       const results = await Promise.all(events.map(async (event) => {
         const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
         const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-        const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.includes(okr.label));
+        const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label));
         const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
         const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
         return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
@@ -125,9 +129,8 @@ export default function DayColumn({ daySelected, onEventClick }) {
   };
 
   const handleEventClickInternal = (event) => {
-    console.log("Internal Event Click:", event); // Debug log
     if (onEventClick) {
-      onEventClick(event);  // Ensure this line calls the prop function
+      onEventClick(event);
     }
   };
 
@@ -141,6 +144,23 @@ export default function DayColumn({ daySelected, onEventClick }) {
     dayjs(evt.endDate).isSame(daySelected, 'day') ||
     (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
   );
+
+  const getEventStyleAndIcon = (eventType) => {
+    switch (eventType) {
+      case 'Online Event':
+        return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <LanguageIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case 'Physical Event':
+        return { backgroundColor: '#fce4ec', color: '#d32f2f', icon: <LocationOnIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case 'Hybrid Event':
+        return { backgroundColor: '#f3e5f5', color: '#6a1b9a', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case 'Customer Story':
+        return { backgroundColor: '#e8f5e9', color: '#2e7d32', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case 'Blog Post':
+        return { backgroundColor: '#fffde7', color: '#f57f17', icon: <ArticleIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      default:
+        return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+    }
+  };
 
   return (
     <Box
@@ -172,6 +192,7 @@ export default function DayColumn({ daySelected, onEventClick }) {
       {/* Render Events */}
       {dayEvents.map((event) => {
         const { top, height, left, width } = calculateEventBlockStyles(event);
+        const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
         return (
           <div
             key={event.eventId}
@@ -181,8 +202,8 @@ export default function DayColumn({ daySelected, onEventClick }) {
               left: `${left}%`,
               width: `${width}%`,
               height: `${height}px`,
-              backgroundColor: '#e3f2fd',
-              color: '#1a73e8',
+              backgroundColor: backgroundColor,
+              color: color,
               padding: '2px 4px',
               borderRadius: '4px',
               display: 'flex',
@@ -195,7 +216,7 @@ export default function DayColumn({ daySelected, onEventClick }) {
               marginLeft: "4px",
               marginRight: "4px",
               boxSizing: 'border-box',
-              borderLeft: '2px solid #1a73e8',
+              borderLeft: `2px solid ${color}`,
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
               transition: 'background-color 0.2s, box-shadow 0.2s',
               fontSize: '0.875rem',
@@ -206,14 +227,15 @@ export default function DayColumn({ daySelected, onEventClick }) {
               e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#e3f2fd';
+              e.currentTarget.style.backgroundColor = backgroundColor;
               e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
             }}
             onClick={(e) => {
               e.stopPropagation();
-              handleEventClickInternal(event);  // Use the internal handler
+              handleEventClickInternal(event);
             }}
           >
+            {icon}
             <Typography>{event.title}</Typography>
           </div>
         );

@@ -50,13 +50,12 @@ export default function ExtraDetailsForm() {
       setGep(selectedEvent.gep || []);
       setActivityType(selectedEvent.activityType || "direct");
 
-      // Convert OKR array and percentages to a dictionary
+      // Initialize OKR selections from event data
       const okrDictionary = okrOptions.reduce((acc, option) => {
+        const okrItem = selectedEvent.okr.find(item => item.type === option.label);
         acc[option.label] = {
-          selected: selectedEvent.okr ? selectedEvent.okr.includes(option.label) : false,
-          percentage: selectedEvent.okrPercentages
-            ? selectedEvent.okrPercentages[option.label] || ""
-            : "",
+          selected: !!okrItem,
+          percentage: okrItem ? okrItem.percentage : "",
         };
         return acc;
       }, {});
@@ -69,13 +68,12 @@ export default function ExtraDetailsForm() {
       setGep(formData.gep || []);
       setActivityType(formData.activityType || "direct");
 
-      // Convert OKR array and percentages to a dictionary
+      // Initialize OKR selections from form data
       const okrDictionary = okrOptions.reduce((acc, option) => {
+        const okrItem = formData.okr.find(item => item.type === option.label);
         acc[option.label] = {
-          selected: formData.okr ? formData.okr.includes(option.label) : false,
-          percentage: formData.okrPercentages
-            ? formData.okrPercentages[option.label] || ""
-            : "",
+          selected: !!okrItem,
+          percentage: okrItem ? okrItem.percentage : "",
         };
         return acc;
       }, {});
@@ -106,13 +104,12 @@ export default function ExtraDetailsForm() {
   const saveAndNavigate = useFormNavigation();
 
   const handlePrevious = () => {
-    const selectedOkrs = Object.keys(okrSelections).filter(
-      (key) => okrSelections[key].selected
-    );
-    const okrPercentages = selectedOkrs.reduce((acc, key) => {
-      acc[key] = okrSelections[key].percentage;
-      return acc;
-    }, {});
+    const selectedOkrs = Object.keys(okrSelections)
+      .filter((key) => okrSelections[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: okrSelections[key].percentage,
+      }));
 
     saveAndNavigate(
       {
@@ -121,7 +118,6 @@ export default function ExtraDetailsForm() {
         eventSeries,
         customerUse,
         okr: selectedOkrs,
-        okrPercentages,
         gep,
         activityType,
       },
@@ -135,11 +131,15 @@ export default function ExtraDetailsForm() {
   };
 
   const handleNext = () => {
-    const selectedOkrs = Object.keys(okrSelections).filter(
-      (key) => okrSelections[key].selected
-    );
+    const selectedOkrs = Object.keys(okrSelections)
+      .filter((key) => okrSelections[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: okrSelections[key].percentage,
+      }));
+
     const totalPercentage = selectedOkrs.reduce(
-      (sum, key) => sum + (parseFloat(okrSelections[key].percentage) || 0),
+      (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
       0
     );
 
@@ -158,18 +158,12 @@ export default function ExtraDetailsForm() {
       return;
     }
 
-    const okrPercentages = selectedOkrs.reduce((acc, key) => {
-      acc[key] = okrSelections[key].percentage;
-      return acc;
-    }, {});
-
     const currentFormData = {
       activityOwner,
       speakers,
       eventSeries,
       customerUse,
       okr: selectedOkrs,
-      okrPercentages,
       gep,
       activityType,
     };
@@ -180,13 +174,12 @@ export default function ExtraDetailsForm() {
   const handleSaveAsDraft = async () => {
     const isDraft = formData.isDraft !== undefined ? formData.isDraft : true;
 
-    const selectedOkrs = Object.keys(okrSelections).filter(
-      (key) => okrSelections[key].selected
-    );
-    const okrPercentages = selectedOkrs.reduce((acc, key) => {
-      acc[key] = okrSelections[key].percentage;
-      return acc;
-    }, {});
+    const selectedOkrs = Object.keys(okrSelections)
+      .filter((key) => okrSelections[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: okrSelections[key].percentage,
+      }));
 
     const draftData = {
       activityOwner,
@@ -194,7 +187,6 @@ export default function ExtraDetailsForm() {
       eventSeries,
       customerUse,
       okr: selectedOkrs,
-      okrPercentages,
       gep,
       activityType,
       isDraft,
@@ -289,7 +281,7 @@ export default function ExtraDetailsForm() {
                             handlePercentageChange(label, e.target.value)
                           }
                           placeholder="Percentage"
-                          sx={{ width: "80%" }} // Increase width to make input field wider
+                          sx={{ width: "80%" }}
                           inputProps={{
                             min: 0,
                             max: 100,

@@ -15,6 +15,7 @@ import {
   Chip,
   IconButton,
   InputLabel,
+  Checkbox,
 } from "@mui/material";
 import {
   LocalizationProvider,
@@ -32,7 +33,7 @@ import GlobalContext from "../../context/GlobalContext";
 import { eventTypeOptions } from "../filters/FiltersData";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
-import "../styles/Forms.css"; // If you still use any styles from this file
+import "../styles/Forms.css";
 
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
@@ -72,6 +73,9 @@ const EventForm = () => {
   const [isHighPriority, setIsHighPriority] = useState(
     selectedEvent ? selectedEvent.isHighPriority : formData.isHighPriority || false
   );
+  const [isEventSeries, setIsEventSeries] = useState(
+    selectedEvent ? selectedEvent.isEventSeries : formData.isEventSeries || false
+  );
   const [startDate, setStartDate] = useState(
     selectedEvent ? selectedEvent.startDate : formData.startDate || new Date()
   );
@@ -86,7 +90,7 @@ const EventForm = () => {
   const [isFormValid, setIsFormValid] = useState(true);
   const [userTimezone, setUserTimezone] = useState(
     Intl.DateTimeFormat().resolvedOptions().timeZone
-  ); // Retrieve user's timezone
+  );
   const saveAndNavigate = useFormNavigation();
 
   const handleStartDateChange = (newDate) => setStartDate(newDate);
@@ -178,11 +182,12 @@ const EventForm = () => {
       dropdownValue2,
       marketingActivityType,
       isHighPriority,
+      isEventSeries, // Include new field
       startDate,
       endDate,
       marketingProgramInstanceId,
       eventType,
-      userTimezone, // Store the timezone
+      userTimezone,
     };
 
     saveAndNavigate(newFormData, "/location");
@@ -208,12 +213,13 @@ const EventForm = () => {
       dropdownValue2,
       marketingActivityType,
       isHighPriority,
+      isEventSeries, // Include new field
       startDate,
       endDate,
       marketingProgramInstanceId,
       eventType,
       isDraft,
-      userTimezone, // Store the timezone
+      userTimezone,
     };
 
     updateFormData(newFormData);
@@ -237,7 +243,7 @@ const EventForm = () => {
   return (
     <div
       className="h-screen flex flex-col"
-      style={{ overscrollBehavior: "contain" }} // Prevent bounce at top/bottom of the container
+      style={{ overscrollBehavior: "contain" }}
     >
       <CalendarHeaderForm />
 
@@ -276,7 +282,6 @@ const EventForm = () => {
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>Organised by</Typography>
                 <FormControl fullWidth>
-                  <InputLabel id="organised-by-label">Organised by</InputLabel>
                   <Select
                     labelId="organised-by-label"
                     id="organised-by-select"
@@ -340,6 +345,22 @@ const EventForm = () => {
                       High priority status
                     </Typography>
                   }
+                />
+              </FormGroup>
+            </Grid>
+
+            {/* Checkbox for event series */}
+            <Grid item xs={12} sx={{ mb: 3 }}>
+              <FormGroup row>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isEventSeries}
+                      onChange={(e) => setIsEventSeries(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Is the event part of a series?"
                 />
               </FormGroup>
             </Grid>

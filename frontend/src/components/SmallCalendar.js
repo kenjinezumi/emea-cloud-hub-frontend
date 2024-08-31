@@ -8,7 +8,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 export default function SmallCalendar() {
   const [currentMonthIdx, setCurrentMonthIdx] = useState(dayjs().month());
-  const [currentYear, setCurrentYear] = useState(dayjs().year()); // Add year state
+  const [currentYear, setCurrentYear] = useState(dayjs().year());
   const [currentMonth, setCurrentMonth] = useState(getMonth());
 
   const {
@@ -19,17 +19,16 @@ export default function SmallCalendar() {
   } = useContext(GlobalContext);
 
   useEffect(() => {
-    setCurrentMonth(getMonth(currentMonthIdx, currentYear)); // Pass both month and year
-  }, [currentMonthIdx, currentYear]); // Watch both month index and year
+    setCurrentMonth(getMonth(currentMonthIdx, currentYear));
+  }, [currentMonthIdx, currentYear]);
 
   useEffect(() => {
     setCurrentMonthIdx(monthIndex);
-    setCurrentYear(daySelected.year()); // Synchronize with global state's selected year
+    setCurrentYear(daySelected.year());
   }, [monthIndex, daySelected]);
 
   function handlePrevMonth() {
     if (currentMonthIdx === 0) {
-      // If currently in January, move to December of the previous year
       setCurrentMonthIdx(11);
       setCurrentYear(currentYear - 1);
     } else {
@@ -39,7 +38,6 @@ export default function SmallCalendar() {
 
   function handleNextMonth() {
     if (currentMonthIdx === 11) {
-      // If currently in December, move to January of the next year
       setCurrentMonthIdx(0);
       setCurrentYear(currentYear + 1);
     } else {
@@ -54,13 +52,10 @@ export default function SmallCalendar() {
     const slcDay = daySelected && daySelected.format(format);
 
     if (nowDay === currDay && currDay === slcDay) {
-      // Both current day and selected day
       return 'bg-blue-500 rounded-full text-white font-bold';
     } else if (nowDay === currDay) {
-      // Only current day
       return 'bg-blue-500 rounded-full text-white';
     } else if (currDay === slcDay) {
-      // Only selected day
       return 'bg-blue-100 rounded-full text-blue-600 font-bold';
     } else {
       return '';

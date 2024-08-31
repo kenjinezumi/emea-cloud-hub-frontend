@@ -47,7 +47,9 @@ export default function ListView({}) {
         return (async () => {
           const regionMatch = filters.regions.some(region => region.checked && event.region && event.region.includes(region.label));
           const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-          const okrMatch = filters.okr.some(okr => okr.checked && event.okr && event.okr.includes(okr.label));
+          const okrMatch = filters.okr.some(okr => 
+            okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label)
+          );                  
           const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority && event.audienceSeniority.includes(seniority.label));
 
           return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;

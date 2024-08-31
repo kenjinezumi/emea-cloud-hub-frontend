@@ -5,12 +5,23 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import DayColumn from '../Day/DayColumn';
 import EventInfoPopup from '../popup/EventInfoModal';
+import { getEventData } from '../../api/getEventData';  // Import getEventData to fetch events
 
 dayjs.extend(utc);
 
 export default function WeekView() {
-  const { daySelected, setSelectedEvent, setShowInfoEventModal, showEventInfoModal, selectedEvent } = useContext(GlobalContext);
+  const { 
+    daySelected, 
+    setSelectedEvent, 
+    setShowInfoEventModal, 
+    showEventInfoModal, 
+    selectedEvent, 
+    filters  // Use filters from GlobalContext
+  } = useContext(GlobalContext);
+
   const [currentWeek, setCurrentWeek] = useState([]);
+  const [events, setEvents] = useState([]);  // State to store all events
+  const [filteredEvents, setFilteredEvents] = useState([]);  // State to store filtered events
   const [currentTimePosition, setCurrentTimePosition] = useState(0);
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const hourHeight = 60; // Define the height of each hour slot in pixels
@@ -21,6 +32,49 @@ export default function WeekView() {
     const daysOfWeek = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day'));
     setCurrentWeek(daysOfWeek);
   }, [daySelected]);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const eventData = await getEventData('eventDataQuery');
+        setEvents(eventData);
+      } catch (error) {
+        console.error('Error fetching event data:', error);
+      }
+    }
+    fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    const applyFilters = async (events, filters) => {
+      if (!Array.isArray(events)) {
+        console.error("applyFilters was called with 'events' that is not an array:", events);
+        return [];
+      }
+
+      const results = await Promise.all(events.map(async (event) => {
+        const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
+        const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
+
+        // Update okrMatch to reflect the new OKR data structure
+        const okrMatch = filters.okr.some(okr => 
+          okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label)
+        );
+
+        const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
+        const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
+
+        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
+      }));
+
+      return events.filter((_, index) => results[index]);
+    };
+
+    (async () => {
+      const filteredEvents = await applyFilters(events, filters);
+      setFilteredEvents(filteredEvents);
+    })();
+  }, [events, filters]);
 
   useEffect(() => {
     if (weekViewRef.current) {
@@ -89,7 +143,15 @@ export default function WeekView() {
             >
               {day.format('ddd, D MMM')}
             </Typography>
-            <DayColumn daySelected={day} onEventClick={handleEventClick} />
+            <DayColumn 
+              daySelected={day} 
+              events={filteredEvents.filter(event => 
+                dayjs(event.startDate).isSame(day, 'day') ||
+                dayjs(event.endDate).isSame(day, 'day') ||
+                (dayjs(event.startDate).isBefore(day, 'day') && dayjs(event.endDate).isAfter(day, 'day'))
+              )}
+              onEventClick={handleEventClick} 
+            />
 
             {/* Current Time Line inside each day column */}
             <Box

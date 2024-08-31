@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import logo from '../../assets/logo/logo.png';
 import MenuIcon from '@mui/icons-material/Menu';
 import beta from '../../assets/svg/beta.svg';
@@ -25,9 +25,13 @@ export default function CalendarHeader() {
     setSearchText,
   } = useContext(GlobalContext);
   
-  const [view, setView] = useState('month');
+  const [view, setView] = useState(currentView || 'month');
   const [showSearchInput, setShowSearchInput] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setView(currentView);
+  }, [currentView]);
 
   const fetchData = async () => {
     try {
@@ -60,12 +64,17 @@ export default function CalendarHeader() {
   };
 
   function handlePrev() {
+    let newDaySelected;
     switch (view) {
       case 'day':
-        setDaySelected(daySelected.subtract(1, 'day'));
+        newDaySelected = daySelected.subtract(1, 'day');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
         break;
       case 'week':
-        setDaySelected(daySelected.subtract(1, 'week'));
+        newDaySelected = daySelected.subtract(1, 'week');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
         break;
       case 'month':
         if (monthIndex === 0) {
@@ -79,7 +88,9 @@ export default function CalendarHeader() {
         }
         break;
       case 'year':
-        setDaySelected(daySelected.subtract(1, 'year'));
+        newDaySelected = daySelected.subtract(1, 'year');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
         break;
       default:
         break;
@@ -87,12 +98,17 @@ export default function CalendarHeader() {
   }
 
   function handleNext() {
+    let newDaySelected;
     switch (view) {
       case 'day':
-        setDaySelected(daySelected.add(1, 'day'));
+        newDaySelected = daySelected.add(1, 'day');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
         break;
       case 'week':
-        setDaySelected(daySelected.add(1, 'week'));
+        newDaySelected = daySelected.add(1, 'week');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
         break;
       case 'month':
         if (monthIndex === 11) {
@@ -106,7 +122,9 @@ export default function CalendarHeader() {
         }
         break;
       case 'year':
-        setDaySelected(daySelected.add(1, 'year'));
+        newDaySelected = daySelected.add(1, 'year');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
         break;
       default:
         break;
@@ -123,6 +141,7 @@ export default function CalendarHeader() {
     const selectedView = event.target.value;
     setCurrentView(selectedView);
     setView(selectedView);
+    setMonthIndex(daySelected.month());
   };
 
   const navigateToHome = () => {
@@ -161,7 +180,7 @@ export default function CalendarHeader() {
           <span className="material-icons-outlined text-gray-600">chevron_right</span>
         </IconButton>
         <Typography variant="h6" className="text-lg font-semibold">
-          {dayjs(new Date(daySelected.year(), monthIndex)).format('MMMM YYYY')}
+          {daySelected.format('MMMM YYYY')}
         </Typography>
       </div>
 

@@ -13,36 +13,34 @@ import {
   Link as MuiLink,
   AppBar,
   Toolbar,
+  Tooltip
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import ShareIcon from "@mui/icons-material/Share";
-import Event from "@mui/icons-material/Event";
+import EventIcon from "@mui/icons-material/Event";
 import InfoIcon from "@mui/icons-material/Info";
 import LabelIcon from "@mui/icons-material/Label";
 import PeopleIcon from "@mui/icons-material/People";
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
-import MyLocationIcon from "@mui/icons-material/MyLocation";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import GroupIcon from "@mui/icons-material/Group";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
 import LanguageIcon from "@mui/icons-material/Language";
 import DescriptionIcon from "@mui/icons-material/Description";
 import LinkIcon from "@mui/icons-material/Link";
-import PersonIcon from "@mui/icons-material/Person";
-import Language from "@mui/icons-material/Language"; // Import for Language icon
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
+import { red } from "@mui/material/colors";
 
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
   const { formData, selectedEvent, setShowInfoEventModal, updateFormData } =
     useContext(GlobalContext);
   const [currentSection, setCurrentSection] = useState("Overview");
-  const nodeRef = useRef(null); // Correct placement of nodeRef
+  const nodeRef = useRef(null);
 
   const handleClose = () => {
     setShowInfoEventModal(false);
   };
-  console.log("EventInfoPopup rendered with event:", event); // Debug log
 
   if (!selectedEvent) {
     return null;
@@ -61,16 +59,10 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-  const cleanOrganiserName = (name) => {
-    let cleanedName = name.replace(/[()]/g, "").trim();
-    const uniqueParts = new Set(cleanedName.split(/\s+/));
-    return Array.from(uniqueParts).join(" ");
-  };
-
   const formatListWithSpaces = (list) => {
-    if (!list) return ""; // Return empty string if list is not defined
-    if (typeof list === "string") return list; // Return the string directly if it's a string
-    if (!Array.isArray(list)) return ""; // Return empty string if list is not an array
+    if (!list) return "";
+    if (typeof list === "string") return list;
+    if (!Array.isArray(list)) return "";
     return list.map((item) => item.replace(/,/g, ", ")).join(", ");
   };
 
@@ -94,7 +86,6 @@ export default function EventInfoPopup({ event, close }) {
   const sections = {
     Overview: (
       <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
-        {/* Description */}
         <Typography
           variant="body2"
           display="flex"
@@ -109,10 +100,9 @@ export default function EventInfoPopup({ event, close }) {
           }}
         >
           <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          {selectedEvent.description}
+          {selectedEvent.description || "No description available."}
         </Typography>
 
-        {/* Number of Registered Attendees */}
         <Typography
           variant="body2"
           display="flex"
@@ -126,11 +116,10 @@ export default function EventInfoPopup({ event, close }) {
             whiteSpace: "normal",
           }}
         >
-          <PersonIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
           Registrations: {selectedEvent.registeredCount || 0}
         </Typography>
 
-        {/* Landing Page Link */}
         <Typography
           variant="body2"
           display="flex"
@@ -145,8 +134,7 @@ export default function EventInfoPopup({ event, close }) {
           }}
         >
           <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          {selectedEvent.landingPageLinks &&
-          selectedEvent.landingPageLinks.length > 0
+          {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
             ? selectedEvent.landingPageLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -166,7 +154,6 @@ export default function EventInfoPopup({ event, close }) {
             : "No landing page"}
         </Typography>
 
-        {/* Organized By */}
         <Typography
           variant="body2"
           display="flex"
@@ -187,42 +174,42 @@ export default function EventInfoPopup({ event, close }) {
             spacing={1}
             sx={{ pl: 4, pr: 2, flexWrap: "wrap" }}
           >
-            {selectedEvent.organisedBy.map((organiser, index) => {
-              const cleanedName = cleanOrganiserName(organiser);
-              return (
-                <Chip
-                  key={index}
-                  label={cleanedName}
-                  component="a"
-                  href={`https://moma.corp.google.com/person/${encodeURIComponent(
-                    cleanedName
-                  )}`}
-                  clickable
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    margin: "5px",
-                    backgroundColor: getRandomColor(),
-                    color: "white",
-                    border: "1px solid rgba(255, 255, 255, 0.3)",
-                    cursor: "pointer",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                />
-              );
-            })}
+            {selectedEvent.organisedBy.map((organiser, index) => (
+              <Chip
+                key={index}
+                label={organiser}
+                component="a"
+                href={`https://moma.corp.google.com/person/${encodeURIComponent(
+                  organiser
+                )}`}
+                clickable
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  margin: "5px",
+                  backgroundColor: getRandomColor(),
+                  color: "white",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  cursor: "pointer",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                }}
+              />
+            ))}
           </Stack>
         </Typography>
 
-        {/* Event Type and Priority Chips */}
         <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>
           <Chip label={selectedEvent.eventType} color="primary" size="small" />
           {selectedEvent.isHighPriority && (
-            <Chip label="High Priority" color="error" size="small" />
+            <Tooltip title="High Priority">
+              <WhatshotIcon style={{ color: red[500] }} />
+            </Tooltip>
           )}
-          {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <=
-            7 && (
+          {selectedEvent.isDirectPartner && (
+            <Chip label="Direct Partner" color="secondary" size="small" />
+          )}
+          {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <= 7 && (
             <Chip
               label="Newly published"
               color="success"
@@ -235,111 +222,81 @@ export default function EventInfoPopup({ event, close }) {
     ),
     Details: (
       <Stack spacing={2} sx={{ p: 3 }}>
-        {/* Region */}
+       {/* Audience */}
+<Typography
+  variant="body2"
+  display="flex"
+  alignItems="center"
+  sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+>
+  <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+  Audience:
+</Typography>
+<Typography
+  variant="body2"
+  sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
+>
+  {(selectedEvent.audienceSeniority && selectedEvent.audienceSeniority.length > 0
+    ? selectedEvent.audienceSeniority.join(", ")
+    : "N/A") +
+    (selectedEvent.accountSectors && Array.isArray(selectedEvent.accountSectors) && selectedEvent.accountSectors.length > 0
+    ? `, ${selectedEvent.accountSectors.join(", ")}`
+    : selectedEvent.accountSectors ? `, ${selectedEvent.accountSectors}` : "")}
+</Typography>
+
+
+        {/* OKR Information */}
         <Typography
           variant="body2"
           display="flex"
           alignItems="center"
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          <TravelExploreIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Region:
+          <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          OKR:
         </Typography>
         <Typography
           variant="body2"
           sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          {selectedEvent.region
-            ? formatListWithSpaces(
-                Array.isArray(selectedEvent.region)
-                  ? selectedEvent.region
-                  : [selectedEvent.region]
-              )
+          {selectedEvent.okr && selectedEvent.okr.length > 0
+            ? selectedEvent.okr.map(
+                (okrItem) => `${okrItem.type}: ${okrItem.percentage}%`
+              ).join(", ")
             : "N/A"}
         </Typography>
 
-        {/* Sub-region */}
+        {/* Event Series and Customer Use */}
         <Typography
           variant="body2"
           display="flex"
           alignItems="center"
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          <MyLocationIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Sub-region:
+          <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Part of an event series?
         </Typography>
         <Typography
           variant="body2"
           sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          {selectedEvent.subRegion
-            ? formatListWithSpaces(
-                Array.isArray(selectedEvent.subRegion)
-                  ? selectedEvent.subRegion
-                  : [selectedEvent.subRegion]
-              )
-            : "N/A"}
+          {selectedEvent.eventSeries ? "Yes" : "No"}
         </Typography>
 
-        {/* Country */}
         <Typography
           variant="body2"
           display="flex"
           alignItems="center"
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          <LocationOnIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Country:
+          <CheckCircleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Approved for customer use?
         </Typography>
         <Typography
           variant="body2"
           sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          {selectedEvent.country
-            ? formatListWithSpaces(
-                Array.isArray(selectedEvent.country)
-                  ? selectedEvent.country
-                  : [selectedEvent.country]
-              )
-            : "N/A"}
-        </Typography>
-
-        {/* Audience */}
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Audience:
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.audience
-            ? selectedEvent.audience.join(", ")
-            : "N/A"}
-        </Typography>
-
-        {/* Languages */}
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <LanguageIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Languages:
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.languages
-            ? selectedEvent.languages.join(", ")
-            : "N/A"}
+          {selectedEvent.customerUse ? "Yes" : "No"}
         </Typography>
       </Stack>
     ),
@@ -359,8 +316,7 @@ export default function EventInfoPopup({ event, close }) {
           variant="body2"
           sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          {selectedEvent.landingPageLinks &&
-          selectedEvent.landingPageLinks.length > 0
+          {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
             ? selectedEvent.landingPageLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -379,26 +335,25 @@ export default function EventInfoPopup({ event, close }) {
             : "N/A"}
         </Typography>
 
-        {/* Additional Resources */}
+        {/* Sales Kit Links */}
         <Typography
           variant="body2"
           display="flex"
           alignItems="center"
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Additional Resources:
+          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Sales Kit Links:
         </Typography>
         <Typography
           variant="body2"
           sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          {selectedEvent.additionalResources &&
-          selectedEvent.additionalResources.length > 0
-            ? selectedEvent.additionalResources.map((resource, index) => (
+          {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
+            ? selectedEvent.salesKitLinks.map((link, index) => (
                 <MuiLink
                   key={index}
-                  href={resource.link}
+                  href={link}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -407,47 +362,76 @@ export default function EventInfoPopup({ event, close }) {
                     whiteSpace: "normal",
                   }}
                 >
-                  {resource.label}
+                  {link}
                 </MuiLink>
               ))
             : "N/A"}
         </Typography>
-      </Stack>
-    ),
-    Contacts: (
-      <Stack spacing={2} sx={{ p: 3 }}>
-        {/* Primary Contact */}
+
+        {/* Hailo Links */}
         <Typography
           variant="body2"
           display="flex"
           alignItems="center"
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          <PersonIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Primary Contact:
+          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Hailo Links:
         </Typography>
         <Typography
           variant="body2"
           sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          {selectedEvent.primaryContact || "N/A"}
+          {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
+            ? selectedEvent.hailoLinks.map((link, index) => (
+                <MuiLink
+                  key={index}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#4285F4",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  {link}
+                </MuiLink>
+              ))
+            : "N/A"}
         </Typography>
 
-        {/* Secondary Contact */}
+        {/* Other Documents Links */}
         <Typography
           variant="body2"
           display="flex"
           alignItems="center"
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          <GroupIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Secondary Contact:
+          <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Other Documents:
         </Typography>
         <Typography
           variant="body2"
           sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
         >
-          {selectedEvent.secondaryContact || "N/A"}
+          {selectedEvent.otherDocumentsLinks && selectedEvent.otherDocumentsLinks.length > 0
+            ? selectedEvent.otherDocumentsLinks.map((link, index) => (
+                <MuiLink
+                  key={index}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#4285F4",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  {link}
+                </MuiLink>
+              ))
+            : "N/A"}
         </Typography>
       </Stack>
     ),
@@ -460,8 +444,6 @@ export default function EventInfoPopup({ event, close }) {
     >
       <Draggable handle=".drag-handle" nodeRef={nodeRef}>
         <div ref={nodeRef}>
-          {" "}
-          {/* Node ref should be on the draggable container */}
           <Paper
             sx={{
               minWidth: 600,
@@ -477,16 +459,15 @@ export default function EventInfoPopup({ event, close }) {
               position: "relative",
             }}
           >
-            {/* Thin Header that is draggable */}
             <AppBar
-              position="sticky" // Use sticky position to make the header non-scrollable
+              position="sticky"
               sx={{
                 bgcolor: "#f5f5f5",
                 color: "#5f6368",
                 boxShadow: "none",
                 borderBottom: "1px solid #e0e0e0",
-                top: 0, // Stick to the top of the container
-                zIndex: 10, // Ensure it stays above other elements
+                top: 0,
+                zIndex: 10,
               }}
               className="drag-handle"
             >
@@ -497,7 +478,6 @@ export default function EventInfoPopup({ event, close }) {
               </Toolbar>
             </AppBar>
 
-            {/* Main Content */}
             <Stack
               direction="row"
               spacing={1}
@@ -534,7 +514,7 @@ export default function EventInfoPopup({ event, close }) {
               </IconButton>
             </Stack>
 
-            {/* Fixed Date Display */}
+            {/* Date Range with High Priority Indicator */}
             <Typography
               variant="body1"
               display="flex"
@@ -548,50 +528,13 @@ export default function EventInfoPopup({ event, close }) {
                 whiteSpace: "normal",
               }}
             >
-              <Event style={{ marginRight: "5px", color: "#1a73e8" }} />
-              {dayjs(selectedEvent.startDate).format("dddd, MMMM D, YYYY h:mm A")}
-            </Typography>
-
-            {/* World Icon with Region, Sub-region, and Country Concatenation */}
-            <Typography
-              variant="body1"
-              display="flex"
-              alignItems="center"
-              sx={{
-                pl: 2,
-                pr: 2,
-                mt: 1,
-                color: "#5f6368",
-                wordBreak: "break-word",
-                whiteSpace: "normal",
-              }}
-            >
-              <TravelExploreIcon
-                style={{ marginRight: "5px", color: "#1a73e8" }}
-              />
-              {[
-                selectedEvent.region
-                  ? formatListWithSpaces(
-                      Array.isArray(selectedEvent.region)
-                        ? selectedEvent.region
-                        : [selectedEvent.region]
-                    )
-                  : "N/A",
-                selectedEvent.subRegion
-                  ? formatListWithSpaces(
-                      Array.isArray(selectedEvent.subRegion)
-                        ? selectedEvent.subRegion
-                        : [selectedEvent.subRegion]
-                    )
-                  : "N/A",
-                selectedEvent.country
-                  ? formatListWithSpaces(
-                      Array.isArray(selectedEvent.country)
-                        ? selectedEvent.country
-                        : [selectedEvent.country]
-                    )
-                  : "N/A",
-              ].join(", ")}
+              <EventIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+              {dayjs(selectedEvent.startDate).format("dddd, MMMM D, YYYY h:mm A")} - {dayjs(selectedEvent.endDate).format("h:mm A")}
+              {selectedEvent.isHighPriority && (
+                <Tooltip title="High Priority">
+                  <WhatshotIcon style={{ color: red[500], marginLeft: "auto" }} />
+                </Tooltip>
+              )}
             </Typography>
 
             <Divider sx={{ width: "100%", my: 1 }} />
@@ -629,41 +572,6 @@ export default function EventInfoPopup({ event, close }) {
             </Stack>
             <Divider sx={{ width: "100%" }} />
             {sections[currentSection]}
-            <Divider sx={{ width: "100%" }} />
-
-            {/* Invite Buttons and Language Icon */}
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{ p: 2, justifyContent: "flex-end" }}
-            >
-              <IconButton size="small">
-                <LanguageIcon sx={{ color: "#1a73e8" }} />
-              </IconButton>
-              <Button
-                variant="outlined"
-                sx={{
-                  borderColor: "#1a73e8",
-                  color: "#1a73e8",
-                  textTransform: "none",
-                }}
-              >
-                Invite via Gmail
-              </Button>
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: "#1a73e8",
-                  color: "white",
-                  textTransform: "none",
-                  "&:hover": {
-                    backgroundColor: "#165ab9",
-                  },
-                }}
-              >
-                Invite via Salesloft
-              </Button>
-            </Stack>
           </Paper>
         </div>
       </Draggable>

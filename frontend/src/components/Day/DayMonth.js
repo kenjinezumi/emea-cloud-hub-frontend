@@ -1,10 +1,14 @@
 import React, { useContext, useState, useEffect } from "react";
 import dayjs from "dayjs";
-import { Link } from "@mui/material";
+import { Link, Typography } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
 import EventInfoPopup from "../popup/EventInfoModal";
 import EventListPopup from "../popup/EventListModal";
 import { useLocation } from "react-router-dom";
+import EventIcon from '@mui/icons-material/Event';
+import LanguageIcon from '@mui/icons-material/Language';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ArticleIcon from '@mui/icons-material/Article';
 
 export default function Day({ day, events, isYearView }) {
   const maxEventsToShow = 3;
@@ -97,6 +101,23 @@ export default function Day({ day, events, isYearView }) {
     }
   };
 
+  const getEventStyleAndIcon = (eventType) => {
+    switch (eventType) {
+      case 'Online Event':
+        return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <LanguageIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case 'Physical Event':
+        return { backgroundColor: '#fce4ec', color: '#d32f2f', icon: <LocationOnIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case 'Hybrid Event':
+        return { backgroundColor: '#f3e5f5', color: '#6a1b9a', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case 'Customer Story':
+        return { backgroundColor: '#e8f5e9', color: '#2e7d32', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      case 'Blog Post':
+        return { backgroundColor: '#fffde7', color: '#f57f17', icon: <ArticleIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+      default:
+        return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
+    }
+  };
+
   const dayNumberStyle = {
     display: "flex",
     alignItems: "center",
@@ -106,7 +127,7 @@ export default function Day({ day, events, isYearView }) {
 
   const dayNumberCircleStyle = {
     ...dayNumberStyle,
-    backgroundColor: hasEvents ?  "#4285F4" : "transparent",
+    backgroundColor: hasEvents ? "#4285F4" : "transparent",
     color: hasEvents ? "white" : "inherit",
     borderRadius: "50%",
     width: "25px",
@@ -136,39 +157,43 @@ export default function Day({ day, events, isYearView }) {
         <div className="flex-1 flex flex-col">
           {dayEvents.length > 0 ? (
             <div>
-              {dayEvents.slice(0, maxEventsToShow).map((evt, idx) => (
-                <div
-                  key={idx}
-                  className="p-1 mb-1 text-gray-800 text-sm rounded-md truncate cursor-pointer"
-                  style={{
-                    backgroundColor: "#e3f2fd", // Light blue background for event, similar to Google Calendar
-                    color: "#1a73e8", // Google blue text color
-                    pointerEvents: "auto",
-                    fontSize: "0.875rem", // 14px
-                    borderLeft: "2px solid #1a73e8", // Blue left border for event type indication
-                    margin: "4px 0", // Spacing between events
-                    marginLeft: "4px",
-                    padding: "2px 8px", // Padding for a better look
-                    borderRadius: "4px", // Rounded corners like Gmail events
-                    transition: "background-color 0.2s, box-shadow 0.2s", // Smooth transitions for hover effects
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
-                  }}
-                  onClick={() => handleEventClick(evt)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#c5e1f9"; // Darker blue on hover
-                    e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.15)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#e3f2fd"; // Original light blue background
-                    e.currentTarget.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.1)";
-                  }}
-                >
-                  {evt.title}
-                </div>
-              ))}
+              {dayEvents.slice(0, maxEventsToShow).map((evt, idx) => {
+                const { backgroundColor, color, icon } = getEventStyleAndIcon(evt.eventType);
+                return (
+                  <div
+                    key={idx}
+                    className="p-1 mb-1 text-gray-800 text-sm rounded-md truncate cursor-pointer"
+                    style={{
+                      backgroundColor: backgroundColor,
+                      color: color,
+                      pointerEvents: "auto",
+                      fontSize: "0.875rem",
+                      borderLeft: `2px solid ${color}`,
+                      margin: "4px 0",
+                      marginLeft: "4px",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      transition: "background-color 0.2s, box-shadow 0.2s",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                    }}
+                    onClick={() => handleEventClick(evt)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#c5e1f9";
+                      e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = backgroundColor;
+                      e.currentTarget.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.1)";
+                    }}
+                  >
+                    {icon}
+                    {evt.title}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div
