@@ -1,17 +1,27 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
-import { Link } from "@mui/material";
+import { Link, Typography } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
 import EventInfoPopup from "../popup/EventInfoModal";
-import EventListPopup from "../popup/EventListModal"; // Import the EventInfoPopup component
-
+import EventListPopup from "../popup/EventListModal";
 import { useLocation } from "react-router-dom";
+import EventIcon from "@mui/icons-material/Event";
+import LanguageIcon from "@mui/icons-material/Language";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import ArticleIcon from "@mui/icons-material/Article";
 
 export default function Day({ day, events, isYearView }) {
   const maxEventsToShow = 3;
-  const dayEvents = events.filter((evt) =>
-    dayjs(evt.startDate).isSame(day, "day")
-  );
+
+  // Memoize dayEvents to avoid recalculations on every render
+  const dayEvents = useMemo(() => {
+    return events.filter(
+      (evt) =>
+        dayjs(evt.startDate).isBefore(day.endOf("day")) &&
+        dayjs(evt.endDate).isAfter(day.startOf("day"))
+    );
+  }, [events, day]);
+
   const hasEvents = dayEvents.length > 0;
   const location = useLocation();
   const PopupState = {
@@ -22,75 +32,121 @@ export default function Day({ day, events, isYearView }) {
 
   const [activePopup, setActivePopup] = useState(PopupState.NONE);
 
+  // Get necessary context variables including selectedEvent and selectedEvents
   const {
     setDaySelected,
     setShowEventModal,
-    showEventModal,
     setCurrentView,
-    selectedEvent,
     setSelectedEvent,
-    showEventInfoModal,
     setShowInfoEventModal,
-    showEventListModal,
     setShowEventListModal,
-    selectedEvents,
     setSelectedEvents,
+    selectedEvent,   // Add selectedEvent from context
+    selectedEvents,  // Add selectedEvents from context
   } = useContext(GlobalContext);
-
-  const [showAddEventModal, setShowAddEventModal] = useState(false); // Local state for Add Event modal
 
   useEffect(() => {
     setShowEventModal(false);
     setShowInfoEventModal(false);
     setShowEventListModal(false);
-  }, [location]);
+  }, [location, setShowEventModal, setShowInfoEventModal, setShowEventListModal]);
 
-  const handleDayClick = (e) => {
-    setDaySelected(day); // Always set the selected day
+  // Memoized event handlers to prevent re-creation on each render
+  const handleDayClick = useCallback(
+    (e) => {
+      setDaySelected(day);
 
-    if (isYearView) {
-      e.preventDefault(); // Prevent the default action
-      e.stopPropagation(); // Stop the event from propagating
+      if (isYearView) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowInfoEventModal(false);
+        setSelectedEvents(dayEvents);
+        setActivePopup(PopupState.EVENT_LIST);
+        setShowEventListModal(true);
+        setShowEventModal(false);
+      } else {
+        setSelectedEvent(null);
+        setShowEventModal(true);
+      }
+    },
+    [day, isYearView, dayEvents, setDaySelected, setSelectedEvents, setActivePopup, setShowEventListModal, setShowEventModal, setSelectedEvent, setShowInfoEventModal]
+  );
 
-      setShowInfoEventModal(false);
+  const handleEventsClick = useCallback(
+    (e) => {
+      setDaySelected(day);
 
-      setSelectedEvents(dayEvents); // Assuming this sets the events for the list popup
-      setActivePopup(PopupState.EVENT_LIST);
-      setShowEventListModal(true);
-      setShowEventModal(false);
-    } else {
-      setSelectedEvent(null);
-      setShowEventModal(true);
-    }
-  };
+      if (isYearView) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowInfoEventModal(false);
+        setSelectedEvents(dayEvents);
+        setShowEventListModal(true);
+      } else {
+        setSelectedEvent(null);
+        setShowEventModal(true);
+      }
+    },
+    [day, isYearView, dayEvents, setDaySelected, setSelectedEvents, setShowInfoEventModal, setShowEventListModal, setShowEventModal, setSelectedEvent]
+  );
 
-  const handleEventsClick = (e) => {
-    setDaySelected(day); // Always set the selected day
+  const handleSeeMoreClick = useCallback(
+    (e) => {
+      e.stopPropagation();
+      setDaySelected(day);
+      setCurrentView("day");
+    },
+    [day, setDaySelected, setCurrentView]
+  );
 
-    if (isYearView) {
-      e.preventDefault(); // Prevent the default action
-      e.stopPropagation(); // Stop the event from propagating
+  const handleEventClick = useCallback(
+    (evt) => {
+      if (!isYearView) {
+        setSelectedEvent(evt);
+        setShowInfoEventModal(true);
+      }
+    },
+    [isYearView, setSelectedEvent, setShowInfoEventModal]
+  );
 
-      setShowInfoEventModal(false);
-      setSelectedEvents(dayEvents);
-      setShowEventListModal(true);
-    }else {
-      setSelectedEvent(null);
-      setShowEventModal(true);
-    }
-  };
-
-  const handleSeeMoreClick = (e) => {
-    e.stopPropagation();
-    setDaySelected(day);
-    setCurrentView("day");
-  };
-
-  const handleEventClick = (evt) => {
-    if (!isYearView) {
-      setSelectedEvent(evt);
-      setShowInfoEventModal(true);
-      setShowAddEventModal(false);
+  const getEventStyleAndIcon = (eventType) => {
+    switch (eventType) {
+      case "Online Event":
+        return {
+          backgroundColor: "#e3f2fd",
+          color: "#1a73e8",
+          icon: <LanguageIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      case "Physical Event":
+        return {
+          backgroundColor: "#fce4ec",
+          color: "#d32f2f",
+          icon: <LocationOnIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      case "Hybrid Event":
+        return {
+          backgroundColor: "#f3e5f5",
+          color: "#6a1b9a",
+          icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      case "Customer Story":
+        return {
+          backgroundColor: "#e8f5e9",
+          color: "#2e7d32",
+          icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      case "Blog Post":
+        return {
+          backgroundColor: "#fffde7",
+          color: "#f57f17",
+          icon: <ArticleIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
+      default:
+        return {
+          backgroundColor: "#e3f2fd",
+          color: "#1a73e8",
+          icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        };
     }
   };
 
@@ -103,12 +159,32 @@ export default function Day({ day, events, isYearView }) {
 
   const dayNumberCircleStyle = {
     ...dayNumberStyle,
-    backgroundColor: hasEvents ? "green" : "transparent",
+    backgroundColor: hasEvents ? "#4285F4" : "transparent",
     color: hasEvents ? "white" : "inherit",
     borderRadius: "50%",
     width: "25px",
   };
 
+  const renderPopup = useMemo(() => {
+    switch (activePopup) {
+      case PopupState.EVENT_INFO:
+        return (
+          <EventInfoPopup
+            event={selectedEvent}
+            onClose={() => setActivePopup(PopupState.NONE)}
+          />
+        );
+      case PopupState.EVENT_LIST:
+        return (
+          <EventListPopup
+            events={selectedEvents}
+            onClose={() => setActivePopup(PopupState.NONE)}
+          />
+        );
+      default:
+        return null;
+    }
+  }, [activePopup, selectedEvent, selectedEvents, setActivePopup]);
 
   return (
     <div
@@ -131,28 +207,46 @@ export default function Day({ day, events, isYearView }) {
         </p>
       </header>
       {!isYearView && (
-        <div className="flex-1 flex flex-col" >
+        <div className="flex-1 flex flex-col">
           {dayEvents.length > 0 ? (
             <div>
-              {dayEvents.slice(0, maxEventsToShow).map((evt, idx) => (
-                <div
-                  key={idx}
-                  className="p-1 mb-1 text-gray-600 text-sm rounded truncate cursor-pointer"
-                  style={{
-                    backgroundColor: "#fff", // White background
-                    pointerEvents: "auto",
-                    fontSize: "0.875rem", // 14px
-                    borderLeft: "4px solid #1a73e8", // Blue left border for event type indication
-                    boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
-                    margin: "4px 0", // Slightly more space between events
-                    marginLeft: "4px",
-                    transition: "background-color 0.2s, box-shadow 0.2s", // Smooth transitions for hover effects
-                  }}
-                  onClick={() => handleEventClick(evt)}
-                >
-                  {evt.title}
-                </div>
-              ))}
+              {dayEvents.slice(0, maxEventsToShow).map((evt, idx) => {
+                const { backgroundColor, color, icon } = getEventStyleAndIcon(evt.eventType);
+                return (
+                  <div
+                    key={idx}
+                    className="p-1 mb-1 text-gray-800 text-sm rounded-md truncate cursor-pointer"
+                    style={{
+                      backgroundColor: backgroundColor,
+                      color: color,
+                      pointerEvents: "auto",
+                      fontSize: "0.875rem",
+                      borderLeft: `2px solid ${color}`,
+                      margin: "4px 0",
+                      marginLeft: "4px",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      transition: "background-color 0.2s, box-shadow 0.2s",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                    }}
+                    onClick={() => handleEventClick(evt)}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#c5e1f9";
+                      e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = backgroundColor;
+                      e.currentTarget.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.1)";
+                    }}
+                  >
+                    {icon}
+                    {evt.title}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div
@@ -182,22 +276,7 @@ export default function Day({ day, events, isYearView }) {
       )}
 
       {/* Conditionally render the EventInfoPopup */}
-
-      <div>
-        {activePopup === PopupState.EVENT_INFO && (
-          <EventInfoPopup
-            event={selectedEvent}
-            onClose={() => setActivePopup(PopupState.NONE)}
-          />
-        )}
-        
-        {activePopup === PopupState.EVENT_LIST && (
-          <EventListPopup
-            events={selectedEvents}
-            onClose={() => setActivePopup(PopupState.NONE)}
-          />
-        )}
-      </div>
+      <div>{renderPopup}</div>
     </div>
   );
 }

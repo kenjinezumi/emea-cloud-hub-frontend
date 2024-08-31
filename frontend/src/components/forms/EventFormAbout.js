@@ -14,8 +14,14 @@ import {
   MenuItem,
   Chip,
   IconButton,
+  InputLabel,
+  Checkbox,
 } from "@mui/material";
-import { LocalizationProvider, DateTimePicker, DatePicker } from "@mui/x-date-pickers";
+import {
+  LocalizationProvider,
+  DateTimePicker,
+  DatePicker,
+} from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
@@ -48,9 +54,7 @@ const EventForm = () => {
     selectedEvent ? selectedEvent.description : formData.description || ""
   );
   const [selectedLabel, setSelectedLabel] = useState(
-    selectedEvent
-      ? selectedEvent.label
-      : formData.selectedLabel || labelsClasses[0]
+    selectedEvent ? selectedEvent.label : formData.selectedLabel || labelsClasses[0]
   );
   const [emoji, setEmoji] = useState(
     selectedEvent ? selectedEvent.emoji : formData.emoji || ""
@@ -67,9 +71,10 @@ const EventForm = () => {
     formData.marketingActivityType || ""
   );
   const [isHighPriority, setIsHighPriority] = useState(
-    selectedEvent
-      ? selectedEvent.isHighPriority
-      : formData.isHighPriority || false
+    selectedEvent ? selectedEvent.isHighPriority : formData.isHighPriority || false
+  );
+  const [isEventSeries, setIsEventSeries] = useState(
+    selectedEvent ? selectedEvent.isEventSeries : formData.isEventSeries || false
   );
   const [startDate, setStartDate] = useState(
     selectedEvent ? selectedEvent.startDate : formData.startDate || new Date()
@@ -83,21 +88,19 @@ const EventForm = () => {
       : formData.marketingProgramInstanceId || ""
   );
   const [isFormValid, setIsFormValid] = useState(true);
+  const [userTimezone, setUserTimezone] = useState(
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
   const saveAndNavigate = useFormNavigation();
 
-  const handleStartDateChange = (newDate) => {
-    setStartDate(newDate);
-  };
+  const handleStartDateChange = (newDate) => setStartDate(newDate);
+  const handleEndDateChange = (newDate) => setEndDate(newDate);
 
   useEffect(() => {
-    if (formData.eventType) {
-      setEventType(formData.eventType);
-    }
+    if (formData.eventType) setEventType(formData.eventType);
   }, [formData.eventType]);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  useEffect(() => setIsClient(true), []);
 
   const handleOrganisedByChange = (event) => {
     const value = event.target.value;
@@ -115,9 +118,9 @@ const EventForm = () => {
       try {
         const response = await getEventData("marketingProgramQuery");
         if (response && Array.isArray(response)) {
-          const options = response.map((row) => row.Sandbox_Program_Id);
-          const sortedOptions = options.sort();
-          setMarketingProgramOptions(sortedOptions);
+          setMarketingProgramOptions(
+            response.map((row) => row.Sandbox_Program_Id).sort()
+          );
         } else {
           console.error("Invalid response format:", response);
         }
@@ -125,7 +128,6 @@ const EventForm = () => {
         console.error("Error fetching marketing program options:", error);
       }
     };
-
     fetchMarketingProgramOptions();
   }, []);
 
@@ -140,8 +142,7 @@ const EventForm = () => {
       try {
         const response = await getEventData("organisedByOptionsQuery");
         if (response && Array.isArray(response)) {
-          const options = response.map((row) => row.title).sort();
-          setOrganisedByOptions(options);
+          setOrganisedByOptions(response.map((row) => row.title).sort());
         } else {
           console.error("Invalid response format:", response);
         }
@@ -149,7 +150,6 @@ const EventForm = () => {
         console.error("Error fetching organisedBy options:", error);
       }
     };
-
     fetchOrganisedByOptions();
   }, []);
 
@@ -160,7 +160,8 @@ const EventForm = () => {
     const isTitleValid = title.trim() !== "";
     const isEventTypeValid = eventType.trim() !== "";
     const isDescriptionValid = description.trim() !== "";
-    const isMarketingProgramInstanceIdValid = marketingProgramInstanceId.trim() !== "";
+    const isMarketingProgramInstanceIdValid =
+      marketingProgramInstanceId.trim() !== "";
 
     const formIsValid =
       isTitleValid &&
@@ -170,9 +171,7 @@ const EventForm = () => {
 
     setIsFormValid(formIsValid);
 
-    if (!formIsValid) {
-      return;
-    }
+    if (!formIsValid) return;
 
     const newFormData = {
       eventId,
@@ -183,10 +182,12 @@ const EventForm = () => {
       dropdownValue2,
       marketingActivityType,
       isHighPriority,
+      isEventSeries, // Include new field
       startDate,
       endDate,
       marketingProgramInstanceId,
       eventType,
+      userTimezone,
     };
 
     saveAndNavigate(newFormData, "/location");
@@ -197,9 +198,7 @@ const EventForm = () => {
     setIsEmojiPickerOpen(false);
   };
 
-  const toggleEmojiPicker = () => {
-    setIsEmojiPickerOpen((prev) => !prev);
-  };
+  const toggleEmojiPicker = () => setIsEmojiPickerOpen((prev) => !prev);
 
   const handleSaveAsDraft = async () => {
     const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
@@ -214,11 +213,13 @@ const EventForm = () => {
       dropdownValue2,
       marketingActivityType,
       isHighPriority,
+      isEventSeries, // Include new field
       startDate,
       endDate,
       marketingProgramInstanceId,
       eventType,
       isDraft,
+      userTimezone,
     };
 
     updateFormData(newFormData);
@@ -240,40 +241,34 @@ const EventForm = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col">
+    <div
+      className="h-screen flex flex-col"
+      style={{ overscrollBehavior: "contain" }}
+    >
       <CalendarHeaderForm />
 
-      <div className="form-container">
+      <div className="form-container" style={{ overscrollBehavior: "contain" }}>
         <div className="event-form">
-          <Grid
-            container
-            justifyContent="space-between"
-            alignItems="center"
-            style={{ marginBottom: "15px" }}
-          >
-            <Grid item>
-              <Typography variant="h4">
-                <span style={{ display: "flex", alignItems: "center" }}>
-                  <span style={{ marginRight: "10px", fontSize: "1.5rem" }}>
-                    {emoji}
-                  </span>
-                  <TextField
-                    id="standard-basic"
-                    variant="standard"
-                    fullWidth
-                    placeholder="Enter activity name"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                  <IconButton onClick={toggleEmojiPicker}>
-                    <EmojiEmotionsIcon />
-                  </IconButton>
-                </span>
+          <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h4" sx={{ display: "flex", alignItems: "center", fontSize: '1.5rem' }}>
+                <span>{emoji}</span>
+                <TextField
+                  variant="standard"
+                  fullWidth
+                  placeholder="Enter activity name"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  sx={{ ml: 2, flexGrow: 1 }}
+                />
+                <IconButton onClick={toggleEmojiPicker} sx={{ ml: 1 }}>
+                  <EmojiEmotionsIcon />
+                </IconButton>
               </Typography>
               {isEmojiPickerOpen && <EmojiPicker onEmojiClick={onEmojiClick} />}
             </Grid>
 
-            <Grid item>
+            <Grid item xs={12} md={6} sx={{ textAlign: 'right' }}>
               {selectedEvent ? (
                 <Typography variant="subtitle1">Edit Activity</Typography>
               ) : (
@@ -283,16 +278,9 @@ const EventForm = () => {
           </Grid>
 
           <form noValidate>
-            <Grid
-              container
-              spacing={2}
-              alignItems="center"
-              style={{ marginBottom: "20px" }}
-            >
-              <Grid item xs={6}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Organised by
-                </Typography>
+            <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>Organised by</Typography>
                 <FormControl fullWidth>
                   <Select
                     labelId="organised-by-label"
@@ -301,13 +289,7 @@ const EventForm = () => {
                     value={organisedBy}
                     onChange={handleOrganisedByChange}
                     renderValue={(selected) => (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "5px",
-                        }}
-                      >
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
                         {selected.map((organiser) => (
                           <Chip
                             key={organiser}
@@ -329,15 +311,12 @@ const EventForm = () => {
                 </FormControl>
               </Grid>
 
-              <Grid item xs={6}>
-                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Activity type
-                </Typography>
+              <Grid item xs={12} md={6}>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>Activity type</Typography>
                 <FormControl fullWidth>
                   <Select
                     value={eventType}
                     onChange={(e) => setEventType(e.target.value)}
-                    label="Event Type"
                   >
                     {eventTypeOptions.map((option) => (
                       <MenuItem key={option.label} value={option.label}>
@@ -348,7 +327,8 @@ const EventForm = () => {
                 </FormControl>
               </Grid>
             </Grid>
-            <Grid item xs={6} style={{ marginBottom: "20px" }}>
+
+            <Grid item xs={12} sx={{ mb: 3 }}>
               <FormGroup row>
                 <FormControlLabel
                   control={
@@ -360,30 +340,38 @@ const EventForm = () => {
                     />
                   }
                   label={
-                    <Typography
-                      variant="subtitle1"
-                      style={{ display: "flex", alignItems: "center" }}
-                    >
-                      <WhatshotIcon style={{ color: red[500] }} />
+                    <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+                      <WhatshotIcon sx={{ color: red[500], mr: 1 }} />
                       High priority status
                     </Typography>
                   }
                 />
               </FormGroup>
             </Grid>
-            <Grid
-              container
-              spacing={2}
-              alignItems="center"
-              style={{ marginBottom: "20px" }}
-            >
-              <Grid item xs={6}>
+
+            {/* Checkbox for event series */}
+            <Grid item xs={12} sx={{ mb: 3 }}>
+              <FormGroup row>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isEventSeries}
+                      onChange={(e) => setIsEventSeries(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Is the event part of a series?"
+                />
+              </FormGroup>
+            </Grid>
+
+            <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   {eventType === "Blog Post" ? (
                     <DatePicker
-                      label="Event start date"
+                      label={`Event start date (${userTimezone})`}
                       inputFormat="MM/dd/yyyy"
-                      defaultValue={new Date()}
                       value={new Date(startDate)}
                       onChange={handleStartDateChange}
                       renderInput={(params) => (
@@ -392,7 +380,7 @@ const EventForm = () => {
                     />
                   ) : (
                     <DateTimePicker
-                      label="Event start date"
+                      label={`Event start date (${userTimezone})`}
                       inputFormat="MM/dd/yyyy hh:mm a"
                       value={new Date(startDate)}
                       onChange={handleStartDateChange}
@@ -405,13 +393,13 @@ const EventForm = () => {
               </Grid>
 
               {eventType !== "Blog Post" && (
-                <Grid item xs={6}>
+                <Grid item xs={12} md={6}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DateTimePicker
-                      label="Event end date"
+                      label={`Event end date (${userTimezone})`}
                       inputFormat="MM/dd/yyyy hh:mm a"
                       value={new Date(endDate)}
-                      onChange={setEndDate}
+                      onChange={handleEndDateChange}
                       renderInput={(params) => (
                         <TextField {...params} fullWidth />
                       )}
@@ -421,10 +409,8 @@ const EventForm = () => {
               )}
             </Grid>
 
-            <Grid item xs={12} style={{ marginBottom: "20px" }}>
-              <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                Description
-              </Typography>
+            <Grid item xs={12} sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>Description</Typography>
               <TextField
                 label="Internal description (for internal use only)"
                 multiline
@@ -439,12 +425,9 @@ const EventForm = () => {
               />
             </Grid>
 
-            <Grid item xs={12} style={{ marginBottom: "20px" }}>
-              <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                Marketing program instance ID
-              </Typography>
+            <Grid item xs={12} sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>Marketing program instance ID</Typography>
               <TextField
-                label=""
                 value={marketingProgramInstanceId}
                 onChange={(e) => setMarketingProgramInstanceId(e.target.value)}
                 variant="outlined"
@@ -452,6 +435,7 @@ const EventForm = () => {
                 margin="dense"
               />
             </Grid>
+
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}
@@ -460,34 +444,38 @@ const EventForm = () => {
             />
 
             {!isFormValid && (
-              <Typography color="error" style={{ marginBottom: "10px" }}>
+              <Typography color="error" sx={{ mb: 2 }}>
                 Please fill in all required fields.
               </Typography>
             )}
-            <div style={{ marginTop: "20px", float: "right" }}>
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                style={{
-                  backgroundColor: blue[500],
-                  color: "white",
-                  float: "left",
-                  margin: "10px",
-                }}
-              >
-                Next
-              </Button>
+
+            <div style={{ marginTop: "20px", textAlign: "right" }}>
               <Button
                 variant="contained"
                 onClick={handleSaveAsDraft}
-                style={{
+                sx={{
                   backgroundColor: blue[500],
                   color: "white",
-                  float: "left",
-                  margin: "10px",
+                  marginRight: 2,
+                  "&:hover": {
+                    backgroundColor: blue[700],
+                  },
                 }}
               >
                 Save as Draft
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleNext}
+                sx={{
+                  backgroundColor: blue[500],
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: blue[700],
+                  },
+                }}
+              >
+                Next
               </Button>
             </div>
           </form>

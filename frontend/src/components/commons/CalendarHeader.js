@@ -1,22 +1,15 @@
 import dayjs from 'dayjs';
-import React, {useContext, useState} from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import logo from '../../assets/logo/logo.png';
 import MenuIcon from '@mui/icons-material/Menu';
 import beta from '../../assets/svg/beta.svg';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
-
-import {eventTypeOptions} from '../filters/FiltersData';
-import Input from '@mui/material/Input';
-import {useNavigate} from 'react-router-dom';
-
-import {Select, MenuItem, Menu} from '@mui/material';
+import { Select, MenuItem, Typography, Input } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import GlobalContext from '../../context/GlobalContext';
-import ThemePopup from '../popup/Themepopup';
-import ListView from '../calendar/ListView';
 import versionInfo from '../../version.json';
-
-import {getEventData} from '../../api/getEventData'; // Assuming this is your API call
+import { getEventData } from '../../api/getEventData';
 
 export default function CalendarHeader() {
   const {
@@ -28,14 +21,17 @@ export default function CalendarHeader() {
     setCurrentView,
     setEvents,
     currentView,
-    searchText, setSearchText} = useContext(GlobalContext);
-  const [view, setView] = useState('month'); // State to manage the selected view
-  const [isThemePopupOpen, setIsThemePopupOpen] = useState(false); // State for popup visibility
-  const [anchorEl, setAnchorEl] = useState(null);
-
+    searchText,
+    setSearchText,
+  } = useContext(GlobalContext);
+  
+  const [view, setView] = useState(currentView || 'month');
   const [showSearchInput, setShowSearchInput] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    setView(currentView);
+  }, [currentView]);
 
   const fetchData = async () => {
     try {
@@ -46,7 +42,6 @@ export default function CalendarHeader() {
     }
   };
 
-
   const handleSearchIconClick = () => {
     setShowSearchInput(!showSearchInput);
   };
@@ -55,132 +50,147 @@ export default function CalendarHeader() {
     setSearchText(event.target.value);
   };
 
-
   const handleSearchSubmit = async () => {
     await fetchData();
 
     if (searchText) {
-      // Call a function to set the search text and navigate to the list view
       handleSearchAction(searchText);
     }
   };
 
-  // Function to trigger search action and navigate to the list view
   const handleSearchAction = (text) => {
     setSearchText(text);
-    setCurrentView('list'); // Switch to list view when search is submitted
+    setCurrentView('list');
   };
 
-
-  const handleColorLensClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  function handlePrevMonth() {
-    if (monthIndex === 0) {
-      setDaySelected(daySelected.subtract(1, 'year').month(11));
-      setMonthIndex(11);
-    } else {
-      setDaySelected(daySelected.subtract(1, 'month'));
-      setMonthIndex(monthIndex - 1);
+  function handlePrev() {
+    let newDaySelected;
+    switch (view) {
+      case 'day':
+        newDaySelected = daySelected.subtract(1, 'day');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
+        break;
+      case 'week':
+        newDaySelected = daySelected.subtract(1, 'week');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
+        break;
+      case 'month':
+        if (monthIndex === 0) {
+          const newDate = daySelected.subtract(1, 'year').month(11); // December of the previous year
+          setDaySelected(newDate);
+          setMonthIndex(11);
+        } else {
+          const newDate = daySelected.subtract(1, 'month');
+          setDaySelected(newDate);
+          setMonthIndex(monthIndex - 1);
+        }
+        break;
+      case 'year':
+        newDaySelected = daySelected.subtract(1, 'year');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
+        break;
+      default:
+        break;
     }
   }
 
-  function handleNextMonth() {
-    if (monthIndex === 11) {
-      setDaySelected(daySelected.add(1, 'year').month(0));
-      setMonthIndex(0);
-    } else {
-      setDaySelected(daySelected.add(1, 'month'));
-      setMonthIndex(monthIndex + 1);
+  function handleNext() {
+    let newDaySelected;
+    switch (view) {
+      case 'day':
+        newDaySelected = daySelected.add(1, 'day');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
+        break;
+      case 'week':
+        newDaySelected = daySelected.add(1, 'week');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
+        break;
+      case 'month':
+        if (monthIndex === 11) {
+          const newDate = daySelected.add(1, 'year').month(0); // January of the next year
+          setDaySelected(newDate);
+          setMonthIndex(0);
+        } else {
+          const newDate = daySelected.add(1, 'month');
+          setDaySelected(newDate);
+          setMonthIndex(monthIndex + 1);
+        }
+        break;
+      case 'year':
+        newDaySelected = daySelected.add(1, 'year');
+        setDaySelected(newDaySelected);
+        setMonthIndex(newDaySelected.month());
+        break;
+      default:
+        break;
     }
   }
 
   function handleReset() {
     const today = dayjs();
-    setMonthIndex(today.month());
     setDaySelected(today);
+    setMonthIndex(today.month());
   }
 
-  // Function to handle view change
   const handleViewChange = (event) => {
     const selectedView = event.target.value;
     setCurrentView(selectedView);
     setView(selectedView);
+    setMonthIndex(daySelected.month());
   };
 
-
-  // Function to toggle theme popup
-  const toggleThemePopup = () => {
-    setIsThemePopupOpen(!isThemePopupOpen);
-  };
-
-  // Redirect to the home page
   const navigateToHome = () => {
     window.location.href = '/';
   };
 
   return (
-    <header className="px-4 py-2 flex items-center justify-between border-b border-gray-300">
-      <div className="flex items-center">
-        {' '}
-        {/* Group left items together */}
-        <IconButton onClick={toggleSidebar} className="mr-2">
+    <header className="flex items-center justify-between border-b border-gray-300 bg-white px-4 py-2">
+      <div className="flex items-center space-x-4 overflow-hidden">
+        <IconButton onClick={toggleSidebar}>
           <MenuIcon />
         </IconButton>
-        <img src={logo} alt="calendar" className="mr-2 w-8 h-8 cursor-pointer" onClick={navigateToHome}/>
-        <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
+        <img
+          src={logo}
+          alt="calendar"
+          className="w-8 h-8 cursor-pointer"
+          onClick={navigateToHome}
+        />
+        <h1
+          className="text-xl text-black cursor-pointer overflow-hidden whitespace-nowrap"
+          style={{ maxWidth: '200px', textOverflow: 'ellipsis' }}
+          onClick={navigateToHome}
+        >
           EMEA Cloud Hub
         </h1>
-        <img src={beta} alt="beta" className="mr-2 w-12 h-12" />
-        <span className="mr-4 text-xs text-gray-400">V. {versionInfo.version}</span>
+        <img src={beta} alt="beta" className="w-8 h-8" />
+        <span className="text-xs text-gray-500">V. {versionInfo.version}</span>
 
         <button onClick={handleReset} className="border rounded py-2 px-4 mr-2">
           Today
         </button>
-        <button onClick={handlePrevMonth}>
-          <span className="material-icons-outlined cursor-pointer text-gray-600 mx-2">
-            chevron_left
-          </span>
-        </button>
-        <button onClick={handleNextMonth}>
-          <span className="material-icons-outlined cursor-pointer text-gray-600 mx-2">
-            chevron_right
-          </span>
-        </button>
-        <h2 className="ml-4 text-xl text-black">
-          {dayjs(new Date(dayjs().year(), monthIndex)).format('MMMM YYYY')}
-        </h2>
+        <IconButton onClick={handlePrev}>
+          <span className="material-icons-outlined text-gray-600">chevron_left</span>
+        </IconButton>
+        <IconButton onClick={handleNext}>
+          <span className="material-icons-outlined text-gray-600">chevron_right</span>
+        </IconButton>
+        <Typography variant="h6" className="text-lg font-semibold">
+          {daySelected.format('MMMM YYYY')}
+        </Typography>
       </div>
 
-
-      <div className="flex items-center">
-
-
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          {eventTypeOptions.map((option, index) => (
-            <MenuItem key={index} onClick={handleClose}>
-              <span>{option}</span>
-            </MenuItem>
-          ))}
-        </Menu>
-
+      <div className="flex items-center space-x-4">
         <Select
-          value={currentView} // Use the currentView state to set the value
+          value={currentView}
           onChange={handleViewChange}
-          label="View"
           displayEmpty
-          inputProps={{'aria-label': 'Without label'}}
-          sx={{width: '100px'}} // Adjust the width as needed
-          className="mr-2"
+          inputProps={{ 'aria-label': 'Without label' }}
+          sx={{ minWidth: 120 }}
         >
           <MenuItem value="day">Day</MenuItem>
           <MenuItem value="week">Week</MenuItem>
@@ -188,23 +198,20 @@ export default function CalendarHeader() {
           <MenuItem value="year">Year</MenuItem>
           <MenuItem value="list">List</MenuItem>
         </Select>
+
         {showSearchInput && (
           <Input
             placeholder="Search events..."
             value={searchText}
             onChange={handleSearchInputChange}
             onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
+            sx={{ width: 200 }}
           />
         )}
-        <IconButton onClick={handleSearchIconClick} className="mr-2">
+
+        <IconButton onClick={handleSearchIconClick}>
           <SearchIcon />
         </IconButton>
-        {/* { <IconButton onClick={toggleThemePopup} className="mr-2">
-          <SettingsIcon />
-        </IconButton> }
-        {isThemePopupOpen && (
-        <ThemePopup onClose={toggleThemePopup} />
-      )}  */}
       </div>
     </header>
   );

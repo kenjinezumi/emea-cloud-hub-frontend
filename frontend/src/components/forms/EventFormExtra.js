@@ -1,10 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import GlobalContext from "../../context/GlobalContext";
-import {
-  languageOptions,
-  okrOptions,
-  gepOptions,
-} from "../filters/FiltersData";
+import { okrOptions, gepOptions } from "../filters/FiltersData";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import Snackbar from "@mui/material/Snackbar";
 import {
@@ -19,10 +15,11 @@ import {
   FormControlLabel,
   TextField,
   Chip,
-  Autocomplete,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Checkbox,
+  Input,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import "../styles/Forms.css";
@@ -39,101 +36,93 @@ export default function ExtraDetailsForm() {
   const [activityOwner, setActivityOwner] = useState([]);
   const [speakers, setSpeakers] = useState([]);
   const [eventSeries, setEventSeries] = useState("no");
-  const [emailLanguage, setEmailLanguage] = useState("English");
-  const [emailText, setEmailText] = useState("");
   const [customerUse, setCustomerUse] = useState("no");
-  const [okr, setOkr] = useState([]);
+  const [okrSelections, setOkrSelections] = useState({});
   const [gep, setGep] = useState([]);
   const [activityType, setActivityType] = useState("direct");
-  const [languagesAndTemplates, setLanguagesAndTemplates] = useState([
-    { language: "English", template: "" },
-  ]);
-
-  const [okrSelections, setOkrSelections] = useState(
-    okrOptions.map((option) => ({
-      label: option.label,
-      selected: false,
-    }))
-  );
 
   useEffect(() => {
     if (selectedEvent) {
       setActivityOwner(selectedEvent.activityOwner || []);
       setSpeakers(selectedEvent.speakers || []);
       setEventSeries(selectedEvent.eventSeries || "no");
-      setEmailLanguage(selectedEvent.emailLanguage || "English");
-      setEmailText(selectedEvent.emailText || "");
       setCustomerUse(selectedEvent.customerUse || "no");
-      setOkr(selectedEvent.okr || []);
       setGep(selectedEvent.gep || []);
       setActivityType(selectedEvent.activityType || "direct");
-      setLanguagesAndTemplates(
-        selectedEvent.languagesAndTemplates || [{ language: "English", template: "" }]
-      );
 
-      const newOkrSelections = okrOptions.map((option) => ({
-        label: option.label,
-        selected: selectedEvent.okr ? selectedEvent.okr.includes(option.label) : false,
-      }));
-      setOkrSelections(newOkrSelections);
+      // Initialize OKR selections from event data
+      const okrDictionary = okrOptions.reduce((acc, option) => {
+        const okrItem = selectedEvent.okr.find(item => item.type === option.label);
+        acc[option.label] = {
+          selected: !!okrItem,
+          percentage: okrItem ? okrItem.percentage : "",
+        };
+        return acc;
+      }, {});
+      setOkrSelections(okrDictionary);
     } else {
       setActivityOwner(formData.activityOwner || []);
       setSpeakers(formData.speakers || []);
       setEventSeries(formData.eventSeries || "no");
-      setEmailLanguage(formData.emailLanguage || "English");
-      setEmailText(formData.emailText || "");
       setCustomerUse(formData.customerUse || "no");
-      setOkr(formData.okr || []);
       setGep(formData.gep || []);
       setActivityType(formData.activityType || "direct");
-      setLanguagesAndTemplates(
-        formData.languagesAndTemplates || [{ language: "English", template: "" }]
-      );
 
-      const newOkrSelections = okrOptions.map((option) => ({
-        label: option.label,
-        selected: formData.okr ? formData.okr.includes(option.label) : false,
-      }));
-      setOkrSelections(newOkrSelections);
+      // Initialize OKR selections from form data
+      const okrDictionary = okrOptions.reduce((acc, option) => {
+        const okrItem = formData.okr.find(item => item.type === option.label);
+        acc[option.label] = {
+          selected: !!okrItem,
+          percentage: okrItem ? okrItem.percentage : "",
+        };
+        return acc;
+      }, {});
+      setOkrSelections(okrDictionary);
     }
   }, [selectedEvent, formData]);
 
   const handleToggleOkr = (label) => {
-    const newOkrSelections = okrSelections.map((option) => ({
-      ...option,
-      selected: option.label === label ? !option.selected : option.selected,
+    setOkrSelections((prev) => ({
+      ...prev,
+      [label]: {
+        ...prev[label],
+        selected: !prev[label].selected,
+      },
     }));
-    setOkrSelections(newOkrSelections);
+  };
 
-    const selectedOkrs = newOkrSelections
-      .filter((option) => option.selected)
-      .map((option) => option.label);
-    setOkr(selectedOkrs);
+  const handlePercentageChange = (label, value) => {
+    setOkrSelections((prev) => ({
+      ...prev,
+      [label]: {
+        ...prev[label],
+        percentage: value,
+      },
+    }));
   };
 
   const saveAndNavigate = useFormNavigation();
 
   const handlePrevious = () => {
+    const selectedOkrs = Object.keys(okrSelections)
+      .filter((key) => okrSelections[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: okrSelections[key].percentage,
+      }));
+
     saveAndNavigate(
       {
         activityOwner,
         speakers,
         eventSeries,
-        emailLanguage,
-        emailText,
         customerUse,
-        okr,
+        okr: selectedOkrs,
         gep,
         activityType,
-        languagesAndTemplates,
       },
       "/location"
     );
-  };
-
-  const handleOkrDelete = (okrToDelete) => (event) => {
-    event.stopPropagation();
-    setOkr((currentOkr) => currentOkr.filter((okr) => okr !== okrToDelete));
   };
 
   const handleGepDelete = (gepToDelete) => (event) => {
@@ -142,12 +131,26 @@ export default function ExtraDetailsForm() {
   };
 
   const handleNext = () => {
-    const selectedOkr = okrSelections
-      .filter((option) => option.selected)
-      .map((option) => option.label);
+    const selectedOkrs = Object.keys(okrSelections)
+      .filter((key) => okrSelections[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: okrSelections[key].percentage,
+      }));
+
+    const totalPercentage = selectedOkrs.reduce(
+      (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
+      0
+    );
+
+    if (totalPercentage > 100) {
+      setSnackbarMessage("Total OKR percentage cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
 
     const formIsValid =
-      customerUse && selectedOkr.length > 0 && gep.length > 0 && activityType;
+      customerUse && selectedOkrs.length > 0 && gep.length > 0 && activityType;
 
     setIsFormValid(formIsValid);
 
@@ -159,56 +162,33 @@ export default function ExtraDetailsForm() {
       activityOwner,
       speakers,
       eventSeries,
-      emailLanguage,
-      emailText,
       customerUse,
-      okr: selectedOkr,
+      okr: selectedOkrs,
       gep,
       activityType,
-      languagesAndTemplates,
     };
 
     saveAndNavigate(currentFormData, "/audience");
   };
 
-  const handleAddLanguageAndTemplate = () => {
-    setLanguagesAndTemplates([
-      ...languagesAndTemplates,
-      { language: "", template: "" },
-    ]);
-  };
-
-  const handleRemoveLanguageAndTemplate = (index) => {
-    const updatedItems = languagesAndTemplates.filter((_, idx) => idx !== index);
-    setLanguagesAndTemplates(updatedItems);
-  };
-
-  const handleLanguageChange = (value, index) => {
-    const updatedItems = [...languagesAndTemplates];
-    updatedItems[index].language = value;
-    setLanguagesAndTemplates(updatedItems);
-  };
-
-  const handleTemplateChange = (value, index) => {
-    const updatedItems = [...languagesAndTemplates];
-    updatedItems[index].template = value;
-    setLanguagesAndTemplates(updatedItems);
-  };
-
   const handleSaveAsDraft = async () => {
     const isDraft = formData.isDraft !== undefined ? formData.isDraft : true;
+
+    const selectedOkrs = Object.keys(okrSelections)
+      .filter((key) => okrSelections[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: okrSelections[key].percentage,
+      }));
 
     const draftData = {
       activityOwner,
       speakers,
       eventSeries,
-      emailLanguage,
-      emailText,
       customerUse,
-      okr,
+      okr: selectedOkrs,
       gep,
       activityType,
-      languagesAndTemplates,
       isDraft,
     };
 
@@ -229,10 +209,6 @@ export default function ExtraDetailsForm() {
       setSnackbarOpen(true);
     }
   };
-
-  const availableLanguages = languageOptions.filter(
-    (language) => !languagesAndTemplates.some((item) => item.language === language)
-  );
 
   return (
     <div className="h-screen flex flex-col">
@@ -256,85 +232,6 @@ export default function ExtraDetailsForm() {
             </span>
           </Typography>
           <Grid container spacing={2}>
-            {languagesAndTemplates.map((item, index) => (
-              <Accordion key={index} style={{ width: "100%", marginBottom: "8px" }}>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="panel-content"
-                  id={`panel-header-${index}`}
-                >
-                  <Typography>Email language: {index === 0 && <span> English</span>}</Typography>
-                  {item.language && (
-                    <Typography>
-                      <span>&nbsp;{item.language}</span>
-                    </Typography>
-                  )}
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <FormControl fullWidth>
-                        <Typography variant="subtitle1">Email language</Typography>
-                        {index === 0 ? (
-                          <TextField
-                            value={"English"}
-                            fullWidth
-                            InputProps={{ readOnly: true }}
-                            variant="outlined"
-                            style={{ backgroundColor: "#e0e0e0" }}
-                          />
-                        ) : (
-                          <Autocomplete
-                            value={item.language}
-                            onChange={(event, newValue) => {
-                              handleLanguageChange(newValue, index);
-                            }}
-                            freeSolo
-                            options={availableLanguages}
-                            renderInput={(params) => (
-                              <TextField {...params} label="" variant="outlined" />
-                            )}
-                          />
-                        )}
-                      </FormControl>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography variant="subtitle1">Email template</Typography>
-                      <TextField
-                        label="Email Text"
-                        multiline
-                        rows={4}
-                        value={item.template}
-                        onChange={(e) => handleTemplateChange(e.target.value, index)}
-                        variant="outlined"
-                        fullWidth
-                      />
-                    </Grid>
-                    {index > 0 && (
-                      <Grid item xs={12}>
-                        <Button
-                          variant="outlined"
-                          onClick={() => handleRemoveLanguageAndTemplate(index)}
-                          style={{
-                            color: "#d32f2f",
-                            borderColor: "#d32f2f",
-                            marginTop: "1px",
-                            textTransform: "none",
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      </Grid>
-                    )}
-                  </Grid>
-                </AccordionDetails>
-              </Accordion>
-            ))}
-            <Grid item xs={12}>
-              <Button variant="outlined" onClick={handleAddLanguageAndTemplate}>
-                Add
-              </Button>
-            </Grid>
             <Grid item xs={12}>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">
@@ -353,22 +250,52 @@ export default function ExtraDetailsForm() {
                 </RadioGroup>
               </FormControl>
             </Grid>
+
+            {/* OKR Selection as Expandable Accordion */}
             <Grid item xs={12}>
-              <Typography variant="subtitle1">OKR Selection</Typography>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {okrSelections.map((option) => (
-                  <Chip
-                    key={option.label}
-                    label={option.label}
-                    onClick={() => handleToggleOkr(option.label)}
-                    style={{
-                      backgroundColor: option.selected ? blue[500] : grey[300],
-                      color: option.selected ? "white" : "black",
-                    }}
-                  />
-                ))}
-              </div>
+              <Accordion>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel-content"
+                  id="panel-header"
+                >
+                  <Typography>OKR Selection</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {Object.keys(okrSelections).map((label) => (
+                    <Grid container alignItems="center" key={label}>
+                      <Grid item xs={1}>
+                        <Checkbox
+                          checked={okrSelections[label].selected}
+                          onChange={() => handleToggleOkr(label)}
+                        />
+                      </Grid>
+                      <Grid item xs={7}>
+                        <Typography variant="body2">{label}</Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Input
+                          type="number"
+                          value={okrSelections[label].percentage}
+                          onChange={(e) =>
+                            handlePercentageChange(label, e.target.value)
+                          }
+                          placeholder="Percentage"
+                          sx={{ width: "80%" }}
+                          inputProps={{
+                            min: 0,
+                            max: 100,
+                            step: 1,
+                          }}
+                          disabled={!okrSelections[label].selected}
+                        />
+                      </Grid>
+                    </Grid>
+                  ))}
+                </AccordionDetails>
+              </Accordion>
             </Grid>
+
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <Typography variant="subtitle1">GEP</Typography>
@@ -397,6 +324,7 @@ export default function ExtraDetailsForm() {
                 </Select>
               </FormControl>
             </Grid>
+
             <Grid item xs={12}>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">

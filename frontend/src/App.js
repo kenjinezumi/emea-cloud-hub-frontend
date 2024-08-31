@@ -19,6 +19,7 @@ import GlobalContext from "./context/GlobalContext";
 import RenderCalendarView from "./components/CalendarLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import Login from "./components/forms/Login";
+import EventFormEmailInvitation from "./components/forms/EventFormEmailInvitation";
 
 function App() {
   const { sidebarOpen, currentView, monthIndex, showEventModal, setCurrentView } = useContext(GlobalContext);
@@ -64,6 +65,8 @@ function App() {
           <Route path="/create-event" element={<EventForm />} />
           <Route path="/location" element={<EventFormLocation />} />
           <Route path="/extra" element={<EventFormExtra />} />
+          <Route path="/email-invitation" element={<EventFormEmailInvitation />} />
+
           <Route path="/audience" element={<EventFormAudience />} />
           <Route path="/links" element={<EventFormLinks />} />
           <Route path="/event/:eventId" element={<EventSharePage />} />

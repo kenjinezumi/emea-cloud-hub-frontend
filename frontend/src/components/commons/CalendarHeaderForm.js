@@ -1,92 +1,163 @@
-import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
-
+import React, { useContext, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LinkIcon from '@mui/icons-material/Link';
 import PeopleIcon from '@mui/icons-material/People';
 import InfoIcon from '@mui/icons-material/Info';
+import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
+import ExitToAppIcon from '@mui/icons-material/ExitToApp'; // Import Exit Icon
 import { blue } from '@mui/material/colors';
-import GlobalContext from "../../context/GlobalContext"; // Import GlobalContext
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import GlobalContext from "../../context/GlobalContext";
 
 const NavigationSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { formData, updateFormData } = useContext(GlobalContext); // Get form data and update function from context
+  const { formData, updateFormData } = useContext(GlobalContext);
+  const [exitDialogOpen, setExitDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const navigateTo = (path, currentFormData) => {
-    updateFormData({ ...formData, ...currentFormData }); // Save current form data to global context
+    updateFormData({ ...formData, ...currentFormData });
     console.log("Initial form data:", JSON.stringify(formData, null, 2));
-
     navigate(path);
   };
 
-  const handleCancel = () => {
-    const userConfirmed = window.confirm('Are you sure you want to leave this page?');
-    if (userConfirmed) {
-      window.location.href = '/';
-    }
-    navigate('/');
+  const handleExitOpen = () => {
+    setExitDialogOpen(true);
+  };
+
+  const handleExitClose = () => {
+    setExitDialogOpen(false);
+  };
+
+  const handleDeleteOpen = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteClose = () => {
+    setDeleteDialogOpen(false);
+  };
+
+  const handleExitConfirm = () => {
+    setExitDialogOpen(false);
+    window.location.href = '/';
+  };
+
+  const handleDeleteConfirm = () => {
+    setDeleteDialogOpen(false);
+    // Add your delete logic here
+    console.log('Event deleted'); // Placeholder for actual delete functionality
+    window.location.href = '/';
   };
 
   const isCurrentPath = (path) => location.pathname === path;
 
   return (
     <div className="fixed right-0 top-16 h-[calc(100vh-64px)] w-60 bg-white shadow-md p-4">
-      <div className="text-lg mb-2">Sections</div>{' '}
+      <div className="text-lg mb-2">Sections</div>
       <button
-        onClick={() => navigateTo('/create-event', { /* add current form data here */ })}
+        onClick={() => navigateTo('/create-event')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/create-event') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <CalendarMonthIcon style={{ color: blue[500] }} />
-        </span>{' '}
-        <span>About</span>
+        <CalendarMonthIcon style={{ color: blue[500] }} />
+        <span className="ml-2">About</span>
       </button>
       <button
-        onClick={() => navigateTo('/location', { /* add current form data here */ })}
+        onClick={() => navigateTo('/location')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/location') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <LocationOnIcon style={{ color: blue[500] }} />
-        </span>
-        <span>Location</span>
+        <LocationOnIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Location</span>
       </button>
       <button
-        onClick={() => navigateTo('/extra', { /* add current form data here */ })}
+        onClick={() => navigateTo('/extra')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/extra') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <InfoIcon style={{ color: blue[500] }} />
-        </span>
-        <span>Extra details</span>
+        <InfoIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Extra details</span>
       </button>
       <button
-        onClick={() => navigateTo('/audience', { /* add current form data here */ })}
-        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/audience') ? 'text-black' : 'text-gray-400'}`}
+        onClick={() => navigateTo('/email-invitation')}
+        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/email-invitation') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <PeopleIcon style={{ color: blue[500] }} />
-        </span>
-        <span>Audience</span>
+        <EmailIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Email Invitation</span>
       </button>
       <button
-        onClick={() => navigateTo('/links', { /* add current form data here */ })}
+        onClick={() => navigateTo('/links')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/links') ? 'text-black' : 'text-gray-400'}`}
       >
-        <span className="mr-2">
-          <LinkIcon style={{ color: blue[500] }} />
-        </span>
-        <span>Links</span>
+        <LinkIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Links</span>
       </button>
       <hr className="my-4" />
       <button
-        onClick={handleCancel}
-        className="block w-full text-left p-2 hover:bg-gray-200 rounded text-red-500"
+        onClick={handleExitOpen}
+        className="block w-full text-left p-2 hover:bg-gray-200 rounded text-red-500 flex items-center"
       >
-        Cancel
+        <ExitToAppIcon style={{ color: 'red' }} />
+        <span className="ml-2">Exit</span>
       </button>
+      <button
+        onClick={handleDeleteOpen}
+        className="block w-full text-left p-2 hover:bg-gray-200 rounded text-red-500 flex items-center"
+      >
+        <DeleteIcon style={{ color: 'red' }} />
+        <span className="ml-2">Delete</span>
+      </button>
+
+      {/* Exit Confirmation Dialog */}
+      <Dialog
+        open={exitDialogOpen}
+        onClose={handleExitClose}
+        aria-labelledby="exit-dialog-title"
+        aria-describedby="exit-dialog-description"
+      >
+        <DialogTitle id="exit-dialog-title">
+          {"Confirm Exit"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="exit-dialog-description">
+            Are you sure you want to leave this page? All unsaved data will be lost.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleExitClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleExitConfirm} color="primary" autoFocus>
+            Exit
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteClose}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          {"Confirm Delete"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this event? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="primary" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

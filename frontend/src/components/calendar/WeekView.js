@@ -1,296 +1,182 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, { useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import GlobalContext from '../../context/GlobalContext';
+import { Paper, Typography, Box } from '@mui/material';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import GlobalContext from '../../context/GlobalContext';
-import { Paper, Typography, Grid } from '@mui/material';
-import { getEventData } from '../../api/getEventData';
+import DayColumn from '../Day/DayColumn';
 import EventInfoPopup from '../popup/EventInfoModal';
-import { useLocation } from 'react-router-dom';
+import { getEventData } from '../../api/getEventData';
 
 dayjs.extend(utc);
 
 export default function WeekView() {
-  const {
-    setShowEventModal,
-    setDaySelected,
-    daySelected,
-    showEventInfoModal,
-    setSelectedEvent,
-    setShowInfoEventModal,
+  const { 
+    daySelected, 
+    setSelectedEvent, 
+    setShowInfoEventModal, 
+    showEventInfoModal, 
+    selectedEvent, 
+    filters 
   } = useContext(GlobalContext);
+
+  const [currentWeek, setCurrentWeek] = useState([]);
   const [events, setEvents] = useState([]);
-  const { filters } = useContext(GlobalContext);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const hourGridRef = useRef(null);
+  const [currentTimePosition, setCurrentTimePosition] = useState(0); // State for auto-scroll
+  const userTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
+  const hourHeight = 60;
+  const weekViewRef = useRef(null);
 
   useEffect(() => {
-    // Set the initial scroll position to 7 AM after component mounts
-    if (hourGridRef.current) {
-      const hourHeight = 60; // Adjust this if the height of your hour slots differs
-      hourGridRef.current.scrollTop = hourHeight * 7; // Scroll to 7 AM
-    }
-  }, []);
+    const startOfWeek = dayjs(daySelected).startOf('week');
+    const daysOfWeek = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day'));
+    setCurrentWeek(daysOfWeek);
+  }, [daySelected]);
 
   useEffect(() => {
-    const applyFilters = async (events, filters) => {
-      // Ensure 'events' is an array before proceeding
-      if (!Array.isArray(events)) {
-        console.error("applyFilters was called with 'events' that is not an array:", events);
-        return [];
-      }
-
-      const filterPromises = events.map(event => {
-        return (async () => {
-          const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
-          const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-          const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.includes(okr.label));
-          const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
-          const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
-
-          return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
-        })();
-      });
-
-      const results = await Promise.all(filterPromises);
-      return events.filter((_, index) => results[index]);
-    };
-
-    (async () => {
-      const filteredEvents = await applyFilters(events, filters);
-      setFilteredEvents(filteredEvents);
-    })();
-  }, [events, filters]);
-
-  const handleEventClick = (eventData) => {
-    setSelectedEvent(eventData);
-    setShowInfoEventModal(true);
-  };
-
-  const handleDayClick = () => {
-    setSelectedEvent(null);
-    setShowEventModal(true);
-  };
-
-  const location = useLocation();
-
-  useEffect(() => {
-    setShowEventModal(false);
-    setShowInfoEventModal(false);
-  }, [location]);
-
-  useEffect(() => {
-    async function fetchEvents() {
+    const fetchAndFilterEvents = async () => {
       try {
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
+        const filtered = await applyFilters(eventData, filters);
+        setFilteredEvents(filtered);
       } catch (error) {
-        console.error('Error fetching events:', error);
+        console.error('Error fetching event data:', error);
       }
-    }
+    };
 
-    fetchEvents();
-  }, [daySelected]);
+    fetchAndFilterEvents();
+  }, [filters]);
 
-  const startOfWeek = dayjs(daySelected).startOf('week');
-  const daysOfWeek = Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, 'day'));
-  const hoursOfDay = Array.from({ length: 24 }, (_, i) => i);
-
-  const calculateEventBlockStyles = (event, overlappingEvents) => {
-    const eventStart = dayjs.utc(event.startDate).local();
-    const eventEnd = dayjs.utc(event.endDate).local();
-    const startOfDay = daySelected.startOf('day');
-    const endOfDay = daySelected.endOf('day');
-
-    const displayStart = dayjs.max(startOfDay, eventStart);
-    const displayEnd = dayjs.min(endOfDay, eventEnd);
-
-    const minutesFromMidnight = displayStart.diff(daySelected.startOf('day'), 'minutes');
-    const durationInMinutes = displayEnd.diff(displayStart, 'minutes');
-
-    const top = (minutesFromMidnight / 60) * 60;
-    const height = (durationInMinutes / 60) * 60;
-
-    const width = 100 / overlappingEvents;
-    const positionIndex = events.findIndex((e) => e.eventId === event.eventId);
-    const left = (positionIndex % overlappingEvents) * width;
-
-    return { top, height, left, width };
-  };
-
-  const getOverlappingEventsCount = (day, hour) => {
+  const applyFilters = useCallback(async (events, filters) => {
     if (!Array.isArray(events)) {
-      console.error("calculateOverlapGroups was called with 'events' that is not an array:", events);
+      console.error("applyFilters was called with 'events' that is not an array:", events);
       return [];
     }
-    return events.filter((event) => {
-      const eventStart = dayjs.utc(event.startDate).local();
-      const eventEnd = dayjs.utc(event.endDate).local();
-      return (
-        eventStart.isSame(day, 'day') &&
-        eventStart.hour() <= hour &&
-        eventEnd.hour() >= hour
-      );
-    }).length;
-  };
+
+    const results = await Promise.all(events.map(async (event) => {
+      const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
+      const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
+      const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label));
+      const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
+      const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
+
+      return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
+    }));
+
+    return events.filter((_, index) => results[index]);
+  }, []);
+
+  useEffect(() => {
+    if (weekViewRef.current) {
+      const currentHourOffset = dayjs().hour() * hourHeight;
+      weekViewRef.current.scrollTo({
+        top: currentHourOffset - hourHeight / 2,
+        behavior: 'smooth',
+      });
+    }
+
+    const updateCurrentTimePosition = () => {
+      const now = dayjs();
+      const position = now.hour() * hourHeight + (now.minute() / 60) * hourHeight;
+      setCurrentTimePosition(position);
+    };
+
+    updateCurrentTimePosition();
+    const interval = setInterval(updateCurrentTimePosition, 60000);
+
+    return () => clearInterval(interval);
+  }, [hourHeight]);
+
+  const handleEventClick = useCallback((event) => {
+    setSelectedEvent(event);
+    setShowInfoEventModal(true);
+  }, [setSelectedEvent, setShowInfoEventModal]);
+
+  const closeEventModal = useCallback(() => {
+    setShowInfoEventModal(false);
+    setSelectedEvent(null);
+  }, [setShowInfoEventModal, setSelectedEvent]);
+
+  const timeSlotLabels = useMemo(() => (
+    Array.from({ length: 24 }, (_, i) => (
+      <Typography key={i} align="right" sx={{ height: `${hourHeight}px`, lineHeight: `${hourHeight}px`, paddingRight: '5px', fontSize: '12px', color: 'grey.500' }}>
+        {dayjs().hour(i).minute(0).format('HH:mm')}
+      </Typography>
+    ))
+  ), [hourHeight]);
 
   return (
-    <Paper sx={{ width: '80%', overflowY: 'auto', padding: 2, border: 'none' }}>
-      <Grid container>
-        {/* Hours Column */}
-        <Grid
-          item
-          xs={1}
+    <Paper sx={{ width: '90%', height: '100vh', overflow: 'hidden', padding: 2, display: 'flex', flexDirection: 'column', border: 'none' }}>
+      <Typography variant="h6" align="center" gutterBottom>
+        Week of {dayjs(daySelected).startOf('week').format('MMMM D, YYYY')} ({userTimezone})
+      </Typography>
+      <Box ref={weekViewRef} sx={{ display: 'flex', flexDirection: 'row', flex: 1, overflowY: 'auto', position: 'relative', width: '100%' }}>
+        {/* Hour Labels */}
+        <Box sx={{ flex: '0 0 50px', borderRight: '2px solid #bbb', display: 'flex', flexDirection: 'column' }}>
+          {timeSlotLabels}
+        </Box>
+
+        {/* Horizontal Lines */}
+        <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            borderRight: 1,
-            borderColor: 'divider',
+            position: 'absolute',
+            top: 0,
+            left: 50,
+            right: 0,
+            height: '100%',
+            zIndex: 1,
+            pointerEvents: 'none', // Ensure lines do not intercept clicks
           }}
-          ref={hourGridRef}
         >
-          {hoursOfDay.map((hour) => (
-            <div
-              key={hour}
-              style={{
-                minHeight: '60px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+          {Array.from({ length: 24 }, (_, i) => (
+            <Box
+              key={i}
+              sx={{
+                position: 'absolute',
+                top: `${i * hourHeight}px`,
+                left: 0,
+                right: 0,
+                height: '1px',
+                borderTop: '1px solid #ddd',
+              }}
+            />
+          ))}
+        </Box>
+
+        {currentWeek.map((day) => (
+          <Box key={day.format('YYYY-MM-DD')} sx={{ flex: 1, position: 'relative' }}>
+            <Typography 
+              align="center" 
+              variant="subtitle1" 
+              sx={{ 
+                padding: '5px 0', 
+                borderBottom: '1px solid #ddd', 
+                backgroundColor: 'white', 
+                position: 'sticky', 
+                top: 0, 
+                zIndex: 10
               }}
             >
-              <Typography variant="caption" sx={{ color: 'grey.500', marginRight: '2px' }}>
-                {dayjs().hour(hour).minute(0).format('HH:mm')}
-              </Typography>
-            </div>
-          ))}
-        </Grid>
+              {day.format('ddd, D MMM')}
+            </Typography>
+            <DayColumn 
+              daySelected={day} 
+              events={filteredEvents.filter(event => 
+                dayjs(event.startDate).isSame(day, 'day') ||
+                dayjs(event.endDate).isSame(day, 'day') ||
+                (dayjs(event.startDate).isBefore(day, 'day') && dayjs(event.endDate).isAfter(day, 'day'))
+              )}
+              onEventClick={handleEventClick} 
+            />
+          </Box>
+        ))}
+      </Box>
 
-        {/* Event Grid */}
-        <Grid item xs={11}>
-          <Grid container>
-            {/* Days of the week header */}
-            {daysOfWeek.map((day) => (
-              <Grid item xs key={day.format('DDMMYYYY')}>
-                <Typography
-                  align="center"
-                  variant="subtitle1"
-                  sx={{
-                    marginBottom: '10px',
-                    borderBottom: 1,
-                    borderColor: 'divider',
-                  }}
-                >
-                  {day.format('dddd, D')}
-                </Typography>
-              </Grid>
-            ))}
-
-            {/* Events grid */}
-            {hoursOfDay.map((hour) => (
-              <Grid
-                container
-                key={hour}
-                sx={{
-                  minHeight: '60px',
-                  borderBottom: 1,
-                  borderColor: 'divider',
-                }}
-              >
-                {daysOfWeek.map((day) => (
-                  <Grid
-                    item
-                    xs
-                    key={day.format('DDMMYYYY') + hour}
-                    sx={{ borderRight: 1, borderColor: 'divider' }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        minHeight: '60px',
-                        position: 'relative',
-                      }}
-                    >
-                      {filteredEvents
-                        .filter(
-                          (event) =>
-                            dayjs.utc(event.startDate).local().isSame(day, 'day') &&
-                            dayjs.utc(event.startDate).local().hour() === hour,
-                        )
-                        .map((event) => {
-                          const overlappingEvents = getOverlappingEventsCount(day, hour);
-                          const { top, height, left, width } = calculateEventBlockStyles(event, overlappingEvents);
-
-                          return (
-                            <div
-                              key={event.eventId}
-                              style={{
-                                position: 'absolute',
-                                top: `${top}px`,
-                                left: `${left}%`,
-                                width: `${width}%`,
-                                height: `${height}px`,
-                                backgroundColor: '#fff',
-                                color: '#5f6368',
-                                padding: '2px 4px',
-                                borderRadius: '4px',
-                                display: 'flex',
-                                alignItems: 'top',
-                                justifyContent: 'flex-start',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                cursor: 'pointer',
-                                zIndex: 2,
-                                boxSizing: 'border-box',
-                                borderLeft: '4px solid #1a73e8',
-                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                                margin: '4px 0',
-                                marginLeft: '4px',
-                                transition: 'background-color 0.2s, box-shadow 0.2s',
-                                fontSize: '0.875rem',
-                                fontWeight: '500',
-                              }}
-                              onClick={() => {
-                                handleEventClick(event);
-                              }}
-                            >
-                              {event.title}
-                            </div>
-                          );
-                        })}
-                      {/* If there are no events, render a div to add an event */}
-                      {events.filter(
-                        (event) =>
-                          dayjs.utc(event.startDate).local().isSame(day, 'day') &&
-                          dayjs.utc(event.startDate).local().hour() === hour,
-                      ).length === 0 && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => {
-                            handleDayClick(day, hour);
-                          }}
-                        ></div>
-                      )}
-                    </div>
-                  </Grid>
-                ))}
-              </Grid>
-            ))}
-          </Grid>
-        </Grid>
-      </Grid>
-      {showEventInfoModal && <EventInfoPopup />}
+      {/* Conditionally render EventInfoPopup */}
+      {showEventInfoModal && selectedEvent && (
+        <EventInfoPopup event={selectedEvent} close={closeEventModal} />
+      )}
     </Paper>
   );
 }
