@@ -1,15 +1,31 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Avatar, Button, TextField, Grid, Paper, Typography, Box } from "@mui/material";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
 import logo from '../../assets/logo/logo.png';
+import { getUserData } from "../../api/getUserData"; // Import your fetch-based function
 
 function Login() {
-  const navigate = useNavigate(); // for programmatic navigation
+  const navigate = useNavigate(); // For programmatic navigation
   const { setIsAuthenticated } = useContext(GlobalContext);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(''); // State for email
+  const [password, setPassword] = useState(''); // State for password
+
+  useEffect(() => {
+    // Fetch the user email from the backend using the fetch-based getUserData function
+    const fetchUserEmail = async () => {
+      try {
+        const response = await getUserData(); // Call the getUserData function to fetch email
+        if (response.email) {
+          setEmail(response.email); // Update the email state with the fetched email
+        }
+      } catch (error) {
+        console.error('Error fetching user email', error);
+      }
+    };
+
+    fetchUserEmail(); // Invoke the function to fetch email
+  }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -47,7 +63,7 @@ function Login() {
           alignItems: 'center',
         }}
       >
-        <img src={logo} alt="calendar" className="mr-2 w-12 h-12 cursor-pointer"/>
+        <img src={logo} alt="calendar" className="mr-2 w-12 h-12 cursor-pointer" />
 
         <Typography component="h1" variant="h5">
           Sign in
@@ -58,6 +74,7 @@ function Login() {
           noValidate
           onSubmit={handleSubmit}
         >
+          {/* Email Input Field */}
           <TextField
             variant="outlined"
             margin="normal"
@@ -68,9 +85,10 @@ function Login() {
             name="email"
             autoComplete="email"
             autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={email} // Bind the input field to the email state
+            onChange={(e) => setEmail(e.target.value)} // Update the state on change
           />
+          {/* Password Input Field */}
           <TextField
             variant="outlined"
             margin="normal"
@@ -81,8 +99,8 @@ function Login() {
             type="password"
             id="password"
             autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={password} // Bind the input field to the password state
+            onChange={(e) => setPassword(e.target.value)} // Update the state on change
           />
           <Button
             type="submit"
