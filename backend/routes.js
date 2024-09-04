@@ -42,6 +42,24 @@ router.get('/', async (req, res) => {
   res.json({ message: queryName });
 });
 
+// Add this endpoint to your existing Express router setup
+
+// Endpoint to get user email from headers
+router.get('/api/get-user-email', (req, res) => {
+  const userEmail = req.header('X-AppEngine-User-Email');
+
+  if (userEmail) {
+    res.json({ email: userEmail });
+  } else {
+    // Log a warning if no email is found
+    logger.warn('GET /api/get-user-email: No email found in headers.');
+
+    // Return an error if the header is not present
+    res.status(401).json({ success: false, message: 'User email not found in headers.' });
+  }
+});
+
+
 // Handler for POST requests
 router.post('/', async (req, res) => {
   logger.info('POST /: Request received.', { body: req.body });
