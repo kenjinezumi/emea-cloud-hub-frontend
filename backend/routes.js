@@ -5,9 +5,13 @@ const loadQueriesAsync = require('./utils/queriesLoaders');
 const { LoggingWinston } = require('@google-cloud/logging-winston');
 const winston = require('winston');
 
+// New imports for login
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const cookieSession = require('cookie-session');
+
 // Setup Winston logger
 const loggingWinston = new LoggingWinston();
-
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -20,13 +24,80 @@ const logger = winston.createLogger({
   ]
 });
 
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
+const COOKIE_KEY = process.env.COOKIE_KEY;
+
 // Middleware for parsing JSON bodies
 router.use(express.json());
+
+// NEW: Cookie session middleware setup
+router.use(cookieSession({
+  maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
+  keys: [COOKIE_KEY] // Use the secure random string as the key
+}));
+
+
+// NEW: Initialize Passport
+router.use(passport.initialize());
+router.use(passport.session());
+
+// NEW: Configure Passport.js for Google OAuth
+passport.use(new GoogleStrategy({
+  clientID: CLIENT_ID, // Access Client ID from environment variables
+  clientSecret: CLIENT_SECRET, // Access Client Secret from environment variables
+  callbackURL: CALLBACK_URL // Access Callback URL from environment variables
+}, (accessToken, refreshToken, profile, done) => {
+  // Use the profile information for user registration or login
+  return done(null, profile);
+}));
+
+// NEW: Serialize user into the session
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+// NEW: Deserialize user from the session
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
+// Route for Google OAuth login
+router.get('/auth/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email']
+  })
+);
+
+// Route for handling the callback from Google
+router.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/' }),
+  (req, res) => {
+    // Successful authentication, redirect home or wherever you want
+    res.redirect('/');
+  }
+);
+
+// Route to log out the user
+router.get('/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect('/');
+  });
+});
+
+// Route to get current user info
+router.get('/api/current_user', (req, res) => {
+  res.send(req.user); // Send back the user object from the session
+});
 
 // Initialize BigQuery client
 const bigquery = new BigQuery();
 
-// Handler for GET requests
+// Handler for GET requests (existing code)
 router.get('/', async (req, res) => {
   const { queryName } = req.query;
 
@@ -42,9 +113,7 @@ router.get('/', async (req, res) => {
   res.json({ message: queryName });
 });
 
-// Add this endpoint to your existing Express router setup
-
-// Endpoint to get user email from headers
+// Endpoint to get user email from headers (existing code)
 router.get('/api/get-user-email', (req, res) => {
   const userEmail = req.header('X-AppEngine-User-Email');
 
@@ -59,8 +128,7 @@ router.get('/api/get-user-email', (req, res) => {
   }
 });
 
-
-// Handler for POST requests
+// Handler for POST requests (existing code)
 router.post('/', async (req, res) => {
   logger.info('POST /: Request received.', { body: req.body });
   const { message, queryName, data } = req.body;
@@ -82,7 +150,6 @@ router.post('/', async (req, res) => {
       }
       res.status(500).json({ success: false, message: 'Failed to save data. Please try again later.' });
     }
-    
   } else if (queryName === 'eventDataQuery' || queryName === 'organisedByOptionsQuery' || queryName === 'marketingProgramQuery') {
     try {
       logger.info('POST /: Executing query.', { queryName });
@@ -123,7 +190,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Function to save event data
+// Function to save event data (existing code)
 async function saveEventData(eventData) {
   const datasetId = 'data';
   const tableId = 'master-event-data';
