@@ -72,10 +72,23 @@ router.get('/auth/google',
 
 // Route for handling the callback from Google
 router.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+  passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    // Successful authentication, redirect home or wherever you want
-    res.redirect('/');
+    if (!req.user) {
+      // Authentication failed, return an error message and authentication status
+      return res.status(401).json({
+        isAuthenticated: false,
+        message: "Authentication failed. Please try again.",
+      });
+    }
+
+    // Successful authentication, return user data and auth status
+    const user = req.user;
+    res.json({
+      isAuthenticated: true,
+      user: user,
+      message: "Authentication successful", // You can add a success message as well
+    });
   }
 );
 

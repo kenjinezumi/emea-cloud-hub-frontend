@@ -1,37 +1,43 @@
-// src/components/forms/Login.js
 import React, { useState, useEffect, useContext } from "react";
-import { Button, Typography, Box, Grid, Paper } from "@mui/material";
+import { Button, Typography, Grid, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
 import logo from '../../assets/logo/logo.png';
-import { getUserData } from "../../api/getUserData";
 
 function Login() {
   const navigate = useNavigate();
   const { setIsAuthenticated } = useContext(GlobalContext);
   const [user, setUser] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(""); // State to hold error message
+  const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
 
+  // Check for user authentication status after Google login
   useEffect(() => {
-    const fetchUserEmail = async () => {
+    const fetchAuthStatus = async () => {
       try {
-        const response = await getUserData();
-        if (response.email) {
-          setUser(response);
-          setIsAuthenticated(true);
-          navigate('/'); // Redirect to home after login
+        const response = await fetch(`${apiUrl}auth/google/callback`, {
+          credentials: 'include', // Ensure cookies are included
+        });
+        const data = await response.json();
+
+        if (data.isAuthenticated) {
+          setUser(data.user); // Set user data from backend
+          setIsAuthenticated(true); // Set global auth state
+          navigate('/'); // Redirect to home page
         } else {
-          setIsAuthenticated(false);
+          setErrorMessage(data.message); // Set error message from backend
         }
       } catch (error) {
-        console.error('Error fetching user data', error);
+        console.error('Error fetching authentication status:', error);
+        setErrorMessage("An error occurred. Please try again.");
       }
     };
 
-    fetchUserEmail();
+    fetchAuthStatus();
   }, [setIsAuthenticated, navigate]);
 
   const handleGoogleSignIn = () => {
-    window.location.href = '/auth/google';
+    window.location.href = `${apiUrl}auth/google`;
   };
 
   return (
@@ -42,9 +48,16 @@ function Login() {
           {user ? `Welcome, ${user.name}` : 'Sign in with Google'}
         </Typography>
         {!user && (
-          <Button variant="contained" color="primary" onClick={handleGoogleSignIn} sx={{ mt: 3, mb: 2 }}>
-            Sign in with Google
-          </Button>
+          <>
+            <Button variant="contained" color="primary" onClick={handleGoogleSignIn} sx={{ mt: 3, mb: 2 }}>
+              Sign in with Google
+            </Button>
+            {errorMessage && (
+              <Typography color="error" sx={{ mt: 2 }}>
+                {errorMessage}
+              </Typography>
+            )}
+          </>
         )}
       </Grid>
     </Grid>
