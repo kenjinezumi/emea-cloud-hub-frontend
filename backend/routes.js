@@ -63,25 +63,40 @@ passport.deserializeUser((user, done) => {
   done(null, user);
 });
 
-// Route for Google OAuth login
-router.get('/auth/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email']
-  })
+
+// Google OAuth login route
+router.get('/auth/google', 
+  passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-// Route for handling the callback from Google
-router.get('/auth/google/callback',
+// Google OAuth callback route
+router.get('/auth/google/callback', 
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
     if (req.user) {
-      // Redirect to frontend with user authenticated
-      res.redirect('https://cloudhub.googleplex.com'); // You can add query parameters with user info if needed
+      // Redirect back to frontend after successful authentication
+      res.redirect('https://cloudhub.googleplex.com/auth/success');  // Redirect to frontend, no data sent here
     } else {
-      res.redirect('/login');
+      res.redirect('https://cloudhub.googleplex.com/login');
     }
   }
 );
+
+// API route to handle user data after OAuth login (POST)
+router.post('/auth/google/callback', (req, res) => {
+  if (req.user) {
+    res.json({
+      isAuthenticated: true,
+      user: req.user,  // Send user data
+    });
+  } else {
+    res.status(401).json({
+      isAuthenticated: false,
+      message: "User is not authenticated.",
+    });
+  }
+});
+
 
 // Route to log out the user
 router.get('/logout', (req, res) => {
