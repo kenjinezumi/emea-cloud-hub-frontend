@@ -74,21 +74,12 @@ router.get('/auth/google',
 router.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    if (!req.user) {
-      // Authentication failed, return an error message and authentication status
-      return res.status(401).json({
-        isAuthenticated: false,
-        message: "Authentication failed. Please try again.",
-      });
+    if (req.user) {
+      // Redirect to frontend with user authenticated
+      res.redirect('https://cloudhub.googleplex.com'); // You can add query parameters with user info if needed
+    } else {
+      res.redirect('/login');
     }
-
-    // Successful authentication, return user data and auth status
-    const user = req.user;
-    res.json({
-      isAuthenticated: true,
-      user: user,
-      message: "Authentication successful", // You can add a success message as well
-    });
   }
 );
 

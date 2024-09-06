@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { Button, Typography, Grid, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
@@ -11,33 +11,9 @@ function Login() {
   const [errorMessage, setErrorMessage] = useState(""); // State to hold error message
   const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
 
-  // Check for user authentication status after Google login
-  useEffect(() => {
-    const fetchAuthStatus = async () => {
-      try {
-        const response = await fetch(`${apiUrl}auth/google/callback`, {
-          credentials: 'include', // Ensure cookies are included
-        });
-        const data = await response.json();
-
-        if (data.isAuthenticated) {
-          setUser(data.user); // Set user data from backend
-          setIsAuthenticated(true); // Set global auth state
-          navigate('/'); // Redirect to home page
-        } else {
-          setErrorMessage(data.message); // Set error message from backend
-        }
-      } catch (error) {
-        console.error('Error fetching authentication status:', error);
-        setErrorMessage("An error occurred. Please try again.");
-      }
-    };
-
-    fetchAuthStatus();
-  }, [setIsAuthenticated, navigate]);
-
+  // Handle Google Sign-In: redirect to the backend
   const handleGoogleSignIn = () => {
-    window.location.href = `${apiUrl}auth/google`;
+    window.location.href = `${apiUrl}auth/google`;  // Redirect to the backend's Google auth route
   };
 
   return (
