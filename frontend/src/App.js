@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useContext, useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
@@ -20,6 +19,7 @@ import RenderCalendarView from "./components/CalendarLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import Login from "./components/forms/Login";
 import EventFormEmailInvitation from "./components/forms/EventFormEmailInvitation";
+import AuthSuccess from './components/forms/AuthSuccess';
 
 function App() {
   const { sidebarOpen, currentView, monthIndex, showEventModal, setCurrentView } = useContext(GlobalContext);
@@ -58,6 +58,7 @@ function App() {
       <Routes>
         {/* Public Route */}
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/success" element={<AuthSuccess />} />  {/* New success route */}
 
         {/* Protected Routes */}
         <Route element={<PrivateRoute />}>

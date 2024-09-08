@@ -4,10 +4,15 @@ const { BigQuery } = require('@google-cloud/bigquery');
 const loadQueriesAsync = require('./utils/queriesLoaders');
 const { LoggingWinston } = require('@google-cloud/logging-winston');
 const winston = require('winston');
+const cors = require('cors');
+
+// New imports for login
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const cookieSession = require('cookie-session');
 
 // Setup Winston logger
 const loggingWinston = new LoggingWinston();
-
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -20,13 +25,95 @@ const logger = winston.createLogger({
   ]
 });
 
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
+const COOKIE_KEY = process.env.COOKIE_KEY;
+
+console.log(`client id is: ${CLIENT_ID}`);
+console.log(`CLIENT_SECRET is: ${CLIENT_SECRET}`);
+console.log(`CALLBACK_URLis: ${CALLBACK_URL}`);
+
+console.log(`client id is: ${CLIENT_ID}`);
+
+
 // Middleware for parsing JSON bodies
 router.use(express.json());
+const session = require('express-session');
+
+router.use(session({
+  secret: process.env.COOKIE_KEY,  // Use the same secure, random key for the cookie
+  resave: false,  // Avoid resaving the session if nothing has changed
+  saveUninitialized: false,  // Avoid creating sessions for unauthenticated users
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,  // 1 day
+    httpOnly: true,  // Prevent client-side access to the cookie
+    secure: false,  // Only set to true in production with HTTPS
+  },
+}));
+
+
+const corsOptions = {
+  origin: 'https://cloudhub.googleplex.com', // Your frontend domain
+  credentials: true,
+};
+router.use(cors(corsOptions));
+
+// Google OAuth login route
+router.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+// Google OAuth callback route
+router.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  async (req, res) => {
+    try {
+      console.log('Inside the Google OAuth callback, after Passport authentication');
+
+      if (req.user) {
+        console.log('User authenticated successfully:', req.user);
+        res.redirect('https://cloudhub.googleplex.com/auth/success'); // Redirect to the frontend
+      } else {
+        console.warn('User authentication failed. No user found in the session.');
+        res.redirect('https://cloudhub.googleplex.com/login?error=AuthenticationFailed');
+      }
+    } catch (err) {
+      console.error('Error during Google OAuth callback:', err.message);
+      res.redirect(`https://cloudhub.googleplex.com/login?error=OAuthCallbackError&message=${encodeURIComponent(err.message)}`);
+    }
+  })
+
+
+// Route to log out the user
+router.get('/logout', (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect('/');
+  });
+});
+
+// Route to get current user info
+router.get('/api/current_user', (req, res) => {
+  if (req.user) {
+    res.json({
+      isAuthenticated: true,  // Indicating the user is authenticated
+      user: req.user          // Sending the user object from the session
+    });
+  } else {
+    res.status(401).json({
+      isAuthenticated: false,  // Indicating the user is not authenticated
+      message: 'User not authenticated'
+    });
+  }
+});
 
 // Initialize BigQuery client
 const bigquery = new BigQuery();
 
-// Handler for GET requests
+// Handler for GET requests (existing code)
 router.get('/', async (req, res) => {
   const { queryName } = req.query;
 
@@ -42,9 +129,7 @@ router.get('/', async (req, res) => {
   res.json({ message: queryName });
 });
 
-// Add this endpoint to your existing Express router setup
-
-// Endpoint to get user email from headers
+// Endpoint to get user email from headers (existing code)
 router.get('/api/get-user-email', (req, res) => {
   const userEmail = req.header('X-AppEngine-User-Email');
 
@@ -59,8 +144,7 @@ router.get('/api/get-user-email', (req, res) => {
   }
 });
 
-
-// Handler for POST requests
+// Handler for POST requests (existing code)
 router.post('/', async (req, res) => {
   logger.info('POST /: Request received.', { body: req.body });
   const { message, queryName, data } = req.body;
@@ -82,7 +166,6 @@ router.post('/', async (req, res) => {
       }
       res.status(500).json({ success: false, message: 'Failed to save data. Please try again later.' });
     }
-    
   } else if (queryName === 'eventDataQuery' || queryName === 'organisedByOptionsQuery' || queryName === 'marketingProgramQuery') {
     try {
       logger.info('POST /: Executing query.', { queryName });
@@ -123,7 +206,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Function to save event data
+// Function to save event data (existing code)
 async function saveEventData(eventData) {
   const datasetId = 'data';
   const tableId = 'master-event-data';
