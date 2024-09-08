@@ -4,6 +4,7 @@ const { BigQuery } = require('@google-cloud/bigquery');
 const loadQueriesAsync = require('./utils/queriesLoaders');
 const { LoggingWinston } = require('@google-cloud/logging-winston');
 const winston = require('winston');
+const cors = require('cors');
 
 // New imports for login
 const passport = require('passport');
@@ -29,73 +30,59 @@ const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
 const COOKIE_KEY = process.env.COOKIE_KEY;
 
+console.log(`client id is: ${CLIENT_ID}`);
+console.log(`CLIENT_SECRET is: ${CLIENT_SECRET}`);
+console.log(`CALLBACK_URLis: ${CALLBACK_URL}`);
+
+console.log(`client id is: ${CLIENT_ID}`);
+
+
 // Middleware for parsing JSON bodies
 router.use(express.json());
+const session = require('express-session');
 
-// NEW: Cookie session middleware setup
-router.use(cookieSession({
-  maxAge: 24 * 60 * 60 * 1000, // 1 day in milliseconds
-  keys: [COOKIE_KEY] // Use the secure random string as the key
+router.use(session({
+  secret: process.env.COOKIE_KEY,  // Use the same secure, random key for the cookie
+  resave: false,  // Avoid resaving the session if nothing has changed
+  saveUninitialized: false,  // Avoid creating sessions for unauthenticated users
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,  // 1 day
+    httpOnly: true,  // Prevent client-side access to the cookie
+    secure: false,  // Only set to true in production with HTTPS
+  },
 }));
 
 
-// NEW: Initialize Passport
-router.use(passport.initialize());
-router.use(passport.session());
-
-// NEW: Configure Passport.js for Google OAuth
-passport.use(new GoogleStrategy({
-  clientID: CLIENT_ID, // Access Client ID from environment variables
-  clientSecret: CLIENT_SECRET, // Access Client Secret from environment variables
-  callbackURL: CALLBACK_URL // Access Callback URL from environment variables
-}, (accessToken, refreshToken, profile, done) => {
-  // Use the profile information for user registration or login
-  return done(null, profile);
-}));
-
-// NEW: Serialize user into the session
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-
-// NEW: Deserialize user from the session
-passport.deserializeUser((user, done) => {
-  done(null, user);
-});
-
+const corsOptions = {
+  origin: 'https://cloudhub.googleplex.com', // Your frontend domain
+  credentials: true,
+};
+router.use(cors(corsOptions));
 
 // Google OAuth login route
-router.get('/auth/google', 
+router.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 // Google OAuth callback route
-router.get('/auth/google/callback', 
+router.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    if (req.user) {
-      // Redirect back to frontend after successful authentication
-      res.redirect('https://cloudhub.googleplex.com/auth/success');  // Redirect to frontend, no data sent here
-    } else {
-      res.redirect('https://cloudhub.googleplex.com/login');
-    }
-  }
-);
+  async (req, res) => {
+    try {
+      console.log('Inside the Google OAuth callback, after Passport authentication');
 
-// API route to handle user data after OAuth login (POST)
-router.post('/auth/google/callback', (req, res) => {
-  if (req.user) {
-    res.json({
-      isAuthenticated: true,
-      user: req.user,  // Send user data
-    });
-  } else {
-    res.status(401).json({
-      isAuthenticated: false,
-      message: "User is not authenticated.",
-    });
-  }
-});
+      if (req.user) {
+        console.log('User authenticated successfully:', req.user);
+        res.redirect('https://cloudhub.googleplex.com/auth/success'); // Redirect to the frontend
+      } else {
+        console.warn('User authentication failed. No user found in the session.');
+        res.redirect('https://cloudhub.googleplex.com/login?error=AuthenticationFailed');
+      }
+    } catch (err) {
+      console.error('Error during Google OAuth callback:', err.message);
+      res.redirect(`https://cloudhub.googleplex.com/login?error=OAuthCallbackError&message=${encodeURIComponent(err.message)}`);
+    }
+  })
 
 
 // Route to log out the user
@@ -110,7 +97,17 @@ router.get('/logout', (req, res) => {
 
 // Route to get current user info
 router.get('/api/current_user', (req, res) => {
-  res.send(req.user); // Send back the user object from the session
+  if (req.user) {
+    res.json({
+      isAuthenticated: true,  // Indicating the user is authenticated
+      user: req.user          // Sending the user object from the session
+    });
+  } else {
+    res.status(401).json({
+      isAuthenticated: false,  // Indicating the user is not authenticated
+      message: 'User not authenticated'
+    });
+  }
 });
 
 // Initialize BigQuery client

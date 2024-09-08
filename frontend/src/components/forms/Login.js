@@ -7,49 +7,23 @@ import logo from '../../assets/logo/logo.png';
 function Login() {
   const navigate = useNavigate();
   const { setIsAuthenticated } = useContext(GlobalContext);
-  const [user, setUser] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(""); // State to hold error message
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));  // Load cached user from localStorage
+  const [errorMessage, setErrorMessage] = useState("");  // State to hold error message
+
   const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
 
-  // Make API call to fetch user details after Google OAuth
   useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const response = await fetch(`${apiUrl}auth/google/callback`, {
-          method: 'POST',  // Use POST method as requested
-          credentials: 'include',  // Include credentials (cookies)
-          headers: {
-            'Content-Type': 'text/plain',  // Example header, adjust as needed
-          },
-          body: JSON.stringify({ queryName: 'queryEventData', message: 'get-data' }),  // Example body, adjust as needed
-        });
-
-        if (!response.ok) {
-          throw new Error(`Network response was not ok (${response.status})`);
-        }
-
-        const data = await response.json();
-        console.log('Received Data:', data);  // Log data for debugging
-
-        if (data && data.isAuthenticated) {
-          setUser(data.user);  // Set user data
-          setIsAuthenticated(true);  // Update global context
-          navigate('/');  // Redirect to the homepage
-        } else {
-          setErrorMessage('Authentication failed. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error fetching user details:', error);
-        setErrorMessage("Error fetching user details. Please try again.");
-      }
-    };
-
-    // Fetch user details after the OAuth redirect
-    fetchUserDetails();
-  }, [setIsAuthenticated, navigate]);
+    // Check if user is already cached in localStorage
+    if (user) {
+      console.log("Cached user found:", user);
+      setIsAuthenticated(true);  // Set the authentication state
+      navigate('/');  // Redirect to homepage if user is authenticated
+    }
+  }, [user, setIsAuthenticated, navigate]);
 
   const handleGoogleSignIn = () => {
-    window.location.href = `${apiUrl}auth/google`;  // Redirect to backend for Google authentication
+    // Redirect to backend for Google authentication
+    window.location.href = `${apiUrl}auth/google`;
   };
 
   return (
