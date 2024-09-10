@@ -13,7 +13,9 @@ import {
   Link as MuiLink,
   AppBar,
   Toolbar,
-  Tooltip
+  Tooltip,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -37,7 +39,29 @@ export default function EventInfoPopup({ event, close }) {
   const { formData, selectedEvent, setShowInfoEventModal, updateFormData } =
     useContext(GlobalContext);
   const [currentSection, setCurrentSection] = useState("Overview");
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    event && event.languagesAndTemplates && event.languagesAndTemplates.length > 0
+      ? event.languagesAndTemplates[0].language
+      : ""
+  );
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleLanguageClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleLanguageSelect = (language) => {
+    setSelectedLanguage(language);
+    setAnchorEl(null); // Close the menu
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const nodeRef = useRef(null);
+
 
   const handleClose = () => {
     setShowInfoEventModal(false);
@@ -83,6 +107,8 @@ export default function EventInfoPopup({ event, close }) {
     const index = Math.floor(Math.random() * googleColors.length);
     return googleColors[index];
   };
+
+  
 
   const sections = {
     Overview: (
@@ -566,14 +592,88 @@ export default function EventInfoPopup({ event, close }) {
 
             {/* Add Buttons to Bottom */}
             <Divider sx={{ width: "100%", my: 1 }} />
+            
             <Stack
               direction="row"
               spacing={1}
               sx={{ p: 2, justifyContent: "flex-end" }}
+              alignItems="center"
             >
-              <IconButton>
-                <LanguageIcon />
-              </IconButton>
+             {languagesAndTemplates.length > 1 && (
+              
+        <div>
+            {/* Display the selected language */}
+            <Stack direction="row" alignItems="center" spacing={1}>
+    {selectedLanguage && (
+      <Typography
+        variant="body2"
+        sx={{
+          maxWidth: 200, // Limit the width to prevent overflow
+          whiteSpace: 'nowrap', // Prevent text from wrapping to the next line
+          overflow: 'hidden', // Hide overflowing text
+          textOverflow: 'ellipsis', // Add ellipsis if the text overflows
+        }}
+      >
+        Selected Language: {selectedLanguage}
+      </Typography>
+    )}
+
+    <Tooltip title="Select Language">
+      <IconButton onClick={handleLanguageClick}>
+        <LanguageIcon />
+      </IconButton>
+    </Tooltip>
+  </Stack>
+          <Menu
+             anchorEl={anchorEl}
+             open={Boolean(anchorEl)}
+             onClose={handleCloseMenu}
+             disablePortal
+
+             transformOrigin={{
+               vertical: 'center',
+               horizontal: 'center',
+             }}
+             PaperProps={{
+               sx: {
+                 zIndex: 10000, // Keep above other components
+                 boxShadow: "0px 4px 10px rgba(0,0,0,0.5)", // Consistent with Paper
+                 borderRadius: "8px", // Match the modal's border radius
+                 bgcolor: "background.paper", // Match background color
+                 minWidth: 600, // Match the modal's width
+                 paddingBottom: "16px", // Optional for spacing within the Menu
+               },
+             }}
+             MenuListProps={{
+               sx: {
+                 maxHeight: "100vh", // Consistent height
+                 overflowY: "auto", // To allow scrolling within the menu
+               },
+             }}
+          
+          >
+            {languagesAndTemplates.map((item) => (
+              <MenuItem
+                key={item.language}
+                selected={item.language === selectedLanguage}
+                onClick={() => handleLanguageSelect(item.language)}
+              >
+                {item.language}
+              </MenuItem>
+            ))}
+          </Menu>
+
+        
+        </div>
+      )}
+
+      {/* If only one language, show it directly */}
+      {languagesAndTemplates.length === 1 && (
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Language: {languagesAndTemplates[0].language}
+        </Typography>
+      )}
+
               <Button
                 variant="contained"
                 style={{
