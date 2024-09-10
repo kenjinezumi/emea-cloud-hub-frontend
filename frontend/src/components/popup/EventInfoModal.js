@@ -40,7 +40,9 @@ export default function EventInfoPopup({ event, close }) {
     useContext(GlobalContext);
   const [currentSection, setCurrentSection] = useState("Overview");
   const [selectedLanguage, setSelectedLanguage] = useState(
-    event && event.languagesAndTemplates && event.languagesAndTemplates.length > 0
+    event &&
+      event.languagesAndTemplates &&
+      event.languagesAndTemplates.length > 0
       ? event.languagesAndTemplates[0].language
       : ""
   );
@@ -61,7 +63,6 @@ export default function EventInfoPopup({ event, close }) {
 
   const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const nodeRef = useRef(null);
-
 
   const handleClose = () => {
     setShowInfoEventModal(false);
@@ -84,6 +85,60 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
+  const handleGmailInvite = async () => {
+    try {
+      const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
+
+      const user = JSON.parse(localStorage.getItem("user"));
+      const email = user?.emails?.[0]?.value;
+
+      if (!email || !selectedLanguage) {
+        alert("No email or template selected.");
+        return;
+      }
+
+      // Define the template based on the selected language
+      const template = languagesAndTemplates.find(
+        (item) => item.language === selectedLanguage
+      )?.template;
+
+      if (!template) {
+        alert("No template found for the selected language.");
+        return;
+      }
+
+      // Create the email body with the template
+      const emailBody = `To: ${email}\nSubject: Event Invitation\n\n${template}`;
+
+      // Send request to create a draft email
+      const response = await fetch(`${apiUrl}gmail/draft`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userEmail: email,
+          subject: "Event Invitation",
+          messageBody: template,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // Redirect to Gmail draft link
+        window.open(
+          `https://mail.google.com/mail/u/${email}/#drafts`,
+          "_blank"
+        );
+      } else {
+        alert("Error creating draft email.");
+      }
+    } catch (error) {
+      console.error("Error creating Gmail draft:", error);
+      alert("Failed to create Gmail draft. Please try again.");
+    }
+  };
+
   const formatListWithSpaces = (list) => {
     if (!list) return "";
     if (typeof list === "string") return list.replace(/,/g, ", ");
@@ -100,15 +155,13 @@ export default function EventInfoPopup({ event, close }) {
     "rgba(156, 39, 176, 0.6)", // Purple
     "rgba(0, 172, 193, 0.6)", // Cyan
     "rgba(255, 235, 59, 0.6)", // Yellow
-    "rgba(121, 85, 72, 0.6)",  // Brown
+    "rgba(121, 85, 72, 0.6)", // Brown
   ];
 
   const getRandomColor = () => {
     const index = Math.floor(Math.random() * googleColors.length);
     return googleColors[index];
   };
-
-  
 
   const sections = {
     Overview: (
@@ -161,7 +214,8 @@ export default function EventInfoPopup({ event, close }) {
           }}
         >
           <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
+          {selectedEvent.landingPageLinks &&
+          selectedEvent.landingPageLinks.length > 0
             ? selectedEvent.landingPageLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -236,7 +290,8 @@ export default function EventInfoPopup({ event, close }) {
           {selectedEvent.isDirectPartner && (
             <Chip label="Direct Partner" color="secondary" size="small" />
           )}
-          {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <= 7 && (
+          {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <=
+            7 && (
             <Chip
               label="Newly published"
               color="success"
@@ -257,19 +312,28 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Audience:<Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {(selectedEvent.audienceSeniority && selectedEvent.audienceSeniority.length > 0
-            ? selectedEvent.audienceSeniority.join(", ")
-            : "N/A") +
-            (selectedEvent.accountSectors && Array.isArray(selectedEvent.accountSectors) && selectedEvent.accountSectors.length > 0
-            ? `, ${selectedEvent.accountSectors.join(", ")}`
-            : selectedEvent.accountSectors ? `, ${selectedEvent.accountSectors}` : "")}
+          Audience:
+          <Typography
+            variant="body2"
+            sx={{
+              marginLeft: "30px",
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+            }}
+          >
+            {(selectedEvent.audienceSeniority &&
+            selectedEvent.audienceSeniority.length > 0
+              ? selectedEvent.audienceSeniority.join(", ")
+              : "N/A") +
+              (selectedEvent.accountSectors &&
+              Array.isArray(selectedEvent.accountSectors) &&
+              selectedEvent.accountSectors.length > 0
+                ? `, ${selectedEvent.accountSectors.join(", ")}`
+                : selectedEvent.accountSectors
+                ? `, ${selectedEvent.accountSectors}`
+                : "")}
+          </Typography>
         </Typography>
-        </Typography>
-        
 
         {/* OKR Information */}
         <Typography
@@ -281,17 +345,20 @@ export default function EventInfoPopup({ event, close }) {
           <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
           OKR:
           <Typography
-          variant="body2"
-          sx={{ marginLeft: "30px", wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          {selectedEvent.okr && selectedEvent.okr.length > 0
-            ? selectedEvent.okr.map(
-                (okrItem) => `${okrItem.type}: ${okrItem.percentage}%`
-              ).join(", ")
-            : "N/A"}
+            variant="body2"
+            sx={{
+              marginLeft: "30px",
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+            }}
+          >
+            {selectedEvent.okr && selectedEvent.okr.length > 0
+              ? selectedEvent.okr
+                  .map((okrItem) => `${okrItem.type}: ${okrItem.percentage}%`)
+                  .join(", ")
+              : "N/A"}
+          </Typography>
         </Typography>
-        </Typography>
-       
 
         {/* Event Series and Customer Use */}
         <Typography
@@ -301,10 +368,8 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Part of an event series?           {selectedEvent.eventSeries ? "Yes" : "No"}
-
+          Part of an event series? {selectedEvent.eventSeries ? "Yes" : "No"}
         </Typography>
-       
 
         <Typography
           variant="body2"
@@ -313,10 +378,8 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <CheckCircleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Approved for customer use?           {selectedEvent.customerUse ? "Yes" : "No"}
-
+          Approved for customer use? {selectedEvent.customerUse ? "Yes" : "No"}
         </Typography>
-     
       </Stack>
     ),
     Links: (
@@ -329,7 +392,9 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Landing Page Links:  {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
+          Landing Page Links:{" "}
+          {selectedEvent.landingPageLinks &&
+          selectedEvent.landingPageLinks.length > 0
             ? selectedEvent.landingPageLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -348,7 +413,6 @@ export default function EventInfoPopup({ event, close }) {
             : "N/A"}
         </Typography>
 
-
         {/* Sales Kit Links */}
         <Typography
           variant="body2"
@@ -357,7 +421,8 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Sales Kit Links: {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
+          Sales Kit Links:{" "}
+          {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
             ? selectedEvent.salesKitLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -375,7 +440,6 @@ export default function EventInfoPopup({ event, close }) {
               ))
             : "N/A"}
         </Typography>
-       
 
         {/* Hailo Links */}
         <Typography
@@ -385,7 +449,8 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Hailo Links: {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
+          Hailo Links:{" "}
+          {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
             ? selectedEvent.hailoLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -404,7 +469,6 @@ export default function EventInfoPopup({ event, close }) {
             : "N/A"}
         </Typography>
 
-
         {/* Other Documents Links */}
         <Typography
           variant="body2"
@@ -413,7 +477,9 @@ export default function EventInfoPopup({ event, close }) {
           sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
         >
           <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Other Documents: {selectedEvent.otherDocumentsLinks && selectedEvent.otherDocumentsLinks.length > 0
+          Other Documents:{" "}
+          {selectedEvent.otherDocumentsLinks &&
+          selectedEvent.otherDocumentsLinks.length > 0
             ? selectedEvent.otherDocumentsLinks.map((link, index) => (
                 <MuiLink
                   key={index}
@@ -431,7 +497,6 @@ export default function EventInfoPopup({ event, close }) {
               ))
             : "N/A"}
         </Typography>
-        
       </Stack>
     ),
   };
@@ -480,7 +545,11 @@ export default function EventInfoPopup({ event, close }) {
             <Stack
               direction="row"
               spacing={1}
-              sx={{ p: 2, alignItems: "center", borderBottom: "1px solid #e0e0e0" }}
+              sx={{
+                p: 2,
+                alignItems: "center",
+                borderBottom: "1px solid #e0e0e0",
+              }}
             >
               <Typography variant="h6" component="div">
                 {selectedEvent.emoji}
@@ -528,10 +597,16 @@ export default function EventInfoPopup({ event, close }) {
               }}
             >
               <EventIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-              {dayjs(selectedEvent.startDate).format("dddd, MMMM D, YYYY h:mm A")} - {dayjs(selectedEvent.endDate).format("dddd, MMMM D, YYYY h:mm A")}
+              {dayjs(selectedEvent.startDate).format(
+                "dddd, MMMM D, YYYY h:mm A"
+              )}{" "}
+              -{" "}
+              {dayjs(selectedEvent.endDate).format("dddd, MMMM D, YYYY h:mm A")}
               {selectedEvent.isHighPriority && (
                 <Tooltip title="High Priority">
-                  <WhatshotIcon style={{ color: red[500], marginLeft: "auto" }} />
+                  <WhatshotIcon
+                    style={{ color: red[500], marginLeft: "auto" }}
+                  />
                 </Tooltip>
               )}
             </Typography>
@@ -551,7 +626,9 @@ export default function EventInfoPopup({ event, close }) {
               }}
             >
               <PublicIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-              {formatListWithSpaces(selectedEvent.region)}, {formatListWithSpaces(selectedEvent.subregion)}, {formatListWithSpaces(selectedEvent.country)}
+              {formatListWithSpaces(selectedEvent.region)},{" "}
+              {formatListWithSpaces(selectedEvent.subregion)},{" "}
+              {formatListWithSpaces(selectedEvent.country)}
             </Typography>
 
             <Divider sx={{ width: "100%", my: 1 }} />
@@ -565,7 +642,9 @@ export default function EventInfoPopup({ event, close }) {
               {Object.keys(sections).map((section) => (
                 <Button
                   key={section}
-                  variant={currentSection === section ? "contained" : "outlined"}
+                  variant={
+                    currentSection === section ? "contained" : "outlined"
+                  }
                   onClick={() => setCurrentSection(section)}
                   sx={{
                     fontWeight: currentSection === section ? "bold" : "normal",
@@ -592,87 +671,82 @@ export default function EventInfoPopup({ event, close }) {
 
             {/* Add Buttons to Bottom */}
             <Divider sx={{ width: "100%", my: 1 }} />
-            
+
             <Stack
               direction="row"
               spacing={1}
               sx={{ p: 2, justifyContent: "flex-end" }}
               alignItems="center"
             >
-             {languagesAndTemplates.length > 1 && (
-              
-        <div>
-            {/* Display the selected language */}
-            <Stack direction="row" alignItems="center" spacing={1}>
-    {selectedLanguage && (
-      <Typography
-        variant="body2"
-        sx={{
-          maxWidth: 200, // Limit the width to prevent overflow
-          whiteSpace: 'nowrap', // Prevent text from wrapping to the next line
-          overflow: 'hidden', // Hide overflowing text
-          textOverflow: 'ellipsis', // Add ellipsis if the text overflows
-        }}
-      >
-        Selected Language: {selectedLanguage}
-      </Typography>
-    )}
+              {languagesAndTemplates.length > 1 && (
+                <div>
+                  {/* Display the selected language */}
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    {selectedLanguage && (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          maxWidth: 200, // Limit the width to prevent overflow
+                          whiteSpace: "nowrap", // Prevent text from wrapping to the next line
+                          overflow: "hidden", // Hide overflowing text
+                          textOverflow: "ellipsis", // Add ellipsis if the text overflows
+                        }}
+                      >
+                        Selected Language: {selectedLanguage}
+                      </Typography>
+                    )}
 
-    <Tooltip title="Select Language">
-      <IconButton onClick={handleLanguageClick}>
-        <LanguageIcon />
-      </IconButton>
-    </Tooltip>
-  </Stack>
-          <Menu
-             anchorEl={anchorEl}
-             open={Boolean(anchorEl)}
-             onClose={handleCloseMenu}
-             disablePortal
+                    <Tooltip title="Select Language">
+                      <IconButton onClick={handleLanguageClick}>
+                        <LanguageIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleCloseMenu}
+                    disablePortal
+                    transformOrigin={{
+                      vertical: "center",
+                      horizontal: "center",
+                    }}
+                    PaperProps={{
+                      sx: {
+                        zIndex: 10000, // Keep above other components
+                        boxShadow: "0px 4px 10px rgba(0,0,0,0.5)", // Consistent with Paper
+                        borderRadius: "8px", // Match the modal's border radius
+                        bgcolor: "background.paper", // Match background color
+                        minWidth: 600, // Match the modal's width
+                        paddingBottom: "16px", // Optional for spacing within the Menu
+                      },
+                    }}
+                    MenuListProps={{
+                      sx: {
+                        maxHeight: "100vh", // Consistent height
+                        overflowY: "auto", // To allow scrolling within the menu
+                      },
+                    }}
+                  >
+                    {languagesAndTemplates.map((item) => (
+                      <MenuItem
+                        key={item.language}
+                        selected={item.language === selectedLanguage}
+                        onClick={() => handleLanguageSelect(item.language)}
+                      >
+                        {item.language}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </div>
+              )}
 
-             transformOrigin={{
-               vertical: 'center',
-               horizontal: 'center',
-             }}
-             PaperProps={{
-               sx: {
-                 zIndex: 10000, // Keep above other components
-                 boxShadow: "0px 4px 10px rgba(0,0,0,0.5)", // Consistent with Paper
-                 borderRadius: "8px", // Match the modal's border radius
-                 bgcolor: "background.paper", // Match background color
-                 minWidth: 600, // Match the modal's width
-                 paddingBottom: "16px", // Optional for spacing within the Menu
-               },
-             }}
-             MenuListProps={{
-               sx: {
-                 maxHeight: "100vh", // Consistent height
-                 overflowY: "auto", // To allow scrolling within the menu
-               },
-             }}
-          
-          >
-            {languagesAndTemplates.map((item) => (
-              <MenuItem
-                key={item.language}
-                selected={item.language === selectedLanguage}
-                onClick={() => handleLanguageSelect(item.language)}
-              >
-                {item.language}
-              </MenuItem>
-            ))}
-          </Menu>
-
-        
-        </div>
-      )}
-
-      {/* If only one language, show it directly */}
-      {languagesAndTemplates.length === 1 && (
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          Language: {languagesAndTemplates[0].language}
-        </Typography>
-      )}
+              {/* If only one language, show it directly */}
+              {languagesAndTemplates.length === 1 && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Language: {languagesAndTemplates[0].language}
+                </Typography>
+              )}
 
               <Button
                 variant="contained"
@@ -682,9 +756,11 @@ export default function EventInfoPopup({ event, close }) {
                   boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                   margin: "10px",
                 }}
+                onClick={handleGmailInvite} // Add the handler here
               >
                 Gmail Invite
               </Button>
+
               <Button
                 variant="contained"
                 style={{
