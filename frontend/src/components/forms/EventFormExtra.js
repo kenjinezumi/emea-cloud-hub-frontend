@@ -143,12 +143,17 @@ export default function ExtraDetailsForm() {
       0
     );
 
-    if (totalPercentage > 100) {
+    if (okrTotalPercentage > 100) {
       setSnackbarMessage("Total OKR percentage cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-
+  
+    if (okrTotalPercentage !== 100) {
+      setSnackbarMessage("Total OKR percentage must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
     const formIsValid =
       customerUse && selectedOkrs.length > 0 && gep.length > 0 && activityType;
 
