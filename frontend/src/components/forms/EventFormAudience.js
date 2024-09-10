@@ -250,7 +250,7 @@ export default function AudiencePersonaForm() {
 
           {/* Audience Persona */}
           <Grid item xs={12}>
-            <Typography variant="subtitle1">Audience Persona</Typography>
+            <Typography variant="subtitle1"> Buyer Segment</Typography>
             <FormControl fullWidth>
               <Select
                 multiple
@@ -279,7 +279,7 @@ export default function AudiencePersonaForm() {
 
           {/* Audience Seniority */}
           <Grid item xs={12}>
-            <Typography variant="subtitle1">Audience Seniority</Typography>
+            <Typography variant="subtitle1">Buyer Segment Rollup</Typography>
             <FormControl fullWidth>
               <Select
                 multiple
