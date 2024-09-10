@@ -164,7 +164,7 @@ export default function AudiencePersonaForm() {
       peopleMeetingCriteria,
     };
 
-    saveAndNavigate(currentFormData, "/extra");
+    saveAndNavigate(currentFormData, "/email-invitation");
   };
 
   const handleSaveAsDraft = async () => {

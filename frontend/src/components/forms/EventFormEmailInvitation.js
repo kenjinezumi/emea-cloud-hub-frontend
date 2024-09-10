@@ -92,7 +92,7 @@ const EventFormEmailInvitation = () => {
     const updatedFormData = { ...formData, languagesAndTemplates };
     updateFormData(updatedFormData);
 
-    saveAndNavigate(updatedFormData, "/links");
+    saveAndNavigate(updatedFormData, "/audience");
   };
 
   const handlePrevious = () => {

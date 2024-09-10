@@ -86,6 +86,14 @@ const NavigationSidebar = () => {
         <EmailIcon style={{ color: blue[500] }} />
         <span className="ml-2">Email Invitation</span>
       </button>
+      {/* Move Audience button below Email Invitation */}
+      <button
+        onClick={() => navigateTo('/audience')}
+        className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/audience') ? 'text-black' : 'text-gray-400'}`}
+      >
+        <PeopleIcon style={{ color: blue[500] }} />
+        <span className="ml-2">Audience</span>
+      </button>
       <button
         onClick={() => navigateTo('/links')}
         className={`block w-full text-left p-2 rounded flex items-center ${isCurrentPath('/links') ? 'text-black' : 'text-gray-400'}`}
