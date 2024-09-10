@@ -56,6 +56,10 @@ const EventForm = () => {
   const [selectedLabel, setSelectedLabel] = useState(
     selectedEvent ? selectedEvent.label : formData.selectedLabel || labelsClasses[0]
   );
+  const [isPartneredEvent, setIsPartneredEvent] = useState(
+    selectedEvent ? selectedEvent.isPartneredEvent : formData.isPartneredEvent || false
+  );
+  
   const [emoji, setEmoji] = useState(
     selectedEvent ? selectedEvent.emoji : formData.emoji || ""
   );
@@ -182,7 +186,8 @@ const EventForm = () => {
       dropdownValue2,
       marketingActivityType,
       isHighPriority,
-      isEventSeries, // Include new field
+      isEventSeries, 
+      isPartneredEvent,
       startDate,
       endDate,
       marketingProgramInstanceId,
@@ -213,7 +218,8 @@ const EventForm = () => {
       dropdownValue2,
       marketingActivityType,
       isHighPriority,
-      isEventSeries, // Include new field
+      isEventSeries, 
+      isPartneredEvent,
       startDate,
       endDate,
       marketingProgramInstanceId,
@@ -364,6 +370,27 @@ const EventForm = () => {
                 />
               </FormGroup>
             </Grid>
+
+            <Grid item xs={12} sx={{ mb: 3 }}>
+  <FormGroup row>
+    <FormControlLabel
+      control={
+        <Switch
+          checked={isPartneredEvent}
+          onChange={() => setIsPartneredEvent(!isPartneredEvent)}
+          name="partneredEvent"
+          color="primary"
+        />
+      }
+      label={
+        <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+          Partnered Event
+        </Typography>
+      }
+    />
+  </FormGroup>
+</Grid>
+
 
             {/* Checkbox for event series */}
             <Grid item xs={12} sx={{ mb: 3 }}>

@@ -35,6 +35,11 @@ export default function AudiencePersonaForm() {
     selectedEvent ? selectedEvent.audienceSeniority : formData.audienceSeniority || []
   );
 
+  const [aiVsCore, setAiVsCore] = useState(
+    selectedEvent ? selectedEvent.aiVsCore : formData.aiVsCore || "Core"
+  );
+
+  
   const [accountSegments, setAccountSegments] = useState({
     Corporate: { selected: false, percentage: "" },
     SMB: { selected: false, percentage: "" },
@@ -42,6 +47,10 @@ export default function AudiencePersonaForm() {
     Enterprise: { selected: false, percentage: "" },
     Startup: { selected: false, percentage: "" },
   });
+  const [industry, setIndustry] = useState(
+    selectedEvent ? selectedEvent.industry : formData.industry || ""
+  );
+  
 
   const [accountCategory, setAccountCategory] = useState({
     "Digital Native": { selected: false, percentage: "" },
@@ -143,24 +152,107 @@ export default function AudiencePersonaForm() {
   };
 
   const handleNext = () => {
+    // Calculate and validate Account Segments
     const selectedSegments = Object.keys(accountSegments)
       .filter((key) => accountSegments[key].selected)
       .map((key) => ({
         type: key,
         percentage: accountSegments[key].percentage,
       }));
-
-    const totalPercentage = selectedSegments.reduce(
+  
+    const segmentTotalPercentage = selectedSegments.reduce(
       (sum, segment) => sum + (parseFloat(segment.percentage) || 0),
       0
     );
-
-    if (totalPercentage > 100) {
-      setSnackbarMessage("Total account segments percentage cannot exceed 100%");
+  
+    if (segmentTotalPercentage > 100) {
+      setSnackbarMessage("Total percentage for Account Segments cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-
+  
+    if (segmentTotalPercentage !== 100) {
+      setSnackbarMessage("Total percentage for Account Segments must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    // Calculate and validate Account Category
+    const selectedCategories = Object.keys(accountCategory)
+      .filter((key) => accountCategory[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: accountCategory[key].percentage,
+      }));
+  
+    const categoryTotalPercentage = selectedCategories.reduce(
+      (sum, category) => sum + (parseFloat(category.percentage) || 0),
+      0
+    );
+  
+    if (categoryTotalPercentage > 100) {
+      setSnackbarMessage("Total percentage for Account Category cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    if (categoryTotalPercentage !== 100) {
+      setSnackbarMessage("Total percentage for Account Category must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    // Calculate and validate Account Type
+    const selectedTypes = Object.keys(accountType)
+      .filter((key) => accountType[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: accountType[key].percentage,
+      }));
+  
+    const typeTotalPercentage = selectedTypes.reduce(
+      (sum, type) => sum + (parseFloat(type.percentage) || 0),
+      0
+    );
+  
+    if (typeTotalPercentage > 100) {
+      setSnackbarMessage("Total percentage for Account Type cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    if (typeTotalPercentage !== 100) {
+      setSnackbarMessage("Total percentage for Account Type must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    // Calculate and validate Product Alignment
+    const selectedAlignments = Object.keys(productAlignment)
+      .filter((key) => productAlignment[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: productAlignment[key].percentage,
+      }));
+  
+    const alignmentTotalPercentage = selectedAlignments.reduce(
+      (sum, alignment) => sum + (parseFloat(alignment.percentage) || 0),
+      0
+    );
+  
+    if (alignmentTotalPercentage > 100) {
+      setSnackbarMessage("Total percentage for Product Alignment cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    if (alignmentTotalPercentage !== 100) {
+      setSnackbarMessage("Total percentage for Product Alignment must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    // If all checks pass, save the form data and move to the next step
     const currentFormData = {
       audiencePersona,
       audienceSeniority,
@@ -171,12 +263,15 @@ export default function AudiencePersonaForm() {
       accountCategory,
       accountType,
       productAlignment,
+      aiVsCore,
+      industry  // Include industry in the form data
     };
-
+  
     setIsFormValid(true);
     updateFormData(currentFormData);
     saveAndNavigate(currentFormData, "/links");
   };
+  
 
   const handlePrevious = () => {
     const currentFormData = {
@@ -206,6 +301,8 @@ export default function AudiencePersonaForm() {
       accountCategory,
       accountType,
       productAlignment,
+      aiVsCore,
+      industry
     };
 
     const updatedFormData = { ...formData, ...draftData };
@@ -305,6 +402,23 @@ export default function AudiencePersonaForm() {
               </Select>
             </FormControl>
           </Grid>
+          
+          {/* Industry Dropdown */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1">Industry</Typography>
+  <FormControl fullWidth>
+    <Select
+      value={industry}
+      onChange={(e) => setIndustry(e.target.value)}
+      displayEmpty
+    >
+      <MenuItem value="" disabled>
+      </MenuItem>
+      {/* Options will be added here later */}
+    </Select>
+  </FormControl>
+</Grid>
+
 
 {/* Account Sectors Accordion */}
 <Grid item xs={12} sx={{ mb: 2, mt:2 }}>
@@ -505,6 +619,25 @@ export default function AudiencePersonaForm() {
           </Grid>
         </Grid>
       ))}
+    </AccordionDetails>
+  </Accordion>
+</Grid>
+{/* AI vs Core Accordion */}
+<Grid item xs={12} sx={{ mb: 2 }}>
+  <Accordion expanded={expanded.aiVsCore} onChange={() => handleToggleSection("aiVsCore")}>
+    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="ai-vs-core-content" id="ai-vs-core-header">
+      <Typography>AI vs Core</Typography>
+    </AccordionSummary>
+    <AccordionDetails>
+      <FormControl fullWidth>
+        <Select
+          value={aiVsCore}
+          onChange={(e) => setAiVsCore(e.target.value)}
+        >
+          <MenuItem value="AI">AI</MenuItem>
+          <MenuItem value="Core">Core</MenuItem>
+        </Select>
+      </FormControl>
     </AccordionDetails>
   </Accordion>
 </Grid>
