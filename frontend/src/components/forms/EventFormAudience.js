@@ -307,7 +307,7 @@ export default function AudiencePersonaForm() {
           </Grid>
 
 {/* Account Sectors Accordion */}
-<Grid item xs={12} sx={{ mb: 2 }}>
+<Grid item xs={12} sx={{ mb: 2, mt:2 }}>
   <Accordion expanded={expanded.accountSectors} onChange={() => handleToggleSection('accountSectors')}>
     <AccordionSummary
       expandIcon={<ExpandMoreIcon />}

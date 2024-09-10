@@ -278,38 +278,54 @@ const EventForm = () => {
           </Grid>
 
           <form noValidate>
+          <Grid item xs={12} sx={{ mb: 3 }}>
+  <Typography variant="subtitle1" sx={{ mb: 1 }}>Organised by</Typography>
+  <FormControl fullWidth sx={{ maxHeight: 200, overflowY: 'auto' }}>
+    <Select
+      labelId="organised-by-label"
+      id="organised-by-select"
+      multiple
+      value={organisedBy}
+      onChange={handleOrganisedByChange}
+      renderValue={(selected) => (
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "5px",
+            maxHeight: "150px",
+            overflowY: "auto", // Add scrolling if there are many chips
+          }}
+        >
+          {selected.map((organiser) => (
+            <Chip
+              key={organiser}
+              label={organiser}
+              onDelete={handleOrganisedByDelete(organiser)}
+              onMouseDown={(event) => event.stopPropagation()}
+              style={{ margin: "2px" }}
+            />
+          ))}
+        </div>
+      )}
+      MenuProps={{
+        PaperProps: {
+          style: {
+            maxHeight: 300, // Limit dropdown height for scrolling
+          },
+        },
+      }}
+    >
+      {organisedByOptions.map((option) => (
+        <MenuItem key={option} value={option}>
+          {option}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
+
             <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>Organised by</Typography>
-                <FormControl fullWidth>
-                  <Select
-                    labelId="organised-by-label"
-                    id="organised-by-select"
-                    multiple
-                    value={organisedBy}
-                    onChange={handleOrganisedByChange}
-                    renderValue={(selected) => (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-                        {selected.map((organiser) => (
-                          <Chip
-                            key={organiser}
-                            label={organiser}
-                            onDelete={handleOrganisedByDelete(organiser)}
-                            onMouseDown={(event) => event.stopPropagation()}
-                            style={{ margin: "2px" }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  >
-                    {organisedByOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
 
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>Activity type</Typography>
