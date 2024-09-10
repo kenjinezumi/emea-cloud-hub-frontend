@@ -5,7 +5,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import beta from '../../assets/svg/beta.svg';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
-import { Select, MenuItem, Typography, Input } from '@mui/material';
+import { Select, MenuItem, Typography, Input, Tooltip, Avatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import GlobalContext from '../../context/GlobalContext';
 import versionInfo from '../../version.json';
@@ -27,7 +27,16 @@ export default function CalendarHeader() {
   
   const [view, setView] = useState(currentView || 'month');
   const [showSearchInput, setShowSearchInput] = useState(false);
+  const [user, setUser] = useState(null);  // State to store user data
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch user data from localStorage
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (storedUser) {
+      setUser(storedUser);
+    }
+  }, []);
 
   useEffect(() => {
     setView(currentView);
@@ -212,6 +221,29 @@ export default function CalendarHeader() {
         <IconButton onClick={handleSearchIconClick}>
           <SearchIcon />
         </IconButton>
+
+        {/* Display user profile picture with tooltip */}
+        {user && (
+          <Tooltip
+            title={
+              <div>
+                <Typography variant="body2">
+                  {`${user.name.givenName} ${user.name.familyName}`}
+                </Typography>
+                <Typography variant="caption">{user.emails[0].value}</Typography>
+              </div>
+            }
+            arrow
+          >
+            <IconButton>
+              <Avatar
+                src={user.photos[0].value}
+                alt={`${user.name.givenName} ${user.name.familyName}`}
+                sx={{ width: 40, height: 40 }}
+              />
+            </IconButton>
+          </Tooltip>
+        )}
       </div>
     </header>
   );
