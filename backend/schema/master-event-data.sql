@@ -1,5 +1,6 @@
 CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `eventId` STRING NOT NULL,
+  `tacticId` STRING NOT NULL,
   `description` STRING,
   `emoji` STRING,
   `organisedBy` ARRAY<STRING>,
@@ -19,7 +20,10 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
     `template` STRING
   >>,
   `customerUse` STRING,
-  `okr` ARRAY<STRING>,
+  `okr` ARRAY<STRUCT<
+    `type` STRING,
+    `percentage` STRING
+  >>,
   `gep` ARRAY<STRING>,
   `audiencePersona` ARRAY<STRING>,
   `audienceSeniority` ARRAY<STRING>,
@@ -28,8 +32,26 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
     `public` BOOL
   >,
   `accountSegments` STRUCT<
-    `enterprise` BOOL,
-    `corporate` BOOL
+    `Corporate` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >,
+    `SMB` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >,
+    `Select` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >,
+    `Enterprise` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >,
+    `Startup` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >
   >,
   `maxEventCapacity` STRING,
   `peopleMeetingCriteria` STRING,
@@ -39,5 +61,42 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `otherDocumentsLinks` ARRAY<STRING>,
   `approvedForCustomerUse` BOOL,
   `isDraft` BOOL,
-  `isHighPriority` BOOL
+  `isHighPriority` BOOL,
+  `isPartneredEvent` BOOL,
+  `partnerRole` STRING,
+  `accountCategory` STRUCT<
+    `Digital Native` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >,
+    `Traditional` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >
+  >,
+  `accountType` STRUCT<
+    `Greenfield` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >,
+    `Existing Customer` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >
+  >,
+  `productAlignment` STRUCT<
+    `GCP` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >,
+    `GWS` STRUCT<
+      `selected` BOOL,
+      `percentage` STRING
+    >
+  >,
+  `aiVsCore` STRING,
+  `industry` STRING,
+  `city` STRING,
+  `locationVenue` STRING,
+  `marketingActivityType` STRING
 );
