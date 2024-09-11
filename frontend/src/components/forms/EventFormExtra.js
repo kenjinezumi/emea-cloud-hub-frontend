@@ -20,6 +20,7 @@ import {
   AccordionDetails,
   Checkbox,
   Input,
+  Switch
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import "../styles/Forms.css";
@@ -27,6 +28,18 @@ import InfoIcon from "@mui/icons-material/Info";
 import { blue, grey } from "@mui/material/colors";
 import { sendDataToAPI } from "../../api/pushData";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
+
+const partnerRoleOptions = [
+  "Partner Generated Thought Leadership (Whitepaper, Panelist)",
+  "Joint Messaging & Content Creation",
+  "Lead Nurture & Follow Up (Lead-to-Opp // Opp-to-Close)",
+  "Speak at Google / 3rd Party Roundtable, Forum",
+  "Host Event (Webinar, Townhall, Workshop, Demo)",
+  "Joint Customer Offer",
+  "Sales Leadership Customer Engagement",
+  "Other",
+];
+
 
 export default function ExtraDetailsForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -39,7 +52,8 @@ export default function ExtraDetailsForm() {
   const [customerUse, setCustomerUse] = useState("no");
   const [okrSelections, setOkrSelections] = useState({});
   const [gep, setGep] = useState([]);
-  const [activityType, setActivityType] = useState("direct");
+  const [isPartneredEvent, setIsPartneredEvent] = useState(false);
+  const [partnerRole, setPartnerRole] = useState("");
 
   useEffect(() => {
     if (selectedEvent) {
@@ -48,7 +62,8 @@ export default function ExtraDetailsForm() {
       setEventSeries(selectedEvent.eventSeries || "no");
       setCustomerUse(selectedEvent.customerUse || "no");
       setGep(selectedEvent.gep || []);
-      setActivityType(selectedEvent.activityType || "direct");
+      setIsPartneredEvent(selectedEvent.isPartneredEvent || false);
+      setPartnerRole(selectedEvent.partnerRole || "");
 
       // Initialize OKR selections from event data
       const okrDictionary = okrOptions.reduce((acc, option) => {
@@ -66,7 +81,8 @@ export default function ExtraDetailsForm() {
       setEventSeries(formData.eventSeries || "no");
       setCustomerUse(formData.customerUse || "no");
       setGep(formData.gep || []);
-      setActivityType(formData.activityType || "direct");
+      setIsPartneredEvent(formData.isPartneredEvent || false);
+      setPartnerRole(formData.partnerRole || "");
 
       // Initialize OKR selections from form data
       const okrDictionary = okrOptions.reduce((acc, option) => {
@@ -119,7 +135,8 @@ export default function ExtraDetailsForm() {
         customerUse,
         okr: selectedOkrs,
         gep,
-        activityType,
+        isPartneredEvent,
+        partnerRole,
       },
       "/location"
     );
@@ -155,7 +172,7 @@ export default function ExtraDetailsForm() {
       return;
     }
     const formIsValid =
-      customerUse && selectedOkrs.length > 0 && gep.length > 0 && activityType;
+      customerUse && selectedOkrs.length > 0 && gep.length > 0 
 
     setIsFormValid(formIsValid);
 
@@ -170,7 +187,8 @@ export default function ExtraDetailsForm() {
       customerUse,
       okr: selectedOkrs,
       gep,
-      activityType,
+      isPartneredEvent,
+      partnerRole,
     };
 
     saveAndNavigate(currentFormData, "/audience");
@@ -193,7 +211,6 @@ export default function ExtraDetailsForm() {
       customerUse,
       okr: selectedOkrs,
       gep,
-      activityType,
       isDraft,
     };
 
@@ -329,25 +346,45 @@ export default function ExtraDetailsForm() {
                 </Select>
               </FormControl>
             </Grid>
-
+            
             <Grid item xs={12}>
-              <FormControl component="fieldset">
-                <Typography variant="subtitle1">
-                  Direct partner activity flag?
-                </Typography>
-                <RadioGroup
-                  value={activityType}
-                  onChange={(e) => setActivityType(e.target.value)}
-                >
-                  <FormControlLabel
-                    value="yes"
-                    control={<Radio />}
-                    label="Yes"
+            <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+                    Are Partner(s) involved?
+                  </Typography>
+              
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isPartneredEvent}
+                    onChange={(e) => setIsPartneredEvent(e.target.checked)}
+                    name="partneredEvent"
+                    color="primary"
                   />
-                  <FormControlLabel value="no" control={<Radio />} label="No" />
-                </RadioGroup>
-              </FormControl>
+                }
+                
+              />
             </Grid>
+
+            {/* Partner Role Dropdown */}
+            {isPartneredEvent && (
+              <Grid item xs={12}>
+                <FormControl fullWidth>
+                  <Typography variant="subtitle1">Partner's Role</Typography>
+                  <Select
+                    value={partnerRole}
+                    onChange={(e) => setPartnerRole(e.target.value)}
+                  >
+                    {partnerRoleOptions.map((option, idx) => (
+                      <MenuItem key={idx} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+
+           
           </Grid>
           {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>

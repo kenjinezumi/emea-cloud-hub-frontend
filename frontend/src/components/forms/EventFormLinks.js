@@ -122,6 +122,7 @@ export default function LinksForm() {
       approvedForCustomerUse: true,
       isDraft: false,
     };
+    console.log('The new forma data is', newFormData);
 
     updateFormData(newFormData);
     console.log(

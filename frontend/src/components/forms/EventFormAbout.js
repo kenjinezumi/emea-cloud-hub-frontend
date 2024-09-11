@@ -38,16 +38,7 @@ import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
-const partnerRoleOptions = [
-  "Partner Generated Thought Leadership (Whitepaper, Panelist)",
-  "Joint Messaging & Content Creation",
-  "Lead Nurture & Follow Up (Lead-to-Opp // Opp-to-Close)",
-  "Speak at Google / 3rd Party Roundtable, Forum",
-  "Host Event (Webinar, Townhall, Workshop, Demo)",
-  "Joint Customer Offer",
-  "Sales Leadership Customer Engagement",
-  "Other",
-];
+
 
 
 const EventForm = () => {
@@ -68,12 +59,6 @@ const EventForm = () => {
   );
   const [selectedLabel, setSelectedLabel] = useState(
     selectedEvent ? selectedEvent.label : formData.selectedLabel || labelsClasses[0]
-  );
-  const [isPartneredEvent, setIsPartneredEvent] = useState(
-    selectedEvent ? selectedEvent.isPartneredEvent : formData.isPartneredEvent || false
-  );
-  const [partnerRole, setPartnerRole] = useState(
-    selectedEvent ? selectedEvent.partnerRole : formData.partnerRole || ""
   );
   
   const [emoji, setEmoji] = useState(
@@ -212,9 +197,7 @@ const EventForm = () => {
     }
   };
 
-  const handlePartnerRoleChange = (event) => {
-    setPartnerRole(event.target.value);
-  };
+
 
   const handleNext = () => {
     const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
@@ -247,14 +230,12 @@ const EventForm = () => {
       marketingActivityType,
       isHighPriority,
       isEventSeries, 
-      isPartneredEvent,
       startDate,
       endDate,
       marketingProgramInstanceId,
       eventType,
       userTimezone,
       speakers,
-      partnerRole: isPartneredEvent ? partnerRole : ""
     };
 
     saveAndNavigate(newFormData, "/location");
@@ -281,7 +262,6 @@ const EventForm = () => {
       marketingActivityType,
       isHighPriority,
       isEventSeries, 
-      isPartneredEvent,
       startDate,
       endDate,
       marketingProgramInstanceId,
@@ -434,46 +414,6 @@ const EventForm = () => {
               </FormGroup>
             </Grid>
 
-            <Grid item xs={12} sx={{ mb: 3 }}>
-  <FormGroup row>
-    <FormControlLabel
-      control={
-        <Switch
-          checked={isPartneredEvent}
-          onChange={() => setIsPartneredEvent(!isPartneredEvent)}
-          name="partneredEvent"
-          color="primary"
-        />
-      }
-      label={
-        <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-          Partnered Event
-        </Typography>
-      }
-    />
-  </FormGroup>
-</Grid>
-{/* Partner Role Dropdown - Visible only when 'isPartneredEvent' is true */}
-            {isPartneredEvent && (
-              <Grid item xs={12} sx={{ mb: 3 }}>
-                                <Typography variant="subtitle1" sx={{ mb: 1 }}>Partner's role</Typography>
-
-                <FormControl fullWidth>
-                  <Select
-                    labelId="partner-role-label"
-                    id="partner-role-select"
-                    value={partnerRole}
-                    onChange={handlePartnerRoleChange}
-                  >
-                    {partnerRoleOptions.map((role, index) => (
-                      <MenuItem key={index} value={role}>
-                        {role}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            )}
 
             {/* Checkbox for event series */}
             <Grid item xs={12} sx={{ mb: 3 }}>

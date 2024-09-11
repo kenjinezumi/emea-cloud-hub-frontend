@@ -545,7 +545,7 @@ export default function AudiencePersonaForm() {
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.accountType} onChange={() => handleToggleSection("accountType")}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="account-type-content" id="account-type-header">
-      <Typography>Account Type</Typography>
+      <Typography>Greenfield Status</Typography>
     </AccordionSummary>
     <AccordionDetails>
       {Object.keys(accountType).map((type) => (
@@ -586,7 +586,7 @@ export default function AudiencePersonaForm() {
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.productAlignment} onChange={() => handleToggleSection("productAlignment")}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="product-alignment-content" id="product-alignment-header">
-      <Typography>Product Alignment</Typography>
+      <Typography>Product Family</Typography>
     </AccordionSummary>
     <AccordionDetails>
       {Object.keys(productAlignment).map((alignment) => (

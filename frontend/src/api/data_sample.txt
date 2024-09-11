@@ -1,0 +1,156 @@
+{
+  "eventId": "eeeb2ecf-e3f5-41e4-80c0-e45a67f1eb59",
+  "title": "Kenji",
+  "description": "Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Description, Descriptio",
+  "emoji": "",
+  "organisedBy": [
+    "234234",
+    "TEST",
+    "test"
+  ],
+  "startDate": "2024-09-19T15:19:35.000Z",
+  "endDate": "2024-09-20T14:17:35.000Z",
+  "marketingProgramInstanceId": "243234",
+  "eventType": "Physical Event",
+  "region": "GLOBAL",
+  "subRegion": [
+    "Benelux",
+    "CEE",
+    "Germany"
+  ],
+  "country": [
+    "BE",
+    "NL",
+    "PL",
+    "DE"
+  ],
+  "activityOwner": [],
+  "speakers": [
+    "kenjitsuchiya1@gmail.com",
+    "kenjitsuchiya2@gmail.com"
+  ],
+  "eventSeries": "no",
+  "emailLanguage": "English",
+  "emailText": "",
+  "languagesAndTemplates": [],
+  "customerUse": "yes",
+  "okr": [
+    {
+      "type": "CHAMPION DEI & CULTURE",
+      "percentage": "70"
+    },
+    {
+      "type": "LIFT MINDSHARE",
+      "percentage": "20"
+    },
+    {
+      "type": "SOURCE DEMAND",
+      "percentage": "10"
+    }
+  ],
+  "gep": [
+    "Infrastructure Modernization",
+    "Developer",
+    "Data Cloud"
+  ],
+  "audiencePersona": [
+    "Developer",
+    "Finance",
+    "Industry LOB - Gaming"
+  ],
+  "audienceSeniority": [
+    "Decision Maker",
+    "Practitioner"
+  ],
+  "accountSectors": {
+    "commercial": true,
+    "public": true
+  },
+  "accountSegments": {
+    "Corporate": {
+      "selected": true,
+      "percentage": "60"
+    },
+    "SMB": {
+      "selected": true,
+      "percentage": "10"
+    },
+    "Select": {
+      "selected": true,
+      "percentage": "10"
+    },
+    "Enterprise": {
+      "selected": true,
+      "percentage": "10"
+    },
+    "Startup": {
+      "selected": true,
+      "percentage": "10"
+    }
+  },
+  "maxEventCapacity": "199",
+  "peopleMeetingCriteria": "",
+  "landingPageLink": "",
+  "salesKitLink": "",
+  "hailoLink": "",
+  "otherDocumentsLink": "",
+  "isHighPriority": true,
+  "marketingActivityType": "",
+  "isDraft": false,
+  "dropdownValue2": "",
+  "isEventSeries": true,
+  "userTimezone": "Europe/London",
+  "city": "London",
+  "locationVenue": "O2 concert hall",
+  "isPartneredEvent": true,
+  "partnerRole": "Host Event (Webinar, Townhall, Workshop, Demo)",
+  "accountCategory": {
+    "Digital Native": {
+      "selected": true,
+      "percentage": "100"
+    },
+    "Traditional": {
+      "selected": false,
+      "percentage": "0"
+    }
+  },
+  "accountType": {
+    "Greenfield": {
+      "selected": true,
+      "percentage": "20"
+    },
+    "Existing Customer": {
+      "selected": true,
+      "percentage": "80"
+    }
+  },
+  "productAlignment": {
+    "GCP": {
+      "selected": true,
+      "percentage": "80"
+    },
+    "GWS": {
+      "selected": true,
+      "percentage": "20"
+    }
+  },
+  "aiVsCore": "AI",
+  "industry": "",
+  "landingPageLinks": [
+    "http://localhost:3000/links",
+    "http://localhost:3000/links"
+  ],
+  "salesKitLinks": [
+    "http://localhost:3000/links",
+    "http://localhost:3000/links"
+  ],
+  "hailoLinks": [
+    "http://localhost:3000/links",
+    "http://localhost:3000/links"
+  ],
+  "otherDocumentsLinks": [
+    "http://localhost:3000/links",
+    "http://localhost:3000/links"
+  ],
+  "approvedForCustomerUse": true
+}

@@ -49,6 +49,11 @@ export default function LocationFormPage() {
     selectedEvent ? selectedEvent.locationVenue : formData.locationVenue || ""
   );
   
+  const [city, setCity] = useState(
+    selectedEvent ? selectedEvent.city : formData.city || ""
+  );
+
+
   const [isFormValid, setIsFormValid] = useState(true);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -92,7 +97,7 @@ export default function LocationFormPage() {
       return;
     }
 
-    const currentFormData = { region, subRegion, country, locationVenue };
+    const currentFormData = { region, subRegion, country,  city, locationVenue };
     saveAndNavigate(currentFormData, "/extra");
   };
 
@@ -130,6 +135,7 @@ export default function LocationFormPage() {
       subRegion,
       country,
       isDraft,
+      city,
       locationVenue,
     };
 
@@ -259,6 +265,18 @@ export default function LocationFormPage() {
               </FormControl>
             </Grid>
             <Grid item xs={12}>
+              <FormControl fullWidth>
+                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                  City
+                </Typography>
+                <TextField
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  fullWidth
+                />
+              </FormControl>
+            </Grid>
+            <Grid item xs={12}>
   <FormControl fullWidth>
     <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
       Location Venue
@@ -266,7 +284,6 @@ export default function LocationFormPage() {
     <TextField
       value={locationVenue}
       onChange={(e) => setLocationVenue(e.target.value)}
-      placeholder="Enter venue location"
       fullWidth
     />
   </FormControl>
