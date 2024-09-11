@@ -38,6 +38,17 @@ import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
+const partnerRoleOptions = [
+  "Partner Generated Thought Leadership (Whitepaper, Panelist)",
+  "Joint Messaging & Content Creation",
+  "Lead Nurture & Follow Up (Lead-to-Opp // Opp-to-Close)",
+  "Speak at Google / 3rd Party Roundtable, Forum",
+  "Host Event (Webinar, Townhall, Workshop, Demo)",
+  "Joint Customer Offer",
+  "Sales Leadership Customer Engagement",
+  "Other",
+];
+
 
 const EventForm = () => {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
@@ -60,6 +71,9 @@ const EventForm = () => {
   );
   const [isPartneredEvent, setIsPartneredEvent] = useState(
     selectedEvent ? selectedEvent.isPartneredEvent : formData.isPartneredEvent || false
+  );
+  const [partnerRole, setPartnerRole] = useState(
+    selectedEvent ? selectedEvent.partnerRole : formData.partnerRole || ""
   );
   
   const [emoji, setEmoji] = useState(
@@ -198,6 +212,9 @@ const EventForm = () => {
     }
   };
 
+  const handlePartnerRoleChange = (event) => {
+    setPartnerRole(event.target.value);
+  };
 
   const handleNext = () => {
     const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
@@ -208,6 +225,7 @@ const EventForm = () => {
     const isDescriptionValid = description.trim() !== "";
     const isMarketingProgramInstanceIdValid =
       marketingProgramInstanceId.trim() !== "";
+      
 
     const formIsValid =
       isTitleValid &&
@@ -236,6 +254,7 @@ const EventForm = () => {
       eventType,
       userTimezone,
       speakers,
+      partnerRole: isPartneredEvent ? partnerRole : ""
     };
 
     saveAndNavigate(newFormData, "/location");
@@ -434,7 +453,27 @@ const EventForm = () => {
     />
   </FormGroup>
 </Grid>
+{/* Partner Role Dropdown - Visible only when 'isPartneredEvent' is true */}
+            {isPartneredEvent && (
+              <Grid item xs={12} sx={{ mb: 3 }}>
+                                <Typography variant="subtitle1" sx={{ mb: 1 }}>Partner's role</Typography>
 
+                <FormControl fullWidth>
+                  <Select
+                    labelId="partner-role-label"
+                    id="partner-role-select"
+                    value={partnerRole}
+                    onChange={handlePartnerRoleChange}
+                  >
+                    {partnerRoleOptions.map((role, index) => (
+                      <MenuItem key={index} value={role}>
+                        {role}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
 
             {/* Checkbox for event series */}
             <Grid item xs={12} sx={{ mb: 3 }}>
