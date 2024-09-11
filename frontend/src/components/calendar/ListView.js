@@ -61,8 +61,10 @@ export default function ListView() {
   // Filter events based on search text
   useEffect(() => {
     if (searchText) {
-      const lowercasedSearchText = searchText.toLowerCase();
-      const filtered = events.filter(event => event.title.toLowerCase().includes(lowercasedSearchText));
+      const filtered = events.filter(event =>
+        event.title.toLowerCase().includes(lowercasedSearchText) ||
+        event.description.toLowerCase().includes(lowercasedSearchText)
+      );
       setFilteredEvents(filtered);
     } else {
       setFilteredEvents(events);
