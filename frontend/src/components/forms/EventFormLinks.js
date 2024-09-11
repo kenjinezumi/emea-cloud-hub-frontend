@@ -152,7 +152,8 @@ export default function LinksForm() {
     const newFormData = {
       ...formData,
       ...links,
-      isDraft: true,
+      isDraft: true, 
+      isPublished: false, 
     };
 
     updateFormData(newFormData);

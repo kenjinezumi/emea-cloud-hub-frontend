@@ -137,6 +137,8 @@ export default function LocationFormPage() {
       isDraft,
       city,
       locationVenue,
+      approvedForCustomerUse: false,
+      isDraft: true,
     };
 
     const updatedFormData = { ...formData, ...draftData };

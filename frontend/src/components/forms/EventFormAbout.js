@@ -269,6 +269,8 @@ const EventForm = () => {
       isDraft,
       userTimezone,
       speakers,
+      isDraft: true, 
+      approvedForCustomerUse: false, 
     };
 
     updateFormData(newFormData);
