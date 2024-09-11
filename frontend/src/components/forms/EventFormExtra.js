@@ -346,7 +346,12 @@ export default function ExtraDetailsForm() {
                 </Select>
               </FormControl>
             </Grid>
+            
             <Grid item xs={12}>
+            <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+                    Are Partner(s) involved?
+                  </Typography>
+              
               <FormControlLabel
                 control={
                   <Switch
@@ -356,7 +361,7 @@ export default function ExtraDetailsForm() {
                     color="primary"
                   />
                 }
-                label="Is this a partnered event?"
+                
               />
             </Grid>
 
