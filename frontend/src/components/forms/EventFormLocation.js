@@ -14,6 +14,7 @@ import {
   Select,
   MenuItem,
   Chip,
+  TextField
 } from "@mui/material";
 import "../styles/Forms.css";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
@@ -44,6 +45,10 @@ export default function LocationFormPage() {
   const [availableCountries, setAvailableCountries] = useState(
     formData.availableCountries || []
   );
+  const [locationVenue, setLocationVenue] = useState(
+    selectedEvent ? selectedEvent.locationVenue : formData.locationVenue || ""
+  );
+  
   const [isFormValid, setIsFormValid] = useState(true);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -87,7 +92,7 @@ export default function LocationFormPage() {
       return;
     }
 
-    const currentFormData = { region, subRegion, country };
+    const currentFormData = { region, subRegion, country, locationVenue };
     saveAndNavigate(currentFormData, "/extra");
   };
 
@@ -125,6 +130,7 @@ export default function LocationFormPage() {
       subRegion,
       country,
       isDraft,
+      locationVenue,
     };
 
     const updatedFormData = { ...formData, ...draftData };
@@ -252,6 +258,20 @@ export default function LocationFormPage() {
                 </Select>
               </FormControl>
             </Grid>
+            <Grid item xs={12}>
+  <FormControl fullWidth>
+    <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+      Location Venue
+    </Typography>
+    <TextField
+      value={locationVenue}
+      onChange={(e) => setLocationVenue(e.target.value)}
+      placeholder="Enter venue location"
+      fullWidth
+    />
+  </FormControl>
+</Grid>
+
           </Grid>
           {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>
