@@ -16,7 +16,9 @@ import {
   IconButton,
   InputLabel,
   Checkbox,
+  InputAdornment,
 } from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
   LocalizationProvider,
   DateTimePicker,
@@ -83,6 +85,10 @@ const EventForm = () => {
   const [startDate, setStartDate] = useState(
     selectedEvent ? selectedEvent.startDate : formData.startDate || new Date()
   );
+  const [speakers, setSpeakers] = useState(
+    selectedEvent ? selectedEvent.speakers || [] : formData.speakers || []
+  );
+  const [newSpeaker, setNewSpeaker] = useState("");
   const [endDate, setEndDate] = useState(
     selectedEvent ? selectedEvent.endDate : formData.endDate || new Date()
   );
@@ -157,6 +163,42 @@ const EventForm = () => {
     fetchOrganisedByOptions();
   }, []);
 
+  const isValidEmail = (email) => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(email);
+  };
+
+  const handleAddSpeaker = () => {
+    const trimmedSpeaker = newSpeaker.trim();
+    if (isValidEmail(trimmedSpeaker) && !speakers.includes(trimmedSpeaker)) {
+      setSpeakers([...speakers, trimmedSpeaker]);
+      setNewSpeaker("");
+    } else {
+      setSnackbarMessage("Invalid or duplicate email address.");
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleDeleteSpeaker = (emailToDelete) => {
+    setSpeakers(speakers.filter((email) => email !== emailToDelete));
+  };
+
+  const handlePasteSpeakers = (e) => {
+    const pastedText = e.clipboardData.getData("Text");
+    const pastedEmails = pastedText
+      .split(/[ ,;\n]+/)
+      .filter((email) => isValidEmail(email) && !speakers.includes(email));
+
+    if (pastedEmails.length > 0) {
+      setSpeakers([...speakers, ...pastedEmails]);
+      e.preventDefault();
+    } else {
+      setSnackbarMessage("No valid email addresses found in the pasted text.");
+      setSnackbarOpen(true);
+    }
+  };
+
+
   const handleNext = () => {
     const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
     const eventId = existingEventId || uuidv4();
@@ -193,6 +235,7 @@ const EventForm = () => {
       marketingProgramInstanceId,
       eventType,
       userTimezone,
+      speakers,
     };
 
     saveAndNavigate(newFormData, "/location");
@@ -226,6 +269,7 @@ const EventForm = () => {
       eventType,
       isDraft,
       userTimezone,
+      speakers,
     };
 
     updateFormData(newFormData);
@@ -466,6 +510,43 @@ const EventForm = () => {
                 inputProps={{ maxLength: 400 }}
                 helperText={`${description.length}/400`}
               />
+            </Grid>
+            {/* Speakers Section */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Speakers (Email addresses)
+              </Typography>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Enter email or paste a list"
+                value={newSpeaker}
+                onChange={(e) => setNewSpeaker(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddSpeaker();
+                }}
+                onPaste={handlePasteSpeakers}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleAddSpeaker} edge="end">
+                        <AddCircleOutlineIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                margin="normal"
+              />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginTop: "10px" }}>
+                {speakers.map((email, index) => (
+                  <Chip
+                    key={index}
+                    label={email}
+                    onDelete={() => handleDeleteSpeaker(email)}
+                    color="primary"
+                  />
+                ))}
+              </div>
             </Grid>
 
             <Grid item xs={12} sx={{ mb: 3 }}>
