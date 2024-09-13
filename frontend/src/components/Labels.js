@@ -1,6 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
 import GlobalContext from '../context/GlobalContext';
-import { regionFilters, okrOptions, audienceSeniorityOptions, eventTypeOptions } from './filters/FiltersData';
+import {
+  subRegionOptions,
+  gepOptions,
+  accountSectorOptions,
+  accountSegmentOptions,
+  buyerSegmentRollupOptions,
+  productFamilyOptions,
+  industryOptions,
+  partnerEventOptions,
+  draftStatusOptions,
+} from './filters/FiltersData';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import { Typography, IconButton } from '@mui/material';
@@ -8,101 +18,84 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 export default function Filters() {
-  const [localRegionFilters, setLocalRegionFilters] = useState(regionFilters);
-  const [localOkrOptions, setLocalOkrOptions] = useState(okrOptions);
-  const [localAudienceSeniorityOptions, setLocalAudienceSeniorityOptions] = useState(audienceSeniorityOptions);
-  const [localEventTypeOptions, setLocalEventTypeOptions] = useState(eventTypeOptions);
+  const [localSubRegionFilters, setLocalSubRegionFilters] = useState(subRegionOptions.map(option => ({ label: option, checked: true })));
+  const [localGepOptions, setLocalGepOptions] = useState(gepOptions.map(option => ({ label: option, checked: true })));
+  const [localAccountSectorOptions, setLocalAccountSectorOptions] = useState(accountSectorOptions);
+  const [localAccountSegmentOptions, setLocalAccountSegmentOptions] = useState(accountSegmentOptions);
+  const [localBuyerSegmentRollupOptions, setLocalBuyerSegmentRollupOptions] = useState(buyerSegmentRollupOptions);
+  const [localProductFamilyOptions, setLocalProductFamilyOptions] = useState(productFamilyOptions);
+  const [localIndustryOptions, setLocalIndustryOptions] = useState(industryOptions.map(option => ({ label: option, checked: true })));
+  const [localPartnerEventOptions, setLocalPartnerEventOptions] = useState(partnerEventOptions);
+  const [localDraftStatusOptions, setLocalDraftStatusOptions] = useState(draftStatusOptions);
 
-  const [localIsDraftOptions, setLocalIsDraftOptions] = useState([
-    { label: 'Draft', checked: true},
-    { label: 'Published', checked: true }
-  ]);
-
-  const [isRegionExpanded, setIsRegionExpanded] = useState(false);
-  const [isOkrExpanded, setIsOkrExpanded] = useState(false);
-  const [isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded] = useState(false);
-  const [isEventTypeExpanded, setIsEventTypeExpanded] = useState(false);
-  const [isIsDraftExpanded, setIsIsDraftExpanded] = useState(false);
+  const [isSubRegionExpanded, setIsSubRegionExpanded] = useState(false);
+  const [isGepExpanded, setIsGepExpanded] = useState(false);
+  const [isAccountSectorExpanded, setIsAccountSectorExpanded] = useState(false);
+  const [isAccountSegmentExpanded, setIsAccountSegmentExpanded] = useState(false);
+  const [isBuyerSegmentRollupExpanded, setIsBuyerSegmentRollupExpanded] = useState(false);
+  const [isProductFamilyExpanded, setIsProductFamilyExpanded] = useState(false);
+  const [isIndustryExpanded, setIsIndustryExpanded] = useState(false);
+  const [isPartnerEventExpanded, setIsPartnerEventExpanded] = useState(false);
+  const [isDraftStatusExpanded, setIsDraftStatusExpanded] = useState(false);
 
   const { updateFilters } = useContext(GlobalContext);
 
   const clearAllFilters = () => {
-    setLocalRegionFilters(localRegionFilters.map(filter => ({ ...filter, checked: false })));
-    setLocalOkrOptions(localOkrOptions.map(option => ({ ...option, checked: false })));
-    setLocalAudienceSeniorityOptions(localAudienceSeniorityOptions.map(option => ({ ...option, checked: false })));
-    setLocalEventTypeOptions(localEventTypeOptions.map(option => ({ ...option, checked: false })));
-    setLocalIsDraftOptions(localIsDraftOptions.map(option => ({ ...option, checked: false })));
+    setLocalSubRegionFilters(localSubRegionFilters.map(filter => ({ ...filter, checked: false })));
+    setLocalGepOptions(localGepOptions.map(option => ({ ...option, checked: false })));
+    setLocalAccountSectorOptions(localAccountSectorOptions.map(option => ({ ...option, checked: false })));
+    setLocalAccountSegmentOptions(localAccountSegmentOptions.map(option => ({ ...option, checked: false })));
+    setLocalBuyerSegmentRollupOptions(localBuyerSegmentRollupOptions.map(option => ({ ...option, checked: false })));
+    setLocalProductFamilyOptions(localProductFamilyOptions.map(option => ({ ...option, checked: false })));
+    setLocalIndustryOptions(localIndustryOptions.map(option => ({ ...option, checked: false })));
+    setLocalPartnerEventOptions(localPartnerEventOptions.map(option => ({ ...option, checked: false })));
+    setLocalDraftStatusOptions(localDraftStatusOptions.map(option => ({ ...option, checked: false })));
   };
 
   const selectAllFilters = () => {
-    setLocalRegionFilters(localRegionFilters.map(filter => ({ ...filter, checked: true })));
-    setLocalOkrOptions(localOkrOptions.map(option => ({ ...option, checked: true })));
-    setLocalAudienceSeniorityOptions(localAudienceSeniorityOptions.map(option => ({ ...option, checked: true })));
-    setLocalEventTypeOptions(localEventTypeOptions.map(option => ({ ...option, checked: true })));
-    setLocalIsDraftOptions(localIsDraftOptions.map(option => ({ ...option, checked: true })));
+    setLocalSubRegionFilters(localSubRegionFilters.map(filter => ({ ...filter, checked: true })));
+    setLocalGepOptions(localGepOptions.map(option => ({ ...option, checked: true })));
+    setLocalAccountSectorOptions(localAccountSectorOptions.map(option => ({ ...option, checked: true })));
+    setLocalAccountSegmentOptions(localAccountSegmentOptions.map(option => ({ ...option, checked: true })));
+    setLocalBuyerSegmentRollupOptions(localBuyerSegmentRollupOptions.map(option => ({ ...option, checked: true })));
+    setLocalProductFamilyOptions(localProductFamilyOptions.map(option => ({ ...option, checked: true })));
+    setLocalIndustryOptions(localIndustryOptions.map(option => ({ ...option, checked: true })));
+    setLocalPartnerEventOptions(localPartnerEventOptions.map(option => ({ ...option, checked: true })));
+    setLocalDraftStatusOptions(localDraftStatusOptions.map(option => ({ ...option, checked: true })));
   };
 
-  const handleRegionChange = (label) => {
-    const newFilters = localRegionFilters.map((filter) => {
-      if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
-      }
-      return filter;
-    });
-    setLocalRegionFilters(newFilters);
-  };
-
-  const handleOkrChange = (label) => {
-    const newFilters = localOkrOptions.map((filter) => {
-      if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
-      }
-      return filter;
-    });
-    setLocalOkrOptions(newFilters);
-  };
-
-  const handleAudienceSeniorityChange = (label) => {
-    const newFilters = localAudienceSeniorityOptions.map((filter) => {
-      if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
-      }
-      return filter;
-    });
-    setLocalAudienceSeniorityOptions(newFilters);
-  };
-
-  const handleEventTypeChange = (label) => {
-    const newFilters = localEventTypeOptions.map((filter) => {
-      if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
-      }
-      return filter;
-    });
-    setLocalEventTypeOptions(newFilters);
-  };
-
-  const handleIsDraftChange = (label) => {
-    const newFilters = localIsDraftOptions.map((filter) => {
-      if (filter.label === label) {
-        return { ...filter, checked: !filter.checked };
-      }
-      return filter;
-    });
-    setLocalIsDraftOptions(newFilters);
+  const handleFilterChange = (setFilterState, label) => {
+    setFilterState(prevFilters =>
+      prevFilters.map(filter => filter.label === label ? { ...filter, checked: !filter.checked } : filter)
+    );
   };
 
   useEffect(() => {
     updateFilters({
-      regions: localRegionFilters,
-      okr: localOkrOptions,
-      audienceSeniority: localAudienceSeniorityOptions,
-      eventType: localEventTypeOptions,
-      isDraft: localIsDraftOptions,
+      subRegions: localSubRegionFilters,
+      gep: localGepOptions,
+      accountSectors: localAccountSectorOptions,
+      accountSegments: localAccountSegmentOptions,
+      buyerSegmentRollup: localBuyerSegmentRollupOptions,
+      productFamily: localProductFamilyOptions,
+      industry: localIndustryOptions,
+      partnerEvent: localPartnerEventOptions,
+      draftStatus: localDraftStatusOptions,
     });
-  }, [localRegionFilters, localOkrOptions, localAudienceSeniorityOptions, localEventTypeOptions, localIsDraftOptions, updateFilters]);
+  }, [
+    localSubRegionFilters,
+    localGepOptions,
+    localAccountSectorOptions,
+    localAccountSegmentOptions,
+    localBuyerSegmentRollupOptions,
+    localProductFamilyOptions,
+    localIndustryOptions,
+    localPartnerEventOptions,
+    localDraftStatusOptions,
+    updateFilters,
+  ]);
 
-  const renderFilterSection = (title, filters, handleFilterChange, expanded, setExpanded) => (
+  const renderFilterSection = (title, filters, setFilterState, expanded, setExpanded) => (
     <div className="mb-4">
       <div onClick={() => setExpanded(!expanded)} className="cursor-pointer flex items-center">
         <Typography variant="subtitle2" className="mr-2">{title}</Typography>
@@ -113,7 +106,7 @@ export default function Filters() {
           <input
             type="checkbox"
             checked={checked}
-            onChange={() => handleFilterChange(label)}
+            onChange={() => handleFilterChange(setFilterState, label)}
             className="form-checkbox h-5 w-5 rounded focus:ring-0 cursor-pointer"
           />
           <span className="ml-2 text-gray-700 capitalize text-xs">{label}</span>
@@ -152,11 +145,15 @@ export default function Filters() {
       </div>
       <hr style={{ margin: '8px 0', border: 0 }} />
 
-      {renderFilterSection('Region', localRegionFilters, handleRegionChange, isRegionExpanded, setIsRegionExpanded)}
-      {renderFilterSection('OKR', localOkrOptions, handleOkrChange, isOkrExpanded, setIsOkrExpanded)}
-      {renderFilterSection('Audience Seniority', localAudienceSeniorityOptions, handleAudienceSeniorityChange, isAudienceSeniorityExpanded, setIsAudienceSeniorityExpanded)}
-      {renderFilterSection('Event type', localEventTypeOptions, handleEventTypeChange, isEventTypeExpanded, setIsEventTypeExpanded)}
-      {renderFilterSection('Draft Status', localIsDraftOptions, handleIsDraftChange, isIsDraftExpanded, setIsIsDraftExpanded)}
+      {renderFilterSection('Sub-Region', localSubRegionFilters, setLocalSubRegionFilters, isSubRegionExpanded, setIsSubRegionExpanded)}
+      {renderFilterSection('GEP', localGepOptions, setLocalGepOptions, isGepExpanded, setIsGepExpanded)}
+      {renderFilterSection('Account Sector', localAccountSectorOptions, setLocalAccountSectorOptions, isAccountSectorExpanded, setIsAccountSectorExpanded)}
+      {renderFilterSection('Account Segment', localAccountSegmentOptions, setLocalAccountSegmentOptions, isAccountSegmentExpanded, setIsAccountSegmentExpanded)}
+      {renderFilterSection('Buyer Segment Rollup', localBuyerSegmentRollupOptions, setLocalBuyerSegmentRollupOptions, isBuyerSegmentRollupExpanded, setIsBuyerSegmentRollupExpanded)}
+      {renderFilterSection('Product Family', localProductFamilyOptions, setLocalProductFamilyOptions, isProductFamilyExpanded, setIsProductFamilyExpanded)}
+      {renderFilterSection('Industry', localIndustryOptions, setLocalIndustryOptions, isIndustryExpanded, setIsIndustryExpanded)}
+      {renderFilterSection('Is Partner Event', localPartnerEventOptions, setLocalPartnerEventOptions, isPartnerEventExpanded, setIsPartnerEventExpanded)}
+      {renderFilterSection('Draft Status', localDraftStatusOptions, setLocalDraftStatusOptions, isDraftStatusExpanded, setIsDraftStatusExpanded)}
     </div>
   );
 }

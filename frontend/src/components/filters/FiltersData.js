@@ -252,3 +252,45 @@ export const audienceRoles = [
   'Security',
   'Technology',
 ];
+
+export const accountSectorOptions = [
+  { label: 'Commercial', checked: true },
+  { label: 'Public', checked: true },
+];
+
+export const accountSegmentOptions = [
+  { label: 'Corporate', checked: true },
+  { label: 'SMB', checked: true },
+  { label: 'Select', checked: true },
+  { label: 'Enterprise', checked: true },
+  { label: 'Startup', checked: true },
+];
+
+export const buyerSegmentRollupOptions = [
+  { label: 'Decision Maker', checked: true },
+  { label: 'Practitioner', checked: true },
+  { label: 'Executive', checked: true },
+];
+
+export const productFamilyOptions = [
+  { label: 'GCP', checked: true },
+  { label: 'GWS', checked: true },
+];
+
+export const industryOptions = [
+  'Manufacturing',
+  'Healthcare',
+  'Education',
+  'Financial Services',
+  'Government',
+  'Retail',
+];
+
+export const partnerEventOptions = [
+  { label: 'Partner Event', checked: true },
+];
+
+export const draftStatusOptions = [
+  { label: 'Draft', checked: true },
+  { label: 'Published', checked: true },
+];
