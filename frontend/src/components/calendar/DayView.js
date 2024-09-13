@@ -86,26 +86,55 @@ export default function DayView() {
         console.error("applyFilters was called with 'events' that is not an array:", events);
         return [];
       }
-
+  
       const results = await Promise.all(events.map(async (event) => {
-        const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
+        const subRegionMatch = filters.subRegions.some(subRegion => subRegion.checked && event.subRegion?.includes(subRegion.label));
         const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-        const okrMatch = filters.okr.some(okr => 
-          okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label)
-        );        
-        const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
+  
+        const gepMatch = filters.gep.some(gep => 
+          gep.checked && event.gep?.includes(gep.label)
+        ); 
+  
+        const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => 
+          segment.checked && event.buyerSegmentRollup?.includes(segment.label)
+        );
+  
+        const accountSectorMatch = filters.accountSectors.some(sector => 
+          sector.checked && event.accountSectors?.[sector.label]
+        );
+  
+        const accountSegmentMatch = filters.accountSegments.some(segment => 
+          segment.checked && event.accountSegments?.[segment.label]?.selected
+        );
+  
+        const productFamilyMatch = filters.productFamily.some(product => 
+          product.checked && event.productAlignment?.[product.label]?.selected
+        );
+  
+        const industryMatch = filters.industry.some(industry => 
+          industry.checked && event.industry === industry.label
+        );
+  
+        const isPartneredEventMatch = filters.isPartneredEvent.some(partner => 
+          partner.checked && event.isPartneredEvent === partner.label
+        );
+  
         const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
-        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch && isDraftMatch;
+  
+        return subRegionMatch && eventTypeMatch && gepMatch && buyerSegmentRollupMatch &&
+               accountSectorMatch && accountSegmentMatch && productFamilyMatch &&
+               industryMatch && isPartneredEventMatch && isDraftMatch;
       }));
-
+  
       return events.filter((_, index) => results[index]);
     };
-
+  
     (async () => {
       const filteredEvents = await applyFilters(events, filters);
       setFilteredEvents(filteredEvents);
     })();
   }, [events, filters]);
+  
 
   // Reset modals when location changes
   useEffect(() => {
