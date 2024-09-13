@@ -211,7 +211,8 @@ export default function ExtraDetailsForm() {
       customerUse,
       okr: selectedOkrs,
       gep,
-      isDraft,
+      isDraft: true, 
+      approvedForCustomerUse: false, 
     };
 
     const updatedFormData = { ...formData, ...draftData };

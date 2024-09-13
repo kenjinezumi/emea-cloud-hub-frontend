@@ -1,5 +1,5 @@
 {"organisedByOptionsQuery":"SELECT DISTINCT title FROM `google.com:cloudhub.data.account-team`",
 "marketingProgramQuery":"SELECT Sandbox_Program_Id FROM `google.com:cloudhub.data.marketing-program-dim`",
-"eventDataQuery":"SELECT eventId, title, description, emoji, organisedBy, startDate, endDate, marketingProgramInstanceId, eventType, region, subRegion, country, activityOwner, speakers, eventSeries, languagesAndTemplates, customerUse, okr, gep, audiencePersona, audienceSeniority, accountSectors, accountSegments, maxEventCapacity, peopleMeetingCriteria, landingPageLinks, salesKitLinks, hailoLinks, otherDocumentsLinks, isDraft FROM `google.com:cloudhub.data.master-event-data`"
+"eventDataQuery":"SELECT eventId, tacticId, title, description, emoji, organisedBy, startDate, endDate, marketingProgramInstanceId, eventType, region, subRegion, country, activityOwner, speakers, eventSeries, languagesAndTemplates, customerUse, okr, gep, audiencePersona, audienceSeniority, accountSectors, accountSegments, maxEventCapacity, peopleMeetingCriteria, landingPageLinks, salesKitLinks, hailoLinks, otherDocumentsLinks, approvedForCustomerUse, isHighPriority, isPartneredEvent, partnerRole, accountCategory, accountType, productAlignment, aiVsCore, industry, city, locationVenue, marketingActivityType, isDraft FROM `google.com:cloudhub.data.master-event-data`"
 }
 

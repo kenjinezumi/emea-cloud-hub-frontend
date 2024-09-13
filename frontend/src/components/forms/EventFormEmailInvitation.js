@@ -92,7 +92,7 @@ const EventFormEmailInvitation = () => {
     const updatedFormData = { ...formData, languagesAndTemplates };
     updateFormData(updatedFormData);
 
-    saveAndNavigate(updatedFormData, "/audience");
+  saveAndNavigate(updatedFormData, "/audience");
   };
 
   const handlePrevious = () => {
@@ -100,7 +100,12 @@ const EventFormEmailInvitation = () => {
   };
 
   const handleSaveAsDraft = async () => {
-    const updatedFormData = { ...formData, languagesAndTemplates };
+    const updatedFormData = { 
+      ...formData,
+      languagesAndTemplates,
+      isDraft: true, 
+      approvedForCustomerUse: false, 
+     };
 
     updateFormData(updatedFormData);
 
