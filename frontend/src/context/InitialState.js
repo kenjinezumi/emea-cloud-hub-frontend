@@ -14,10 +14,8 @@ const initialFormData = {
   activityOwner: [],
   speakers: [],
   eventSeries: 'no',
-  emailLanguage: 'English',
-  emailText: '',
   languagesAndTemplates: [],  // platform, language, and template
-  customerUse: 'yes',
+  isApprovedForCustomerUse: 'yes',
   okr: [],  // OKR array
   gep: [],  // GEP array
   audiencePersona: [],
@@ -55,7 +53,10 @@ const initialFormData = {
   city: '',                  // Event location city
   locationVenue: '',         // Venue location
   marketingActivityType: '', // Marketing activity type
-  isDraft: true,             // Draft status
+  isDraft: true,  
+  isPublished: false, 
+  userTimezone: ''
+             // Draft status
 };
 
 export { initialFormData };
