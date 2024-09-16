@@ -215,18 +215,18 @@ async function saveEventData(eventData) {
 
   try {
     // Remove unnecessary fields
-    logger.info('Removing unnecessary fields: dropdownValue2,otherDocumentsLink,\
-    marketingActivityType, landingPageLink, languagesAndTemplates.');
-    delete eventData.dropdownValue2;
-    delete eventData.otherDocumentsLink;
-    delete eventData.landingPageLink;
-    delete eventData.salesKitLink;   
-    delete eventData.hailoLink;   
-    delete eventData.marketingActivityType;
-    delete eventData.activityOwner;
-    delete eventData.activityType;
-    delete eventData.emailLanguage;
-    delete eventData.emailText;
+    // logger.info('Removing unnecessary fields: dropdownValue2,otherDocumentsLink,\
+    // marketingActivityType, landingPageLink, languagesAndTemplates.');
+    // delete eventData.dropdownValue2;
+    // delete eventData.otherDocumentsLink;
+    // delete eventData.landingPageLink;
+    // delete eventData.salesKitLink;   
+    // delete eventData.hailoLink;   
+    // delete eventData.marketingActivityType;
+    // delete eventData.activityOwner;
+    // delete eventData.activityType;
+    // delete eventData.emailLanguage;
+    // delete eventData.emailText;
 
     // Insert event data into BigQuery
     logger.info('Inserting event data into BigQuery.', { datasetId, tableId });

@@ -32,8 +32,6 @@ async function insertOrUpdateBigQuery(formData, datasetId, tableId) {
 }
 
 async function updateBigQuery(formData, datasetId, tableId) {
-  // Construct the update query based on formData
-  // This is an example and should be adapted based on your actual data structure and needs
   const updateQuery = `
     UPDATE \`${datasetId}.${tableId}\`
     SET title = @title,
@@ -49,12 +47,11 @@ async function updateBigQuery(formData, datasetId, tableId) {
         country = @country,
         activityOwner = @activityOwner,
         speakers = @speakers,
-        eventSeries = @eventSeries,
+        isEventSeries = @isEventSeries,
         languagesAndTemplates = @languagesAndTemplates,
-        customerUse = @customerUse,
+        isApprovedForCustomerUse = @isApprovedForCustomerUse,
         okr = @okr,
         gep = @gep,
-        activityType = @activityType,
         audiencePersona = @audiencePersona,
         audienceSeniority = @audienceSeniority,
         accountSectors = @accountSectors,
@@ -62,18 +59,28 @@ async function updateBigQuery(formData, datasetId, tableId) {
         maxEventCapacity = @maxEventCapacity,
         peopleMeetingCriteria = @peopleMeetingCriteria,
         landingPageLinks = @landingPageLinks,
-        salesKitLinks = @salesKitLink,
+        salesKitLinks = @salesKitLinks,
         hailoLinks = @hailoLinks,
-        publishedDate = @publishedDate,
-        lastEditedDate = @lastEditedDate,
-        isDraft = @isDraft
+        isHighPriority = @isHighPriority,
+        isPartneredEvent = @isPartneredEvent,
+        partnerRole = @partnerRole,
+        accountCategory = @accountCategory,
+        accountType = @accountType,
+        productAlignment = @productAlignment,
+        aiVsCore = @aiVsCore,
+        industry = @industry,
+        city = @city,
+        locationVenue = @locationVenue,
+        marketingActivityType = @marketingActivityType,
+        userTimezone = @userTimezone,
+        isDraft = @isDraft,
+        isPublished = @isPublished
     WHERE eventId = @eventId
   `;
 
   const options = {
     query: updateQuery,
     params: {
-      // Add all formData properties here
       eventId: formData.eventId,
       title: formData.title,
       description: formData.description,
@@ -88,29 +95,40 @@ async function updateBigQuery(formData, datasetId, tableId) {
       country: formData.country,
       activityOwner: formData.activityOwner,
       speakers: formData.speakers,
-      eventSeries: formData.eventSeries,
+      isEventSeries: formData.isEventSeries === true,
       languagesAndTemplates: JSON.stringify(formData.languagesAndTemplates),
-      customerUse: formData.customerUse,
-      okr: formData.okr,
+      isApprovedForCustomerUse: formData.isApprovedForCustomerUse === true,
+      okr: JSON.stringify(formData.okr),
       gep: formData.gep,
-      activityType: formData.activityType,
       audiencePersona: formData.audiencePersona,
       audienceSeniority: formData.audienceSeniority,
-      accountSectors: formData.accountSectors,
+      accountSectors: JSON.stringify(formData.accountSectors),
       accountSegments: JSON.stringify(formData.accountSegments),
       maxEventCapacity: formData.maxEventCapacity,
       peopleMeetingCriteria: formData.peopleMeetingCriteria,
       landingPageLinks: formData.landingPageLinks,
       salesKitLinks: formData.salesKitLinks,
       hailoLinks: formData.hailoLinks,
-      publishedDate: formData.publishedDate ? new Date(formData.publishedDate).toISOString() : null,
-      lastEditedDate: formData.lastEditedDate ? new Date(formData.lastEditedDate).toISOString() : null,
-      isDraft: formData.isDraft
+      isHighPriority: formData.isHighPriority === true,
+      isPartneredEvent: formData.isPartneredEvent === true,
+      partnerRole: formData.partnerRole,
+      accountCategory: JSON.stringify(formData.accountCategory),
+      accountType: JSON.stringify(formData.accountType),
+      productAlignment: JSON.stringify(formData.productAlignment),
+      aiVsCore: formData.aiVsCore,
+      industry: formData.industry,
+      city: formData.city,
+      locationVenue: formData.locationVenue,
+      marketingActivityType: formData.marketingActivityType,
+      userTimezone: formData.userTimezone,
+      isDraft: formData.isDraft === true,
+      isPublished: formData.isPublished === true,
     },
     location: 'US',
   };
 
   await bigquery.query(options);
 }
+
 
 module.exports = { insertOrUpdateBigQuery };
