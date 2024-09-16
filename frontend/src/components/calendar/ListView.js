@@ -45,11 +45,10 @@ export default function ListView() {
 
       const results = await Promise.all(events.map(async (event) => {
         const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
-        const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
         const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label));
         const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
 
-        return regionMatch && eventTypeMatch && okrMatch && audienceSeniorityMatch;
+        return regionMatch && okrMatch && audienceSeniorityMatch;
       }));
 
       setFilteredEvents(events.filter((_, index) => results[index]));
