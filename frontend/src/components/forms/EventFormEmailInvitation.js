@@ -10,9 +10,11 @@ import {
   AccordionDetails,
   FormControl,
   Autocomplete,
+  Select,
+  MenuItem
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EmailIcon from '@mui/icons-material/Email';
+import EmailIcon from "@mui/icons-material/Email";
 import { blue } from "@mui/material/colors";
 import { languageOptions } from "../filters/FiltersData";
 import { sendDataToAPI } from "../../api/pushData";
@@ -21,12 +23,14 @@ import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 
+const platformOptions = ["Gmail", "Salesloft"];
+
 const EventFormEmailInvitation = () => {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [languagesAndTemplates, setLanguagesAndTemplates] = useState([
-    { language: "English", template: "" }
+    { platform: "Gmail", language: "English", template: "" }
   ]);
   const [isFormValid, setIsFormValid] = useState(true);
   const saveAndNavigate = useFormNavigation();
@@ -36,13 +40,13 @@ const EventFormEmailInvitation = () => {
       setLanguagesAndTemplates(
         selectedEvent.languagesAndTemplates.length > 0
           ? selectedEvent.languagesAndTemplates
-          : [{ language: "English", template: "" }]
+          : [{ platform: "Gmail", language: "English", template: "" }]
       );
     } else {
       setLanguagesAndTemplates(
         formData.languagesAndTemplates.length > 0
           ? formData.languagesAndTemplates
-          : [{ language: "English", template: "" }]
+          : [{ platform: "Gmail", language: "English", template: "" }]
       );
     }
   }, [selectedEvent, formData]);
@@ -50,7 +54,7 @@ const EventFormEmailInvitation = () => {
   const handleAddLanguageAndTemplate = () => {
     setLanguagesAndTemplates([
       ...languagesAndTemplates,
-      { language: "", template: "" }
+      { platform: "Gmail", language: "", template: "" }
     ]);
   };
 
@@ -62,6 +66,12 @@ const EventFormEmailInvitation = () => {
       setSnackbarMessage("At least one email language is required.");
       setSnackbarOpen(true);
     }
+  };
+
+  const handlePlatformChange = (value, index) => {
+    const updatedItems = [...languagesAndTemplates];
+    updatedItems[index].platform = value;
+    setLanguagesAndTemplates(updatedItems);
   };
 
   const handleLanguageChange = (value, index) => {
@@ -92,7 +102,7 @@ const EventFormEmailInvitation = () => {
     const updatedFormData = { ...formData, languagesAndTemplates };
     updateFormData(updatedFormData);
 
-  saveAndNavigate(updatedFormData, "/audience");
+    saveAndNavigate(updatedFormData, "/audience");
   };
 
   const handlePrevious = () => {
@@ -105,7 +115,7 @@ const EventFormEmailInvitation = () => {
       languagesAndTemplates,
       isDraft: true, 
       approvedForCustomerUse: false, 
-     };
+    };
 
     updateFormData(updatedFormData);
 
@@ -158,6 +168,22 @@ const EventFormEmailInvitation = () => {
                   </AccordionSummary>
                   <AccordionDetails>
                     <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <FormControl fullWidth>
+                          <Typography variant="subtitle1">Platform</Typography>
+                          <Select
+                            value={item.platform}
+                            onChange={(e) => handlePlatformChange(e.target.value, index)}
+                            fullWidth
+                          >
+                            {platformOptions.map((platform) => (
+                              <MenuItem key={platform} value={platform}>
+                                {platform}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
                       <Grid item xs={12}>
                         <FormControl fullWidth>
                           <Typography variant="subtitle1">Email language</Typography>

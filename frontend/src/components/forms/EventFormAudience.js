@@ -343,10 +343,38 @@ export default function AudiencePersonaForm() {
               style={{ marginRight: "10px", color: blue[500], height: "40px" }}
             />
             <span className="mr-1 text-xl text-black cursor-pointer">
-              Audience - Account Segments
+              Audience 
             </span>
           </Typography>
 
+ {/* Audience Seniority */}
+ <Grid item xs={12}>
+            <Typography variant="subtitle1">Buyer Segment Rollup</Typography>
+            <FormControl fullWidth>
+              <Select
+                multiple
+                value={audienceSeniority}
+                onChange={(e) => setAudienceSeniority(e.target.value)}
+                renderValue={(selected) => (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+                    {selected.map((seniority) => (
+                      <Chip
+                        key={seniority}
+                        label={seniority}
+                        onDelete={() => handleAudienceSeniorityDelete(seniority)}
+                      />
+                    ))}
+                  </div>
+                )}
+              >
+                {audienceSeniorityOptions.map((option, idx) => (
+                  <MenuItem key={idx} value={option.label}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
           {/* Audience Persona */}
           <Grid item xs={12}>
             <Typography variant="subtitle1"> Buyer Segment</Typography>
@@ -376,34 +404,7 @@ export default function AudiencePersonaForm() {
             </FormControl>
           </Grid>
 
-          {/* Audience Seniority */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle1">Buyer Segment Rollup</Typography>
-            <FormControl fullWidth>
-              <Select
-                multiple
-                value={audienceSeniority}
-                onChange={(e) => setAudienceSeniority(e.target.value)}
-                renderValue={(selected) => (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-                    {selected.map((seniority) => (
-                      <Chip
-                        key={seniority}
-                        label={seniority}
-                        onDelete={() => handleAudienceSeniorityDelete(seniority)}
-                      />
-                    ))}
-                  </div>
-                )}
-              >
-                {audienceSeniorityOptions.map((option, idx) => (
-                  <MenuItem key={idx} value={option.label}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
+         
           
           {/* Industry Dropdown */}
 <Grid item xs={12}>
@@ -655,18 +656,21 @@ export default function AudiencePersonaForm() {
             />
           </Grid>
 
-          {/* People Meeting Criteria */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle1">People Meeting the Audience Criteria</Typography>
-            <TextField
-              type="number"
-              value={peopleMeetingCriteria}
-              onChange={(e) => setPeopleMeetingCriteria(e.target.value)}
-              fullWidth
-              InputProps={{
-                readOnly: true,
-              }}
-            />
+         {/* People Meeting Criteria */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1">People Meeting the Audience Criteria</Typography>
+          <TextField
+            type="number"
+            value={peopleMeetingCriteria}
+            onChange={(e) => setPeopleMeetingCriteria(e.target.value)}
+            fullWidth
+            disabled
+            InputProps={{
+              style: {
+                backgroundColor: '#e0e0e0', // Light grey background color to indicate disabled state
+              },
+            }}
+          />
           </Grid>
 
           {/* Validation & Save Buttons */}
