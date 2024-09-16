@@ -46,33 +46,33 @@ export async function getEventData(queryEventData) {
   ];
 
   try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-      body: JSON.stringify({ queryName: queryEventData, message: 'get-data', 
-    }),
-    });
+    // const response = await fetch(apiUrl, {
+    //   method: 'POST',
+    //   credentials: 'include',
+    //   headers: {
+    //     'Content-Type': 'text/plain',
+    //   },
+    //   body: JSON.stringify({ queryName: queryEventData, message: 'get-data', 
+    // }),
+    // });
 
-    if (!response.ok) {
-      throw new Error(`Network response was not ok (${response.status})`);
-    }
+    // if (!response.ok) {
+    //   throw new Error(`Network response was not ok (${response.status})`);
+    // }
 
-    const data = await response.json();
-    console.log(data.data);
-    console.log('CHECK');
-    if (!data || !data.data || data.data.length === 0) {
-      console.log('No data: returning dummy data');
-      return emptyDataTemplate;
-    } else {
-      console.log('Data is not empty', JSON.stringify(data.data, null, 2));
-      return data.data;
-    }
+    // const data = await response.json();
+    // console.log(data.data);
+    // console.log('CHECK');
+    // if (!data || !data.data || data.data.length === 0) {
+    //   console.log('No data: returning dummy data');
+    //   return emptyDataTemplate;
+    // } else {
+    //   console.log('Data is not empty', JSON.stringify(data.data, null, 2));
+    //   return data.data;
+    // }
 
-    return data
-    // return dummyEventData;
+    // return data
+    return dummyEventData;
 
   } catch (error) {
     console.error("Error fetching data from the server:", error);

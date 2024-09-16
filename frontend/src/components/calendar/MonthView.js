@@ -21,10 +21,12 @@ export default function MonthView({ month, isYearView = false }) {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const location = useLocation();
 
-  // Fetch events and apply filters whenever location or filters change
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
+        // Only log filters once when they change
+        console.log('Selected Filters:', filters);
+  
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
   
@@ -33,39 +35,66 @@ export default function MonthView({ month, isYearView = false }) {
           return;
         }
   
+        // Log once for each event, not repeatedly
         const results = await Promise.all(eventData.map(async (event) => {
-          const subRegionMatch = filters.subRegions.some(subRegion => subRegion.checked && event.subRegion?.includes(subRegion.label));
-          const gepMatch = filters.gep.some(gep => gep.checked && event.gep?.includes(gep.label));
+          try {
+            // Check each filter match and log the results
+            const subRegionMatch = filters.subRegions.some(subRegion => {
+              const match = subRegion.checked && event.subRegion?.includes(subRegion.label);
+              console.log(`SubRegion Match for event ${event.eventId}:`, match);
+              return match;
+            });
   
-          const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => 
-            segment.checked && event.buyerSegmentRollup?.includes(segment.label)
-          );
+            const gepMatch = filters.gep.some(gep => {
+              const match = gep.checked && event.gep?.includes(gep.label);
+              console.log(`GEP Match for event ${event.eventId}:`, match);
+              return match;
+            });
   
-          const accountSectorMatch = filters.accountSectors.some(sector => 
-            sector.checked && event.accountSectors?.[sector.label]
-          );
+            const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => {
+              const match = segment.checked && event.buyerSegmentRollup?.includes(segment.label);
+              console.log(`Buyer Segment Rollup Match for event ${event.eventId}:`, match);
+              return match;
+            });
   
-          const accountSegmentMatch = filters.accountSegments.some(segment => 
-            segment.checked && event.accountSegments?.[segment.label]?.selected
-          );
+            const accountSectorMatch = filters.accountSectors.some(sector => {
+              const match = sector.checked && event.accountSectors?.[sector.label];
+              console.log(`Account Sector Match for event ${event.eventId}:`, match);
+              return match;
+            });
   
-          const productFamilyMatch = filters.productFamily.some(product => 
-            product.checked && event.productAlignment?.[product.label]?.selected
-          );
+            const accountSegmentMatch = filters.accountSegments.some(segment => {
+              const match = segment.checked && event.accountSegments?.[segment.label]?.selected;
+              console.log(`Account Segment Match for event ${event.eventId}:`, match);
+              return match;
+            });
   
-          const industryMatch = filters.industry.some(industry => 
-            industry.checked && event.industry === industry.label
-          );
+            const productFamilyMatch = filters.productFamily.some(product => {
+              const match = product.checked && event.productAlignment?.[product.label]?.selected;
+              console.log(`Product Family Match for event ${event.eventId}:`, match);
+              return match;
+            });
   
-          const isPartneredEventMatch = filters.isPartneredEvent.some(partner => 
-            partner.checked && event.isPartneredEvent === partner.label
-          );
+            const industryMatch = filters.industry.some(industry => {
+              const match = industry.checked && event.industry === industry.label;
+              console.log(`Industry Match for event ${event.eventId}:`, match);
+              return match;
+            });
   
-          const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
+            const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
+            console.log(`Is Partnered Event Match for event ${event.eventId}:`, isPartneredEventMatch);
   
-          return subRegionMatch &&  gepMatch && buyerSegmentRollupMatch &&
-                 accountSectorMatch && accountSegmentMatch && productFamilyMatch &&
-                 industryMatch && isPartneredEventMatch && isDraftMatch;
+            const isDraftMatch = filters.isDraft === event.isDraft;
+            console.log(`Is Draft Match for event ${event.eventId}:`, isDraftMatch);
+  
+            const eventMatches = subRegionMatch || gepMatch || buyerSegmentRollupMatch || accountSectorMatch || accountSegmentMatch || productFamilyMatch || industryMatch || isPartneredEventMatch || isDraftMatch;
+            console.log(`Event ${event.eventId} Match Result:`, eventMatches);
+  
+            return eventMatches;
+          } catch (filterError) {
+            console.error('Error applying filters to event:', filterError, event);
+            return false;
+          }
         }));
   
         setFilteredEvents(eventData.filter((_, index) => results[index]));
@@ -75,7 +104,8 @@ export default function MonthView({ month, isYearView = false }) {
     };
   
     fetchAndFilterEvents();
-  }, [location, filters]);
+  }, [location, filters]); // Add the necessary dependencies here
+  
   
 
   // Close modals when location changes

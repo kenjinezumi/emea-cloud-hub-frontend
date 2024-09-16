@@ -97,13 +97,8 @@ export default function YearView() {
           industry.checked && event.industry === industry.label
         );
 
-        const isPartneredEventMatch = filters.isPartneredEvent.some(partner =>
-          partner.checked && event.isPartneredEvent === (partner.label === 'Yes')
-        );
-
-        const isDraftMatch = filters.isDraft.some(draft => 
-          draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft)
-        );
+        const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
+        const isDraftMatch = filters.isDraft === event.isDraft;
 
         return subRegionMatch && gepMatch && buyerSegmentRollupMatch &&
                accountSectorMatch && accountSegmentMatch && productFamilyMatch &&

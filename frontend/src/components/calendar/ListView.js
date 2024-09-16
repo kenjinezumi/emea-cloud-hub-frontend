@@ -36,26 +36,111 @@ export default function ListView() {
   }, [location, setShowEventModal, setShowInfoEventModal]);
 
   // Apply filters to events
-  useEffect(() => {
-    const applyFilters = async () => {
-      if (!Array.isArray(events)) {
-        console.error("applyFilters was called with 'events' that is not an array:", events);
-        return;
-      }
+  // useEffect(() => {
+  //   const fetchAndFilterEvents = async () => {
+  //     try {
+  //       const eventData = await getEventData('eventDataQuery');
+  //       setEvents(eventData);
+  
+  //       if (!Array.isArray(eventData)) {
+  //         console.error("fetchAndFilterEvents was called with 'eventData' that is not an array:", eventData);
+  //         return;
+  //       }
+  
+  //       const results = await Promise.all(eventData.map(async (event) => {
+  //         try {
+  //           const subRegionMatch = filters.subRegions.some(subRegion => {
+  //             try {
+  //               return subRegion.checked && event.subRegion?.includes(subRegion.label);
+  //             } catch (err) {
+  //               console.error('Error checking subRegion filter:', err, subRegion, event);
+  //               return false;
+  //             }
+  //           });
+  
+  //           const gepMatch = filters.gep.some(gep => {
+  //             try {
+  //               return gep.checked && event.gep?.includes(gep.label);
+  //             } catch (err) {
+  //               console.error('Error checking GEP filter:', err, gep, event);
+  //               return false;
+  //             }
+  //           });
+  
+  //           const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => {
+  //             try {
+  //               return segment.checked && event.buyerSegmentRollup?.includes(segment.label);
+  //             } catch (err) {
+  //               console.error('Error checking buyerSegmentRollup filter:', err, segment, event);
+  //               return false;
+  //             }
+  //           });
+  
+  //           const accountSectorMatch = filters.accountSectors.some(sector => {
+  //             try {
+  //               return sector.checked && event.accountSectors?.[sector.label];
+  //             } catch (err) {
+  //               console.error('Error checking accountSectors filter:', err, sector, event);
+  //               return false;
+  //             }
+  //           });
+  
+  //           const accountSegmentMatch = filters.accountSegments.some(segment => {
+  //             try {
+  //               return segment.checked && event.accountSegments?.[segment.label]?.selected;
+  //             } catch (err) {
+  //               console.error('Error checking accountSegments filter:', err, segment, event);
+  //               return false;
+  //             }
+  //           });
+  
+  //           const productFamilyMatch = filters.productFamily.some(product => {
+  //             try {
+  //               return product.checked && event.productAlignment?.[product.label]?.selected;
+  //             } catch (err) {
+  //               console.error('Error checking productFamily filter:', err, product, event);
+  //               return false;
+  //             }
+  //           });
+  
+  //           const industryMatch = filters.industry.some(industry => {
+  //             try {
+  //               return industry.checked && event.industry === industry.label;
+  //             } catch (err) {
+  //               console.error('Error checking industry filter:', err, industry, event);
+  //               return false;
+  //             }
+  //           });
+  
+  //           const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
+  //           const isDraftMatch = filters.isDraft === event.isDraft;
 
-      const results = await Promise.all(events.map(async (event) => {
-        const regionMatch = filters.regions.some(region => region.checked && event.region?.includes(region.label));
-        const okrMatch = filters.okr.some(okr => okr.checked && event.okr?.some(eventOkr => eventOkr.type === okr.label));
-        const audienceSeniorityMatch = filters.audienceSeniority.some(seniority => seniority.checked && event.audienceSeniority?.includes(seniority.label));
-
-        return regionMatch && okrMatch && audienceSeniorityMatch;
-      }));
-
-      setFilteredEvents(events.filter((_, index) => results[index]));
-    };
-
-    applyFilters();
-  }, [events, filters]);
+  
+  //           return (
+  //             subRegionMatch &&
+  //             gepMatch &&
+  //             buyerSegmentRollupMatch &&
+  //             accountSectorMatch &&
+  //             accountSegmentMatch &&
+  //             productFamilyMatch &&
+  //             industryMatch &&
+  //             isPartneredEventMatch &&
+  //             isDraftMatch
+  //           );
+  //         } catch (filterError) {
+  //           console.error('Error applying filters to event:', filterError, event);
+  //           return false;
+  //         }
+  //       }));
+  
+  //       setFilteredEvents(eventData.filter((_, index) => results[index]));
+  //     } catch (error) {
+  //       console.error('Error fetching event data:', error);
+  //     }
+  //   };
+  
+  //   fetchAndFilterEvents();
+  // }, [location, filters]);
 
   // Filter events based on search text
   useEffect(() => {
