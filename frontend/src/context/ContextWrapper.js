@@ -46,12 +46,18 @@ export default function ContextWrapper(props) {
 
   const [labels, setLabels] = useState([]);
   const [filters, setFilters] = useState({
-    regions: [],
+    subRegions: [],
     eventType: [],
-    okr: [],
-    audienceSeniority: [],
-    isDraft: [] // Add isDraft to the filters state
+    gep: [],
+    buyerSegmentRollup: [],
+    accountSectors: [],
+    accountSegments: [],
+    productFamily: [],
+    industry: [],
+    isPartneredEvent: [],
+    isDraft: []
   });
+  
   const [searchText, setSearchText] = useState('');
 
   const [savedEvents, dispatchCalEvent] = useReducer(
