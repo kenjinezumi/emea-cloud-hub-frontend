@@ -55,12 +55,13 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   >,
   `maxEventCapacity` STRING,
   `peopleMeetingCriteria` STRING,
-  `landingPageLink` ARRAY<STRING>,
-  `salesKitLink` ARRAY<STRING>,
-  `hailoLink` ARRAY<STRING>,
-  `otherDocumentsLink` ARRAY<STRING>,
+  `landingPageLinks` ARRAY<STRING>,
+  `salesKitLinks` ARRAY<STRING>,
+  `hailoLinks` ARRAY<STRING>,
+  `otherDocumentsLinks` ARRAY<STRING>,
   `isApprovedForCustomerUse` BOOL,
   `isDraft` BOOL,
+  `isPublished` BOOL,
   `isHighPriority` BOOL,
   `isPartneredEvent` BOOL,
   `partnerRole` STRING,
@@ -98,5 +99,8 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `industry` STRING,
   `city` STRING,
   `locationVenue` STRING,
-  `marketingActivityType` STRING
+  `marketingActivityType` STRING,
+  `userTimezone` STRING
+
+
 );
