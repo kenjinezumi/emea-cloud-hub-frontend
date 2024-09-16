@@ -132,7 +132,7 @@ export default function ExtraDetailsForm() {
         activityOwner,
         speakers,
         isEventSeries: eventSeries === "yes",
-        customerUse,
+        isApprovedForCustomerUse: customerUse === "yes",
         okr: selectedOkrs,
         gep,
         isPartneredEvent: isPartneredEvent === true,
@@ -184,7 +184,6 @@ export default function ExtraDetailsForm() {
       activityOwner,
       speakers,
       isEventSeries: eventSeries === "yes",
-      customerUse,
       okr: selectedOkrs,
       gep,
       isPartneredEvent: isPartneredEvent === true,
@@ -208,12 +207,12 @@ export default function ExtraDetailsForm() {
       activityOwner,
       speakers,
       isEventSeries: eventSeries === "yes",
-      customerUse,
+      isApprovedForCustomerUse: customerUse === "yes",
       okr: selectedOkrs,
       gep,
       isPartneredEvent: isPartneredEvent === true,
       isDraft: true, 
-      approvedForCustomerUse: false, 
+      isPublished: false, 
     };
 
     const updatedFormData = { ...formData, ...draftData };
