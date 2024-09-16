@@ -1,6 +1,7 @@
 CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `eventId` STRING NOT NULL,
-  `tacticId` STRING NOT NULL,
+  `tacticId` STRING NULL,
+  `title` STRING,
   `description` STRING,
   `emoji` STRING,
   `organisedBy` ARRAY<STRING>,
@@ -12,15 +13,13 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `subRegion` ARRAY<STRING>,
   `country` ARRAY<STRING>,
   `activityOwner` ARRAY<STRING>,
-  `title` STRING,
   `speakers` ARRAY<STRING>,
-  `eventSeries` STRING,
+  `isEventSeries` BOOL,
   `languagesAndTemplates` ARRAY<STRUCT<
     `platform` STRING,
     `language` STRING,
     `template` STRING
   >>,
-  `customerUse` STRING,
   `okr` ARRAY<STRUCT<
     `type` STRING,
     `percentage` STRING
@@ -56,10 +55,10 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   >,
   `maxEventCapacity` STRING,
   `peopleMeetingCriteria` STRING,
-  `landingPageLinks` ARRAY<STRING>,
-  `salesKitLinks` ARRAY<STRING>,
-  `hailoLinks` ARRAY<STRING>,
-  `otherDocumentsLinks` ARRAY<STRING>,
+  `landingPageLink` ARRAY<STRING>,
+  `salesKitLink` ARRAY<STRING>,
+  `hailoLink` ARRAY<STRING>,
+  `otherDocumentsLink` ARRAY<STRING>,
   `approvedForCustomerUse` BOOL,
   `isDraft` BOOL,
   `isHighPriority` BOOL,
