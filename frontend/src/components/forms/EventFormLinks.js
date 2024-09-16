@@ -119,8 +119,9 @@ export default function LinksForm() {
     const newFormData = {
       ...formData,
       ...links,
-      approvedForCustomerUse: true,
       isDraft: false,
+      isPublished: true,
+
     };
     console.log('The new forma data is', newFormData);
 
@@ -153,7 +154,7 @@ export default function LinksForm() {
       ...formData,
       ...links,
       isDraft: true, 
-      isPublished: false, 
+      isPublished:false
     };
 
     updateFormData(newFormData);

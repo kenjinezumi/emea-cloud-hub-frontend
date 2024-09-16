@@ -114,7 +114,7 @@ const EventFormEmailInvitation = () => {
       ...formData,
       languagesAndTemplates,
       isDraft: true, 
-      approvedForCustomerUse: false, 
+      isPublished: false, 
     };
 
     updateFormData(updatedFormData);

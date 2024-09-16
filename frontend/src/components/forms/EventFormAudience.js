@@ -312,7 +312,7 @@ export default function AudiencePersonaForm() {
       aiVsCore,
       industry,
       isDraft: true, 
-      approvedForCustomerUse: false, 
+      isPublished: false, 
     };
 
     const updatedFormData = { ...formData, ...draftData };
