@@ -656,18 +656,21 @@ export default function AudiencePersonaForm() {
             />
           </Grid>
 
-          {/* People Meeting Criteria */}
-          <Grid item xs={12}>
-            <Typography variant="subtitle1">People Meeting the Audience Criteria</Typography>
-            <TextField
-              type="number"
-              value={peopleMeetingCriteria}
-              onChange={(e) => setPeopleMeetingCriteria(e.target.value)}
-              fullWidth
-              InputProps={{
-                readOnly: true,
-              }}
-            />
+         {/* People Meeting Criteria */}
+        <Grid item xs={12}>
+          <Typography variant="subtitle1">People Meeting the Audience Criteria</Typography>
+          <TextField
+            type="number"
+            value={peopleMeetingCriteria}
+            onChange={(e) => setPeopleMeetingCriteria(e.target.value)}
+            fullWidth
+            disabled
+            InputProps={{
+              style: {
+                backgroundColor: '#e0e0e0', // Light grey background color to indicate disabled state
+              },
+            }}
+          />
           </Grid>
 
           {/* Validation & Save Buttons */}
