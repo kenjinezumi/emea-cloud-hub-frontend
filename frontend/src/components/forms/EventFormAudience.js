@@ -39,6 +39,14 @@ export default function AudiencePersonaForm() {
     selectedEvent ? selectedEvent.aiVsCore : formData.aiVsCore || "Core"
   );
 
+  const industryOptions = [
+    'Manufacturing',
+    'Healthcare',
+    'Education',
+    'Financial Services',
+    'Government',
+    'Retail',
+  ];
   
   const [accountSegments, setAccountSegments] = useState({
     Corporate: { selected: false, percentage: "" },
@@ -417,8 +425,11 @@ export default function AudiencePersonaForm() {
     >
       <MenuItem value="" disabled>
       </MenuItem>
-      {/* Options will be added here later */}
-    </Select>
+      {industryOptions.map((industryOption, idx) => (
+        <MenuItem key={idx} value={industryOption}>
+          {industryOption}
+        </MenuItem>
+      ))}    </Select>
   </FormControl>
 </Grid>
 
