@@ -56,7 +56,6 @@ export default function WeekView() {
   
     const results = await Promise.all(events.map(async (event) => {
       const subRegionMatch = filters.subRegions.some(subRegion => subRegion.checked && event.subRegion?.includes(subRegion.label));
-      const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
       
       const gepMatch = filters.gep.some(gep => gep.checked && event.gep?.includes(gep.label));
   
@@ -86,7 +85,7 @@ export default function WeekView() {
   
       const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
   
-      return subRegionMatch && eventTypeMatch && gepMatch && buyerSegmentRollupMatch &&
+      return subRegionMatch && gepMatch && buyerSegmentRollupMatch &&
              accountSectorMatch && accountSegmentMatch && productFamilyMatch &&
              industryMatch && isPartneredEventMatch && isDraftMatch;
     }));
