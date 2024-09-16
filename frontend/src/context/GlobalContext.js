@@ -26,11 +26,16 @@ const GlobalContext = createContext({
   currentView: () => {},
   setCurrentView: () => {},
   filters: {
-    regions: [],
+    subRegions: [],
     eventType: [],
-    okr: [],
-    audienceSeniority: [],
-    isDraft: [] // Add isDraft filter to initial context
+    gep: [],
+    buyerSegmentRollup: [],
+    accountSectors: [],
+    accountSegments: [],
+    productFamily: [],
+    industry: [],
+    isPartneredEvent: true,
+    isDraft: true
   },
   updateFilters: () => {},
   showEventInfoModal: false,

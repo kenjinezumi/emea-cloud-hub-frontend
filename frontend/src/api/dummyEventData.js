@@ -1,656 +1,264 @@
-// dummyEventData.js
-
 const dummyEventData = [
-    {
-        "eventId": "d8a0567a-4erer4c6-479e-9474-0e44877e0966",
-        "title": "test",
-        "description": "TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST",
-        "emoji": "",
-        "organisedBy": [
-          "(abduljelil)",
-          "(abemiller)",
-          "(abgentile)",
-          "(abhishekpande)"
-        ],
-        "startDate": "2024-08-05T16:51:57.906Z",
-        "endDate": "2024-09-05T16:51:57.906Z",
-        "marketingProgramInstanceId": "TTEST",
-        "eventType": "Physical Event",
-        "region": "GLOBAL",
-        "subRegion": [
-          "Alps",
-          "Benelux"
-        ],
-        "country": [
-          "AT",
-          "CH",
-          "BE",
-          "NL"
-        ],
-        "activityOwner": [],
-        "speakers": [],
-        "eventSeries": "no",
-        "languagesAndTemplates": [
-          {
-            "language": "English",
-            "template": "FSFSF"
-          },
-          {
-            "language": "Spanish",
-            "template": "ASFSDFSD"
-          }
-        ],
-        "customerUse": "yes",
-        "okr": [
-          {
-            "type":"SOURCE DEMAND",
-            "percentage": "10"
-          },  
-          {
-            "type":"LIFT MINDSHARE",
-            "percentage": "10"
-          },        
+  {
+    "eventId": "event-001",
+    "tacticId": "tactic-001",
+    "title": "Sample Event Title",
+    "description": "This is a test event description.",
+    "emoji": "🎉",
+    "organisedBy": [
+      "Org1",
+      "Org2"
+    ],
+    "startDate": "2024-09-19T10:00:00Z",
+    "endDate": "2024-09-19T18:00:00Z",
+    "marketingProgramInstanceId": "MP-001",
+    "eventType": "Physical Event",
+    "region": "GLOBAL",
+    "subRegion": [
+      "Benelux",
+      "Germany"
+    ],
+    "country": [
+      "BE",
+      "DE"
+    ],
+    "activityOwner": [
+      "Owner1",
+      "Owner2"
+    ],
+    "speakers": [
+      "speaker1@example.com",
+      "speaker2@example.com"
+    ],
+    "eventSeries": "no",
+    "languagesAndTemplates": [
+      {
+        "platform": "Gmail",
+        "language": "English",
+        "template": "Template1"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "French",
+        "template": "Template2"
+      }
+    ],
+    "customerUse": "yes",
+    "okr": [
+      {
+        "type": "CHAMPION DEI & CULTURE",
+        "percentage": "50"
+      },
+      {
+        "type": "SOURCE DEMAND",
+        "percentage": "50"
+      }
+    ],
+"gep": ["Infrastructure Modernization", "Reimagine FSI"],
+    "audiencePersona": [
+      "Developer",
+      "Finance"
+    ],
+    "audienceSeniority": [
+      "Decision Maker",
+      "Practitioner"
+    ],
+    "accountSectors": {
+      "commercial": true,
+      "public": false
+    },
+    "accountSegments": {
+      "Corporate": {
+        "selected": true,
+        "percentage": "60"
+      },
+      "SMB": {
+        "selected": false,
+        "percentage": "0"
+      },
+      "Select": {
+        "selected": true,
+        "percentage": "20"
+      },
+      "Enterprise": {
+        "selected": false,
+        "percentage": "0"
+      },
+      "Startup": {
+        "selected": true,
+        "percentage": "20"
+      }
+    },
+    "maxEventCapacity": "200",
+    "peopleMeetingCriteria": "150",
+    "landingPageLinks": [
+      "http://landingpage1.com"
+    ],
+    "salesKitLinks": [
+      "http://saleskitlink1.com"
+    ],
+    "hailoLinks": [
+      "http://hailolink1.com"
+    ],
+    "otherDocumentsLinks": [
+      "http://otherdoclink1.com"
+    ],
+    "approvedForCustomerUse": true,
+    "isHighPriority": true,
+    "isPartneredEvent": true,
+    "partnerRole": "Host Event (Webinar, Townhall, Workshop, Demo)",
+    "accountCategory": {
+      "Digital Native": {
+        "selected": true,
+        "percentage": "100"
+      },
+      "Traditional": {
+        "selected": false,
+        "percentage": "0"
+      }
+    },
+    "accountType": {
+      "Greenfield": {
+        "selected": true,
+        "percentage": "50"
+      },
+      "Existing Customer": {
+        "selected": true,
+        "percentage": "50"
+      }
+    },
+    "productAlignment": {
+      "GCP": {
+        "selected": true,
+        "percentage": "70"
+      },
+      "GWS": {
+        "selected": true,
+        "percentage": "30"
+      }
+    },
+    "aiVsCore": "AI",
+    "industry": "Healthcare",
+    "city": "London",
+    "locationVenue": "O2 Arena",
+    "marketingActivityType": "Marketing Activity Type 1",
+    "isDraft": true
+  },
+  {
+    "eventId": "event-002",
+    "tacticId": "tactic-002",
+    "title": "Matching Event",
+    "description": "This event matches all filters.",
+    "emoji": "📅",
+    "organisedBy": [
+      "Org3",
+      "Org4"
+    ],
+    "startDate": "2024-10-05T09:00:00Z",
+    "endDate": "2024-10-05T17:00:00Z",
+    "marketingProgramInstanceId": "MP-002",
+    "eventType": "Physical Event",
+    "region": "EMEA",
+    "subRegion": [
+      "Benelux",
+      "Germany"
+    ],
+    "country": [
+      "BE",
+      "DE"
+    ],
+    "activityOwner": [
+      "Owner3",
+      "Owner4"
+    ],
+    "speakers": [
+      "speaker3@example.com"
+    ],
+    "eventSeries": "yes",
+    "languagesAndTemplates": [
+      {
+        "platform": "Gmail",
+        "language": "English",
+        "template": "Template3"
+      }
+    ],
+    "customerUse": "yes",
+    "okr": [
+      {
+        "type": "CHAMPION DEI & CULTURE",
+        "percentage": "60"
+      },
+      {
+        "type": "SOURCE DEMAND",
+        "percentage": "40"
+      }
+    ],
+    "gep": ["Infrastructure Modernization", "Reimagine FSI"],
+    "audiencePersona": [
+      "Developer",
+      "Finance"
+    ],
+    "audienceSeniority": [
+      "Decision Maker",
+      "Executive"
+    ],
+    "accountSectors": {
+      "commercial": true,
+      "public": true
+    },
+    "accountSegments": {
+      "Corporate": {
+        "selected": true,
+        "percentage": "50"
+      },
+      "SMB": {
+        "selected": true,
+        "percentage": "30"
+      }
+    },
+    "maxEventCapacity": "100",
+    "peopleMeetingCriteria": "80",
+    "landingPageLinks": [
+      "http://landingpage2.com"
+    ],
+    "salesKitLinks": [
+      "http://saleskitlink2.com"
+    ],
+    "hailoLinks": [
+      "http://hailolink2.com"
+    ],
+    "otherDocumentsLinks": [
+      "http://otherdoclink2.com"
+    ],
+    "approvedForCustomerUse": true,
+    "isHighPriority": false,
+    "isPartneredEvent": true,
+    "partnerRole": "Co-Host",
+    "accountCategory": {
+      "Digital Native": {
+        "selected": true,
+        "percentage": "100"
+      }
+    },
+    "accountType": {
+      "Greenfield": {
+        "selected": true,
+        "percentage": "70"
+      }
+    },
+    "productAlignment": {
+      "GCP": {
+        "selected": true,
+        "percentage": "80"
+      }
+    },
+    "aiVsCore": "AI",
+    "industry": "Healthcare",
+    "city": "Berlin",
+    "locationVenue": "Berlin Conference Center",
+    "marketingActivityType": "Workshop",
+    "isDraft": true
+  }
+];
 
-        ],
-        "gep": [
-          "Infrastructure Modernization",
-          "Not Application (Not tied to Any Global Engagement Plays)",
-          "Reimagine FSI"
-        ],
-        "audiencePersona": [
-          "Industry LOB - Edu",
-          "Industry LOB - Gaming",
-          "Industry LOB - Gov"
-        ],
-        "audienceSeniority": [
-          "Practitioner",
-          "Executive"
-        ],
-        "accountSectors": {
-          "commercial": true,
-          "public": true
-        },
-        "accountSegments": {
-          "enterprise": true,
-          "corporate": true
-        },
-        "maxEventCapacity": "232432432",
-        "peopleMeetingCriteria": "",
-        "landingPageLinks": [],
-        "salesKitLinks": [],
-        "hailoLinks": [],
-        "otherDocumentsLinks": [],
-        "isDraft": false
-      },
-     
-      {
-        "eventId": "sdsdsdsds",
-        "title": "test",
-        "description": "TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST",
-        "emoji": "",
-        "organisedBy": [
-          "(abduljelil)",
-          "(abemiller)",
-          "(abgentile)",
-          "(abhishekpande)"
-        ],
-        "startDate": "2024-08-05T16:51:57.906Z",
-        "endDate": "2024-09-05T16:51:57.906Z",
-        "marketingProgramInstanceId": "TTEST",
-        "eventType": "Online Event",
-        "region": "GLOBAL",
-        "subRegion": [
-          "Alps",
-          "Benelux"
-        ],
-        "country": [
-          "AT",
-          "CH",
-          "BE",
-          "NL"
-        ],
-        "activityOwner": [],
-        "speakers": [],
-        "eventSeries": "no",
-        "languagesAndTemplates": [
-          {
-            "language": "English",
-            "template": "FSFSFFSFSF"
-          },
-          {
-            "language": "Spanish",
-            "template": "ASFSDFSD"
-          }
-        ],
-        "customerUse": "yes",
-        "okr": [
-            {
-              "type":"CHAMPION DEI & CULTURE",
-              "percentage": "10"
-            },  
-            {
-              "type":"LIFT MINDSHARE",
-              "percentage": "90"
-            },        
-  
-          ],
-        "gep": [
-          "Infrastructure Modernization",
-          "Not Application (Not tied to Any Global Engagement Plays)",
-          "Reimagine FSI"
-        ],
-        "audiencePersona": [
-          "Industry LOB - Edu",
-          "Industry LOB - Gaming",
-          "Industry LOB - Gov"
-        ],
-        "audienceSeniority": [
-          "Practitioner",
-          "Executive"
-        ],
-        "accountSectors": {
-          "commercial": true,
-          "public": true
-        },
-        "accountSegments": {
-          "enterprise": true,
-          "corporate": true
-        },
-        "maxEventCapacity": "232432432",
-        "peopleMeetingCriteria": "",
-        "landingPageLinks": [],
-        "salesKitLinks": [],
-        "hailoLinks": [],
-        "otherDocumentsLinks": [],
-        "isDraft": false
-      },
-      {
-        "eventId": "d8a0567a-44c6-479e-9474-0e448werwerwerwr77e0966",
-        "title": "test",
-        "description": "TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST",
-        "emoji": "",
-        "organisedBy": [
-          "(abduljelil)",
-          "(abemiller)",
-          "(abgentile)",
-          "(abhishekpande)"
-        ],
-        "startDate": "2024-08-05T16:51:57.906Z",
-        "endDate": "2024-09-05T16:51:57.906Z",
-        "marketingProgramInstanceId": "TTEST",
-        "eventType": "Blog Post",
-        "region": "GLOBAL",
-        "subRegion": [
-          "Alps",
-          "Benelux"
-        ],
-        "country": [
-          "AT",
-          "CH",
-          "BE",
-          "NL"
-        ],
-        "activityOwner": [],
-        "speakers": [],
-        "eventSeries": "no",
-        "languagesAndTemplates": [
-          {
-            "language": "English",
-            "template": "FSFSF"
-          },
-          {
-            "language": "Spanish",
-            "template": "ASFSDFSD"
-          }
-        ],
-        "customerUse": "yes",
-        "okr": [
-            {
-              "type":"CHAMPION DEI & CULTURE",
-              "percentage": "10"
-            },  
-            {
-              "type":"LIFT MINDSHARE",
-              "percentage": "90"
-            },        
-  
-          ],
-        "gep": [
-          "Infrastructure Modernization",
-          "Not Application (Not tied to Any Global Engagement Plays)",
-          "Reimagine FSI"
-        ],
-        "audiencePersona": [
-          "Industry LOB - Edu",
-          "Industry LOB - Gaming",
-          "Industry LOB - Gov"
-        ],
-        "audienceSeniority": [
-          "Practitioner",
-          "Executive"
-        ],
-        "accountSectors": {
-          "commercial": true,
-          "public": true
-        },
-        "accountSegments": {
-          "enterprise": true,
-          "corporate": true
-        },
-        "maxEventCapacity": "232432432",
-        "peopleMeetingCriteria": "",
-        "landingPageLinks": [],
-        "salesKitLinks": [],
-        "hailoLinks": [],
-        "otherDocumentsLinks": [],
-        "isDraft": false
-      },
-     
-      {
-        "eventId": "d8a0567a-44c6-479e-9474-0e44877e096werwerwerwrwr6",
-        "title": "tesweeeeeeettesweeeeeeettesweeeeeeettesweeeeeeettesweeeeeeet",
-        "description": "TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST",
-        "emoji": "",
-        "organisedBy": [
-          "(abduljelil)",
-          "(abemiller)",
-          "(abgentile)",
-          "(abhishekpande)"
-        ],
-        "startDate": "2024-08-05T16:51:57.906Z",
-        "endDate": "2024-09-05T16:51:57.906Z",
-        "marketingProgramInstanceId": "TTEST",
-        "eventType": "Hybrid Event",
-        "region": "GLOBAL",
-        "subRegion": [
-          "Alps",
-          "Benelux"
-        ],
-        "country": [
-          "AT",
-          "CH",
-          "BE",
-          "NL"
-        ],
-        "activityOwner": [],
-        "speakers": [],
-        "eventSeries": "no",
-        "languagesAndTemplates": [
-          {
-            "language": "English",
-            "template": "FSFSF"
-          },
-          {
-            "language": "Spanish",
-            "template": "ASFSDFSD"
-          }
-        ],
-        "customerUse": "yes",
-        "okr": [
-            {
-              "type":"CHAMPION DEI & CULTURE",
-              "percentage": "10"
-            },  
-            {
-              "type":"LIFT MINDSHARE",
-              "percentage": "90"
-            },        
-  
-          ],
-        "gep": [
-          "Infrastructure Modernization",
-          "Not Application (Not tied to Any Global Engagement Plays)",
-          "Reimagine FSI"
-        ],
-        "audiencePersona": [
-          "Industry LOB - Edu",
-          "Industry LOB - Gaming",
-          "Industry LOB - Gov"
-        ],
-        "audienceSeniority": [
-          "Practitioner",
-          "Executive"
-        ],
-        "accountSectors": {
-          "commercial": true,
-          "public": true
-        },
-        "accountSegments": {
-          "enterprise": true,
-          "corporate": true
-        },
-        "maxEventCapacity": "232432432",
-        "peopleMeetingCriteria": "",
-        "landingPageLinks": [],
-        "salesKitLinks": [],
-        "hailoLinks": [],
-        "otherDocumentsLinks": [],
-        "isDraft": false
-      },
-      
-      {
-        "eventId": "563c7134-0031-46e2-9583-959e6ewrrb335110",
-        "title": "TEST",
-        "description": "SFSFDSFDSA",
-        "emoji": "🎆",
-        "organisedBy": [
-          "(abemiller)",
-          "(abgentile)",
-          "(abhineetk)",
-          "(abhishekpande)",
-          "(abigailvasquez)",
-          "(abiodunb)"
-        ],
-        "startDate": "2024-10-05T21:53:36.736Z",
-        "endDate": "2024-11-05T21:53:36.736Z",
-        "marketingProgramInstanceId": "23423432",
-        "eventType": "Customer Story",
-        "region": "GLOBAL",
-        "subRegion": [
-          "Benelux",
-          "CEE",
-          "France",
-          "Iberia"
-        ],
-        "country": [
-          "BE",
-          "NL",
-          "PL",
-          "FR",
-          "ES",
-          "PT"
-        ],
-        "activityOwner": [],
-        "speakers": [],
-        "eventSeries": "no",
-        "languagesAndTemplates": [
-          {
-            "language": "",
-            "template": "SFSDF"
-          },
-          {
-            "language": "Spanish",
-            "template": "SDFSFD"
-          }
-        ],
-        "customerUse": "yes",
-        "okr": [
-            {
-              "type":"CHAMPION DEI & CULTURE",
-              "percentage": "10"
-            },  
-            {
-              "type":"LIFT MINDSHARE",
-              "percentage": "90"
-            },        
-  
-          ],
-        "gep": [
-          "Infrastructure Modernization",
-          "Not Application (Not tied to Any Global Engagement Plays)"
-        ],
-        "audiencePersona": [
-          "HR",
-          "Industry LOB - FinServ",
-          "Industry LOB - Gaming"
-        ],
-        "audienceSeniority": [
-          "Decision Maker",
-          "Practitioner",
-          "Executive"
-        ],
-        "accountSectors": {
-          "commercial": true,
-          "public": true
-        },
-        "accountSegments": {
-          "enterprise": true,
-          "corporate": true
-        },
-        "maxEventCapacity": "4335345",
-        "peopleMeetingCriteria": "",
-        "landingPageLinks": [
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links"
-        ],
-        "salesKitLinks": [
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links"
-        ],
-        "hailoLinks": [
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links"
-        ],
-        "otherDocumentsLinks": [
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links"
-        ],
-        "isDraft": true
-      },{
-        "eventId": "d8a0567a-44c6-479e-9474-0e448werwerwerwr77e0966",
-        "title": "test",
-        "description": "TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST",
-        "emoji": "",
-        "organisedBy": [
-          "(abduljelil)",
-          "(abemiller)",
-          "(abgentile)",
-          "(abhishekpande)"
-        ],
-        "startDate": "2024-08-05T16:51:57.906Z",
-        "endDate": "2024-09-05T16:51:57.906Z",
-        "marketingProgramInstanceId": "TTEST",
-        "eventType": "Customer Story",
-        "region": "GLOBAL",
-        "subRegion": [
-          "Alps",
-          "Benelux"
-        ],
-        "country": [
-          "AT",
-          "CH",
-          "BE",
-          "NL"
-        ],
-        "activityOwner": [],
-        "speakers": [],
-        "eventSeries": "no",
-        "languagesAndTemplates": [
-          {
-            "language": "English",
-            "template": "FSFSF"
-          },
-          {
-            "language": "Spanish",
-            "template": "ASFSDFSD"
-          }
-        ],
-        "customerUse": "yes",
-        "okr": [
-            {
-              "type":"CHAMPION DEI & CULTURE",
-              "percentage": "10"
-            },  
-            {
-              "type":"LIFT MINDSHARE",
-              "percentage": "90"
-            },        
-  
-          ],
-        "gep": [
-          "Infrastructure Modernization",
-          "Not Application (Not tied to Any Global Engagement Plays)",
-          "Reimagine FSI"
-        ],
-        "audiencePersona": [
-          "Industry LOB - Edu",
-          "Industry LOB - Gaming",
-          "Industry LOB - Gov"
-        ],
-        "audienceSeniority": [
-          "Practitioner",
-          "Executive"
-        ],
-        "accountSectors": {
-          "commercial": true,
-          "public": true
-        },
-        "accountSegments": {
-          "enterprise": true,
-          "corporate": true
-        },
-        "maxEventCapacity": "232432432",
-        "peopleMeetingCriteria": "",
-        "landingPageLinks": [],
-        "salesKitLinks": [],
-        "hailoLinks": [],
-        "otherDocumentsLinks": [],
-        "isDraft": false
-      },
-      {
-        "eventId": "073dcb2f-b2af-4d6bewrewrewr81a7-0fe1afa72600",
-        "title": "234234",
-        "description": "",
-        "emoji": "",
-        "organisedBy": [],
-        "startDate": "2025-01-05T08:38:27.950Z",
-        "endDate": "2025-01-05T21:38:27.950Z",
-        "marketingProgramInstanceId": "",
-        "eventType": "Online Event",
-        "region": null,
-        "subRegion": [],
-        "country": [],
-        "activityOwner": [],
-        "speakers": [],
-        "eventSeries": null,
-        "languagesAndTemplates": [],
-        "customerUse": null,
-        "okr": [
-            {
-              "type":"CHAMPION DEI & CULTURE",
-              "percentage": "10"
-            },  
-            {
-              "type":"LIFT MINDSHARE",
-              "percentage": "90"
-            },        
-  
-          ],
-        "gep": [],
-        "audiencePersona": [],
-        "audienceSeniority": [],
-        "accountSectors": null,
-        "accountSegments": null,
-        "maxEventCapacity": null,
-        "peopleMeetingCriteria": null,
-        "landingPageLinks": [],
-        "salesKitLinks": [],
-        "hailoLinks": [],
-        "otherDocumentsLinks": [],
-        "isDraft": true
-      },
-      {
-        "eventId": "563c71ewrwerwer34-0031-46e2-9583-959e6b335110",
-        "title": "TEST",
-        "description": "SFSFDSFDSA",
-        "emoji": "🎆",
-        "organisedBy": [
-          "(abemiller)",
-          "(abgentile)",
-          "(abhineetk)",
-          "(abhishekpande)",
-          "(abigailvasquez)",
-          "(abiodunb)"
-        ],
-        "startDate": "2024-06-05T21:53:36.736Z",
-        "endDate": "2024-06-05T21:53:36.736Z",
-        "marketingProgramInstanceId": "23423432",
-        "eventType": "Online Event",
-        "region": "GLOBAL",
-        "subRegion": [
-          "Benelux",
-          "CEE",
-          "France",
-          "Iberia"
-        ],
-        "country": [
-          "BE",
-          "NL",
-          "PL",
-          "FR",
-          "ES",
-          "PT"
-        ],
-        "activityOwner": [],
-        "speakers": [],
-        "eventSeries": "no",
-        "languagesAndTemplates": [
-          {
-            "language": "",
-            "template": "SFSDF"
-          },
-          {
-            "language": "Spanish",
-            "template": "SDFSFD"
-          }
-        ],
-        "customerUse": "yes",
-        "okr": [
-            {
-              "type":"CHAMPION DEI & CULTURE",
-              "percentage": "10"
-            },  
-            {
-              "type":"LIFT MINDSHARE",
-              "percentage": "90"
-            },        
-  
-          ],
-        "gep": [
-          "Infrastructure Modernization",
-          "Not Application (Not tied to Any Global Engagement Plays)"
-        ],
-        "audiencePersona": [
-          "HR",
-          "Industry LOB - FinServ",
-          "Industry LOB - Gaming"
-        ],
-        "audienceSeniority": [
-          "Decision Maker",
-          "Practitioner",
-          "Executive"
-        ],
-        "accountSectors": {
-          "commercial": true,
-          "public": true
-        },
-        "accountSegments": {
-          "enterprise": true,
-          "corporate": true
-        },
-        "maxEventCapacity": "4335345",
-        "peopleMeetingCriteria": "",
-        "landingPageLinks": [
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links"
-        ],
-        "salesKitLinks": [
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links"
-        ],
-        "hailoLinks": [
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links"
-        ],
-        "otherDocumentsLinks": [
-          "https://cloudhub.googleplex.com/links",
-          "https://cloudhub.googleplex.com/links"
-        ],
-        "isDraft": true
-      },
-  ];
-  
-  export default dummyEventData;
-  
+export default dummyEventData;

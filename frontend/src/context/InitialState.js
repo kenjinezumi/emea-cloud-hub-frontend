@@ -16,14 +16,27 @@ const initialFormData = {
   eventSeries: 'no',
   emailLanguage: 'English',
   emailText: '',
-  languagesAndTemplates: [],
+  languagesAndTemplates: [],  // platform, language, and template
   customerUse: 'yes',
-  okr: [],
-  gep: [],
+  okr: [],  // OKR array
+  gep: [],  // GEP array
   audiencePersona: [],
   audienceSeniority: [],
-  accountSectors: '',
-  accountSegments: {},
+  accountSectors: {
+    commercial: false,
+    public: false,
+  },
+  accountSegments: {
+    Corporate: { selected: false, percentage: '' },
+    SMB: { selected: false, percentage: '' },
+    Select: { selected: false, percentage: '' },
+    Enterprise: { selected: false, percentage: '' },
+    Startup: { selected: false, percentage: '' },
+  },
+  productAlignment: {
+    GCP: { selected: false, percentage: '' },
+    GWS: { selected: false, percentage: '' },
+  },
   maxEventCapacity: '',
   peopleMeetingCriteria: '',
   landingPageLink: '',
@@ -31,8 +44,18 @@ const initialFormData = {
   hailoLink: '',
   otherDocumentsLink: '',
   isHighPriority: false,
-  marketingActivityType: '',
-  isDraft: true,
+  isPartneredEvent: false,   // For partnered events
+  partnerRole: '',           // Role in partnered events
+  accountCategory: {
+    "Digital Native": { selected: false, percentage: '' },
+    "Traditional": { selected: false, percentage: '' },
+  },
+  aiVsCore: '',              // AI vs Core field
+  industry: '',              // Industry type field
+  city: '',                  // Event location city
+  locationVenue: '',         // Venue location
+  marketingActivityType: '', // Marketing activity type
+  isDraft: true,             // Draft status
 };
 
 export { initialFormData };

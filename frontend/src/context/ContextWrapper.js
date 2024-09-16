@@ -54,8 +54,8 @@ export default function ContextWrapper(props) {
     accountSegments: [],
     productFamily: [],
     industry: [],
-    isPartneredEvent: [],
-    isDraft: []
+    isPartneredEvent: true,
+    isDraft: true
   });
   
   const [searchText, setSearchText] = useState('');

@@ -30,19 +30,6 @@ export default function DayColumn({ daySelected, onEventClick }) {
   const dayColumnRef = useRef(null); // Reference for auto-scroll
 
   useEffect(() => {
-    async function fetchEvents() {
-      try {
-        const eventData = await getEventData('eventDataQuery');
-        setEvents(eventData);
-        setEventGroups(calculateOverlapGroups(eventData));
-      } catch (error) {
-        console.error('Error fetching event data:', error);
-      }
-    }
-    fetchEvents();
-  }, [daySelected]);
-
-  useEffect(() => {
     const applyFilters = async (events, filters) => {
       if (!Array.isArray(events)) {
         console.error("applyFilters was called with 'events' that is not an array:", events);
@@ -55,31 +42,29 @@ export default function DayColumn({ daySelected, onEventClick }) {
   
         const gepMatch = filters.gep.some(gep => gep.checked && event.gep?.includes(gep.label));
   
-        const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => 
+        const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment =>
           segment.checked && event.buyerSegmentRollup?.includes(segment.label)
         );
   
-        const accountSectorMatch = filters.accountSectors.some(sector => 
+        const accountSectorMatch = filters.accountSectors.some(sector =>
           sector.checked && event.accountSectors?.[sector.label]
         );
   
-        const accountSegmentMatch = filters.accountSegments.some(segment => 
+        const accountSegmentMatch = filters.accountSegments.some(segment =>
           segment.checked && event.accountSegments?.[segment.label]?.selected
         );
   
-        const productFamilyMatch = filters.productFamily.some(product => 
+        const productFamilyMatch = filters.productFamily.some(product =>
           product.checked && event.productAlignment?.[product.label]?.selected
         );
   
-        const industryMatch = filters.industry.some(industry => 
+        const industryMatch = filters.industry.some(industry =>
           industry.checked && event.industry === industry.label
         );
   
-        const isPartneredEventMatch = filters.isPartneredEvent.some(partner => 
-          partner.checked && event.isPartneredEvent === (partner.label === 'Yes')
-        );
-  
-        const isDraftMatch = filters.isDraft.some(draft => draft.checked && (draft.label === 'Draft' ? event.isDraft : !event.isDraft));
+        // Since isPartneredEvent and isDraft are booleans, we check them directly
+        const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
+        const isDraftMatch = filters.isDraft === event.isDraft;
   
         return subRegionMatch && eventTypeMatch && gepMatch && buyerSegmentRollupMatch &&
                accountSectorMatch && accountSegmentMatch && productFamilyMatch &&
@@ -95,6 +80,7 @@ export default function DayColumn({ daySelected, onEventClick }) {
     })();
   }, [events, filters]);
   
+
 
   useEffect(() => {
     setShowEventModal(false);
