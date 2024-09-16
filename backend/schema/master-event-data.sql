@@ -59,7 +59,7 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `salesKitLink` ARRAY<STRING>,
   `hailoLink` ARRAY<STRING>,
   `otherDocumentsLink` ARRAY<STRING>,
-  `approvedForCustomerUse` BOOL,
+  `isApprovedForCustomerUse` BOOL,
   `isDraft` BOOL,
   `isHighPriority` BOOL,
   `isPartneredEvent` BOOL,
