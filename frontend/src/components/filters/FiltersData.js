@@ -292,5 +292,4 @@ export const partnerEventOptions = [
 
 export const draftStatusOptions = [
   { label: 'Draft', checked: true },
-  // { label: 'Published', checked: true },
 ];
