@@ -1,6 +1,6 @@
 CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `eventId` STRING NOT NULL,
-  `tacticId` STRING NULL,
+  `tacticId` STRING,
   `title` STRING,
   `description` STRING,
   `emoji` STRING,
