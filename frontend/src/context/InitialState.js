@@ -1,62 +1,66 @@
 const initialFormData = {
-  eventId: '',
-  title: '',
-  description: '',
-  emoji: '',
-  organisedBy: [],
-  startDate: new Date(),
-  endDate: new Date(),
-  marketingProgramInstanceId: '',
-  eventType: '',
-  region: [],
-  subRegion: [],
-  country: [],
-  activityOwner: [],
-  speakers: [],
-  eventSeries: 'no',
-  languagesAndTemplates: [],  // platform, language, and template
-  isApprovedForCustomerUse: 'yes',
-  okr: [],  // OKR array
-  gep: [],  // GEP array
-  audiencePersona: [],
-  audienceSeniority: [],
+  eventId: '', // STRING
+  tacticId: '', // STRING
+  title: '', // STRING
+  description: '', // STRING
+  emoji: '', // STRING
+  organisedBy: [], // ARRAY<STRING>
+  startDate: new Date(), // STRING, but initializing with Date object for user inputs
+  endDate: new Date(), // STRING, but initializing with Date object for user inputs
+  marketingProgramInstanceId: '', // STRING
+  eventType: '', // STRING
+  region: '', // STRING
+  subRegion: [], // ARRAY<STRING>
+  country: [], // ARRAY<STRING>
+  activityOwner: [], // ARRAY<STRING>
+  speakers: [], // ARRAY<STRING>
+  isEventSeries: false, // BOOL
+  languagesAndTemplates: [], // ARRAY of STRUCT { platform: '', language: '', template: '' }
+  okr: [], // ARRAY of STRUCT { type: '', percentage: '' }
+  gep: [], // ARRAY<STRING>
+  audiencePersona: [], // ARRAY<STRING>
+  audienceSeniority: [], // ARRAY<STRING>
   accountSectors: {
-    commercial: false,
-    public: false,
+    commercial: false, // BOOL
+    public: false, // BOOL
   },
   accountSegments: {
-    Corporate: { selected: false, percentage: '' },
-    SMB: { selected: false, percentage: '' },
-    Select: { selected: false, percentage: '' },
-    Enterprise: { selected: false, percentage: '' },
-    Startup: { selected: false, percentage: '' },
+    Corporate: { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+    SMB: { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+    Select: { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+    Enterprise: { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+    Startup: { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+  },
+  maxEventCapacity: '', // STRING
+  peopleMeetingCriteria: '', // STRING
+  landingPageLinks: [], // ARRAY<STRING>
+  salesKitLinks: [], // ARRAY<STRING>
+  hailoLinks: [], // ARRAY<STRING>
+  otherDocumentsLinks: [], // ARRAY<STRING>
+  isApprovedForCustomerUse: false, // BOOL
+  isDraft: true, // BOOL
+  isPublished: false, // BOOL
+  isHighPriority: false, // BOOL
+  isPartneredEvent: false, // BOOL
+  partnerRole: '', // STRING
+  accountCategory: {
+    "Digital Native": { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+    "Traditional": { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+  },
+  accountType: {
+    Greenfield: { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+    "Existing Customer": { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
   },
   productAlignment: {
-    GCP: { selected: false, percentage: '' },
-    GWS: { selected: false, percentage: '' },
+    GCP: { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
+    GWS: { selected: false, percentage: '' }, // STRUCT { selected: BOOL, percentage: STRING }
   },
-  maxEventCapacity: '',
-  peopleMeetingCriteria: '',
-  landingPageLink: '',
-  salesKitLink: '',
-  hailoLink: '',
-  otherDocumentsLink: '',
-  isHighPriority: false,
-  isPartneredEvent: false,   // For partnered events
-  partnerRole: '',           // Role in partnered events
-  accountCategory: {
-    "Digital Native": { selected: false, percentage: '' },
-    "Traditional": { selected: false, percentage: '' },
-  },
-  aiVsCore: '',              // AI vs Core field
-  industry: '',              // Industry type field
-  city: '',                  // Event location city
-  locationVenue: '',         // Venue location
-  marketingActivityType: '', // Marketing activity type
-  isDraft: true,  
-  isPublished: false, 
-  userTimezone: ''
-             // Draft status
+  aiVsCore: '', // STRING
+  industry: '', // STRING
+  city: '', // STRING
+  locationVenue: '', // STRING
+  marketingActivityType: '', // STRING
+  userTimezone: '', // STRING
 };
 
 export { initialFormData };
