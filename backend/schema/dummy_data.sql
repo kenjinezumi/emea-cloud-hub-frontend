@@ -18,7 +18,7 @@ VALUES
   "Sample Event Title", 
   ["speaker1@example.com", "speaker2@example.com"], 
   "no", 
-  [STRUCT("English", "Template1"), STRUCT("French", "Template2")], 
+  [STRUCT("Gmail", "English", "Template1"), STRUCT("Salesloft", "French", "Template2")], 
   "yes", 
   [STRUCT("CHAMPION DEI & CULTURE", "50"), STRUCT("SOURCE DEMAND", "50")], 
   ["GCP", "AI"], 

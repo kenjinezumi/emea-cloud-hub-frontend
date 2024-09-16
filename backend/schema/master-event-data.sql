@@ -16,6 +16,7 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `speakers` ARRAY<STRING>,
   `eventSeries` STRING,
   `languagesAndTemplates` ARRAY<STRUCT<
+    `platform` STRING,
     `language` STRING,
     `template` STRING
   >>,
