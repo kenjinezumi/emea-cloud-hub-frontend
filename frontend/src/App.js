@@ -57,11 +57,11 @@ function App() {
     <Router>
       <Routes>
         {/* Public Route */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/auth/success" element={<AuthSuccess />} />  {/* New success route */}
+        {/* <Route path="/login" element={<Login />} />
+        <Route path="/auth/success" element={<AuthSuccess />} />  New success route */}
 
         {/* Protected Routes */}
-        <Route element={<PrivateRoute />}>
+        <Route>
           <Route path="/" element={<RenderCalendarView />} />
           <Route path="/create-event" element={<EventForm />} />
           <Route path="/location" element={<EventFormLocation />} />
