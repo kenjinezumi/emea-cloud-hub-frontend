@@ -62,11 +62,16 @@ export const GlobalProvider = ({ children }) => {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [filters, setFilters] = useState({
-    regions: [],
+    subRegions: [],
     eventType: [],
-    okr: [],
-    audienceSeniority: [],
-    isDraft: [] // Add isDraft to the filters
+    gep: [],
+    buyerSegmentRollup: [],
+    accountSectors: [],
+    accountSegments: [],
+    productFamily: [],
+    industry: [],
+    isPartneredEvent: [],
+    isDraft: []
   });
 
   const toggleSidebar = () => {
