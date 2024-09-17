@@ -271,11 +271,16 @@ async function saveEventData(eventData) {
       for (const [key, value] of Object.entries(eventData)) {
         if (Array.isArray(value)) {
           // Handle array types
-          if (key === 'languagesAndTemplates' || key === 'okr') {
-            // If the field is `languagesAndTemplates` or `okr`, treat as ARRAY<STRUCT>
+          if (key === 'languagesAndTemplates') {
+            // If the field is `languagesAndTemplates`, treat as ARRAY<STRUCT>
             params[key] = value.length === 0 ? [] : value;
             setClauses.push(`${key} = @${key}`);
             types[key] = 'ARRAY<STRUCT<platform STRING, language STRING, template STRING>>';
+          } else if (key === 'okr') {
+            // If the field is `okr`, treat as ARRAY<STRUCT>
+            params[key] = value.length === 0 ? [] : value;
+            setClauses.push(`${key} = @${key}`);
+            types[key] = 'ARRAY<STRUCT<type STRING, percentage STRING>>';
           } else {
             // For other arrays, check if empty and treat as ARRAY<STRING>
             params[key] = value.length === 0 ? [] : value;
@@ -321,6 +326,7 @@ async function saveEventData(eventData) {
     throw error;
   }
 }
+
 
 
 
