@@ -5,6 +5,7 @@ const loadQueriesAsync = require('./utils/queriesLoaders');
 const { LoggingWinston } = require('@google-cloud/logging-winston');
 const winston = require('winston');
 const cors = require('cors');
+const { google } = require('googleapis');
 
 // New imports for login
 const passport = require('passport');
@@ -61,7 +62,16 @@ router.use(cors(corsOptions));
 
 // Google OAuth login route
 router.get('/auth/google',
-  passport.authenticate('google', { scope: ['profile', 'email'] })
+  passport.authenticate('google', {
+    scope: [
+      'profile',
+      'email',
+      'https://www.googleapis.com/auth/gmail.send',  // Add Gmail send scope
+      'https://www.googleapis.com/auth/gmail.compose',
+    ],
+    accessType: 'offline', // To receive a refresh token for long-term access
+    prompt: 'consent', // Force prompt to ensure refresh token is provided
+  })
 );
 
 // Google OAuth callback route
@@ -85,6 +95,63 @@ router.get('/auth/google/callback',
   })
 
 
+  // Send Gmail invite
+const sendGmail = async (accessToken, emailDetails) => {
+  try {
+    const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
+    oauth2Client.setCredentials({ access_token: accessToken });
+
+    const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+    // Create the draft message
+    const rawMessage = [
+      `To: ${emailDetails.to}`,
+      `Subject: ${emailDetails.subject}`,
+      '',
+      emailDetails.body
+    ].join('\n');
+
+    const encodedMessage = Buffer.from(rawMessage)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
+    // Create a draft
+    const draft = await gmail.users.drafts.create({
+      userId: 'me',
+      requestBody: {
+        message: {
+          raw: encodedMessage
+        }
+      }
+    });
+
+    console.log('Draft created:', draft);
+    return draft;
+  } catch (error) {
+    console.error('Error creating draft:', error);
+    throw error;
+  }
+};
+
+
+router.post('/send-gmail-invite', (req, res) => {
+  const { to, subject, body } = req.body;
+
+  if (!req.user || !req.user.accessToken) {
+    return res.status(401).json({ success: false, message: 'User not authenticated' });
+  }
+
+  const emailDetails = { to, subject, body };
+
+  sendGmail(req.user.accessToken, emailDetails)
+    .then((draft) => res.status(200).json({ success: true, draftId: draft.data.id }))
+    .catch((err) => res.status(500).json({ success: false, message: 'Failed to send email' }));
+});
+
+
+  
 // Route to log out the user
 router.get('/logout', (req, res) => {
   req.logout((err) => {
@@ -335,6 +402,7 @@ function cleanEventData(eventData) {
 
   return cleanedData;
 }
+
 
 
 

@@ -46,15 +46,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Google OAuth strategy setup
+
 passport.use(new GoogleStrategy({
   clientID: CLIENT_ID,
   clientSecret: CLIENT_SECRET,
   callbackURL: CALLBACK_URL,
+  scope: ['profile', 'email', 'https://www.googleapis.com/auth/gmail.send'],
 }, (accessToken, refreshToken, profile, done) => {
-  // This function will be called when Google OAuth is successful
+  profile.accessToken = accessToken;
+  profile.refreshToken = refreshToken;
   done(null, profile);
 }));
+
 
 // Serialize user into the session
 passport.serializeUser((user, done) => {

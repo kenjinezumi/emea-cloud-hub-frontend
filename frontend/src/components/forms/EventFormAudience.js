@@ -29,10 +29,11 @@ export default function AudiencePersonaForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
 
   const [audiencePersona, setAudiencePersona] = useState(
-    selectedEvent ? selectedEvent.audiencePersona : formData.audiencePersona || []
+    Array.isArray(selectedEvent?.audiencePersona) ? selectedEvent.audiencePersona : []
   );
+  
   const [audienceSeniority, setAudienceSeniority] = useState(
-    selectedEvent ? selectedEvent.audienceSeniority : formData.audienceSeniority || []
+    Array.isArray(selectedEvent?.audienceSeniority) ? selectedEvent.audienceSeniority : []
   );
 
   const [aiVsCore, setAiVsCore] = useState(
@@ -510,10 +511,17 @@ export default function AudiencePersonaForm() {
                 )}
               >
                 {audienceRoles.map((role, idx) => (
-                  <MenuItem key={idx} value={role}>
-                    {role}
-                  </MenuItem>
-                ))}
+  <MenuItem key={idx} value={role}>
+    {role}
+  </MenuItem>
+))}
+
+{audienceSeniorityOptions.map((option, idx) => (
+  <MenuItem key={idx} value={option.label}>
+    {option.label}
+  </MenuItem>
+))}
+
               </Select>
             </FormControl>
           </Grid>

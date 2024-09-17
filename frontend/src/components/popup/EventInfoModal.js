@@ -88,46 +88,46 @@ export default function EventInfoPopup({ event, close }) {
   const handleGmailInvite = async () => {
     try {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
-
+  
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.emails?.[0]?.value;
-
+  
       if (!email || !selectedLanguage) {
         alert("No email or template selected.");
         return;
       }
-
+  
       // Define the template based on the selected language
       const template = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.template;
-
+  
       if (!template) {
         alert("No template found for the selected language.");
         return;
       }
-
+  
       // Create the email body with the template
-      const emailBody = `To: ${email}\nSubject: Event Invitation\n\n${template}`;
-
+      const emailDetails = {
+        to: email,
+        subject: 'Event Invitation',
+        body: template,
+      };
+  
       // Send request to create a draft email
-      const response = await fetch(`${apiUrl}gmail/draft`, {
+      const response = await fetch(`${apiUrl}/send-gmail-invite`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          userEmail: email,
-          subject: "Event Invitation",
-          messageBody: template,
-        }),
+        body: JSON.stringify(emailDetails),
       });
-
+  
       const data = await response.json();
-      if (data.success) {
-        // Redirect to Gmail draft link
+      if (data.success && data.draftId) {
+        // Redirect to Gmail drafts with the created draft ID
         window.open(
-          `https://mail.google.com/mail/u/${email}/#drafts`,
+          `https://mail.google.com/mail/u/${email}/#drafts?compose=${data.draftId}`,
           "_blank"
         );
       } else {
@@ -138,6 +138,7 @@ export default function EventInfoPopup({ event, close }) {
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
+  
 
   const formatListWithSpaces = (list) => {
     if (!list) return "";
