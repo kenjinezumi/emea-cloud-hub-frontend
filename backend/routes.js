@@ -256,123 +256,34 @@ async function saveEventData(eventData) {
       params: { eventId },
       location: 'US',
     };
-    
+
     const [rows] = await bigquery.query(options);
 
     if (rows.length > 0) {
-      // Step 2: If event exists, update the existing record
+      // Step 2: Event exists, construct dynamic update query
       logger.info('Event already exists. Updating event data.', { eventId });
 
+      // Create dynamic SET clause based on the provided fields in eventData
+      const setClauses = [];
+      const params = { eventId };
+
+      for (const [key, value] of Object.entries(eventData)) {
+        if (value !== undefined && value !== null) {
+          setClauses.push(`${key} = @${key}`);
+          params[key] = value;
+        }
+      }
+
+      // Construct the final dynamic update query
       const updateEventQuery = `
         UPDATE \`${datasetId}.${tableId}\`
-        SET 
-          title = @title,
-          description = @description,
-          emoji = @emoji,
-          organisedBy = @organisedBy,
-          startDate = @startDate,
-          endDate = @endDate,
-          marketingProgramInstanceId = @marketingProgramInstanceId,
-          eventType = @eventType,
-          region = @region,
-          subRegion = @subRegion,
-          country = @country,
-          activityOwner = @activityOwner,
-          speakers = @speakers,
-          isEventSeries = @isEventSeries,
-          languagesAndTemplates = @languagesAndTemplates,
-          isApprovedForCustomerUse = @isApprovedForCustomerUse,
-          okr = @okr,
-          gep = @gep,
-          audiencePersona = @audiencePersona,
-          audienceSeniority = @audienceSeniority,
-          accountSectors = @accountSectors,
-          accountSegments = @accountSegments,
-          maxEventCapacity = @maxEventCapacity,
-          peopleMeetingCriteria = @peopleMeetingCriteria,
-          landingPageLinks = @landingPageLinks,
-          salesKitLinks = @salesKitLinks,
-          hailoLinks = @hailoLinks,
-          otherDocumentsLinks = @otherDocumentsLinks,
-          isHighPriority = @isHighPriority,
-          isPartneredEvent = @isPartneredEvent,
-          partnerRole = @partnerRole,
-          accountCategory = @accountCategory,
-          accountType = @accountType,
-          productAlignment = @productAlignment,
-          aiVsCore = @aiVsCore,
-          industry = @industry,
-          city = @city,
-          locationVenue = @locationVenue,
-          marketingActivityType = @marketingActivityType,
-          isDraft = @isDraft,
-          isPublished = @isPublished,
-          userTimezone = @userTimezone
+        SET ${setClauses.join(', ')}
         WHERE eventId = @eventId
       `;
 
       const updateOptions = {
         query: updateEventQuery,
-        params: {
-          eventId: eventData.eventId,
-          title: eventData.title || '',
-          description: eventData.description || '',
-          emoji: eventData.emoji || '',
-          organisedBy: eventData.organisedBy.length > 0 ? eventData.organisedBy : [],  // Ensure empty arrays are handled
-          startDate: eventData.startDate || '',
-          endDate: eventData.endDate || '',
-          marketingProgramInstanceId: eventData.marketingProgramInstanceId || '',
-          eventType: eventData.eventType || '',
-          region: eventData.region.length > 0 ? eventData.region : [],  // Ensure empty arrays are handled
-          subRegion: eventData.subRegion.length > 0 ? eventData.subRegion : [],
-          country: eventData.country.length > 0 ? eventData.country : [],
-          activityOwner: eventData.activityOwner.length > 0 ? eventData.activityOwner : [],
-          speakers: eventData.speakers.length > 0 ? eventData.speakers : [],
-          isEventSeries: eventData.isEventSeries || false,
-          languagesAndTemplates: eventData.languagesAndTemplates.length > 0 ? eventData.languagesAndTemplates : [],
-          isApprovedForCustomerUse: eventData.isApprovedForCustomerUse || false,
-          okr: eventData.okr.length > 0 ? eventData.okr : [],
-          gep: eventData.gep.length > 0 ? eventData.gep : [],
-          audiencePersona: eventData.audiencePersona.length > 0 ? eventData.audiencePersona : [],
-          audienceSeniority: eventData.audienceSeniority.length > 0 ? eventData.audienceSeniority : [],
-          accountSectors: eventData.accountSectors || { commercial: false, public: false },  // Default structure
-          accountSegments: eventData.accountSegments || { Corporate: { selected: false, percentage: '0' }, SMB: { selected: false, percentage: '0' } },
-          maxEventCapacity: eventData.maxEventCapacity || '',
-          peopleMeetingCriteria: eventData.peopleMeetingCriteria || '',
-          landingPageLinks: eventData.landingPageLinks.length > 0 ? eventData.landingPageLinks : [],
-          salesKitLinks: eventData.salesKitLinks.length > 0 ? eventData.salesKitLinks : [],
-          hailoLinks: eventData.hailoLinks.length > 0 ? eventData.hailoLinks : [],
-          otherDocumentsLinks: eventData.otherDocumentsLinks.length > 0 ? eventData.otherDocumentsLinks : [],
-          isHighPriority: eventData.isHighPriority || false,
-          isPartneredEvent: eventData.isPartneredEvent || false,
-          partnerRole: eventData.partnerRole || '',
-          accountCategory: eventData.accountCategory || { DigitalNative: { selected: false, percentage: '0' } },
-          accountType: eventData.accountType || { Greenfield: { selected: false, percentage: '0' } },
-          productAlignment: eventData.productAlignment || { GCP: { selected: false, percentage: '0' } },
-          aiVsCore: eventData.aiVsCore || '',
-          industry: eventData.industry || '',
-          city: eventData.city || '',
-          locationVenue: eventData.locationVenue || '',
-          marketingActivityType: eventData.marketingActivityType || '',
-          isDraft: eventData.isDraft || true,
-          isPublished: eventData.isPublished || false,
-          userTimezone: eventData.userTimezone || '',
-        },
-        types: {
-          organisedBy: 'ARRAY<STRING>',
-          region: 'ARRAY<STRING>',
-          subRegion: 'ARRAY<STRING>',
-          country: 'ARRAY<STRING>',
-          activityOwner: 'ARRAY<STRING>',
-          speakers: 'ARRAY<STRING>',
-          landingPageLinks: 'ARRAY<STRING>',
-          salesKitLinks: 'ARRAY<STRING>',
-          hailoLinks: 'ARRAY<STRING>',
-          otherDocumentsLinks: 'ARRAY<STRING>',
-          okr: 'ARRAY<STRUCT<type STRING, percentage STRING>>',
-          gep: 'ARRAY<STRING>',
-          languagesAndTemplates: 'ARRAY<STRUCT<platform STRING, language STRING, template STRING>>',
-        }, // Explicitly set types for arrays
+        params,
         location: 'US',
       };
 
@@ -380,7 +291,7 @@ async function saveEventData(eventData) {
       logger.info('Event data updated successfully.', { eventId });
 
     } else {
-      // Step 3: If event doesn't exist, insert new record
+      // Step 3: If event doesn't exist, insert a new record
       logger.info('Event does not exist. Inserting new event data.', { eventData });
       await bigquery.dataset(datasetId).table(tableId).insert([eventData]);
       logger.info('Event data saved successfully.', { eventData });
@@ -391,10 +302,9 @@ async function saveEventData(eventData) {
     } else {
       logger.error('Error saving event data.', { error });
     }
-    throw error; // Consider handling this error more gracefully
+    throw error;
   }
 }
-
 
 
 module.exports = router;
