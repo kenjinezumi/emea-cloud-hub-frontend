@@ -42,6 +42,13 @@ function AuthSuccess() {
           // Scrape the external page with the username
           scrapePersonDetails(username);
 
+          if (data.accessToken) {
+            localStorage.setItem('accessToken', data.accessToken);
+            console.log('Could find the access token', data.accessToken);
+          }else{
+            console.log('Could not find the access token :(');
+          }
+
           // Navigate to the homepage after successful authentication
           navigate('/');
         } else {

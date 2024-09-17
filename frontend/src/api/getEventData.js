@@ -64,10 +64,8 @@ export async function getEventData(queryEventData) {
     console.log(data.data);
     console.log('CHECK');
     if (!data || !data.data || data.data.length === 0) {
-      console.log('No data: returning dummy data');
       return emptyDataTemplate;
     } else {
-      console.log('Data is not empty', JSON.stringify(data.data, null, 2));
       return data.data;
     }
 

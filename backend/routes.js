@@ -226,7 +226,8 @@ router.get('/api/current_user', (req, res) => {
   if (req.user) {
     res.json({
       isAuthenticated: true,  // Indicating the user is authenticated
-      user: req.user          // Sending the user object from the session
+      user: req.user,
+      accessToken: req.user.accessToken         // Sending the user object from the session
     });
   } else {
     res.status(401).json({

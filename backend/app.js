@@ -55,7 +55,7 @@ passport.use(new GoogleStrategy({
 }, (accessToken, refreshToken, profile, done) => {
   profile.accessToken = accessToken;
   profile.refreshToken = refreshToken;
-  done(null, profile);
+  return done(null, profile);
 }));
 
 

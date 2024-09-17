@@ -88,6 +88,7 @@ export default function EventInfoPopup({ event, close }) {
   const handleGmailInvite = async () => {
     try {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
+      window.location.href = `${apiUrl}auth/google`;
   
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.emails?.[0]?.value;
