@@ -337,9 +337,5 @@ function cleanEventData(eventData) {
 }
 
 
-  return cleanedData;
-}
-
-
 
 module.exports = router;
