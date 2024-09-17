@@ -115,10 +115,11 @@ export default function EventInfoPopup({ event, close }) {
       };
   
       // Send request to create a draft email
-      const response = await fetch(`${apiUrl}/send-gmail-invite`, {
+      const response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain',
         },
         body: JSON.stringify(emailDetails),
       });
