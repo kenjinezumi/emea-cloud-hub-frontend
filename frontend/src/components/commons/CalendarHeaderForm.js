@@ -6,16 +6,17 @@ import PeopleIcon from '@mui/icons-material/People';
 import InfoIcon from '@mui/icons-material/Info';
 import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import DeleteIcon from '@mui/icons-material/Delete'; // Import Delete Icon
+import DeleteIcon from '@mui/icons-material/Delete'; 
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'; // Import Exit Icon
 import { blue } from '@mui/material/colors';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
 import GlobalContext from "../../context/GlobalContext";
+import { sendDataDeleteToAPI } from "../../api/deleteEvent";
 
 const NavigationSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { formData, updateFormData } = useContext(GlobalContext);
+  const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [exitDialogOpen, setExitDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -46,11 +47,30 @@ const NavigationSidebar = () => {
     window.location.href = '/';
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     setDeleteDialogOpen(false);
-    // Add your delete logic here
-    console.log('Event deleted'); // Placeholder for actual delete functionality
-    window.location.href = '/';
+    
+    if (selectedEvent && selectedEvent.eventId) {
+      const eventId = selectedEvent.eventId; 
+      console.log('The event ID to delete is: ', eventId);
+      
+      try {
+        const response = await sendDataDeleteToAPI({
+          eventId, 
+        });
+
+        if (response && response.success) {
+          console.log('Event deleted successfully');
+          window.location.href = '/'; // Redirect after successful deletion
+        } else {
+          console.error('Failed to delete the event');
+        }
+      } catch (error) {
+        console.error('Error deleting event:', error);
+      }
+    } else {
+      console.error('No event selected for deletion');
+    }
   };
 
   const isCurrentPath = (path) => location.pathname === path;
