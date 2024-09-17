@@ -240,7 +240,7 @@ router.post('/', async (req, res) => {
 async function saveEventData(eventData) {
   const datasetId = 'data';
   const tableId = 'master-event-data';
-  const eventId = eventData.eventId; 
+  const eventId = eventData.eventId;
 
   logger.info('Preparing to save event data.', { eventData });
 
@@ -254,7 +254,7 @@ async function saveEventData(eventData) {
     const options = {
       query: checkEventQuery,
       params: { eventId },
-      location: 'US'
+      location: 'US',
     };
     
     const [rows] = await bigquery.query(options);
@@ -318,37 +318,37 @@ async function saveEventData(eventData) {
           title: eventData.title || '',
           description: eventData.description || '',
           emoji: eventData.emoji || '',
-          organisedBy: eventData.organisedBy || [],  // Provide default empty arrays
+          organisedBy: eventData.organisedBy.length > 0 ? eventData.organisedBy : [],  // Ensure empty arrays are handled
           startDate: eventData.startDate || '',
           endDate: eventData.endDate || '',
           marketingProgramInstanceId: eventData.marketingProgramInstanceId || '',
           eventType: eventData.eventType || '',
-          region: eventData.region || [],
-          subRegion: eventData.subRegion || [],
-          country: eventData.country || [],
-          activityOwner: eventData.activityOwner || [],
-          speakers: eventData.speakers || [],
+          region: eventData.region.length > 0 ? eventData.region : [],  // Ensure empty arrays are handled
+          subRegion: eventData.subRegion.length > 0 ? eventData.subRegion : [],
+          country: eventData.country.length > 0 ? eventData.country : [],
+          activityOwner: eventData.activityOwner.length > 0 ? eventData.activityOwner : [],
+          speakers: eventData.speakers.length > 0 ? eventData.speakers : [],
           isEventSeries: eventData.isEventSeries || false,
-          languagesAndTemplates: eventData.languagesAndTemplates || [],  // Default to an empty array
+          languagesAndTemplates: eventData.languagesAndTemplates.length > 0 ? eventData.languagesAndTemplates : [],
           isApprovedForCustomerUse: eventData.isApprovedForCustomerUse || false,
-          okr: eventData.okr || [],  // Default to an empty array
-          gep: eventData.gep || [],  // Default to an empty array
-          audiencePersona: eventData.audiencePersona || [],
-          audienceSeniority: eventData.audienceSeniority || [],
+          okr: eventData.okr.length > 0 ? eventData.okr : [],
+          gep: eventData.gep.length > 0 ? eventData.gep : [],
+          audiencePersona: eventData.audiencePersona.length > 0 ? eventData.audiencePersona : [],
+          audienceSeniority: eventData.audienceSeniority.length > 0 ? eventData.audienceSeniority : [],
           accountSectors: eventData.accountSectors || { commercial: false, public: false },  // Default structure
-          accountSegments: eventData.accountSegments || { Corporate: { selected: false, percentage: '0' }, SMB: { selected: false, percentage: '0' } },  // Default structure
+          accountSegments: eventData.accountSegments || { Corporate: { selected: false, percentage: '0' }, SMB: { selected: false, percentage: '0' } },
           maxEventCapacity: eventData.maxEventCapacity || '',
           peopleMeetingCriteria: eventData.peopleMeetingCriteria || '',
-          landingPageLinks: eventData.landingPageLinks || [],
-          salesKitLinks: eventData.salesKitLinks || [],
-          hailoLinks: eventData.hailoLinks || [],
-          otherDocumentsLinks: eventData.otherDocumentsLinks || [],
+          landingPageLinks: eventData.landingPageLinks.length > 0 ? eventData.landingPageLinks : [],
+          salesKitLinks: eventData.salesKitLinks.length > 0 ? eventData.salesKitLinks : [],
+          hailoLinks: eventData.hailoLinks.length > 0 ? eventData.hailoLinks : [],
+          otherDocumentsLinks: eventData.otherDocumentsLinks.length > 0 ? eventData.otherDocumentsLinks : [],
           isHighPriority: eventData.isHighPriority || false,
           isPartneredEvent: eventData.isPartneredEvent || false,
           partnerRole: eventData.partnerRole || '',
-          accountCategory: eventData.accountCategory || { DigitalNative: { selected: false, percentage: '0' } },  // Default structure
-          accountType: eventData.accountType || { Greenfield: { selected: false, percentage: '0' } },  // Default structure
-          productAlignment: eventData.productAlignment || { GCP: { selected: false, percentage: '0' } },  // Default structure
+          accountCategory: eventData.accountCategory || { DigitalNative: { selected: false, percentage: '0' } },
+          accountType: eventData.accountType || { Greenfield: { selected: false, percentage: '0' } },
+          productAlignment: eventData.productAlignment || { GCP: { selected: false, percentage: '0' } },
           aiVsCore: eventData.aiVsCore || '',
           industry: eventData.industry || '',
           city: eventData.city || '',
@@ -358,7 +358,21 @@ async function saveEventData(eventData) {
           isPublished: eventData.isPublished || false,
           userTimezone: eventData.userTimezone || '',
         },
-        types: { organisedBy: 'ARRAY<STRING>', region: 'ARRAY<STRING>', subRegion: 'ARRAY<STRING>' },  // Explicitly set types for empty arrays
+        types: {
+          organisedBy: 'ARRAY<STRING>',
+          region: 'ARRAY<STRING>',
+          subRegion: 'ARRAY<STRING>',
+          country: 'ARRAY<STRING>',
+          activityOwner: 'ARRAY<STRING>',
+          speakers: 'ARRAY<STRING>',
+          landingPageLinks: 'ARRAY<STRING>',
+          salesKitLinks: 'ARRAY<STRING>',
+          hailoLinks: 'ARRAY<STRING>',
+          otherDocumentsLinks: 'ARRAY<STRING>',
+          okr: 'ARRAY<STRUCT<type STRING, percentage STRING>>',
+          gep: 'ARRAY<STRING>',
+          languagesAndTemplates: 'ARRAY<STRUCT<platform STRING, language STRING, template STRING>>',
+        }, // Explicitly set types for arrays
         location: 'US',
       };
 
@@ -380,6 +394,7 @@ async function saveEventData(eventData) {
     throw error; // Consider handling this error more gracefully
   }
 }
+
 
 
 module.exports = router;
