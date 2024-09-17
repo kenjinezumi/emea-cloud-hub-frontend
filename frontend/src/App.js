@@ -16,7 +16,7 @@ import EventSharePage from "./components/forms/EventSharePage";
 import NotFoundPage from "./components/error/NotFoundPage";
 import GlobalContext from "./context/GlobalContext";
 import RenderCalendarView from "./components/CalendarLayout";
-import PrivateRoute from "./components/PrivateRoute";
+import PrivateRoute from "./components/PrivateRoute";  // Import the PrivateRoute component
 import Login from "./components/forms/Login";
 import EventFormEmailInvitation from "./components/forms/EventFormEmailInvitation";
 import AuthSuccess from './components/forms/AuthSuccess';
@@ -56,22 +56,75 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Route */}
-        {/* <Route path="/login" element={<Login />} />
-        <Route path="/auth/success" element={<AuthSuccess />} />  New success route */}
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/auth/success" element={<AuthSuccess />} />
 
         {/* Protected Routes */}
-        <Route>
-          <Route path="/" element={<RenderCalendarView />} />
-          <Route path="/create-event" element={<EventForm />} />
-          <Route path="/location" element={<EventFormLocation />} />
-          <Route path="/extra" element={<EventFormExtra />} />
-          <Route path="/email-invitation" element={<EventFormEmailInvitation />} />
-
-          <Route path="/audience" element={<EventFormAudience />} />
-          <Route path="/links" element={<EventFormLinks />} />
-          <Route path="/event/:eventId" element={<EventSharePage />} />
-        </Route>
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <RenderCalendarView />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/create-event"
+          element={
+            <PrivateRoute>
+              <EventForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/location"
+          element={
+            <PrivateRoute>
+              <EventFormLocation />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/extra"
+          element={
+            <PrivateRoute>
+              <EventFormExtra />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/email-invitation"
+          element={
+            <PrivateRoute>
+              <EventFormEmailInvitation />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/audience"
+          element={
+            <PrivateRoute>
+              <EventFormAudience />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/links"
+          element={
+            <PrivateRoute>
+              <EventFormLinks />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/event/:eventId"
+          element={
+            <PrivateRoute>
+              <EventSharePage />
+            </PrivateRoute>
+          }
+        />
 
         {/* Fallback Route */}
         <Route path="*" element={<NotFoundPage />} />
