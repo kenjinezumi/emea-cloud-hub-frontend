@@ -237,7 +237,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Function to save or update event data
 async function saveEventData(eventData) {
   const datasetId = 'data';
   const tableId = 'master-event-data';
@@ -316,50 +315,51 @@ async function saveEventData(eventData) {
         query: updateEventQuery,
         params: {
           eventId: eventData.eventId,
-          title: eventData.title,
-          description: eventData.description,
-          emoji: eventData.emoji,
-          organisedBy: eventData.organisedBy,
-          startDate: eventData.startDate,
-          endDate: eventData.endDate,
-          marketingProgramInstanceId: eventData.marketingProgramInstanceId,
-          eventType: eventData.eventType,
-          region: eventData.region,
-          subRegion: eventData.subRegion,
-          country: eventData.country,
-          activityOwner: eventData.activityOwner,
-          speakers: eventData.speakers,
-          isEventSeries: eventData.isEventSeries,
-          languagesAndTemplates: eventData.languagesAndTemplates,
-          isApprovedForCustomerUse: eventData.isApprovedForCustomerUse,
-          okr: eventData.okr,
-          gep: eventData.gep,
-          audiencePersona: eventData.audiencePersona,
-          audienceSeniority: eventData.audienceSeniority,
-          accountSectors: eventData.accountSectors,
-          accountSegments: eventData.accountSegments,
-          maxEventCapacity: eventData.maxEventCapacity,
-          peopleMeetingCriteria: eventData.peopleMeetingCriteria,
-          landingPageLinks: eventData.landingPageLinks,
-          salesKitLinks: eventData.salesKitLinks,
-          hailoLinks: eventData.hailoLinks,
-          otherDocumentsLinks: eventData.otherDocumentsLinks,
-          isHighPriority: eventData.isHighPriority,
-          isPartneredEvent: eventData.isPartneredEvent,
-          partnerRole: eventData.partnerRole,
-          accountCategory: eventData.accountCategory,
-          accountType: eventData.accountType,
-          productAlignment: eventData.productAlignment,
-          aiVsCore: eventData.aiVsCore,
-          industry: eventData.industry,
-          city: eventData.city,
-          locationVenue: eventData.locationVenue,
-          marketingActivityType: eventData.marketingActivityType,
-          isDraft: eventData.isDraft,
-          isPublished: eventData.isPublished,
-          userTimezone: eventData.userTimezone
+          title: eventData.title || '',
+          description: eventData.description || '',
+          emoji: eventData.emoji || '',
+          organisedBy: eventData.organisedBy || [],  // Provide default empty arrays
+          startDate: eventData.startDate || '',
+          endDate: eventData.endDate || '',
+          marketingProgramInstanceId: eventData.marketingProgramInstanceId || '',
+          eventType: eventData.eventType || '',
+          region: eventData.region || [],
+          subRegion: eventData.subRegion || [],
+          country: eventData.country || [],
+          activityOwner: eventData.activityOwner || [],
+          speakers: eventData.speakers || [],
+          isEventSeries: eventData.isEventSeries || false,
+          languagesAndTemplates: eventData.languagesAndTemplates || [],  // Default to an empty array
+          isApprovedForCustomerUse: eventData.isApprovedForCustomerUse || false,
+          okr: eventData.okr || [],  // Default to an empty array
+          gep: eventData.gep || [],  // Default to an empty array
+          audiencePersona: eventData.audiencePersona || [],
+          audienceSeniority: eventData.audienceSeniority || [],
+          accountSectors: eventData.accountSectors || { commercial: false, public: false },  // Default structure
+          accountSegments: eventData.accountSegments || { Corporate: { selected: false, percentage: '0' }, SMB: { selected: false, percentage: '0' } },  // Default structure
+          maxEventCapacity: eventData.maxEventCapacity || '',
+          peopleMeetingCriteria: eventData.peopleMeetingCriteria || '',
+          landingPageLinks: eventData.landingPageLinks || [],
+          salesKitLinks: eventData.salesKitLinks || [],
+          hailoLinks: eventData.hailoLinks || [],
+          otherDocumentsLinks: eventData.otherDocumentsLinks || [],
+          isHighPriority: eventData.isHighPriority || false,
+          isPartneredEvent: eventData.isPartneredEvent || false,
+          partnerRole: eventData.partnerRole || '',
+          accountCategory: eventData.accountCategory || { DigitalNative: { selected: false, percentage: '0' } },  // Default structure
+          accountType: eventData.accountType || { Greenfield: { selected: false, percentage: '0' } },  // Default structure
+          productAlignment: eventData.productAlignment || { GCP: { selected: false, percentage: '0' } },  // Default structure
+          aiVsCore: eventData.aiVsCore || '',
+          industry: eventData.industry || '',
+          city: eventData.city || '',
+          locationVenue: eventData.locationVenue || '',
+          marketingActivityType: eventData.marketingActivityType || '',
+          isDraft: eventData.isDraft || true,
+          isPublished: eventData.isPublished || false,
+          userTimezone: eventData.userTimezone || '',
         },
-        location: 'US'
+        types: { organisedBy: 'ARRAY<STRING>', region: 'ARRAY<STRING>', subRegion: 'ARRAY<STRING>' },  // Explicitly set types for empty arrays
+        location: 'US',
       };
 
       await bigquery.query(updateOptions);

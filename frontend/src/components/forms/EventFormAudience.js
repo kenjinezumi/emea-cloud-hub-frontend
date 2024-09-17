@@ -433,6 +433,10 @@ export default function AudiencePersonaForm() {
     }
   };
   
+  const handleCalculateAudience = () => {
+    setSnackbarMessage("No data in the backend yet!!!!");
+    setSnackbarOpen(true);
+  };
 
   return (
     <div className="h-screen flex flex-col" style={{ overscrollBehavior: "contain" }}>
@@ -768,21 +772,34 @@ export default function AudiencePersonaForm() {
             />
           </Grid>
 
-         {/* People Meeting Criteria */}
-        <Grid item xs={12}>
-          <Typography variant="subtitle1">People Meeting the Audience Criteria</Typography>
-          <TextField
-            type="number"
-            value={peopleMeetingCriteria}
-            onChange={(e) => setPeopleMeetingCriteria(e.target.value)}
-            fullWidth
-            disabled
-            InputProps={{
-              style: {
-                backgroundColor: '#e0e0e0', // Light grey background color to indicate disabled state
-              },
-            }}
-          />
+        {/* People Meeting Criteria */}
+          <Grid item xs={12}>
+            <Typography variant="subtitle1">People Meeting the Audience Criteria</Typography>
+            
+            <TextField
+              type="number"
+              value={peopleMeetingCriteria}
+              onChange={(e) => setPeopleMeetingCriteria(e.target.value)}
+              fullWidth
+              disabled
+              InputProps={{
+                style: {
+                  backgroundColor: '#e0e0e0', // Light grey background color to indicate disabled state
+                },
+              }}
+            />
+            <Button
+              variant="outlined"
+              onClick={handleCalculateAudience}
+              style={{
+                backgroundColor: blue[500],  // Google blue color
+                color: "white",              // White text
+                float: "left",
+                margin: "10px 0",
+              }}
+            >
+              Calculate the audience
+            </Button>
           </Grid>
 
           {/* Validation & Save Buttons */}
