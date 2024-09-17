@@ -432,11 +432,30 @@ async function saveEventData(eventData) {
       userTimezone: eventData.userTimezone || null
     };
 
+    const types = {
+      organisedBy: 'ARRAY<STRING>',
+      region: 'ARRAY<STRING>',
+      subRegion: 'ARRAY<STRING>',
+      country: 'ARRAY<STRING>',
+      activityOwner: 'ARRAY<STRING>',
+      speakers: 'ARRAY<STRING>',
+      languagesAndTemplates: 'ARRAY<STRUCT<platform STRING, language STRING, template STRING>>',
+      okr: 'ARRAY<STRUCT<type STRING, percentage STRING>>',
+      gep: 'ARRAY<STRING>',
+      audiencePersona: 'ARRAY<STRING>',
+      audienceSeniority: 'ARRAY<STRING>',
+      landingPageLinks: 'ARRAY<STRING>',
+      salesKitLinks: 'ARRAY<STRING>',
+      hailoLinks: 'ARRAY<STRING>',
+      otherDocumentsLinks: 'ARRAY<STRING>'
+    };
+
     // Execute the MERGE query
     await bigquery.query({
       query: mergeQuery,
       params,
-      location: 'US'
+      location: 'US',
+      types // Specify types for empty arrays
     });
 
     logger.info('Event data saved or updated successfully.', { eventId });
@@ -446,6 +465,7 @@ async function saveEventData(eventData) {
     throw error;
   }
 }
+
 
 
 
