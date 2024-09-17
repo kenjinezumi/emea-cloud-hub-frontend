@@ -268,7 +268,19 @@ async function saveEventData(eventData) {
       const params = { eventId };
 
       for (const [key, value] of Object.entries(eventData)) {
-        if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          // Handle array types
+          if (key === 'languagesAndTemplates' || key === 'okr') {
+            // If the field is `languagesAndTemplates` or `okr`, treat as ARRAY<STRUCT>
+            params[key] = value.length === 0 ? null : value;
+            setClauses.push(`${key} = @${key}`);
+          } else {
+            // For other arrays, check if empty and treat as ARRAY<STRING>
+            params[key] = value.length === 0 ? [] : value;
+            setClauses.push(`${key} = @${key}`);
+          }
+        } else if (value !== undefined && value !== null) {
+          // Handle other non-array fields
           setClauses.push(`${key} = @${key}`);
           params[key] = value;
         }
@@ -305,6 +317,7 @@ async function saveEventData(eventData) {
     throw error;
   }
 }
+
 
 
 module.exports = router;
