@@ -598,15 +598,21 @@ async function saveEventData(eventData) {
     };
     
     
-    
+    logger.info('Executing query with parameters:', { params, types });
 
-    // Execute the MERGE query
-    await bigquery.query({
-      query: mergeQuery,
-      params,
-      location: 'US',
-      types // Specify types for empty arrays
-    });
+
+    try {
+      await bigquery.query({
+        query: mergeQuery,
+        params,
+        location: 'US',
+        types,
+      });
+    } catch (error) {
+      logger.error('Error executing query:', { error: JSON.stringify(error, null, 2) });
+      throw error; // Re-throw the error after logging
+    }
+    
 
     logger.info('Event data saved or updated successfully.', { eventId });
 
