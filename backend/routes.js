@@ -6,12 +6,12 @@ const { LoggingWinston } = require('@google-cloud/logging-winston');
 const winston = require('winston');
 const cors = require('cors');
 const { google } = require('googleapis');
+const gmail = google.gmail('v1');
 
 // New imports for login
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const cookieSession = require('cookie-session');
-
 // Setup Winston logger
 const loggingWinston = new LoggingWinston();
 const logger = winston.createLogger({
@@ -135,10 +135,6 @@ const sendGmail = async (accessToken, emailDetails) => {
   }
 };
 
-
-const { google } = require('googleapis');
-const gmail = google.gmail('v1');
-const logger = require('winston'); // Make sure you are using Winston logger
 
 router.post('/send-gmail-invite', async (req, res) => {
   const { to, subject, body } = req.body;
