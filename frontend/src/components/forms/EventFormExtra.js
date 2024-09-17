@@ -203,6 +203,25 @@ export default function ExtraDetailsForm() {
         percentage: okrSelections[key].percentage,
       }));
 
+    const okrTotalPercentage = selectedOkrs.reduce(
+        (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
+        0
+      );
+    
+      // Validate that the total percentage does not exceed 100%
+      if (okrTotalPercentage > 100) {
+        setSnackbarMessage("Total OKR percentage cannot exceed 100%");
+        setSnackbarOpen(true);
+        return;
+      }
+    
+      // Validate that the total percentage equals 100%
+      if (okrTotalPercentage !== 100) {
+        setSnackbarMessage("Total OKR percentage must equal 100%");
+        setSnackbarOpen(true);
+        return;
+      }
+
     const draftData = {
       activityOwner,
       speakers,

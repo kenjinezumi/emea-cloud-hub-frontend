@@ -298,26 +298,126 @@ export default function AudiencePersonaForm() {
   };
 
   const handleSaveAsDraft = async () => {
+    // Validate Account Segments
+    const selectedSegments = Object.keys(accountSegments)
+      .filter((key) => accountSegments[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: accountSegments[key].percentage,
+      }));
+  
+    const segmentTotalPercentage = selectedSegments.reduce(
+      (sum, segment) => sum + (parseFloat(segment.percentage) || 0),
+      0
+    );
+  
+    if (segmentTotalPercentage > 100) {
+      setSnackbarMessage("Total percentage for Account Segments cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    if (segmentTotalPercentage !== 100) {
+      setSnackbarMessage("Total percentage for Account Segments must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    // Validate Account Category
+    const selectedCategories = Object.keys(accountCategory)
+      .filter((key) => accountCategory[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: accountCategory[key].percentage,
+      }));
+  
+    const categoryTotalPercentage = selectedCategories.reduce(
+      (sum, category) => sum + (parseFloat(category.percentage) || 0),
+      0
+    );
+  
+    if (categoryTotalPercentage > 100) {
+      setSnackbarMessage("Total percentage for Account Category cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    if (categoryTotalPercentage !== 100) {
+      setSnackbarMessage("Total percentage for Account Category must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    // Validate Account Type
+    const selectedTypes = Object.keys(accountType)
+      .filter((key) => accountType[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: accountType[key].percentage,
+      }));
+  
+    const typeTotalPercentage = selectedTypes.reduce(
+      (sum, type) => sum + (parseFloat(type.percentage) || 0),
+      0
+    );
+  
+    if (typeTotalPercentage > 100) {
+      setSnackbarMessage("Total percentage for Account Type cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    if (typeTotalPercentage !== 100) {
+      setSnackbarMessage("Total percentage for Account Type must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    // Validate Product Alignment
+    const selectedAlignments = Object.keys(productAlignment)
+      .filter((key) => productAlignment[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: productAlignment[key].percentage,
+      }));
+  
+    const alignmentTotalPercentage = selectedAlignments.reduce(
+      (sum, alignment) => sum + (parseFloat(alignment.percentage) || 0),
+      0
+    );
+  
+    if (alignmentTotalPercentage > 100) {
+      setSnackbarMessage("Total percentage for Product Alignment cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    if (alignmentTotalPercentage !== 100) {
+      setSnackbarMessage("Total percentage for Product Alignment must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  
+    // If all checks pass, prepare the form data for saving as draft
     const draftData = {
       audiencePersona,
       audienceSeniority,
       accountSectors,
       maxEventCapacity,
       peopleMeetingCriteria,
-      isDraft: true,
       accountSegments,
       accountCategory,
       accountType,
       productAlignment,
       aiVsCore,
       industry,
-      isDraft: true, 
-      isPublished: false, 
+      isDraft: true,  // Mark it as a draft
+      isPublished: false,
     };
-
+  
     const updatedFormData = { ...formData, ...draftData };
     updateFormData(updatedFormData);
-
+  
     try {
       const response = await sendDataToAPI(updatedFormData, "draft");
       if (response.success) {
@@ -332,6 +432,7 @@ export default function AudiencePersonaForm() {
       setSnackbarOpen(true);
     }
   };
+  
 
   return (
     <div className="h-screen flex flex-col" style={{ overscrollBehavior: "contain" }}>
