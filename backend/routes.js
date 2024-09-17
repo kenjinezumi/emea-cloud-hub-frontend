@@ -242,87 +242,207 @@ async function saveEventData(eventData) {
   const tableId = 'master-event-data';
   const eventId = eventData.eventId;
 
-  logger.info('Preparing to save event data.', { eventData });
+  logger.info('Preparing to save or update event data.', { eventData });
 
   try {
-    // Step 1: Check if the event already exists in BigQuery
-    const checkEventQuery = `
-      SELECT eventId
-      FROM \`${datasetId}.${tableId}\`
-      WHERE eventId = @eventId
+    // Construct the dynamic MERGE query
+    const mergeQuery = `
+      MERGE \`${datasetId}.${tableId}\` T
+      USING (SELECT @eventId AS eventId) S
+      ON T.eventId = S.eventId
+      WHEN MATCHED THEN
+        UPDATE SET 
+          title = @title,
+          description = @description,
+          emoji = @emoji,
+          organisedBy = @organisedBy,
+          startDate = @startDate,
+          endDate = @endDate,
+          marketingProgramInstanceId = @marketingProgramInstanceId,
+          eventType = @eventType,
+          region = @region,
+          subRegion = @subRegion,
+          country = @country,
+          activityOwner = @activityOwner,
+          speakers = @speakers,
+          isEventSeries = @isEventSeries,
+          languagesAndTemplates = @languagesAndTemplates,
+          isApprovedForCustomerUse = @isApprovedForCustomerUse,
+          okr = @okr,
+          gep = @gep,
+          audiencePersona = @audiencePersona,
+          audienceSeniority = @audienceSeniority,
+          accountSectors = @accountSectors,
+          accountSegments = @accountSegments,
+          maxEventCapacity = @maxEventCapacity,
+          peopleMeetingCriteria = @peopleMeetingCriteria,
+          landingPageLinks = @landingPageLinks,
+          salesKitLinks = @salesKitLinks,
+          hailoLinks = @hailoLinks,
+          otherDocumentsLinks = @otherDocumentsLinks,
+          isHighPriority = @isHighPriority,
+          isPartneredEvent = @isPartneredEvent,
+          partnerRole = @partnerRole,
+          accountCategory = @accountCategory,
+          accountType = @accountType,
+          productAlignment = @productAlignment,
+          aiVsCore = @aiVsCore,
+          industry = @industry,
+          city = @city,
+          locationVenue = @locationVenue,
+          marketingActivityType = @marketingActivityType,
+          isDraft = @isDraft,
+          isPublished = @isPublished,
+          userTimezone = @userTimezone
+      WHEN NOT MATCHED THEN
+        INSERT (
+          eventId,
+          title,
+          description,
+          emoji,
+          organisedBy,
+          startDate,
+          endDate,
+          marketingProgramInstanceId,
+          eventType,
+          region,
+          subRegion,
+          country,
+          activityOwner,
+          speakers,
+          isEventSeries,
+          languagesAndTemplates,
+          isApprovedForCustomerUse,
+          okr,
+          gep,
+          audiencePersona,
+          audienceSeniority,
+          accountSectors,
+          accountSegments,
+          maxEventCapacity,
+          peopleMeetingCriteria,
+          landingPageLinks,
+          salesKitLinks,
+          hailoLinks,
+          otherDocumentsLinks,
+          isHighPriority,
+          isPartneredEvent,
+          partnerRole,
+          accountCategory,
+          accountType,
+          productAlignment,
+          aiVsCore,
+          industry,
+          city,
+          locationVenue,
+          marketingActivityType,
+          isDraft,
+          isPublished,
+          userTimezone
+        ) VALUES (
+          @eventId,
+          @title,
+          @description,
+          @emoji,
+          @organisedBy,
+          @startDate,
+          @endDate,
+          @marketingProgramInstanceId,
+          @eventType,
+          @region,
+          @subRegion,
+          @country,
+          @activityOwner,
+          @speakers,
+          @isEventSeries,
+          @languagesAndTemplates,
+          @isApprovedForCustomerUse,
+          @okr,
+          @gep,
+          @audiencePersona,
+          @audienceSeniority,
+          @accountSectors,
+          @accountSegments,
+          @maxEventCapacity,
+          @peopleMeetingCriteria,
+          @landingPageLinks,
+          @salesKitLinks,
+          @hailoLinks,
+          @otherDocumentsLinks,
+          @isHighPriority,
+          @isPartneredEvent,
+          @partnerRole,
+          @accountCategory,
+          @accountType,
+          @productAlignment,
+          @aiVsCore,
+          @industry,
+          @city,
+          @locationVenue,
+          @marketingActivityType,
+          @isDraft,
+          @isPublished,
+          @userTimezone
+        )
     `;
-    const options = {
-      query: checkEventQuery,
-      params: { eventId },
-      location: 'US',
+
+    const params = {
+      eventId: eventData.eventId,
+      title: eventData.title || null,
+      description: eventData.description || null,
+      emoji: eventData.emoji || null,
+      organisedBy: eventData.organisedBy || [],
+      startDate: eventData.startDate || null,
+      endDate: eventData.endDate || null,
+      marketingProgramInstanceId: eventData.marketingProgramInstanceId || null,
+      eventType: eventData.eventType || null,
+      region: eventData.region || [],
+      subRegion: eventData.subRegion || [],
+      country: eventData.country || [],
+      activityOwner: eventData.activityOwner || [],
+      speakers: eventData.speakers || [],
+      isEventSeries: eventData.isEventSeries || false,
+      languagesAndTemplates: eventData.languagesAndTemplates || [],
+      isApprovedForCustomerUse: eventData.isApprovedForCustomerUse || false,
+      okr: eventData.okr || [],
+      gep: eventData.gep || [],
+      audiencePersona: eventData.audiencePersona || [],
+      audienceSeniority: eventData.audienceSeniority || [],
+      accountSectors: eventData.accountSectors || {},
+      accountSegments: eventData.accountSegments || {},
+      maxEventCapacity: eventData.maxEventCapacity || null,
+      peopleMeetingCriteria: eventData.peopleMeetingCriteria || null,
+      landingPageLinks: eventData.landingPageLinks || [],
+      salesKitLinks: eventData.salesKitLinks || [],
+      hailoLinks: eventData.hailoLinks || [],
+      otherDocumentsLinks: eventData.otherDocumentsLinks || [],
+      isHighPriority: eventData.isHighPriority || false,
+      isPartneredEvent: eventData.isPartneredEvent || false,
+      partnerRole: eventData.partnerRole || null,
+      accountCategory: eventData.accountCategory || {},
+      accountType: eventData.accountType || {},
+      productAlignment: eventData.productAlignment || {},
+      aiVsCore: eventData.aiVsCore || null,
+      industry: eventData.industry || null,
+      city: eventData.city || null,
+      locationVenue: eventData.locationVenue || null,
+      marketingActivityType: eventData.marketingActivityType || null,
+      isDraft: eventData.isDraft || true,
+      isPublished: eventData.isPublished || false,
+      userTimezone: eventData.userTimezone || null
     };
 
-    const [rows] = await bigquery.query(options);
+    // Execute the MERGE query
+    await bigquery.query({
+      query: mergeQuery,
+      params,
+      location: 'US'
+    });
 
-    if (rows.length > 0) {
-      // Step 2: Event exists, construct dynamic update query
-      logger.info('Event already exists. Updating event data.', { eventId });
+    logger.info('Event data saved or updated successfully.', { eventId });
 
-      // Create dynamic SET clause based on the provided fields in eventData
-      const setClauses = [];
-      const params = { eventId };
-      const types = {};
-
-      for (const [key, value] of Object.entries(eventData)) {
-        if (Array.isArray(value)) {
-          // Handle array types
-          if (key === 'languagesAndTemplates') {
-            // If the field is `languagesAndTemplates`, treat as ARRAY<STRUCT>
-            params[key] = value.length === 0 ? [] : value;
-            setClauses.push(`${key} = @${key}`);
-            types[key] = 'ARRAY<STRUCT<platform STRING, language STRING, template STRING>>';
-          } else if (key === 'okr') {
-            // If the field is `okr`, treat as ARRAY<STRUCT>
-            params[key] = value.length === 0 ? [] : value;
-            setClauses.push(`${key} = @${key}`);
-            types[key] = 'ARRAY<STRUCT<type STRING, percentage STRING>>';
-          } else {
-            // For other arrays, check if empty and treat as ARRAY<STRING>
-            params[key] = value.length === 0 ? [] : value;
-            setClauses.push(`${key} = @${key}`);
-            types[key] = 'ARRAY<STRING>';
-          }
-        } else if (value !== undefined && value !== null) {
-          // Handle other non-array fields
-          setClauses.push(`${key} = @${key}`);
-          params[key] = value;
-        }
-      }
-
-      // Construct the final dynamic update query
-      const updateEventQuery = `
-        UPDATE \`${datasetId}.${tableId}\`
-        SET ${setClauses.join(', ')}
-        WHERE eventId = @eventId
-      `;
-
-      const updateOptions = {
-        query: updateEventQuery,
-        params,
-        types, // Add types for empty arrays
-        location: 'US',
-      };
-
-      await bigquery.query(updateOptions);
-      logger.info('Event data updated successfully.', { eventId });
-
-    } else {
-      // Step 3: If event doesn't exist, insert a new record
-      logger.info('Event does not exist. Inserting new event data.', { eventData });
-      await bigquery.dataset(datasetId).table(tableId).insert([eventData]);
-      logger.info('Event data saved successfully.', { eventData });
-    }
   } catch (error) {
-    if (error.name === 'PartialFailureError') {
-      logger.error('Partial failure occurred while saving event data.', { errors: error.errors });
-    } else {
-      logger.error('Error saving event data.', { error });
-    }
+    logger.error('Error saving or updating event data.', { error });
     throw error;
   }
 }
