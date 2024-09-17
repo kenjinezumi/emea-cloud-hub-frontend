@@ -438,45 +438,94 @@ async function saveEventData(eventData) {
       title: 'string',
       description: 'string',
       emoji: 'string',
-      organisedBy: { type: 'array', arrayType: 'string' }, // Correct array type declaration
+      organisedBy: { type: 'array', arrayType: 'string' },
       startDate: 'string',
       endDate: 'string',
       marketingProgramInstanceId: 'string',
       eventType: 'string',
       region: 'string',
-      subRegion: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      country: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      activityOwner: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      speakers: { type: 'array', arrayType: 'string' }, // Correct array type declaration
+      subRegion: { type: 'array', arrayType: 'string' },
+      country: { type: 'array', arrayType: 'string' },
+      activityOwner: { type: 'array', arrayType: 'string' },
+      speakers: { type: 'array', arrayType: 'string' },
       isEventSeries: 'bool',
       languagesAndTemplates: { 
         type: 'array', 
-        arrayType: { type: 'struct', fields: { platform: 'string', language: 'string', template: 'string' } } 
-      }, // Array of struct
+        arrayType: { 
+          type: 'struct', 
+          fields: { 
+            platform: 'string', 
+            language: 'string', 
+            template: 'string' 
+          } 
+        } 
+      },
       okr: { 
         type: 'array', 
-        arrayType: { type: 'struct', fields: { type: 'string', percentage: 'string' } } 
-      }, // Array of struct
-      gep: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      audiencePersona: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      audienceSeniority: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      accountSectors: { type: 'struct', fields: { commercial: 'bool', public: 'bool' } },
+        arrayType: { 
+          type: 'struct', 
+          fields: { 
+            type: 'string', 
+            percentage: 'string' 
+          } 
+        } 
+      },
+      gep: { type: 'array', arrayType: 'string' },
+      audiencePersona: { type: 'array', arrayType: 'string' },
+      audienceSeniority: { type: 'array', arrayType: 'string' },
+      accountSectors: { 
+        type: 'struct', 
+        fields: { 
+          commercial: 'bool', 
+          public: 'bool' 
+        } 
+      },
       accountSegments: { 
         type: 'struct', 
         fields: {
-          Corporate: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
-          SMB: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
-          Select: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
-          Enterprise: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
-          Startup: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
+          Corporate: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
+          SMB: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
+          Select: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
+          Enterprise: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
+          Startup: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
         }
       },
       maxEventCapacity: 'string',
       peopleMeetingCriteria: 'string',
-      landingPageLinks: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      salesKitLinks: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      hailoLinks: { type: 'array', arrayType: 'string' }, // Correct array type declaration
-      otherDocumentsLinks: { type: 'array', arrayType: 'string' }, // Correct array type declaration
+      landingPageLinks: { type: 'array', arrayType: 'string' },
+      salesKitLinks: { type: 'array', arrayType: 'string' },
+      hailoLinks: { type: 'array', arrayType: 'string' },
+      otherDocumentsLinks: { type: 'array', arrayType: 'string' },
       isApprovedForCustomerUse: 'bool',
       isDraft: 'bool',
       isPublished: 'bool',
@@ -486,22 +535,58 @@ async function saveEventData(eventData) {
       accountCategory: { 
         type: 'struct', 
         fields: {
-          DigitalNative: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
-          Traditional: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
+          DigitalNative: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
+          Traditional: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
         } 
       },
       accountType: { 
         type: 'struct', 
         fields: {
-          Greenfield: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
-          ExistingCustomer: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
+          Greenfield: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
+          ExistingCustomer: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
         } 
       },
       productAlignment: { 
         type: 'struct', 
         fields: {
-          GCP: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
-          GWS: { type: 'struct', fields: { selected: 'bool', percentage: 'string' } },
+          GCP: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
+          GWS: { 
+            type: 'struct', 
+            fields: { 
+              selected: 'bool', 
+              percentage: 'string' 
+            } 
+          },
         } 
       },
       aiVsCore: 'string',
@@ -511,6 +596,7 @@ async function saveEventData(eventData) {
       marketingActivityType: 'string',
       userTimezone: 'string',
     };
+    
     
     
 
