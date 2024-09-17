@@ -76,9 +76,10 @@ export default function AudiencePersonaForm() {
   });
 
   const [accountSectors, setAccountSectors] = useState({
-    commercial: selectedEvent ? selectedEvent.accountSectors.commercial : false,
-    public: selectedEvent ? selectedEvent.accountSectors.public : false,
+    commercial: selectedEvent?.accountSectors?.commercial ?? false,
+    public: selectedEvent?.accountSectors?.public ?? false,
   });
+  
 
   const [maxEventCapacity, setMaxEventCapacity] = useState(
     selectedEvent ? selectedEvent.maxEventCapacity : formData.maxEventCapacity || ""
