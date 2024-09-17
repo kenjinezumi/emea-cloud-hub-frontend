@@ -78,6 +78,8 @@ router.get('/auth/google',
 router.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   async (req, res) => {
+    console.log('Authenticated user:', req.user);  // Check if tokens are present
+
     try {
       console.log('Inside the Google OAuth callback, after Passport authentication');
 

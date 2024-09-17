@@ -51,7 +51,7 @@ passport.use(new GoogleStrategy({
   clientID: CLIENT_ID,
   clientSecret: CLIENT_SECRET,
   callbackURL: CALLBACK_URL,
-  scope: ['profile', 'email', 'https://www.googleapis.com/auth/gmail.send'],
+  scope: ['profile', 'email', 'https://www.googleapis.com/auth/gmail.compose'],
 }, (accessToken, refreshToken, profile, done) => {
   profile.accessToken = accessToken;
   profile.refreshToken = refreshToken;
