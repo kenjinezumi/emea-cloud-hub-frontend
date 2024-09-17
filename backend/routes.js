@@ -136,18 +136,70 @@ const sendGmail = async (accessToken, emailDetails) => {
 };
 
 
-router.post('/send-gmail-invite', (req, res) => {
+const { google } = require('googleapis');
+const gmail = google.gmail('v1');
+const logger = require('winston'); // Make sure you are using Winston logger
+
+router.post('/send-gmail-invite', async (req, res) => {
   const { to, subject, body } = req.body;
 
-  if (!req.user || !req.user.accessToken) {
-    return res.status(401).json({ success: false, message: 'User not authenticated' });
+  try {
+    // Check if user is authenticated
+    if (!req.user || !req.user.accessToken) {
+      logger.error("User not authenticated. Access token is missing.");
+      return res.status(401).send('User not authenticated');
+    }
+
+    logger.info("User authenticated, proceeding to create Gmail draft.");
+
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: req.user.accessToken });
+
+    // Create the raw email format
+    const email = [
+      `To: ${to}`,
+      'Content-Type: text/html; charset=utf-8',
+      'MIME-Version: 1.0',
+      `Subject: ${subject}`,
+      '',
+      body,
+    ].join('\n');
+
+    // Encode the email to base64
+    const encodedMessage = Buffer.from(email)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
+    logger.info("Encoded email message prepared.", { encodedMessage });
+
+    // Attempt to create Gmail draft
+    const response = await gmail.users.drafts.create({
+      auth: oauth2Client,
+      userId: 'me',
+      requestBody: {
+        message: {
+          raw: encodedMessage,
+        },
+      },
+    });
+
+    if (response && response.data) {
+      logger.info("Gmail draft created successfully.", { draftId: response.data.id });
+      res.status(200).json({
+        success: true,
+        draftId: response.data.id,
+        draftUrl: `https://mail.google.com/mail/u/${req.user.emails[0].value}/#drafts`,
+      });
+    } else {
+      logger.error("Failed to create Gmail draft. No response data from Gmail API.");
+      res.status(500).send('Failed to create Gmail draft');
+    }
+  } catch (error) {
+    logger.error("Error while creating Gmail draft", { error: error.message, stack: error.stack });
+    res.status(500).send('Failed to create Gmail draft due to server error');
   }
-
-  const emailDetails = { to, subject, body };
-
-  sendGmail(req.user.accessToken, emailDetails)
-    .then((draft) => res.status(200).json({ success: true, draftId: draft.data.id }))
-    .catch((err) => res.status(500).json({ success: false, message: 'Failed to send email' }));
 });
 
 

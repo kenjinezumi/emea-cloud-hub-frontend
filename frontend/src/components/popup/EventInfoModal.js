@@ -93,6 +93,7 @@ export default function EventInfoPopup({ event, close }) {
       const email = user?.emails?.[0]?.value;
   
       if (!email || !selectedLanguage) {
+        console.error("No email or selected language found. Aborting draft creation.");
         alert("No email or template selected.");
         return;
       }
@@ -102,20 +103,25 @@ export default function EventInfoPopup({ event, close }) {
         (item) => item.language === selectedLanguage
       )?.template;
   
+      console.log("The selected template is:", template);
+  
       if (!template) {
+        console.error("No template found for the selected language.");
         alert("No template found for the selected language.");
         return;
       }
   
-      // Create the email body with the template
+      // Prepare the email details to send to the backend
       const emailDetails = {
         to: email,
         subject: 'Event Invitation',
         body: template,
       };
   
-      // Send request to create a draft email
-      const response = await fetch(`${apiUrl}send-gmail-invite`, {
+      console.log("Sending request to create Gmail draft with email details:", emailDetails);
+  
+      // Send request to backend to create the Gmail draft
+      const response = await fetch(`${apiUrl}/send-gmail-invite`, {
         method: "POST",
         credentials: 'include',
         headers: {
@@ -124,14 +130,21 @@ export default function EventInfoPopup({ event, close }) {
         body: JSON.stringify(emailDetails),
       });
   
+      console.log("Response from server:", response);
+  
+      if (!response.ok) {
+        console.error("Failed to create Gmail draft. Response status:", response.status);
+        throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
+      }
+  
       const data = await response.json();
-      if (data.success && data.draftId) {
-        // Redirect to Gmail drafts with the created draft ID
-        window.open(
-          `https://mail.google.com/mail/u/${email}/#drafts?compose=${data.draftId}`,
-          "_blank"
-        );
+      console.log("Draft created successfully. Server response:", data);
+  
+      if (data.success) {
+        console.log("Redirecting to Gmail drafts at:", data.draftUrl);
+        window.open(data.draftUrl, "_blank");
       } else {
+        console.error("Error creating draft email. Server response:", data);
         alert("Error creating draft email.");
       }
     } catch (error) {
