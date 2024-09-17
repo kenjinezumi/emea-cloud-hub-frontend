@@ -242,388 +242,103 @@ async function saveEventData(eventData) {
   const tableId = 'master-event-data';
   const eventId = eventData.eventId;
 
-  logger.info('Preparing to save or update event data.', { eventData });
+  logger.info('Preparing to upsert event data.', { eventData });
 
   try {
-    // Construct the dynamic MERGE query
-    const mergeQuery = `
-      MERGE \`${datasetId}.${tableId}\` T
-      USING (SELECT @eventId AS eventId) S
-      ON T.eventId = S.eventId
-      WHEN MATCHED THEN
-        UPDATE SET 
-          title = @title,
-          description = @description,
-          emoji = @emoji,
-          organisedBy = @organisedBy,
-          startDate = @startDate,
-          endDate = @endDate,
-          marketingProgramInstanceId = @marketingProgramInstanceId,
-          eventType = @eventType,
-          region = @region,
-          subRegion = @subRegion,
-          country = @country,
-          activityOwner = @activityOwner,
-          speakers = @speakers,
-          isEventSeries = @isEventSeries,
-          languagesAndTemplates = @languagesAndTemplates,
-          isApprovedForCustomerUse = @isApprovedForCustomerUse,
-          okr = @okr,
-          gep = @gep,
-          audiencePersona = @audiencePersona,
-          audienceSeniority = @audienceSeniority,
-          accountSectors = @accountSectors,
-          accountSegments = @accountSegments,
-          maxEventCapacity = @maxEventCapacity,
-          peopleMeetingCriteria = @peopleMeetingCriteria,
-          landingPageLinks = @landingPageLinks,
-          salesKitLinks = @salesKitLinks,
-          hailoLinks = @hailoLinks,
-          otherDocumentsLinks = @otherDocumentsLinks,
-          isHighPriority = @isHighPriority,
-          isPartneredEvent = @isPartneredEvent,
-          partnerRole = @partnerRole,
-          accountCategory = @accountCategory,
-          accountType = @accountType,
-          productAlignment = @productAlignment,
-          aiVsCore = @aiVsCore,
-          industry = @industry,
-          city = @city,
-          locationVenue = @locationVenue,
-          marketingActivityType = @marketingActivityType,
-          isDraft = @isDraft,
-          isPublished = @isPublished,
-          userTimezone = @userTimezone
-      WHEN NOT MATCHED THEN
-        INSERT (
-          eventId,
-          title,
-          description,
-          emoji,
-          organisedBy,
-          startDate,
-          endDate,
-          marketingProgramInstanceId,
-          eventType,
-          region,
-          subRegion,
-          country,
-          activityOwner,
-          speakers,
-          isEventSeries,
-          languagesAndTemplates,
-          isApprovedForCustomerUse,
-          okr,
-          gep,
-          audiencePersona,
-          audienceSeniority,
-          accountSectors,
-          accountSegments,
-          maxEventCapacity,
-          peopleMeetingCriteria,
-          landingPageLinks,
-          salesKitLinks,
-          hailoLinks,
-          otherDocumentsLinks,
-          isHighPriority,
-          isPartneredEvent,
-          partnerRole,
-          accountCategory,
-          accountType,
-          productAlignment,
-          aiVsCore,
-          industry,
-          city,
-          locationVenue,
-          marketingActivityType,
-          isDraft,
-          isPublished,
-          userTimezone
-        ) VALUES (
-          @eventId,
-          @title,
-          @description,
-          @emoji,
-          @organisedBy,
-          @startDate,
-          @endDate,
-          @marketingProgramInstanceId,
-          @eventType,
-          @region,
-          @subRegion,
-          @country,
-          @activityOwner,
-          @speakers,
-          @isEventSeries,
-          @languagesAndTemplates,
-          @isApprovedForCustomerUse,
-          @okr,
-          @gep,
-          @audiencePersona,
-          @audienceSeniority,
-          @accountSectors,
-          @accountSegments,
-          @maxEventCapacity,
-          @peopleMeetingCriteria,
-          @landingPageLinks,
-          @salesKitLinks,
-          @hailoLinks,
-          @otherDocumentsLinks,
-          @isHighPriority,
-          @isPartneredEvent,
-          @partnerRole,
-          @accountCategory,
-          @accountType,
-          @productAlignment,
-          @aiVsCore,
-          @industry,
-          @city,
-          @locationVenue,
-          @marketingActivityType,
-          @isDraft,
-          @isPublished,
-          @userTimezone
-        )
+    // Clean eventData by removing null, undefined, or empty fields
+    const cleanedData = cleanEventData(eventData);
+
+    // Step 1: Check if the event already exists
+    const checkEventQuery = `
+      SELECT eventId 
+      FROM \`${datasetId}.${tableId}\`
+      WHERE eventId = @eventId
     `;
-
-    const params = {
-      eventId: eventData.eventId,
-      title: eventData.title || null,
-      description: eventData.description || null,
-      emoji: eventData.emoji || null,
-      organisedBy: eventData.organisedBy || [],
-      startDate: eventData.startDate || null,
-      endDate: eventData.endDate || null,
-      marketingProgramInstanceId: eventData.marketingProgramInstanceId || null,
-      eventType: eventData.eventType || null,
-      region: eventData.region || [],
-      subRegion: eventData.subRegion || [],
-      country: eventData.country || [],
-      activityOwner: eventData.activityOwner || [],
-      speakers: eventData.speakers || [],
-      isEventSeries: eventData.isEventSeries || false,
-      languagesAndTemplates: eventData.languagesAndTemplates || [],
-      isApprovedForCustomerUse: eventData.isApprovedForCustomerUse || false,
-      okr: eventData.okr || [],
-      gep: eventData.gep || [],
-      audiencePersona: eventData.audiencePersona || [],
-      audienceSeniority: eventData.audienceSeniority || [],
-      accountSectors: eventData.accountSectors || {},
-      accountSegments: eventData.accountSegments || {},
-      maxEventCapacity: eventData.maxEventCapacity || null,
-      peopleMeetingCriteria: eventData.peopleMeetingCriteria || null,
-      landingPageLinks: eventData.landingPageLinks || [],
-      salesKitLinks: eventData.salesKitLinks || [],
-      hailoLinks: eventData.hailoLinks || [],
-      otherDocumentsLinks: eventData.otherDocumentsLinks || [],
-      isHighPriority: eventData.isHighPriority || false,
-      isPartneredEvent: eventData.isPartneredEvent || false,
-      partnerRole: eventData.partnerRole || null,
-      accountCategory: eventData.accountCategory || {},
-      accountType: eventData.accountType || {},
-      productAlignment: eventData.productAlignment || {},
-      aiVsCore: eventData.aiVsCore || null,
-      industry: eventData.industry || null,
-      city: eventData.city || null,
-      locationVenue: eventData.locationVenue || null,
-      marketingActivityType: eventData.marketingActivityType || null,
-      isDraft: eventData.isDraft || true,
-      isPublished: eventData.isPublished || false,
-      userTimezone: eventData.userTimezone || null
-    };
-
-    const types = {
-      eventId: 'string',
-      tacticId: 'string',
-      title: 'string',
-      description: 'string',
-      emoji: 'string',
-      organisedBy: { type: 'array', arrayType: 'string' },
-      startDate: 'string',
-      endDate: 'string',
-      marketingProgramInstanceId: 'string',
-      eventType: 'string',
-      region: 'string',
-      subRegion: { type: 'array', arrayType: 'string' },
-      country: { type: 'array', arrayType: 'string' },
-      activityOwner: { type: 'array', arrayType: 'string' },
-      speakers: { type: 'array', arrayType: 'string' },
-      isEventSeries: 'bool',
-      languagesAndTemplates: { 
-        type: 'array', 
-        arrayType: { 
-          type: 'struct', 
-          fields: { 
-            platform: 'string', 
-            language: 'string', 
-            template: 'string' 
-          } 
-        } 
-      },
-      okr: { 
-        type: 'array', 
-        arrayType: { 
-          type: 'struct', 
-          fields: { 
-            type: 'string', 
-            percentage: 'string' 
-          } 
-        } 
-      },
-      gep: { type: 'array', arrayType: 'string' },
-      audiencePersona: { type: 'array', arrayType: 'string' },
-      audienceSeniority: { type: 'array', arrayType: 'string' },
-      accountSectors: { 
-        type: 'struct', 
-        fields: { 
-          commercial: 'bool', 
-          public: 'bool' 
-        } 
-      },
-      accountSegments: { 
-        type: 'struct', 
-        fields: {
-          Corporate: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-          SMB: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-          Select: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-          Enterprise: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-          Startup: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-        }
-      },
-      maxEventCapacity: 'string',
-      peopleMeetingCriteria: 'string',
-      landingPageLinks: { type: 'array', arrayType: 'string' },
-      salesKitLinks: { type: 'array', arrayType: 'string' },
-      hailoLinks: { type: 'array', arrayType: 'string' },
-      otherDocumentsLinks: { type: 'array', arrayType: 'string' },
-      isApprovedForCustomerUse: 'bool',
-      isDraft: 'bool',
-      isPublished: 'bool',
-      isHighPriority: 'bool',
-      isPartneredEvent: 'bool',
-      partnerRole: 'string',
-      accountCategory: { 
-        type: 'struct', 
-        fields: {
-          DigitalNative: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-          Traditional: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-        } 
-      },
-      accountType: { 
-        type: 'struct', 
-        fields: {
-          Greenfield: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-          ExistingCustomer: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-        } 
-      },
-      productAlignment: { 
-        type: 'struct', 
-        fields: {
-          GCP: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-          GWS: { 
-            type: 'struct', 
-            fields: { 
-              selected: 'bool', 
-              percentage: 'string' 
-            } 
-          },
-        } 
-      },
-      aiVsCore: 'string',
-      industry: 'string',
-      city: 'string',
-      locationVenue: 'string',
-      marketingActivityType: 'string',
-      userTimezone: 'string',
-    };
     
+    const checkParams = { eventId };
     
-    logger.info('Executing query with parameters:', { params, types });
+    const [rows] = await bigquery.query({
+      query: checkEventQuery,
+      params: checkParams,
+      location: 'US'
+    });
 
+    if (rows.length > 0) {
+      // Step 2: Event exists, perform an UPDATE
+      logger.info('Event already exists. Performing update.', { eventId });
 
-    try {
+      const updateQuery = `
+        UPDATE \`${datasetId}.${tableId}\`
+        SET ${Object.keys(cleanedData).map(key => `${key} = @${key}`).join(', ')}
+        WHERE eventId = @eventId
+      `;
+      
+      const updateParams = { ...cleanedData, eventId };
+      
       await bigquery.query({
-        query: mergeQuery,
-        params,
-        location: 'US',
-        types,
+        query: updateQuery,
+        params: updateParams,
+        location: 'US'
       });
-    } catch (error) {
-      logger.error('Error executing query:', { error: JSON.stringify(error, null, 2) });
-      throw error; // Re-throw the error after logging
-    }
-    
 
-    logger.info('Event data saved or updated successfully.', { eventId });
+      logger.info('Event data updated successfully.', { eventId });
+
+    } else {
+      // Step 3: Event does not exist, perform an INSERT
+      logger.info('Event does not exist. Performing insert.', { eventId });
+
+      const insertQuery = `
+        INSERT INTO \`${datasetId}.${tableId}\` (${Object.keys(cleanedData).join(', ')})
+        VALUES (${Object.keys(cleanedData).map(key => `@${key}`).join(', ')})
+      `;
+      
+      const insertParams = cleanedData;
+      
+      await bigquery.query({
+        query: insertQuery,
+        params: insertParams,
+        location: 'US'
+      });
+
+      logger.info('Event data inserted successfully.', { eventId });
+    }
 
   } catch (error) {
-    logger.error('Error saving or updating event data.', { error });
+    logger.error('Error performing upsert operation on event data.', { error });
     throw error;
   }
 }
 
+function cleanEventData(eventData) {
+  const cleanedData = {};
+
+  for (const key in eventData) {
+    if (eventData.hasOwnProperty(key)) {
+      const value = eventData[key];
+
+      // Check if value is non-null, non-undefined, non-empty string, non-empty array, and non-empty struct
+      if (value !== null && value !== undefined) {
+        if (typeof value === 'string' && value.trim() !== '') {
+          cleanedData[key] = value;
+        } else if (Array.isArray(value) && value.length > 0) {
+          cleanedData[key] = value;
+        } else if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length > 0) {
+          // Check if it's a non-empty struct (non-empty object)
+          cleanedData[key] = value;
+        } else if (typeof value !== 'string' && typeof value !== 'object') {
+          // For primitive values like boolean, number, etc., we directly include them
+          cleanedData[key] = value;
+        }
+      }
+    }
+  }
+
+  return cleanedData;
+}
 
 
+  return cleanedData;
+}
 
 
 
