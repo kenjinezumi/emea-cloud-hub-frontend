@@ -266,18 +266,21 @@ async function saveEventData(eventData) {
       // Create dynamic SET clause based on the provided fields in eventData
       const setClauses = [];
       const params = { eventId };
+      const types = {};
 
       for (const [key, value] of Object.entries(eventData)) {
         if (Array.isArray(value)) {
           // Handle array types
           if (key === 'languagesAndTemplates' || key === 'okr') {
             // If the field is `languagesAndTemplates` or `okr`, treat as ARRAY<STRUCT>
-            params[key] = value.length === 0 ? null : value;
+            params[key] = value.length === 0 ? [] : value;
             setClauses.push(`${key} = @${key}`);
+            types[key] = 'ARRAY<STRUCT<platform STRING, language STRING, template STRING>>';
           } else {
             // For other arrays, check if empty and treat as ARRAY<STRING>
             params[key] = value.length === 0 ? [] : value;
             setClauses.push(`${key} = @${key}`);
+            types[key] = 'ARRAY<STRING>';
           }
         } else if (value !== undefined && value !== null) {
           // Handle other non-array fields
@@ -296,6 +299,7 @@ async function saveEventData(eventData) {
       const updateOptions = {
         query: updateEventQuery,
         params,
+        types, // Add types for empty arrays
         location: 'US',
       };
 
@@ -317,6 +321,7 @@ async function saveEventData(eventData) {
     throw error;
   }
 }
+
 
 
 
