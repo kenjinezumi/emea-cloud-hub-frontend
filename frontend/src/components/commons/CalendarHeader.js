@@ -1,11 +1,11 @@
+import React, { useEffect, useState, useContext } from 'react';
 import dayjs from 'dayjs';
-import React, { useContext, useState, useEffect } from 'react';
 import logo from '../../assets/logo/logo.png';
 import MenuIcon from '@mui/icons-material/Menu';
 import beta from '../../assets/svg/beta.svg';
 import IconButton from '@mui/material/IconButton';
 import SearchIcon from '@mui/icons-material/Search';
-import { Select, MenuItem, Typography, Input, Tooltip, Avatar } from '@mui/material';
+import { Select, MenuItem, Typography, Input, Tooltip, Avatar, Popover, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import GlobalContext from '../../context/GlobalContext';
 import versionInfo from '../../version.json';
@@ -24,10 +24,11 @@ export default function CalendarHeader() {
     searchText,
     setSearchText,
   } = useContext(GlobalContext);
-  
+
   const [view, setView] = useState(currentView || 'month');
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [user, setUser] = useState(null);  // State to store user data
+  const [anchorEl, setAnchorEl] = useState(null);  // State for managing popover anchor
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -157,6 +158,25 @@ export default function CalendarHeader() {
     window.location.href = '/';
   };
 
+  // Handle opening and closing of the profile popover
+  const handleProfileClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    // Clear local storage and redirect to login page
+    localStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    navigate('/login');
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'profile-popover' : undefined;
+
   return (
     <header className="flex items-center justify-between border-b border-gray-300 bg-white px-4 py-2">
       <div className="flex items-center space-x-4 overflow-hidden">
@@ -222,27 +242,55 @@ export default function CalendarHeader() {
           <SearchIcon />
         </IconButton>
 
-        {/* Display user profile picture with tooltip */}
+        {/* Display user profile picture with tooltip and popover */}
         {user && (
-          <Tooltip
-            title={
-              <div>
+          <>
+            <Tooltip
+              title={
+                <div>
+                  <Typography variant="body2">
+                    {`${user.name.givenName} ${user.name.familyName}`}
+                  </Typography>
+                  <Typography variant="caption">{user.emails[0].value}</Typography>
+                </div>
+              }
+              arrow
+            >
+              <IconButton onClick={handleProfileClick}>
+                <Avatar
+                  src={user.photos[0].value}
+                  alt={`${user.name.givenName} ${user.name.familyName}`}
+                  sx={{ width: 40, height: 40 }}
+                />
+              </IconButton>
+            </Tooltip>
+
+            {/* Popover component for Gmail-style profile dropdown */}
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handlePopoverClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+            >
+              <div style={{ padding: '10px', minWidth: '200px' }}>
                 <Typography variant="body2">
                   {`${user.name.givenName} ${user.name.familyName}`}
                 </Typography>
-                <Typography variant="caption">{user.emails[0].value}</Typography>
+                <Typography variant="caption" color="textSecondary">
+                  {user.emails[0].value}
+                </Typography>
+                <div style={{ marginTop: '10px' }}>
+                  <Button variant="contained" color="primary" onClick={handleLogout}>
+                    Logout
+                  </Button>
+                </div>
               </div>
-            }
-            arrow
-          >
-            <IconButton>
-              <Avatar
-                src={user.photos[0].value}
-                alt={`${user.name.givenName} ${user.name.familyName}`}
-                sx={{ width: 40, height: 40 }}
-              />
-            </IconButton>
-          </Tooltip>
+            </Popover>
+          </>
         )}
       </div>
     </header>

@@ -212,14 +212,21 @@ router.post('/send-gmail-invite', async (req, res) => {
 
   
 // Route to log out the user
-router.get('/logout', (req, res) => {
+router.get('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) {
-      return next(err);
+      return next(err); // Handle any errors that occur during logout
     }
+    
+    // Clear the session and cookies, if needed
+    req.session = null;  // If you're using express-session, this will destroy the session
+    res.clearCookie('connect.sid'); // Clear the session cookie
+    
+    // Redirect the user to the homepage or a login page after logout
     res.redirect('/');
   });
 });
+
 
 // Route to get current user info
 router.get('/api/current_user', (req, res) => {
