@@ -214,6 +214,20 @@ export default function CalendarHeader() {
       </div>
 
       <div className="flex items-center space-x-4">
+      {showSearchInput && (
+          <Input
+            placeholder="Search events..."
+            value={searchText}
+            onChange={handleSearchInputChange}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
+            sx={{ width: 200 }}
+          />
+        )}
+
+        <IconButton onClick={handleSearchIconClick}>
+          <SearchIcon />
+        </IconButton>
+        
         <Select
           value={currentView}
           onChange={handleViewChange}
@@ -228,19 +242,7 @@ export default function CalendarHeader() {
           <MenuItem value="list">List</MenuItem>
         </Select>
 
-        {showSearchInput && (
-          <Input
-            placeholder="Search events..."
-            value={searchText}
-            onChange={handleSearchInputChange}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
-            sx={{ width: 200 }}
-          />
-        )}
-
-        <IconButton onClick={handleSearchIconClick}>
-          <SearchIcon />
-        </IconButton>
+        
 
         {/* Display user profile picture with tooltip and popover */}
         {user && (
