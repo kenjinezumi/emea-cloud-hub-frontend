@@ -140,18 +140,28 @@ router.post('/send-gmail-invite', async (req, res) => {
   const { to, subject, body } = req.body;
 
   try {
-    // Check if user is authenticated
-    if (!req.user || !req.user.accessToken) {
-      logger.error("User not authenticated. Access token is missing.");
+    if (!req.user || !req.user.accessToken || !req.user.refreshToken) {
+      logger.error("User not authenticated or missing tokens.");
       return res.status(401).send('User not authenticated');
     }
 
     logger.info("User authenticated, proceeding to create Gmail draft.");
 
-    const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: req.user.accessToken });
+    const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
+    oauth2Client.setCredentials({
+      access_token: req.user.accessToken,
+      refresh_token: req.user.refreshToken,
+    });
 
-    // Create the raw email format
+    // Automatically refresh access token if expired
+    oauth2Client.on('tokens', (tokens) => {
+      if (tokens.refresh_token) {
+        req.user.refreshToken = tokens.refresh_token;
+      }
+      req.user.accessToken = tokens.access_token;
+    });
+
+    // Prepare the raw email format
     const email = [
       `To: ${to}`,
       'Content-Type: text/html; charset=utf-8',
@@ -161,7 +171,6 @@ router.post('/send-gmail-invite', async (req, res) => {
       body,
     ].join('\n');
 
-    // Encode the email to base64
     const encodedMessage = Buffer.from(email)
       .toString('base64')
       .replace(/\+/g, '-')
@@ -170,7 +179,7 @@ router.post('/send-gmail-invite', async (req, res) => {
 
     logger.info("Encoded email message prepared.", { encodedMessage });
 
-    // Attempt to create Gmail draft
+    // Create Gmail draft
     const response = await gmail.users.drafts.create({
       auth: oauth2Client,
       userId: 'me',
