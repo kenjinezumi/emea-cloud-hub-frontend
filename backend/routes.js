@@ -187,6 +187,37 @@ router.post('/', async (req, res) => {
       logger.error('POST /: Query execution error.', { error });
       res.status(500).json({ success: false, message: 'Failed to execute query. Please try again later.' });
     }
+  } else if (message === 'delete-data') {
+    // Handle delete event logic
+    const { eventId } = data;
+    
+    if (!eventId) {
+      logger.warn('POST /: No eventId provided for deletion.');
+      return res.status(400).json({ success: false, message: 'Event ID is required for deletion.' });
+    }
+  
+    try {
+      logger.info('POST /: Deleting event data.', { eventId });
+      
+      const deleteQuery = `
+        DELETE FROM \`google.com:cloudhub.data.master-event-data\`
+        WHERE eventId = @eventId
+      `;
+      
+      const options = {
+        query: deleteQuery,
+        location: 'US',
+        params: { eventId: eventId },
+      };
+      
+      await bigquery.query(options);
+      
+      logger.info('POST /: Event data deleted successfully.', { eventId });
+      res.status(200).json({ success: true, message: 'Event deleted successfully.' });
+    } catch (error) {
+      logger.error('POST /: Error deleting event.', { error });
+      res.status(500).json({ success: false, message: 'Failed to delete event. Please try again later.' });
+    }
   } else {
     try {
       logger.info('POST /: Executing event data query.', { queryName });
@@ -206,32 +237,140 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Function to save event data (existing code)
+// Function to save or update event data
 async function saveEventData(eventData) {
   const datasetId = 'data';
   const tableId = 'master-event-data';
+  const eventId = eventData.eventId; 
 
   logger.info('Preparing to save event data.', { eventData });
 
   try {
-    // Remove unnecessary fields
-    // logger.info('Removing unnecessary fields: dropdownValue2,otherDocumentsLink,\
-    // marketingActivityType, landingPageLink, languagesAndTemplates.');
-    // delete eventData.dropdownValue2;
-    // delete eventData.otherDocumentsLink;
-    // delete eventData.landingPageLink;
-    // delete eventData.salesKitLink;   
-    // delete eventData.hailoLink;   
-    // delete eventData.marketingActivityType;
-    // delete eventData.activityOwner;
-    // delete eventData.activityType;
-    // delete eventData.emailLanguage;
-    // delete eventData.emailText;
+    // Step 1: Check if the event already exists in BigQuery
+    const checkEventQuery = `
+      SELECT eventId
+      FROM \`${datasetId}.${tableId}\`
+      WHERE eventId = @eventId
+    `;
+    const options = {
+      query: checkEventQuery,
+      params: { eventId },
+      location: 'US'
+    };
+    
+    const [rows] = await bigquery.query(options);
 
-    // Insert event data into BigQuery
-    logger.info('Inserting event data into BigQuery.', { datasetId, tableId });
-    await bigquery.dataset(datasetId).table(tableId).insert([eventData]);
-    logger.info('Event data saved successfully.', { eventData });
+    if (rows.length > 0) {
+      // Step 2: If event exists, update the existing record
+      logger.info('Event already exists. Updating event data.', { eventId });
+
+      const updateEventQuery = `
+        UPDATE \`${datasetId}.${tableId}\`
+        SET 
+          title = @title,
+          description = @description,
+          emoji = @emoji,
+          organisedBy = @organisedBy,
+          startDate = @startDate,
+          endDate = @endDate,
+          marketingProgramInstanceId = @marketingProgramInstanceId,
+          eventType = @eventType,
+          region = @region,
+          subRegion = @subRegion,
+          country = @country,
+          activityOwner = @activityOwner,
+          speakers = @speakers,
+          isEventSeries = @isEventSeries,
+          languagesAndTemplates = @languagesAndTemplates,
+          isApprovedForCustomerUse = @isApprovedForCustomerUse,
+          okr = @okr,
+          gep = @gep,
+          audiencePersona = @audiencePersona,
+          audienceSeniority = @audienceSeniority,
+          accountSectors = @accountSectors,
+          accountSegments = @accountSegments,
+          maxEventCapacity = @maxEventCapacity,
+          peopleMeetingCriteria = @peopleMeetingCriteria,
+          landingPageLinks = @landingPageLinks,
+          salesKitLinks = @salesKitLinks,
+          hailoLinks = @hailoLinks,
+          otherDocumentsLinks = @otherDocumentsLinks,
+          isHighPriority = @isHighPriority,
+          isPartneredEvent = @isPartneredEvent,
+          partnerRole = @partnerRole,
+          accountCategory = @accountCategory,
+          accountType = @accountType,
+          productAlignment = @productAlignment,
+          aiVsCore = @aiVsCore,
+          industry = @industry,
+          city = @city,
+          locationVenue = @locationVenue,
+          marketingActivityType = @marketingActivityType,
+          isDraft = @isDraft,
+          isPublished = @isPublished,
+          userTimezone = @userTimezone
+        WHERE eventId = @eventId
+      `;
+
+      const updateOptions = {
+        query: updateEventQuery,
+        params: {
+          eventId: eventData.eventId,
+          title: eventData.title,
+          description: eventData.description,
+          emoji: eventData.emoji,
+          organisedBy: eventData.organisedBy,
+          startDate: eventData.startDate,
+          endDate: eventData.endDate,
+          marketingProgramInstanceId: eventData.marketingProgramInstanceId,
+          eventType: eventData.eventType,
+          region: eventData.region,
+          subRegion: eventData.subRegion,
+          country: eventData.country,
+          activityOwner: eventData.activityOwner,
+          speakers: eventData.speakers,
+          isEventSeries: eventData.isEventSeries,
+          languagesAndTemplates: eventData.languagesAndTemplates,
+          isApprovedForCustomerUse: eventData.isApprovedForCustomerUse,
+          okr: eventData.okr,
+          gep: eventData.gep,
+          audiencePersona: eventData.audiencePersona,
+          audienceSeniority: eventData.audienceSeniority,
+          accountSectors: eventData.accountSectors,
+          accountSegments: eventData.accountSegments,
+          maxEventCapacity: eventData.maxEventCapacity,
+          peopleMeetingCriteria: eventData.peopleMeetingCriteria,
+          landingPageLinks: eventData.landingPageLinks,
+          salesKitLinks: eventData.salesKitLinks,
+          hailoLinks: eventData.hailoLinks,
+          otherDocumentsLinks: eventData.otherDocumentsLinks,
+          isHighPriority: eventData.isHighPriority,
+          isPartneredEvent: eventData.isPartneredEvent,
+          partnerRole: eventData.partnerRole,
+          accountCategory: eventData.accountCategory,
+          accountType: eventData.accountType,
+          productAlignment: eventData.productAlignment,
+          aiVsCore: eventData.aiVsCore,
+          industry: eventData.industry,
+          city: eventData.city,
+          locationVenue: eventData.locationVenue,
+          marketingActivityType: eventData.marketingActivityType,
+          isDraft: eventData.isDraft,
+          isPublished: eventData.isPublished,
+          userTimezone: eventData.userTimezone
+        },
+        location: 'US'
+      };
+
+      await bigquery.query(updateOptions);
+      logger.info('Event data updated successfully.', { eventId });
+
+    } else {
+      // Step 3: If event doesn't exist, insert new record
+      logger.info('Event does not exist. Inserting new event data.', { eventData });
+      await bigquery.dataset(datasetId).table(tableId).insert([eventData]);
+      logger.info('Event data saved successfully.', { eventData });
+    }
   } catch (error) {
     if (error.name === 'PartialFailureError') {
       logger.error('Partial failure occurred while saving event data.', { errors: error.errors });
@@ -241,5 +380,6 @@ async function saveEventData(eventData) {
     throw error; // Consider handling this error more gracefully
   }
 }
+
 
 module.exports = router;
