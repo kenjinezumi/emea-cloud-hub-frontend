@@ -12,8 +12,9 @@ const winston = require('winston');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const session = require('express-session');
-const FirestoreStore = require('connect-firestore')(session);  // Correct package for Firestore sessions
+const FirestoreStore = require('@google-cloud/connect-firestore')(session);  
 const { Firestore } = require('@google-cloud/firestore');
+
 
 
 const loggingWinston = new LoggingWinston();
@@ -42,8 +43,8 @@ const firestore = new Firestore();
 
 app.use(session({
   store: new FirestoreStore({
-    dataset: firestore,  // Use Firestore instance
-    kind: 'sessions'     // Firestore collection name
+    dataset: firestore,  // Firestore instance
+    kind: 'sessions'     // Firestore collection name for storing sessions
   }),
   secret: COOKIE_KEY,  // Use the cookie key
   resave: false,
