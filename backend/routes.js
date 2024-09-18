@@ -597,4 +597,6 @@ module.exports = (firestoreStore) => {
 
         return cleanedData;
     }
-}
+    return router;
+
+};
