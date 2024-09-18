@@ -1,12 +1,15 @@
-// src/components/PrivateRoute.js
 import React, { useContext } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import GlobalContext from "../context/GlobalContext";
 
-const PrivateRoute = () => {
-  const { isAuthenticated } = useContext(GlobalContext);
+const PrivateRoute = ({ element: Component, ...rest }) => {
+  const { user } = useContext(GlobalContext);
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
+  return user ? (
+    <Component {...rest} />
+  ) : (
+    <Navigate to="/login" />
+  );
 };
 
 export default PrivateRoute;
