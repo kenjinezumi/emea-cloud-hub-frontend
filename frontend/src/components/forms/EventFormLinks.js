@@ -23,6 +23,7 @@ import { sendDataToAPI } from "../../api/pushData";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 
+// Helper function to validate URLs
 const isValidUrl = (urlString) => {
   try {
     new URL(urlString);
@@ -74,19 +75,28 @@ export default function LinksForm() {
     setNewLink({ ...newLink, [type]: value });
   };
 
-  const handleAddLink = (type) => {
-    if (newLink[type] && isValidUrl(newLink[type])) {
+  // Function to handle adding a new link or multiple pasted links
+  const handleAddLink = (type, value) => {
+    const linkArray = value.split(/[ ,;\n]+/).filter(Boolean); // Split pasted links
+    const validLinks = linkArray.filter((link) => isValidUrl(link));
+    const invalidLinks = linkArray.filter((link) => !isValidUrl(link));
+
+    if (validLinks.length > 0) {
       setLinks({
         ...links,
-        [`${type}Links`]: [...links[`${type}Links`], newLink[type]],
+        [`${type}Links`]: [...links[`${type}Links`], ...validLinks],
       });
-      setNewLink({ ...newLink, [type]: "" });
-    } else {
-      setSnackbarMessage("Invalid URL. Please enter a valid URL.");
+      setNewLink({ ...newLink, [type]: "" }); // Clear the input field after adding
+    }
+
+    if (invalidLinks.length > 0) {
+      setSnackbarMessage(`Invalid URLs: ${invalidLinks.join(", ")}`);
+      setIsError(true);
       setSnackbarOpen(true);
     }
   };
 
+  // Handler for deleting a link
   const handleDeleteLink = (type, linkToDelete) => {
     setLinks({
       ...links,
@@ -96,14 +106,18 @@ export default function LinksForm() {
     });
   };
 
+  // Function to handle the "Enter" key or pasting links
+  const handleKeyPress = (type, event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleAddLink(type, newLink[type]);
+    }
+  };
+
   const handlePrevious = () => {
     const currentFormData = {
       ...links,
     };
-    console.log(
-      "Form data before navigating to previous:",
-      JSON.stringify(currentFormData, null, 2)
-    );
     saveAndNavigate(currentFormData, "/audience");
   };
 
@@ -116,21 +130,48 @@ export default function LinksForm() {
   };
 
   const handleSaveAndPublish = async () => {
+    const requiredFields = {
+      organisedBy: formData.organisedBy,
+      title: formData.title,
+      description: formData.description,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      eventId: formData.eventId,
+      eventType: formData.eventType,
+      region: formData.region,
+      subRegion: formData.subRegion,
+      country: formData.country,
+      city: formData.city,
+      isApprovedForCustomerUse: formData.isApprovedForCustomerUse,
+      gep: formData.gep,
+      audiencePersona: formData.audiencePersona,
+      audienceSeniority: formData.audienceSeniority,
+      accountSegments: formData.accountSegments,
+      accountCategory: formData.accountCategory,
+      accountType: formData.accountType,
+      productAlignment: formData.productAlignment,
+      aiVsCore: formData.aiVsCore,
+      industry: formData.industry,
+      accountSectors: formData.accountSectors,
+    };
+    const missingFields = Object.keys(requiredFields).filter(
+      (key) => !requiredFields[key] || requiredFields[key].length === 0
+    );
+  
+    if (missingFields.length > 0) {
+      setSnackbarMessage(`Please fill in all required fields: ${missingFields.join(", ")}`);
+      setIsError(true);
+      setSnackbarOpen(true);
+      return; 
+    }
     const newFormData = {
       ...formData,
       ...links,
       isDraft: false,
       isPublished: true,
-
     };
-    console.log('The new forma data is', newFormData);
 
     updateFormData(newFormData);
-    console.log(
-      "Form data before saving and publishing:",
-      JSON.stringify(newFormData, null, 2)
-    );
-
     try {
       const response = await sendDataToAPI(newFormData);
       if (response.success) {
@@ -153,16 +194,11 @@ export default function LinksForm() {
     const newFormData = {
       ...formData,
       ...links,
-      isDraft: true, 
-      isPublished:false
+      isDraft: true,
+      isPublished: false,
     };
 
     updateFormData(newFormData);
-
-    console.log(
-      "Form data before saving as draft:",
-      JSON.stringify(newFormData, null, 2)
-    );
 
     try {
       const response = await sendDataToAPI(newFormData, "draft");
@@ -197,12 +233,10 @@ export default function LinksForm() {
               marginBottom: "15px",
             }}
           >
-            
             <LinkIcon
               style={{ marginRight: "10px", color: blue[500], height: "40px" }}
             />
             <span className="mr-1 text-xl text-black cursor-pointer">Links</span>
-
           </Typography>
           <Grid container spacing={2}>
             {Object.entries(links).map(([key, value]) => (
@@ -217,12 +251,13 @@ export default function LinksForm() {
                   onChange={(e) =>
                     handleLinkChange(key.replace("Links", ""), e.target.value)
                   }
+                  onKeyDown={(e) => handleKeyPress(key.replace("Links", ""), e)} // Handle "Enter" key
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                           onClick={() =>
-                            handleAddLink(key.replace("Links", ""))
+                            handleAddLink(key.replace("Links", ""), newLink[key.replace("Links", "")])
                           }
                           edge="end"
                         >

@@ -57,7 +57,7 @@ export default function AudiencePersonaForm() {
     Startup: { selected: false, percentage: "" },
   });
   const [industry, setIndustry] = useState(
-    selectedEvent ? selectedEvent.industry : formData.industry || ""
+    Array.isArray(selectedEvent?.industry) ? selectedEvent.industry : []
   );
   
 
@@ -164,103 +164,113 @@ export default function AudiencePersonaForm() {
   const handleNext = () => {
     // Calculate and validate Account Segments
     const selectedSegments = Object.keys(accountSegments)
-      .filter((key) => accountSegments[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: accountSegments[key].percentage,
-      }));
-  
+    .filter((key) => accountSegments[key].selected) // Only selected segments
+    .map((key) => ({
+      type: key,
+      percentage: accountSegments[key].percentage,
+    }));
+
+  if (selectedSegments.length > 0) {
     const segmentTotalPercentage = selectedSegments.reduce(
       (sum, segment) => sum + (parseFloat(segment.percentage) || 0),
       0
     );
-  
+
     if (segmentTotalPercentage > 100) {
       setSnackbarMessage("Total percentage for Account Segments cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (segmentTotalPercentage !== 100) {
       setSnackbarMessage("Total percentage for Account Segments must equal 100%");
       setSnackbarOpen(true);
       return;
     }
-  
-    // Calculate and validate Account Category
-    const selectedCategories = Object.keys(accountCategory)
-      .filter((key) => accountCategory[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: accountCategory[key].percentage,
-      }));
-  
+  }
+
+  // Calculate and validate Account Category only if a checkbox is selected
+  const selectedCategories = Object.keys(accountCategory)
+    .filter((key) => accountCategory[key].selected) // Only selected categories
+    .map((key) => ({
+      type: key,
+      percentage: accountCategory[key].percentage,
+    }));
+
+  if (selectedCategories.length > 0) {
     const categoryTotalPercentage = selectedCategories.reduce(
       (sum, category) => sum + (parseFloat(category.percentage) || 0),
       0
     );
-  
+
     if (categoryTotalPercentage > 100) {
       setSnackbarMessage("Total percentage for Account Category cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (categoryTotalPercentage !== 100) {
       setSnackbarMessage("Total percentage for Account Category must equal 100%");
       setSnackbarOpen(true);
       return;
     }
-  
-    // Calculate and validate Account Type
-    const selectedTypes = Object.keys(accountType)
-      .filter((key) => accountType[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: accountType[key].percentage,
-      }));
-  
+  }
+
+  // Calculate and validate Account Type only if a checkbox is selected
+  const selectedTypes = Object.keys(accountType)
+    .filter((key) => accountType[key].selected) // Only selected types
+    .map((key) => ({
+      type: key,
+      percentage: accountType[key].percentage,
+    }));
+
+  if (selectedTypes.length > 0) {
     const typeTotalPercentage = selectedTypes.reduce(
       (sum, type) => sum + (parseFloat(type.percentage) || 0),
       0
     );
-  
+
     if (typeTotalPercentage > 100) {
       setSnackbarMessage("Total percentage for Account Type cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (typeTotalPercentage !== 100) {
       setSnackbarMessage("Total percentage for Account Type must equal 100%");
       setSnackbarOpen(true);
       return;
     }
-  
-    // Calculate and validate Product Alignment
-    const selectedAlignments = Object.keys(productAlignment)
-      .filter((key) => productAlignment[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: productAlignment[key].percentage,
-      }));
-  
+  }
+
+  // Calculate and validate Product Alignment only if a checkbox is selected
+  const selectedAlignments = Object.keys(productAlignment)
+    .filter((key) => productAlignment[key].selected) // Only selected alignments
+    .map((key) => ({
+      type: key,
+      percentage: productAlignment[key].percentage,
+    }));
+
+  if (selectedAlignments.length > 0) {
     const alignmentTotalPercentage = selectedAlignments.reduce(
       (sum, alignment) => sum + (parseFloat(alignment.percentage) || 0),
       0
     );
-  
+
     if (alignmentTotalPercentage > 100) {
       setSnackbarMessage("Total percentage for Product Alignment cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (alignmentTotalPercentage !== 100) {
       setSnackbarMessage("Total percentage for Product Alignment must equal 100%");
       setSnackbarOpen(true);
       return;
     }
+  }
+
+
   
     // If all checks pass, save the form data and move to the next step
     const currentFormData = {
@@ -302,103 +312,113 @@ export default function AudiencePersonaForm() {
   const handleSaveAsDraft = async () => {
     // Validate Account Segments
     const selectedSegments = Object.keys(accountSegments)
-      .filter((key) => accountSegments[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: accountSegments[key].percentage,
-      }));
-  
+    .filter((key) => accountSegments[key].selected) // Only selected segments
+    .map((key) => ({
+      type: key,
+      percentage: accountSegments[key].percentage,
+    }));
+
+  if (selectedSegments.length > 0) {
     const segmentTotalPercentage = selectedSegments.reduce(
       (sum, segment) => sum + (parseFloat(segment.percentage) || 0),
       0
     );
-  
+
     if (segmentTotalPercentage > 100) {
       setSnackbarMessage("Total percentage for Account Segments cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (segmentTotalPercentage !== 100) {
       setSnackbarMessage("Total percentage for Account Segments must equal 100%");
       setSnackbarOpen(true);
       return;
     }
-  
-    // Validate Account Category
-    const selectedCategories = Object.keys(accountCategory)
-      .filter((key) => accountCategory[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: accountCategory[key].percentage,
-      }));
-  
+  }
+
+  // Calculate and validate Account Category only if a checkbox is selected
+  const selectedCategories = Object.keys(accountCategory)
+    .filter((key) => accountCategory[key].selected) // Only selected categories
+    .map((key) => ({
+      type: key,
+      percentage: accountCategory[key].percentage,
+    }));
+
+  if (selectedCategories.length > 0) {
     const categoryTotalPercentage = selectedCategories.reduce(
       (sum, category) => sum + (parseFloat(category.percentage) || 0),
       0
     );
-  
+
     if (categoryTotalPercentage > 100) {
       setSnackbarMessage("Total percentage for Account Category cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (categoryTotalPercentage !== 100) {
       setSnackbarMessage("Total percentage for Account Category must equal 100%");
       setSnackbarOpen(true);
       return;
     }
-  
-    // Validate Account Type
-    const selectedTypes = Object.keys(accountType)
-      .filter((key) => accountType[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: accountType[key].percentage,
-      }));
-  
+  }
+
+  // Calculate and validate Account Type only if a checkbox is selected
+  const selectedTypes = Object.keys(accountType)
+    .filter((key) => accountType[key].selected) // Only selected types
+    .map((key) => ({
+      type: key,
+      percentage: accountType[key].percentage,
+    }));
+
+  if (selectedTypes.length > 0) {
     const typeTotalPercentage = selectedTypes.reduce(
       (sum, type) => sum + (parseFloat(type.percentage) || 0),
       0
     );
-  
+
     if (typeTotalPercentage > 100) {
       setSnackbarMessage("Total percentage for Account Type cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (typeTotalPercentage !== 100) {
       setSnackbarMessage("Total percentage for Account Type must equal 100%");
       setSnackbarOpen(true);
       return;
     }
-  
-    // Validate Product Alignment
-    const selectedAlignments = Object.keys(productAlignment)
-      .filter((key) => productAlignment[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: productAlignment[key].percentage,
-      }));
-  
+  }
+
+  // Calculate and validate Product Alignment only if a checkbox is selected
+  const selectedAlignments = Object.keys(productAlignment)
+    .filter((key) => productAlignment[key].selected) // Only selected alignments
+    .map((key) => ({
+      type: key,
+      percentage: productAlignment[key].percentage,
+    }));
+
+  if (selectedAlignments.length > 0) {
     const alignmentTotalPercentage = selectedAlignments.reduce(
       (sum, alignment) => sum + (parseFloat(alignment.percentage) || 0),
       0
     );
-  
+
     if (alignmentTotalPercentage > 100) {
       setSnackbarMessage("Total percentage for Product Alignment cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (alignmentTotalPercentage !== 100) {
       setSnackbarMessage("Total percentage for Product Alignment must equal 100%");
       setSnackbarOpen(true);
       return;
     }
+  }
+
+
   
     // If all checks pass, prepare the form data for saving as draft
     const draftData = {
@@ -528,24 +548,32 @@ export default function AudiencePersonaForm() {
 
          
           
-          {/* Industry Dropdown */}
+{/* Industry Multi-Select */}
 <Grid item xs={12}>
   <Typography variant="subtitle1">Industry</Typography>
   <FormControl fullWidth>
     <Select
+      multiple
       value={industry}
       onChange={(e) => setIndustry(e.target.value)}
-      displayEmpty
+      renderValue={(selected) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+          {selected.map((value) => (
+            <Chip key={value} label={value} />
+          ))}
+        </div>
+      )}
     >
-      <MenuItem value="" disabled>
-      </MenuItem>
       {industryOptions.map((industryOption, idx) => (
         <MenuItem key={idx} value={industryOption}>
+          <Checkbox checked={industry.indexOf(industryOption) > -1} />
           {industryOption}
         </MenuItem>
-      ))}    </Select>
+      ))}
+    </Select>
   </FormControl>
 </Grid>
+
 
 
 {/* Account Sectors Accordion */}
@@ -609,6 +637,7 @@ export default function AudiencePersonaForm() {
             <Input
               type="number"
               value={accountSegments[segment].percentage}
+              onWheel={(e) => e.target.blur()}
               onChange={(e) =>
                 handlePercentageChange(segment, e.target.value, setAccountSegments)
               }
@@ -650,6 +679,7 @@ export default function AudiencePersonaForm() {
             <Input
               type="number"
               value={accountCategory[category].percentage}
+              onWheel={(e) => e.target.blur()}
               onChange={(e) =>
                 handlePercentageChange(category, e.target.value, setAccountCategory)
               }
@@ -691,6 +721,7 @@ export default function AudiencePersonaForm() {
             <Input
               type="number"
               value={accountType[type].percentage}
+              onWheel={(e) => e.target.blur()}
               onChange={(e) =>
                 handlePercentageChange(type, e.target.value, setAccountType)
               }
@@ -732,6 +763,7 @@ export default function AudiencePersonaForm() {
             <Input
               type="number"
               value={productAlignment[alignment].percentage}
+              onWheel={(e) => e.target.blur()}
               onChange={(e) =>
                 handlePercentageChange(alignment, e.target.value, setProductAlignment)
               }

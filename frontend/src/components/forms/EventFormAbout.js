@@ -45,6 +45,8 @@ const EventForm = () => {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [colorMap, setColorMap] = useState({});
   const [organisedByOptions, setOrganisedByOptions] = useState([]);
+  const [newOrganiser, setNewOrganiser] = useState(""); // Input field for adding organisers
+
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -111,16 +113,7 @@ const EventForm = () => {
 
   useEffect(() => setIsClient(true), []);
 
-  const handleOrganisedByChange = (event) => {
-    const value = event.target.value;
-    setOrganisedBy(typeof value === "string" ? value.split(",") : value);
-  };
 
-  const handleOrganisedByDelete = (organiserToDelete) => () => {
-    setOrganisedBy((currentOrganisers) =>
-      currentOrganisers.filter((organiser) => organiser !== organiserToDelete)
-    );
-  };
 
   useEffect(() => {
     const fetchMarketingProgramOptions = async () => {
@@ -245,6 +238,42 @@ const EventForm = () => {
     setIsEmojiPickerOpen(false);
   };
 
+  const handleAddOrganiser = () => {
+    const trimmedOrganiser = newOrganiser.trim();
+    if (isValidEmail(trimmedOrganiser) && !organisedBy.includes(trimmedOrganiser)) {
+      setOrganisedBy([...organisedBy, trimmedOrganiser]);
+      setNewOrganiser(""); // Clear input after adding
+    } else if (!isValidEmail(trimmedOrganiser)) {
+      setSnackbarMessage("Invalid email format.");
+      setSnackbarOpen(true);
+    } else {
+      setSnackbarMessage("Organiser already added.");
+      setSnackbarOpen(true);
+    }
+  };
+  const handlePasteOrganisers = (event) => {
+    event.preventDefault();
+    const pastedText = event.clipboardData.getData("Text");
+
+    // Split pasted text by common delimiters (comma, semicolon, or space)
+    const pastedEmails = pastedText.split(/[ ,;\n]+/).filter(Boolean);
+
+    const validEmails = pastedEmails.filter(
+      (email) => isValidEmail(email) && !organisedBy.includes(email)
+    );
+
+    if (validEmails.length > 0) {
+      setOrganisedBy([...organisedBy, ...validEmails]);
+    } else {
+      setSnackbarMessage("No valid emails found in the pasted text.");
+      setSnackbarOpen(true);
+    }
+  };
+
+  // Delete an organiser
+  const handleDeleteOrganiser = (organiserToDelete) => {
+    setOrganisedBy(organisedBy.filter((organiser) => organiser !== organiserToDelete));
+  };
   const toggleEmojiPicker = () => setIsEmojiPickerOpen((prev) => !prev);
 
   const handleSaveAsDraft = async () => {
@@ -327,52 +356,43 @@ const EventForm = () => {
           </Grid>
 
           <form noValidate>
-          <Grid item xs={12} sx={{ mb: 3 }}>
-  <Typography variant="subtitle1" sx={{ mb: 1 }}>Organised by</Typography>
-  <FormControl fullWidth sx={{ maxHeight: 200, overflowY: 'auto' }}>
-    <Select
-      labelId="organised-by-label"
-      id="organised-by-select"
-      multiple
-      value={organisedBy}
-      onChange={handleOrganisedByChange}
-      renderValue={(selected) => (
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "5px",
-            maxHeight: "150px",
-            overflowY: "auto", // Add scrolling if there are many chips
-          }}
-        >
-          {selected.map((organiser) => (
-            <Chip
-              key={organiser}
-              label={organiser}
-              onDelete={handleOrganisedByDelete(organiser)}
-              onMouseDown={(event) => event.stopPropagation()}
-              style={{ margin: "2px" }}
+{/* Organised By Section */}
+<Grid item xs={12} sx={{ mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              Organised by (Email addresses)
+            </Typography>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Enter email and press Enter, or paste multiple emails"
+              value={newOrganiser}
+              onChange={(e) => setNewOrganiser(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAddOrganiser();
+              }}
+              onPaste={handlePasteOrganisers}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleAddOrganiser} edge="end">
+                      <AddCircleOutlineIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              margin="normal"
             />
-          ))}
-        </div>
-      )}
-      MenuProps={{
-        PaperProps: {
-          style: {
-            maxHeight: 300, // Limit dropdown height for scrolling
-          },
-        },
-      }}
-    >
-      {organisedByOptions.map((option) => (
-        <MenuItem key={option} value={option}>
-          {option}
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-</Grid>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginTop: "10px" }}>
+              {organisedBy.map((email, index) => (
+                <Chip
+                  key={index}
+                  label={email}
+                  onDelete={() => handleDeleteOrganiser(email)}
+                  color="primary"
+                />
+              ))}
+            </div>
+          </Grid>
 
             <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
 
