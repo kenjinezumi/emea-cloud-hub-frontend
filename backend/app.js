@@ -12,7 +12,7 @@ const winston = require('winston');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const session = require('express-session');
-const RedisStore = require('connect-redis')(session);
+const RedisStore = require('connect-redis').default;
 const { createClient } = require('redis');
 
 
@@ -39,7 +39,7 @@ const REDIS_HOST = process.env.REDIS_HOST;
 
 const redisClient = createClient({
   url: `redis://${REDIS_HOST}:6379`,
-  legacyMode: true  // Enable legacy commands like `get/set` if using redis@4.x
+  legacyMode: true  
 });
 redisClient.connect().catch(console.error);
 
