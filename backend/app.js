@@ -70,6 +70,11 @@ firestoreStore.on('error', (err) => {
   logger.error('Firestore session store error:', err);
 });
 
+firestoreStore.on('sessionSaved', (sessionId) => {
+  console.log(`Session ${sessionId} saved to Firestore.`);
+});
+
+
 try {
   app.use(
     session({

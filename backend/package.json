@@ -28,8 +28,10 @@
     "express-session": "^1.18.0",
     "google-auth-library": "^9.7.0",
     "googleapis": "^144.0.0",
+    "jsonwebtoken": "^9.0.2",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "passport-jwt": "^4.0.1",
     "redis": "^4.7.0",
     "winston": "^3.13.0"
   },
