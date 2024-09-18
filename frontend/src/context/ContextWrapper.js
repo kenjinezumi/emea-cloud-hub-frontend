@@ -144,14 +144,14 @@ export default function ContextWrapper(props) {
   }
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    const authState = JSON.parse(localStorage.getItem('isAuthenticated'));
-
-    if (storedUser && authState) {
-      setUser(storedUser);
-      setIsAuthenticated(authState);
+    const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
     }
   }, []);
+  
+
 
   const handleLogin = (userData) => {
     localStorage.setItem('user', JSON.stringify(userData));

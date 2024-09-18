@@ -155,10 +155,9 @@ router.post('/send-gmail-invite', async (req, res) => {
       refresh_token: req.user.refreshToken,
     });
 
-    // Automatically refresh access token if expired
     oauth2Client.on('tokens', (tokens) => {
       if (tokens.refresh_token) {
-        req.user.refreshToken = tokens.refresh_token;
+        req.user.refreshToken = tokens.refresh_token;  
       }
       req.user.accessToken = tokens.access_token;
     });

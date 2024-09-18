@@ -11,8 +11,10 @@ const { LoggingWinston } = require('@google-cloud/logging-winston');
 const winston = require('winston');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const redis = require('redis');
 
-// Setup Winston logger
+
 const loggingWinston = new LoggingWinston();
 const logger = winston.createLogger({
   level: 'info',
@@ -26,25 +28,42 @@ const logger = winston.createLogger({
   ],
 });
 
+
+
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
 const COOKIE_KEY = process.env.COOKIE_KEY;
+const REDIS_HOST = process.env.REDIS_HOST;
+
+const redisClient = redis.createClient({
+  host: process.env.REDIS_HOST, 
+  port: 6379, 
+});
+
+redisClient.on('error', (err) => {
+  console.error('Could not connect to Redis:', err);
+});
+
+redisClient.on('connect', () => {
+  console.log('Connected to Redis');
+});
 
 // Passport and session setup
 app.use(session({
-  secret: process.env.COOKIE_KEY,  // Use the same secret key
-  resave: false,  // Avoid resaving the session if it hasn't changed
-  saveUninitialized: false,  // Avoid creating sessions for unauthenticated users
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.COOKIE_KEY, // Use your cookie key
+  resave: false,
+  saveUninitialized: false,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000,  // 1 day
-    httpOnly: true,  // Prevent JavaScript from accessing the cookie
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
+    httpOnly: true, // For security
+    secure: process.env.NODE_ENV === 'production', // Only send cookie over HTTPS in production
   },
 }));
 
 // Make sure you still have these lines for Passport session handling
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 
 passport.use(new GoogleStrategy({
@@ -58,6 +77,8 @@ passport.use(new GoogleStrategy({
   return done(null, profile);
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Serialize user into the session
 passport.serializeUser((user, done) => {
@@ -67,6 +88,14 @@ passport.serializeUser((user, done) => {
 // Deserialize user from the session
 passport.deserializeUser((user, done) => {
   done(null, user);
+});
+
+app.use((err, req, res, next) => {
+  logger.error(`[ERROR] ${err.message}`, { stack: err.stack });
+  res.status(500).json({
+    success: false,
+    message: 'An unexpected error occurred on the server.',
+  });
 });
 
 // Middleware for handling CORS
