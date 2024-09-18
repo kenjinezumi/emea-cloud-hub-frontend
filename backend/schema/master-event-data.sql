@@ -96,7 +96,7 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
     >
   >,
   `aiVsCore` STRING,
-  `industry` STRING,
+  `industry` ARRAY<STRING>,
   `city` STRING,
   `locationVenue` STRING,
   `marketingActivityType` STRING,

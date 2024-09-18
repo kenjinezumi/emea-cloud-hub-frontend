@@ -155,30 +155,33 @@ export default function ExtraDetailsForm() {
       percentage: okrSelections[key].percentage,
     }));
 
-  const okrTotalPercentage = selectedOkrs.reduce(
-    (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
-    0
-  );
+  if (selectedOkrs.length > 0) {
+    const okrTotalPercentage = selectedOkrs.reduce(
+      (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
+      0
+    );
 
     if (okrTotalPercentage > 100) {
       setSnackbarMessage("Total OKR percentage cannot exceed 100%");
       setSnackbarOpen(true);
       return;
     }
-  
+
     if (okrTotalPercentage !== 100) {
       setSnackbarMessage("Total OKR percentage must equal 100%");
       setSnackbarOpen(true);
       return;
     }
-    const formIsValid =
-      customerUse && selectedOkrs.length > 0 && gep.length > 0 
+  }
 
-    setIsFormValid(formIsValid);
+    // const formIsValid =
+    //   customerUse && selectedOkrs.length > 0 && gep.length > 0 
 
-    if (!formIsValid) {
-      return;
-    }
+    // setIsFormValid(formIsValid);
+
+    // if (!formIsValid) {
+    //   return;
+    // }
 
     const currentFormData = {
       activityOwner,
@@ -197,30 +200,31 @@ export default function ExtraDetailsForm() {
     const isDraft = formData.isDraft !== undefined ? formData.isDraft : true;
 
     const selectedOkrs = Object.keys(okrSelections)
-      .filter((key) => okrSelections[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: okrSelections[key].percentage,
-      }));
+    .filter((key) => okrSelections[key].selected)
+    .map((key) => ({
+      type: key,
+      percentage: okrSelections[key].percentage,
+    }));
 
+  if (selectedOkrs.length > 0) {
     const okrTotalPercentage = selectedOkrs.reduce(
-        (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
-        0
-      );
-    
-      // Validate that the total percentage does not exceed 100%
-      if (okrTotalPercentage > 100) {
-        setSnackbarMessage("Total OKR percentage cannot exceed 100%");
-        setSnackbarOpen(true);
-        return;
-      }
-    
-      // Validate that the total percentage equals 100%
-      if (okrTotalPercentage !== 100) {
-        setSnackbarMessage("Total OKR percentage must equal 100%");
-        setSnackbarOpen(true);
-        return;
-      }
+      (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
+      0
+    );
+
+    if (okrTotalPercentage > 100) {
+      setSnackbarMessage("Total OKR percentage cannot exceed 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    if (okrTotalPercentage !== 100) {
+      setSnackbarMessage("Total OKR percentage must equal 100%");
+      setSnackbarOpen(true);
+      return;
+    }
+  }
+
 
     const draftData = {
       activityOwner,
@@ -407,11 +411,11 @@ export default function ExtraDetailsForm() {
 
            
           </Grid>
-          {!isFormValid && (
+          {/* {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>
               Please fill in all required fields.
             </Typography>
-          )}
+          )} */}
           <div style={{ marginTop: "20px", float: "right" }}>
             <Button
               variant="outlined"

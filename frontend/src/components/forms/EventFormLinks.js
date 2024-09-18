@@ -130,6 +130,40 @@ export default function LinksForm() {
   };
 
   const handleSaveAndPublish = async () => {
+    const requiredFields = {
+      organisedBy: formData.organisedBy,
+      title: formData.title,
+      description: formData.description,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      eventId: formData.eventId,
+      eventType: formData.eventType,
+      region: formData.region,
+      subRegion: formData.subRegion,
+      country: formData.country,
+      city: formData.city,
+      isApprovedForCustomerUse: formData.isApprovedForCustomerUse,
+      gep: formData.gep,
+      audiencePersona: formData.audiencePersona,
+      audienceSeniority: formData.audienceSeniority,
+      accountSegments: formData.accountSegments,
+      accountCategory: formData.accountCategory,
+      accountType: formData.accountType,
+      productAlignment: formData.productAlignment,
+      aiVsCore: formData.aiVsCore,
+      industry: formData.industry,
+      accountSectors: formData.accountSectors,
+    };
+    const missingFields = Object.keys(requiredFields).filter(
+      (key) => !requiredFields[key] || requiredFields[key].length === 0
+    );
+  
+    if (missingFields.length > 0) {
+      setSnackbarMessage(`Please fill in all required fields: ${missingFields.join(", ")}`);
+      setIsError(true);
+      setSnackbarOpen(true);
+      return; 
+    }
     const newFormData = {
       ...formData,
       ...links,
