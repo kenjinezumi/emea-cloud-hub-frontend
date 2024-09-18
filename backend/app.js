@@ -2,10 +2,8 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
-const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
-const cookieSession = require('cookie-session');
 const routes = require('./routes');
 const { LoggingWinston } = require('@google-cloud/logging-winston');
 const winston = require('winston');
@@ -182,6 +180,7 @@ app.use((req, res, next) => {
 app.use(cookieParser());
 
 // Mount routes (including authentication and other routes)
+const routes = require('./routes')(firestoreStore);
 app.use('/', routes);
 
 // Middleware for error handling
