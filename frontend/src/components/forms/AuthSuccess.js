@@ -26,11 +26,14 @@ function AuthSuccess() {
         if (data.isAuthenticated) {
           // Save authentication state globally
           setIsAuthenticated(true);
+          sessionStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('isAuthenticated', 'true');
 
           // Store user data in session storage
           const user = data.user;
           console.log('User data to be stored:', user);
           sessionStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('user', JSON.stringify(user));
 
           // Extract the email and first part before "@"
           const email = user.emails[0].value;
@@ -46,6 +49,7 @@ function AuthSuccess() {
           if (data.accessToken) {
             // Store access token in session storage instead of local storage
             sessionStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('accessToken', data.accessToken);            
             console.log('Access token stored:', data.accessToken);
           } else {
             console.log('Access token not found.');
