@@ -40,11 +40,12 @@ export default function CalendarHeader() {
   const [user, setUser] = useState(null); // State to store user data
   const [anchorEl, setAnchorEl] = useState(null); // State for managing popover anchor
   const navigate = useNavigate();
-  console.log('The calendar photo of the profile is: ', user.photos, " user data is: ", user)
 
   useEffect(() => {
     // Fetch user data from localStorage
     const storedUser = JSON.parse(localStorage.getItem("user"));
+    console.log('Stored user in localStorage:', storedUser);
+
     if (storedUser) {
       setUser(storedUser);
     }
