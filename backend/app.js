@@ -12,8 +12,8 @@ const winston = require('winston');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const session = require('express-session');
-const RedisStore = require('connect-redis').default;
-const { createClient } = require('redis');
+const FirestoreStore = require('connect-firestore')(session);
+const { Firestore } = require('@google-cloud/firestore');
 
 
 const loggingWinston = new LoggingWinston();
@@ -35,22 +35,22 @@ const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
 const COOKIE_KEY = process.env.COOKIE_KEY;
-const REDIS_HOST = process.env.REDIS_HOST;
+// Passport and session setup
 
-const redisClient = createClient({
-  url: `redis://${REDIS_HOST}:6379`,
-  legacyMode: true  
-});
-redisClient.connect().catch(console.error);
-
-redisClient.on('error', (err) => {
-  console.error('Could not connect to Redis:', err);
-});
-
-redisClient.on('connect', () => {
-  console.log('Connected to Redis');
-});
-
+app.use(session({
+  store: new FirestoreStore({
+    dataset: firestore, // Firestore instance
+    kind: 'sessions',   // Firestore collection name
+  }),
+  secret: COOKIE_KEY,  // Use the cookie key
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000,  // 1 day
+    httpOnly: true,  // For security
+    secure: process.env.NODE_ENV === 'production',  // Only send cookies over HTTPS in production
+  },
+}));
 // Passport and session setup
 app.use(session({
   store: new RedisStore({ client: redisClient }),
