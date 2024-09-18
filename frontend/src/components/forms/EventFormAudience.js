@@ -57,7 +57,7 @@ export default function AudiencePersonaForm() {
     Startup: { selected: false, percentage: "" },
   });
   const [industry, setIndustry] = useState(
-    selectedEvent ? selectedEvent.industry : formData.industry || ""
+    Array.isArray(selectedEvent?.industry) ? selectedEvent.industry : []
   );
   
 
@@ -528,24 +528,32 @@ export default function AudiencePersonaForm() {
 
          
           
-          {/* Industry Dropdown */}
+{/* Industry Multi-Select */}
 <Grid item xs={12}>
   <Typography variant="subtitle1">Industry</Typography>
   <FormControl fullWidth>
     <Select
+      multiple
       value={industry}
       onChange={(e) => setIndustry(e.target.value)}
-      displayEmpty
+      renderValue={(selected) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+          {selected.map((value) => (
+            <Chip key={value} label={value} />
+          ))}
+        </div>
+      )}
     >
-      <MenuItem value="" disabled>
-      </MenuItem>
       {industryOptions.map((industryOption, idx) => (
         <MenuItem key={idx} value={industryOption}>
+          <Checkbox checked={industry.indexOf(industryOption) > -1} />
           {industryOption}
         </MenuItem>
-      ))}    </Select>
+      ))}
+    </Select>
   </FormControl>
 </Grid>
+
 
 
 {/* Account Sectors Accordion */}
