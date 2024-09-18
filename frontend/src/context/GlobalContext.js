@@ -58,6 +58,7 @@ export const GlobalProvider = ({ children }) => {
   const [eventDetails, setEventDetails] = useState(null);
   const [isDraft, setIsDraft] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null); 
 
 
   const [savedEvents, setSavedEvents] = useState([]);
@@ -132,6 +133,8 @@ export const GlobalProvider = ({ children }) => {
         resetFormData,
         isAuthenticated, 
         setIsAuthenticated,
+        user, 
+        setUser
 
       }}
     >

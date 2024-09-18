@@ -23,7 +23,7 @@ import AuthSuccess from './components/forms/AuthSuccess';
 
 function App() {
   const { sidebarOpen, currentView, monthIndex, showEventModal, setCurrentView } = useContext(GlobalContext);
-  const [currenMonth, setCurrentMonth] = useState(getMonth());
+  const [currentMonth, setCurrentMonth] = useState(getMonth());
   const { daySelected } = useContext(GlobalContext);
   const [searchText, setSearchText] = useState('');
 
@@ -43,31 +43,30 @@ function App() {
       case 'week':
         return <WeekView />;
       case 'month':
-        return <MonthView month={currenMonth} />;
+        return <MonthView month={currentMonth} />;
       case 'year':
         return <YearView />;
       case 'list':
         return <ListView />;
       default:
-        return <MonthView month={currenMonth} />;
+        return <MonthView month={currentMonth} />;
     }
   }
 
   return (
     <Router>
       <Routes>
-        {/* Public Route */}
-        {/* <Route path="/login" element={<Login />} />
-        <Route path="/auth/success" element={<AuthSuccess />} />  New success route */}
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/auth/success" element={<AuthSuccess />} />
 
         {/* Protected Routes */}
-        <Route>
+        <Route element={<PrivateRoute />}>
           <Route path="/" element={<RenderCalendarView />} />
           <Route path="/create-event" element={<EventForm />} />
           <Route path="/location" element={<EventFormLocation />} />
           <Route path="/extra" element={<EventFormExtra />} />
           <Route path="/email-invitation" element={<EventFormEmailInvitation />} />
-
           <Route path="/audience" element={<EventFormAudience />} />
           <Route path="/links" element={<EventFormLinks />} />
           <Route path="/event/:eventId" element={<EventSharePage />} />

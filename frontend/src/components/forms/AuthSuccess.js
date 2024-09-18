@@ -27,27 +27,28 @@ function AuthSuccess() {
           // Save authentication state globally
           setIsAuthenticated(true);
 
-          // Store user data in local storage
+          // Store user data in session storage
           const user = data.user;
           console.log('User data to be stored:', user);
-          localStorage.setItem('user', JSON.stringify(user));
+          sessionStorage.setItem('user', JSON.stringify(user));
 
           // Extract the email and first part before "@"
           const email = user.emails[0].value;
           const username = email.split('@')[0];  // Get first part of email
 
-          // Store the email and username in local storage for later use
-          localStorage.setItem('email', email);
-          localStorage.setItem('username', username);
+          // Store the email and username in session storage for later use
+          sessionStorage.setItem('email', email);
+          sessionStorage.setItem('username', username);
 
           // Scrape the external page with the username
           scrapePersonDetails(username);
 
           if (data.accessToken) {
-            localStorage.setItem('accessToken', data.accessToken);
-            console.log('Could find the access token', data.accessToken);
-          }else{
-            console.log('Could not find the access token :(');
+            // Store access token in session storage instead of local storage
+            sessionStorage.setItem('accessToken', data.accessToken);
+            console.log('Access token stored:', data.accessToken);
+          } else {
+            console.log('Access token not found.');
           }
 
           // Navigate to the homepage after successful authentication
@@ -86,7 +87,7 @@ function AuthSuccess() {
         console.log('Person Details:', personDetails);
 
         // You can store or display this information as needed
-        localStorage.setItem('personDetails', personDetails);
+        sessionStorage.setItem('personDetails', personDetails);
       } else {
         console.log('Person details not found on the page.');
       }

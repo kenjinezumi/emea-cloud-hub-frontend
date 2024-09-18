@@ -42,6 +42,7 @@ export default function ContextWrapper(props) {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedEvents, setSelectedEvents] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null); 
 
 
   const [labels, setLabels] = useState([]);
@@ -142,6 +143,31 @@ export default function ContextWrapper(props) {
     );
   }
 
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const authState = JSON.parse(localStorage.getItem('isAuthenticated'));
+
+    if (storedUser && authState) {
+      setUser(storedUser);
+      setIsAuthenticated(authState);
+    }
+  }, []);
+
+  const handleLogin = (userData) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('isAuthenticated', true);
+    setIsAuthenticated(true);
+    setUser(userData);
+  };
+
+  // Handle logout by clearing localStorage and resetting state
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('isAuthenticated');
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
   const [currentView, setCurrentView] = useState('month');
 
   return (
@@ -183,7 +209,11 @@ export default function ContextWrapper(props) {
         eventDetails, 
         setEventDetails,
         isAuthenticated, 
-        setIsAuthenticated
+        setIsAuthenticated,
+        setIsAuthenticated,
+        user,
+        handleLogin,  // Add login function to the context
+        handleLogout, 
 
       }}
     >
