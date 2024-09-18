@@ -322,6 +322,7 @@ export default function ExtraDetailsForm() {
                           onChange={(e) =>
                             handlePercentageChange(label, e.target.value)
                           }
+                          onWheel={(e) => e.target.blur()}
                           placeholder="Percentage"
                           sx={{ width: "80%" }}
                           inputProps={{
