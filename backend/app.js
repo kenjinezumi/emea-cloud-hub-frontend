@@ -12,7 +12,7 @@ const winston = require('winston');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const session = require('express-session');
-const FirestoreStore = require('connect-firestore')(session);
+const FirestoreStore = require('connect-session-firebase')(session); 
 const { Firestore } = require('@google-cloud/firestore');
 
 
@@ -37,10 +37,13 @@ const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
 const COOKIE_KEY = process.env.COOKIE_KEY;
 // Passport and session setup
 
+const firestore = new Firestore();
+
+
 app.use(session({
   store: new FirestoreStore({
-    dataset: firestore, // Firestore instance
-    kind: 'sessions',   // Firestore collection name
+    dataset: firestore,
+    kind: 'sessions'  // Name of the Firestore collection to store sessions
   }),
   secret: COOKIE_KEY,  // Use the cookie key
   resave: false,
@@ -51,21 +54,6 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',  // Only send cookies over HTTPS in production
   },
 }));
-// Passport and session setup
-app.use(session({
-  store: new RedisStore({ client: redisClient }),
-  secret: COOKIE_KEY,  // Use the cookie key
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000,  // 1 day
-    httpOnly: true,  // For security
-    secure: process.env.NODE_ENV === 'production',  // Only send cookie over HTTPS in production
-  },
-}));
-
-
-
 
 passport.use(new GoogleStrategy({
   clientID: CLIENT_ID,
