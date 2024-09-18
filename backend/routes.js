@@ -83,28 +83,35 @@ module.exports = (firestoreStore) => {
 
     // Google OAuth callback route
     router.get('/auth/google/callback',
-        passport.authenticate('google', {
-            failureRedirect: '/login'
-        }),
-        async (req, res) => {
-            console.log('Authenticated user:', req.user); // Check if tokens are present
-
-            try {
-                console.log('Inside the Google OAuth callback, after Passport authentication');
-
-                if (req.user) {
-                    console.log('User authenticated successfully:', req.user);
-                    res.redirect('https://cloudhub.googleplex.com/auth/success'); // Redirect to the frontend
-                } else {
-                    console.warn('User authentication failed. No user found in the session.');
-                    res.redirect('https://cloudhub.googleplex.com/login?error=AuthenticationFailed');
-                }
-            } catch (err) {
-                console.error('Error during Google OAuth callback:', err.message);
-                res.redirect(`https://cloudhub.googleplex.com/login?error=OAuthCallbackError&message=${encodeURIComponent(err.message)}`);
-            }
-        })
-
+      passport.authenticate('google', { failureRedirect: '/login' }),
+      async (req, res) => {
+        console.log('Authenticated user:', req.user);  // Check if tokens are present
+    
+        try {
+          if (req.user) {
+            console.log('User authenticated successfully:', req.user);
+    
+            // Trigger session save and log
+            req.session.save((err) => {
+              if (err) {
+                console.error('Error saving session:', err);
+              } else {
+                console.log('Session saved successfully.');
+              }
+            });
+    
+            res.redirect('https://cloudhub.googleplex.com/auth/success'); // Redirect to the frontend
+          } else {
+            console.warn('User authentication failed. No user found in the session.');
+            res.redirect('https://cloudhub.googleplex.com/login?error=AuthenticationFailed');
+          }
+        } catch (err) {
+          console.error('Error during Google OAuth callback:', err.message);
+          res.redirect(`https://cloudhub.googleplex.com/login?error=OAuthCallbackError&message=${encodeURIComponent(err.message)}`);
+        }
+      }
+    );
+    
 
     // Send Gmail invite
     const sendGmail = async (accessToken, emailDetails) => {
