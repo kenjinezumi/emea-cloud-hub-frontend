@@ -15,6 +15,7 @@ const session = require('express-session');
 const {FirestoreStore} = require('@google-cloud/connect-firestore');  
 const { Firestore } = require('@google-cloud/firestore');
 
+const firestore = new Firestore();  // Initialize Firestore
 
 
 const loggingWinston = new LoggingWinston();
@@ -38,13 +39,23 @@ const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
 const COOKIE_KEY = process.env.COOKIE_KEY;
 // Passport and session setup
 
-const firestore = new Firestore();
+const firestoreStore = new FirestoreStore({
+  dataset: firestore,
+  kind: 'sessions',
+});
 
+firestoreStore.on('connect', () => {
+  console.log('Connected to Firestore session store.');
+});
 
-app.use(session({
+firestoreStore.on('error', (err) => {
+  console.error('Firestore session store connection error:', err);
+});
+
+pp.use(session({
   store: new FirestoreStore({
-    dataset: firestore,  // Firestore instance
-    kind: 'sessions'     // Firestore collection name for storing sessions
+    dataset: firestore,  // Ensure you pass the Firestore instance correctly here
+    kind: 'sessions',    // Firestore collection to store sessions
   }),
   secret: COOKIE_KEY,  // Use the cookie key
   resave: false,
