@@ -10,9 +10,10 @@ const routes = require('./routes');
 const { LoggingWinston } = require('@google-cloud/logging-winston');
 const winston = require('winston');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
-const redis = require('redis');
+const { createClient } = require('redis');
 
 
 const loggingWinston = new LoggingWinston();
@@ -36,10 +37,11 @@ const CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
 const COOKIE_KEY = process.env.COOKIE_KEY;
 const REDIS_HOST = process.env.REDIS_HOST;
 
-const redisClient = redis.createClient({
-  host: process.env.REDIS_HOST, 
-  port: 6379, 
+const redisClient = createClient({
+  url: `redis://${REDIS_HOST}:6379`,
+  legacyMode: true  // Enable legacy commands like `get/set` if using redis@4.x
 });
+redisClient.connect().catch(console.error);
 
 redisClient.on('error', (err) => {
   console.error('Could not connect to Redis:', err);
@@ -52,17 +54,16 @@ redisClient.on('connect', () => {
 // Passport and session setup
 app.use(session({
   store: new RedisStore({ client: redisClient }),
-  secret: process.env.COOKIE_KEY, // Use your cookie key
+  secret: COOKIE_KEY,  // Use the cookie key
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-    httpOnly: true, // For security
-    secure: process.env.NODE_ENV === 'production', // Only send cookie over HTTPS in production
+    maxAge: 24 * 60 * 60 * 1000,  // 1 day
+    httpOnly: true,  // For security
+    secure: process.env.NODE_ENV === 'production',  // Only send cookie over HTTPS in production
   },
 }));
 
-// Make sure you still have these lines for Passport session handling
 
 
 
