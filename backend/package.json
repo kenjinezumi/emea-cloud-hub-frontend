@@ -16,6 +16,7 @@
     "axios": "^1.6.7",
     "connect-firestore": "^0.1.9",
     "connect-redis": "^7.1.1",
+    "connect-session-firebase": "^11.0.0",
     "cookie-parser": "^1.4.6",
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
