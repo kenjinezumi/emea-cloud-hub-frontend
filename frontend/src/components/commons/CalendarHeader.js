@@ -1,15 +1,25 @@
-import React, { useEffect, useState, useContext } from 'react';
-import dayjs from 'dayjs';
-import logo from '../../assets/logo/logo.png';
-import MenuIcon from '@mui/icons-material/Menu';
-import beta from '../../assets/svg/beta.svg';
-import IconButton from '@mui/material/IconButton';
-import SearchIcon from '@mui/icons-material/Search';
-import { Select, MenuItem, Typography, Input, Tooltip, Avatar, Popover, Button } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import GlobalContext from '../../context/GlobalContext';
-import versionInfo from '../../version.json';
-import { getEventData } from '../../api/getEventData';
+import React, { useEffect, useState, useContext } from "react";
+import dayjs from "dayjs";
+import logo from "../../assets/logo/logo.png";
+import MenuIcon from "@mui/icons-material/Menu";
+import beta from "../../assets/svg/beta.svg";
+import IconButton from "@mui/material/IconButton";
+import SearchIcon from "@mui/icons-material/Search";
+import {
+  Select,
+  MenuItem,
+  Typography,
+  Input,
+  Tooltip,
+  Avatar,
+  Popover,
+  Button,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import GlobalContext from "../../context/GlobalContext";
+import versionInfo from "../../version.json";
+import { getEventData } from "../../api/getEventData";
+import { blue } from "@mui/material/colors";
 
 export default function CalendarHeader() {
   const {
@@ -25,15 +35,16 @@ export default function CalendarHeader() {
     setSearchText,
   } = useContext(GlobalContext);
 
-  const [view, setView] = useState(currentView || 'month');
+  const [view, setView] = useState(currentView || "month");
   const [showSearchInput, setShowSearchInput] = useState(false);
-  const [user, setUser] = useState(null);  // State to store user data
-  const [anchorEl, setAnchorEl] = useState(null);  // State for managing popover anchor
+  const [user, setUser] = useState(null); // State to store user data
+  const [anchorEl, setAnchorEl] = useState(null); // State for managing popover anchor
   const navigate = useNavigate();
+  console.log('The calendar photo of the profile is: ', user.photos, " user data is: ", user)
 
   useEffect(() => {
     // Fetch user data from localStorage
-    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
       setUser(storedUser);
     }
@@ -45,10 +56,10 @@ export default function CalendarHeader() {
 
   const fetchData = async () => {
     try {
-      const eventData = await getEventData('eventDataQuery');
+      const eventData = await getEventData("eventDataQuery");
       setEvents(eventData);
     } catch (error) {
-      console.error('Error fetching event data:', error);
+      console.error("Error fetching event data:", error);
     }
   };
 
@@ -70,35 +81,35 @@ export default function CalendarHeader() {
 
   const handleSearchAction = (text) => {
     setSearchText(text);
-    setCurrentView('list');
+    setCurrentView("list");
   };
 
   function handlePrev() {
     let newDaySelected;
     switch (view) {
-      case 'day':
-        newDaySelected = daySelected.subtract(1, 'day');
+      case "day":
+        newDaySelected = daySelected.subtract(1, "day");
         setDaySelected(newDaySelected);
         setMonthIndex(newDaySelected.month());
         break;
-      case 'week':
-        newDaySelected = daySelected.subtract(1, 'week');
+      case "week":
+        newDaySelected = daySelected.subtract(1, "week");
         setDaySelected(newDaySelected);
         setMonthIndex(newDaySelected.month());
         break;
-      case 'month':
+      case "month":
         if (monthIndex === 0) {
-          const newDate = daySelected.subtract(1, 'year').month(11); // December of the previous year
+          const newDate = daySelected.subtract(1, "year").month(11); // December of the previous year
           setDaySelected(newDate);
           setMonthIndex(11);
         } else {
-          const newDate = daySelected.subtract(1, 'month');
+          const newDate = daySelected.subtract(1, "month");
           setDaySelected(newDate);
           setMonthIndex(monthIndex - 1);
         }
         break;
-      case 'year':
-        newDaySelected = daySelected.subtract(1, 'year');
+      case "year":
+        newDaySelected = daySelected.subtract(1, "year");
         setDaySelected(newDaySelected);
         setMonthIndex(newDaySelected.month());
         break;
@@ -110,29 +121,29 @@ export default function CalendarHeader() {
   function handleNext() {
     let newDaySelected;
     switch (view) {
-      case 'day':
-        newDaySelected = daySelected.add(1, 'day');
+      case "day":
+        newDaySelected = daySelected.add(1, "day");
         setDaySelected(newDaySelected);
         setMonthIndex(newDaySelected.month());
         break;
-      case 'week':
-        newDaySelected = daySelected.add(1, 'week');
+      case "week":
+        newDaySelected = daySelected.add(1, "week");
         setDaySelected(newDaySelected);
         setMonthIndex(newDaySelected.month());
         break;
-      case 'month':
+      case "month":
         if (monthIndex === 11) {
-          const newDate = daySelected.add(1, 'year').month(0); // January of the next year
+          const newDate = daySelected.add(1, "year").month(0); // January of the next year
           setDaySelected(newDate);
           setMonthIndex(0);
         } else {
-          const newDate = daySelected.add(1, 'month');
+          const newDate = daySelected.add(1, "month");
           setDaySelected(newDate);
           setMonthIndex(monthIndex + 1);
         }
         break;
-      case 'year':
-        newDaySelected = daySelected.add(1, 'year');
+      case "year":
+        newDaySelected = daySelected.add(1, "year");
         setDaySelected(newDaySelected);
         setMonthIndex(newDaySelected.month());
         break;
@@ -155,7 +166,7 @@ export default function CalendarHeader() {
   };
 
   const navigateToHome = () => {
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   // Handle opening and closing of the profile popover
@@ -169,13 +180,13 @@ export default function CalendarHeader() {
 
   const handleLogout = () => {
     // Clear local storage and redirect to login page
-    localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
-    navigate('/login');
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    navigate("/login");
   };
 
   const open = Boolean(anchorEl);
-  const id = open ? 'profile-popover' : undefined;
+  const id = open ? "profile-popover" : undefined;
 
   return (
     <header className="flex items-center justify-between border-b border-gray-300 bg-white px-4 py-2">
@@ -191,7 +202,7 @@ export default function CalendarHeader() {
         />
         <h1
           className="text-xl text-black cursor-pointer overflow-hidden whitespace-nowrap"
-          style={{ maxWidth: '200px', textOverflow: 'ellipsis' }}
+          style={{ maxWidth: "200px", textOverflow: "ellipsis" }}
           onClick={navigateToHome}
         >
           EMEA Cloud Hub
@@ -203,23 +214,27 @@ export default function CalendarHeader() {
           Today
         </button>
         <IconButton onClick={handlePrev}>
-          <span className="material-icons-outlined text-gray-600">chevron_left</span>
+          <span className="material-icons-outlined text-gray-600">
+            chevron_left
+          </span>
         </IconButton>
         <IconButton onClick={handleNext}>
-          <span className="material-icons-outlined text-gray-600">chevron_right</span>
+          <span className="material-icons-outlined text-gray-600">
+            chevron_right
+          </span>
         </IconButton>
         <Typography variant="h6" className="text-lg font-semibold">
-          {daySelected.format('MMMM YYYY')}
+          {daySelected.format("MMMM YYYY")}
         </Typography>
       </div>
 
       <div className="flex items-center space-x-4">
-      {showSearchInput && (
+        {showSearchInput && (
           <Input
             placeholder="Search events..."
             value={searchText}
             onChange={handleSearchInputChange}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearchSubmit()}
+            onKeyPress={(e) => e.key === "Enter" && handleSearchSubmit()}
             sx={{ width: 200 }}
           />
         )}
@@ -227,12 +242,12 @@ export default function CalendarHeader() {
         <IconButton onClick={handleSearchIconClick}>
           <SearchIcon />
         </IconButton>
-        
+
         <Select
           value={currentView}
           onChange={handleViewChange}
           displayEmpty
-          inputProps={{ 'aria-label': 'Without label' }}
+          inputProps={{ "aria-label": "Without label" }}
           sx={{ minWidth: 120 }}
         >
           <MenuItem value="day">Day</MenuItem>
@@ -241,8 +256,6 @@ export default function CalendarHeader() {
           <MenuItem value="year">Year</MenuItem>
           <MenuItem value="list">List</MenuItem>
         </Select>
-
-        
 
         {/* Display user profile picture with tooltip and popover */}
         {user && (
@@ -253,40 +266,59 @@ export default function CalendarHeader() {
                   <Typography variant="body2">
                     {`${user.name.givenName} ${user.name.familyName}`}
                   </Typography>
-                  <Typography variant="caption">{user.emails[0].value}</Typography>
+                  <Typography variant="caption">
+                    {user.emails[0].value}
+                  </Typography>
                 </div>
               }
               arrow
             >
               <IconButton onClick={handleProfileClick}>
                 <Avatar
-                  src={user.photos[0].value}
+                  src={
+                    user.photos && user.photos.length > 0
+                      ? user.photos[0].value
+                      : null
+                  }
                   alt={`${user.name.givenName} ${user.name.familyName}`}
-                  sx={{ width: 40, height: 40 }}
-                />
+                  style={{
+                    width: 40,
+                    height: 40,
+                    backgroundColor: blue[500],
+                    color: "white",
+                  }} // Optional: customize circle and text color
+                >
+                  {/* Fallback to first letter of first name */}
+                  {!user.photos || user.photos.length === 0
+                    ? user.name.givenName[0]
+                    : null}
+                </Avatar>
               </IconButton>
             </Tooltip>
 
-            {/* Popover component for Gmail-style profile dropdown */}
             <Popover
               id={id}
               open={open}
               anchorEl={anchorEl}
               onClose={handlePopoverClose}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
+                vertical: "bottom",
+                horizontal: "left",
               }}
             >
-              <div style={{ padding: '10px', minWidth: '200px' }}>
+              <div style={{ padding: "10px", minWidth: "200px" }}>
                 <Typography variant="body2">
                   {`${user.name.givenName} ${user.name.familyName}`}
                 </Typography>
                 <Typography variant="caption" color="textSecondary">
                   {user.emails[0].value}
                 </Typography>
-                <div style={{ marginTop: '10px' }}>
-                  <Button variant="contained" color="primary" onClick={handleLogout}>
+                <div style={{ marginTop: "10px" }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleLogout}
+                  >
                     Logout
                   </Button>
                 </div>
