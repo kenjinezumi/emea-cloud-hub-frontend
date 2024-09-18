@@ -12,7 +12,7 @@ const winston = require('winston');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const session = require('express-session');
-const FirestoreStore = require('@google-cloud/connect-firestore')(session);  
+const {FirestoreStore} = require('@google-cloud/connect-firestore');  
 const { Firestore } = require('@google-cloud/firestore');
 
 
