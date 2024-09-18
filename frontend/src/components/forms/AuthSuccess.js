@@ -29,6 +29,7 @@ function AuthSuccess() {
 
           // Store user data in local storage
           const user = data.user;
+          console.log('User data to be stored:', user);
           localStorage.setItem('user', JSON.stringify(user));
 
           // Extract the email and first part before "@"
