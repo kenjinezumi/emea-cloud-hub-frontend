@@ -349,7 +349,6 @@ export default function EventInfoPopup({ event, close }) {
     ),
     Details: (
       <Stack spacing={2} sx={{ p: 3 }}>
-       
         {/* Audience Seniority */}
         <Typography
           variant="body2"
@@ -376,15 +375,17 @@ export default function EventInfoPopup({ event, close }) {
 
         {/* Audience Persona */}
         <Typography
-  variant="body2"
-  display="flex"
-  sx={{ whiteSpace: "normal" }}
->
-  <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Buyer Segment: {selectedEvent.audiencePersona && selectedEvent.audiencePersona.length > 0
-    ? selectedEvent.audiencePersona.join(", ")
-    : "N/A"}
-</Typography>
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Buyer Segment:{" "}
+          {selectedEvent.audiencePersona &&
+          selectedEvent.audiencePersona.length > 0
+            ? selectedEvent.audiencePersona.join(", ")
+            : "N/A"}
+        </Typography>
 
         {/* Industry */}
         <Typography
@@ -426,92 +427,98 @@ export default function EventInfoPopup({ event, close }) {
             }, Public: ${selectedEvent.accountSectors?.public ? "Yes" : "No"}`}
           </Typography>
         </Typography>
-        <Typography
-  variant="body2"
-  display="flex"
-  alignItems="center"
-  sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
->
-  <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Account Segments:{" "}
-  {Object.keys(selectedEvent.accountSegments || {}).map((segment) => (
-    <span key={segment}>
-      {segment}: {selectedEvent.accountSegments[segment].percentage}%
-      {selectedEvent.accountSegments[segment].selected
-        ? " (Selected)"
-        : " (Not Selected)"}
-      <br />
-    </span>
-  ))}
-</Typography>
-{/* Account Category */}
-<Typography
-  variant="body2"
-  display="flex"
-  sx={{ whiteSpace: "normal" }}
->
-  <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Account Category:{" "}
-  <Typography
-    variant="body2"
-    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-  >
-    {selectedEvent.accountCategory && Object.keys(selectedEvent.accountCategory).length > 0
-      ? Object.entries(selectedEvent.accountCategory)
-          .map(
-            ([category, details]) =>
-              `${category}: ${details.percentage}%${details.selected ? " (Selected)" : " (Not Selected)"}`
-          )
-          .join(", ")
-      : "N/A"}
-  </Typography>
-</Typography>
 
+        {/* Account Category */}
+        <Typography
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Account Category:{" "}
+          <Typography
+            variant="body2"
+            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+          >
+            {selectedEvent.accountCategory &&
+            Object.keys(selectedEvent.accountCategory).length > 0
+              ? Object.entries(selectedEvent.accountCategory)
+                  .map(
+                    ([category, details]) =>
+                      `${category}: ${details.percentage}%`
+                  )
+                  .join(", ")
+              : "N/A"}
+          </Typography>
+        </Typography>
+
+        {/* Account Segments */}
+        <Typography
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Account Segments:{" "}
+          <Typography
+            variant="body2"
+            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+          >
+            {selectedEvent.accountSegments &&
+            Object.keys(selectedEvent.accountSegments).length > 0
+              ? Object.entries(selectedEvent.accountSegments)
+                  .map(
+                    ([segment, details]) => `${segment}: ${details.percentage}%`
+                  )
+                  .join(", ")
+              : "N/A"}
+          </Typography>
+        </Typography>
 
         {/* Account Type */}
-<Typography
-  variant="body2"
-  display="flex"
-  sx={{ whiteSpace: "normal" }}
->
-  <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Greenfield Status:{" "}
-  <Typography
-    variant="body2"
-    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-  >
-    {selectedEvent.accountType && Object.keys(selectedEvent.accountType).length > 0
-      ? Object.entries(selectedEvent.accountType)
-          .map(
-            ([type, details]) =>
-              `${type}: ${details.percentage}%${details.selected ? " (Selected)" : " (Not Selected)"}`
-          )
-          .join(", ")
-      : "N/A"}
-  </Typography>
-</Typography>
+        <Typography
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Greenfield Status:{" "}
+          <Typography
+            variant="body2"
+            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+          >
+            {selectedEvent.accountType &&
+            Object.keys(selectedEvent.accountType).length > 0
+              ? Object.entries(selectedEvent.accountType)
+                  .map(([type, details]) => `${type}: ${details.percentage}%`)
+                  .join(", ")
+              : "N/A"}
+          </Typography>
+        </Typography>
 
-{/* Product Alignment */}
-<Typography
-  variant="body2"
-  display="flex"
-  sx={{ whiteSpace: "normal" }}
->
-  <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Product Family:{" "}
-  <Typography
-    variant="body2"
-    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-  >
-    {selectedEvent.productAlignment && Object.keys(selectedEvent.productAlignment).length > 0
-      ? Object.entries(selectedEvent.productAlignment)
-          .map(([product, details]) => `${product}: ${details.percentage}%${details.selected ? ' (Selected)' : ' (Not Selected)'}`)
-          .join(", ")
-      : "N/A"}
-  </Typography>
-</Typography>
+        {/* Product Alignment */}
+        <Typography
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Product Family:{" "}
+          <Typography
+            variant="body2"
+            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+          >
+            {selectedEvent.productAlignment &&
+            Object.keys(selectedEvent.productAlignment).length > 0
+              ? Object.entries(selectedEvent.productAlignment)
+                  .map(
+                    ([product, details]) => `${product}: ${details.percentage}%`
+                  )
+                  .join(", ")
+              : "N/A"}
+          </Typography>
+        </Typography>
 
-       
         {/* AI vs Core */}
         <Typography
           variant="body2"
