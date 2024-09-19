@@ -132,6 +132,7 @@ export default function EventInfoPopup({ event, close }) {
         to: email,
         subject: subjectLine,
         body: template,
+        accessToken: accessToken
       };
 
       console.log(
@@ -144,7 +145,6 @@ export default function EventInfoPopup({ event, close }) {
         credentials: "include",
         headers: {
           "Content-Type": "text/plain",
-          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(emailDetails),
       });
@@ -237,7 +237,12 @@ export default function EventInfoPopup({ event, close }) {
           {dayjs().isAfter(dayjs(selectedEvent.endDate))
             ? "Attended"
             : "Registrations"}
-          : {selectedEvent.registeredCount || 0}
+          :{" "}
+          {!selectedEvent.marketingProgramInstanceId ? (
+            <em style={{marginLeft:5}}>  Marketing instance program id not provided</em>
+          ) : (
+            selectedEvent.registeredCount || 0
+          )}
         </Typography>
 
         <Typography

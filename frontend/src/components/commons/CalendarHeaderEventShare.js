@@ -51,7 +51,7 @@ const NavigationSidebar = () => {
         </span>
         <span>Extra Details</span>
       </button>
-      <button
+      {/* <button
         onClick={() => scrollToSection('email-invitation-section')}
         className="block w-full text-left p-2 rounded flex items-center"
       >
@@ -59,7 +59,7 @@ const NavigationSidebar = () => {
           <EmailIcon style={{ color: blue[500] }} />
         </span>
         <span>Email Invitation</span>
-      </button>
+      </button> */}
 
       <button
         onClick={() => scrollToSection('audience-section')}

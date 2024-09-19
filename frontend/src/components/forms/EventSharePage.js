@@ -544,7 +544,7 @@ function ShareEventPage() {
                   </Typography>
                 </Typography>
               </Grid>
-              {/* Email Invitation Section */}
+              Email Invitation Section
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
                   <EmailIcon
@@ -559,7 +559,7 @@ function ShareEventPage() {
               </Grid>
 
               {/* Email Invitation Accordion */}
-              <Grid item xs={12}>
+              {/* <Grid item xs={12}>
                 {eventDetails.languagesAndTemplates?.map(
                   (templateData, index) => (
                     <Accordion key={index}>
@@ -574,7 +574,7 @@ function ShareEventPage() {
                       </AccordionSummary>
                       <AccordionDetails>
                         {/* Platform */}
-                        <Grid item xs={12} sx={{ mb: 2 }}>
+                        {/* <Grid item xs={12} sx={{ mb: 2 }}>
                           <Typography
                             variant="body2"
                             sx={{ color: "#757575", mb: 1 }}
@@ -590,10 +590,10 @@ function ShareEventPage() {
                               style: { backgroundColor: "#e0e0e0" },
                             }}
                           />
-                        </Grid>
+                        </Grid> */}
 
                         {/* Subject Line */}
-                        <Grid item xs={12} sx={{ mb: 2 }}>
+                        {/* <Grid item xs={12} sx={{ mb: 2 }}>
                           <Typography
                             variant="body2"
                             sx={{ color: "#757575", mb: 1 }}
@@ -609,10 +609,10 @@ function ShareEventPage() {
                               style: { backgroundColor: "#e0e0e0" },
                             }}
                           />
-                        </Grid>
+                        </Grid> */}
 
                         {/* Template Body */}
-                        <Grid item xs={12}>
+                        {/* <Grid item xs={12}>
                           <Typography
                             variant="body2"
                             sx={{ color: "#757575", mb: 1 }}
@@ -633,9 +633,9 @@ function ShareEventPage() {
                         </Grid>
                       </AccordionDetails>
                     </Accordion>
-                  )
-                )}
-              </Grid>
+                  ) */}
+                {/* )}  */}
+              {/* </Grid> */}
                 {/* Audience Section */}
                 <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
