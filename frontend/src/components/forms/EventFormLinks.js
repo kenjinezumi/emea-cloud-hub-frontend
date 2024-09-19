@@ -33,6 +33,14 @@ const isValidUrl = (urlString) => {
   }
 };
 
+const formatLabel = (key) => {
+  return key
+    .replace("Links", " Links")
+    .replace(/([A-Z])/g, " $1")
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+    .trim();
+};
+
 export default function LinksForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [links, setLinks] = useState({
@@ -157,12 +165,14 @@ export default function LinksForm() {
     const missingFields = Object.keys(requiredFields).filter(
       (key) => !requiredFields[key] || requiredFields[key].length === 0
     );
-  
+
     if (missingFields.length > 0) {
-      setSnackbarMessage(`Please fill in all required fields: ${missingFields.join(", ")}`);
+      setSnackbarMessage(
+        `Please fill in all required fields: ${missingFields.join(", ")}`
+      );
       setIsError(true);
       setSnackbarOpen(true);
-      return; 
+      return;
     }
     const newFormData = {
       ...formData,
@@ -236,14 +246,33 @@ export default function LinksForm() {
             <LinkIcon
               style={{ marginRight: "10px", color: blue[500], height: "40px" }}
             />
-            <span className="mr-1 text-xl text-black cursor-pointer">Links</span>
+            <span className="mr-1 text-xl text-black cursor-pointer">
+              Links
+            </span>
           </Typography>
           <Grid container spacing={2}>
             {Object.entries(links).map(([key, value]) => (
               <Grid item xs={12} key={key}>
                 <Typography variant="subtitle1">
-                  {key.replace("Links", "").replace(/([A-Z])/g, " $1")}
+                  {(() => {
+                    switch (key) {
+                      case "hailoLinks":
+                        return "Hailo";
+                      case "landingPageLinks":
+                        return "Landing Page";
+                      case "salesKitLinks":
+                        return "Sales Kit";
+                      case "otherDocumentsLinks":
+                        return "Other Documents";
+                      default:
+                        return key
+                          .replace("Links", "")
+                          .replace(/([A-Z])/g, " $1")
+                          .trim();
+                    }
+                  })()}
                 </Typography>
+
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -257,7 +286,10 @@ export default function LinksForm() {
                       <InputAdornment position="end">
                         <IconButton
                           onClick={() =>
-                            handleAddLink(key.replace("Links", ""), newLink[key.replace("Links", "")])
+                            handleAddLink(
+                              key.replace("Links", ""),
+                              newLink[key.replace("Links", "")]
+                            )
                           }
                           edge="end"
                         >
