@@ -591,117 +591,138 @@ export default function EventInfoPopup({ event, close }) {
       <Stack spacing={2} sx={{ p: 3 }}>
         {/* Landing Page Links */}
         <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Landing Page Links:{" "}
-          {selectedEvent.landingPageLinks &&
-          selectedEvent.landingPageLinks.length > 0
-            ? selectedEvent.landingPageLinks.map((link, index) => (
-                <MuiLink
-                  key={index}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#4285F4",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  {link}
-                </MuiLink>
-              ))
-            : "N/A"}
-        </Typography>
+  variant="body2"
+  display="flex"
+  sx={{ whiteSpace: "normal" }}
+>
+  <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+  Landing Page Links:{" "}
+  <Typography
+    variant="body2"
+    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+  >
+    {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
+      ? selectedEvent.landingPageLinks.map((link, index) => (
+          <MuiLink
+            key={index}
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#4285F4", // Keeps the blue color for the hyperlink
+              marginLeft: index > 0 ? "5px" : "0px", // Adds space between links
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+            }}
+          >
+            {link}
+          </MuiLink>
+        ))
+      : "N/A"}
+  </Typography>
+</Typography>
 
-        {/* Sales Kit Links */}
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Sales Kit Links:{" "}
-          {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
-            ? selectedEvent.salesKitLinks.map((link, index) => (
-                <MuiLink
-                  key={index}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#4285F4",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  {link}
-                </MuiLink>
-              ))
-            : "N/A"}
-        </Typography>
 
-        {/* Hailo Links */}
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Hailo Links:{" "}
-          {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
-            ? selectedEvent.hailoLinks.map((link, index) => (
-                <MuiLink
-                  key={index}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#4285F4",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  {link}
-                </MuiLink>
-              ))
-            : "N/A"}
-        </Typography>
+<Typography
+  variant="body2"
+  display="flex"
+  sx={{ whiteSpace: "normal" }}
+>
+  <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+  Sales Kit Links:{" "}
+  <Typography
+    variant="body2"
+    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+  >
+    {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
+      ? selectedEvent.salesKitLinks
+          .map((link) => (
+            <MuiLink
+              key={link}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "#4285F4", // Keeping the blue color for links
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+              }}
+            >
+              {link}
+            </MuiLink>
+          ))
+          .reduce((prev, curr) => [prev, ", ", curr]) // Adding commas between links
+      : "N/A"}
+  </Typography>
+</Typography>
 
-        {/* Other Documents Links */}
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Other Documents:{" "}
-          {selectedEvent.otherDocumentsLinks &&
-          selectedEvent.otherDocumentsLinks.length > 0
-            ? selectedEvent.otherDocumentsLinks.map((link, index) => (
-                <MuiLink
-                  key={index}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#4285F4",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  {link}
-                </MuiLink>
-              ))
-            : "N/A"}
-        </Typography>
+
+<Typography
+  variant="body2"
+  display="flex"
+  sx={{ whiteSpace: "normal" }}
+>
+  <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+  Hailo Links:{" "}
+  <Typography
+    variant="body2"
+    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+  >
+    {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
+      ? selectedEvent.hailoLinks
+          .map((link) => (
+            <MuiLink
+              key={link}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "#4285F4", // Keeping the blue color for links
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+              }}
+            >
+              {link}
+            </MuiLink>
+          ))
+          .reduce((prev, curr) => [prev, ", ", curr]) // Adding commas between links
+      : "N/A"}
+  </Typography>
+</Typography>
+
+<Typography
+  variant="body2"
+  display="flex"
+  sx={{ whiteSpace: "normal" }}
+>
+  <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+  Other Documents:{" "}
+  <Typography
+    variant="body2"
+    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+  >
+    {selectedEvent.otherDocumentsLinks && selectedEvent.otherDocumentsLinks.length > 0
+      ? selectedEvent.otherDocumentsLinks
+          .map((link) => (
+            <MuiLink
+              key={link}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "#4285F4", // Keeping the blue color for links
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+              }}
+            >
+              {link}
+            </MuiLink>
+          ))
+          .reduce((prev, curr) => [prev, ", ", curr]) // Adding commas between links
+      : "N/A"}
+  </Typography>
+</Typography>
+
       </Stack>
     ),
   };
