@@ -160,85 +160,73 @@ module.exports = (firestoreStore) => {
 
 
     router.post('/send-gmail-invite', async (req, res) => {
-        const {
-            to,
-            subject,
-            body
-        } = req.body;
-
-        try {
-            if (!req.user || !req.user.accessToken || !req.user.refreshToken) {
-                logger.error("User not authenticated or missing tokens.");
-                return res.status(401).send('User not authenticated');
-            }
-
-            logger.info("User authenticated, proceeding to create Gmail draft.");
-
-            const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
-            oauth2Client.setCredentials({
-                access_token: req.user.accessToken,
-                refresh_token: req.user.refreshToken,
-            });
-
-            oauth2Client.on('tokens', (tokens) => {
-                if (tokens.refresh_token) {
-                    req.user.refreshToken = tokens.refresh_token;
-                }
-                req.user.accessToken = tokens.access_token;
-            });
-
-            // Prepare the raw email format
-            const email = [
-                `To: ${to}`,
-                'Content-Type: text/html; charset=utf-8',
-                'MIME-Version: 1.0',
-                `Subject: ${subject}`,
-                '',
-                body,
-            ].join('\n');
-
-            const encodedMessage = Buffer.from(email)
-                .toString('base64')
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=+$/, '');
-
-            logger.info("Encoded email message prepared.", {
-                encodedMessage
-            });
-
-            // Create Gmail draft
-            const response = await gmail.users.drafts.create({
-                auth: oauth2Client,
-                userId: 'me',
-                requestBody: {
-                    message: {
-                        raw: encodedMessage,
-                    },
-                },
-            });
-
-            if (response && response.data) {
-                logger.info("Gmail draft created successfully.", {
-                    draftId: response.data.id
-                });
-                res.status(200).json({
-                    success: true,
-                    draftId: response.data.id,
-                    draftUrl: `https://mail.google.com/mail/u/${req.user.emails[0].value}/#drafts`,
-                });
-            } else {
-                logger.error("Failed to create Gmail draft. No response data from Gmail API.");
-                res.status(500).send('Failed to create Gmail draft');
-            }
-        } catch (error) {
-            logger.error("Error while creating Gmail draft", {
-                error: error.message,
-                stack: error.stack
-            });
-            res.status(500).send('Failed to create Gmail draft due to server error');
+      const { to, subject, body } = req.body;
+      const accessToken = req.headers['authorization']?.split(' ')[1]; // Extract token from Authorization header
+    
+      if (!accessToken) {
+        logger.error("Access token not found.");
+        return res.status(401).send('Access token not found');
+      }
+    
+      try {
+        logger.info("Proceeding to create Gmail draft.");
+    
+        // Use the provided access token
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({
+          access_token: accessToken,
+        });
+    
+        const gmail = google.gmail({
+          version: 'v1',
+          auth: oauth2Client,
+        });
+    
+        // Prepare the raw email format
+        const email = [
+          `To: ${to}`,
+          'Content-Type: text/html; charset=utf-8',
+          'MIME-Version: 1.0',
+          `Subject: ${subject}`,
+          '',
+          body,
+        ].join('\n');
+    
+        const encodedMessage = Buffer.from(email)
+          .toString('base64')
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '');
+    
+        logger.info("Encoded email message prepared.", { encodedMessage });
+    
+        // Create Gmail draft
+        const response = await gmail.users.drafts.create({
+          userId: 'me',
+          requestBody: {
+            message: {
+              raw: encodedMessage,
+            },
+          },
+        });
+    
+        if (response && response.data) {
+          logger.info("Gmail draft created successfully.", { draftId: response.data.id });
+          res.status(200).json({
+            success: true,
+            draftId: response.data.id,
+            draftUrl: `https://mail.google.com/mail/u/me/#drafts`,
+          });
+        } else {
+          logger.error("Failed to create Gmail draft. No response data from Gmail API.");
+          res.status(500).send('Failed to create Gmail draft');
         }
+      } catch (error) {
+        logger.error("Error while creating Gmail draft", { error: error.message, stack: error.stack });
+        res.status(500).send('Failed to create Gmail draft due to server error');
+      }
     });
+    
 
 
 
