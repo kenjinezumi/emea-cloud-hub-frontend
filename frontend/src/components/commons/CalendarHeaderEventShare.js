@@ -60,6 +60,7 @@ const NavigationSidebar = () => {
         </span>
         <span>Email Invitation</span>
       </button>
+      
       <button
         onClick={() => scrollToSection('email-invitation')}
         className="block w-full text-left p-2 rounded flex items-center"
