@@ -11,7 +11,7 @@ const dummyEventData = [
     ],
     "startDate": "2024-09-26T03:20:42.000Z",
     "endDate": "2024-09-27T03:19:42.000Z",
-    "marketingProgramInstanceId": "12345",
+    "marketingProgramInstanceId": "",
     "eventType": "Online Event",
     "region": "GLOBAL",
     "subRegion": [

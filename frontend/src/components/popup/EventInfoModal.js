@@ -237,7 +237,12 @@ export default function EventInfoPopup({ event, close }) {
           {dayjs().isAfter(dayjs(selectedEvent.endDate))
             ? "Attended"
             : "Registrations"}
-          : {selectedEvent.registeredCount || 0}
+          :{" "}
+          {!selectedEvent.marketingProgramInstanceId ? (
+            <em style={{marginLeft:5}}>  Marketing instance program id not provided</em>
+          ) : (
+            selectedEvent.registeredCount || 0
+          )}
         </Typography>
 
         <Typography
