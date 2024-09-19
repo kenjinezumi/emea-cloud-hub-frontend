@@ -347,7 +347,7 @@ const EventFormEmailInvitation = () => {
                             <div style={{ marginTop: "20px", pt: "40px" }}>
                             
                               <Typography variant="subtitle1" style={{ marginTop: "50px", pt: "40px" }}>
-                                Insert Personalization Tokens:
+                                Insert Personalisation Tokens:
                               </Typography>
                               {personalizationOptions.map((token, idx) => (
                                 <Button
