@@ -107,24 +107,31 @@ export default function EventInfoPopup({ event, close }) {
         return;
       }
   
-      // Find the selected template and subject line based on the selected language
-      const selectedLanguageData = languagesAndTemplates.find(
+      // Define the template based on the selected language
+      const template = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
-      );
+      )?.template;
+
+      const subjectLine = languagesAndTemplates.find(
+        (item) => item.language === selectedLanguage
+      )?.subjectLine;
   
-      if (!selectedLanguageData || !selectedLanguageData.template || !selectedLanguageData.subjectLine) {
-        console.error("No template or subject line found for the selected language.");
-        alert("No template or subject line found for the selected language.");
+      if (!template) {
+        console.error("No template found for the selected language.");
+        alert("No template found for the selected language.");
+        return;
+      }
+      if (!subjectLine) {
+        console.error("No subject linefound for the selected language.");
+        alert("No subject line found for the selected language.");
         return;
       }
   
-      const { template, subjectLine } = selectedLanguageData;
-
+      // Prepare the email details to send to the backend
       const emailDetails = {
         to: email,
-        subject: subjectLine,  
+        subject: subjectLine,
         body: template,
-        accessToken: accessToken, 
       };
   
       console.log("Sending request to create Gmail draft with email details:", emailDetails);
@@ -135,6 +142,7 @@ export default function EventInfoPopup({ event, close }) {
         credentials: 'include',
         headers: {
           'Content-Type': 'text/plain',
+          'Authorization': `Bearer ${accessToken}`, // Include the access token
         },
         body: JSON.stringify(emailDetails),
       });
@@ -142,7 +150,7 @@ export default function EventInfoPopup({ event, close }) {
       console.log("Response from server:", response);
   
       if (!response.ok) {
-        console.error("Failed to create Gmail draft. Response status:", response.status);
+        console.error("Failed to create draft. Response status:", response.status);
         throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
       }
   
@@ -161,7 +169,6 @@ export default function EventInfoPopup({ event, close }) {
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
-  
   
   
 

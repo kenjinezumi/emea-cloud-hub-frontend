@@ -132,10 +132,10 @@ export default function ExtraDetailsForm() {
         activityOwner,
         speakers,
         isEventSeries: eventSeries === "yes",
-        isApprovedForCustomerUse: customerUse === "yes",
         okr: selectedOkrs,
         gep,
         isPartneredEvent: isPartneredEvent === true,
+        isApprovedForCustomerUse: customerUse === "yes",
         partnerRole,
       },
       "/location"
@@ -190,6 +190,7 @@ export default function ExtraDetailsForm() {
       okr: selectedOkrs,
       gep,
       isPartneredEvent: isPartneredEvent === true,
+      isApprovedForCustomerUse: customerUse === "yes",
       partnerRole,
     };
 
