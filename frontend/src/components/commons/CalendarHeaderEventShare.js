@@ -3,7 +3,7 @@ import {useNavigate} from 'react-router-dom';
 import logo from '../../assets/logo/logo.png';
 import beta from '../../assets/svg/beta.svg';
 import {useLocation} from 'react-router-dom';
-
+import EmailIcon from '@mui/icons-material/Email';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import LinkIcon from '@mui/icons-material/Link';
 import PeopleIcon from '@mui/icons-material/People';
@@ -53,6 +53,15 @@ const NavigationSidebar = () => {
       </button>
       <button
         onClick={() => scrollToSection('audience-section')}
+        className="block w-full text-left p-2 rounded flex items-center"
+      >
+        <span className="mr-2">
+          <EmailIcon style={{ color: blue[500] }} />
+        </span>
+        <span>Email Invitation</span>
+      </button>
+      <button
+        onClick={() => scrollToSection('email-invitation')}
         className="block w-full text-left p-2 rounded flex items-center"
       >
         <span className="mr-2">
