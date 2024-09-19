@@ -30,7 +30,7 @@ const EventFormEmailInvitation = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [languagesAndTemplates, setLanguagesAndTemplates] = useState([
-    { platform: "Gmail", language: "English", template: "" }
+    { platform: "Gmail", language: "English", template: "", subjectLine: "" }
   ]);
   const [isFormValid, setIsFormValid] = useState(true);
   const saveAndNavigate = useFormNavigation();
@@ -40,13 +40,13 @@ const EventFormEmailInvitation = () => {
       setLanguagesAndTemplates(
         selectedEvent.languagesAndTemplates.length > 0
           ? selectedEvent.languagesAndTemplates
-          : [{ platform: "Gmail", language: "English", template: "" }]
+          : [{ platform: "Gmail", language: "English", template: "", subjectLine: "" }]
       );
     } else {
       setLanguagesAndTemplates(
         formData.languagesAndTemplates.length > 0
           ? formData.languagesAndTemplates
-          : [{ platform: "Gmail", language: "English", template: "" }]
+          : [{ platform: "Gmail", language: "English", template: "", subjectLine: "" }]
       );
     }
   }, [selectedEvent, formData]);
@@ -54,7 +54,7 @@ const EventFormEmailInvitation = () => {
   const handleAddLanguageAndTemplate = () => {
     setLanguagesAndTemplates([
       ...languagesAndTemplates,
-      { platform: "Gmail", language: "", template: "" }
+      { platform: "Gmail", language: "", template: "", subjectLine: "" }
     ]);
   };
 
@@ -88,7 +88,7 @@ const EventFormEmailInvitation = () => {
 
   const handleNext = () => {
     const formIsValid = languagesAndTemplates.every(
-      (item) => item.language.trim() !== "" && item.template.trim() !== ""
+      (item) => item.language.trim() !== "" && item.template.trim() !== "" && item.subjectLine.trim() !== ""
     );
 
     setIsFormValid(formIsValid);
@@ -107,6 +107,11 @@ const EventFormEmailInvitation = () => {
 
   const handlePrevious = () => {
     saveAndNavigate({ languagesAndTemplates }, "/extra");
+  };
+  const handleSubjectLineChange = (value, index) => {
+    const updatedItems = [...languagesAndTemplates];
+    updatedItems[index].subjectLine = value;
+    setLanguagesAndTemplates(updatedItems);
   };
 
   const handleSaveAsDraft = async () => {
@@ -186,7 +191,7 @@ const EventFormEmailInvitation = () => {
                       </Grid>
                       <Grid item xs={12}>
                         <FormControl fullWidth>
-                          <Typography variant="subtitle1">Email language</Typography>
+                          <Typography variant="subtitle1">Email Language</Typography>
                           {index === 0 ? (
                             <TextField
                               value={item.language || "Select Language"}
@@ -213,9 +218,19 @@ const EventFormEmailInvitation = () => {
                         </FormControl>
                       </Grid>
                       <Grid item xs={12}>
-                        <Typography variant="subtitle1">Email template</Typography>
+                        <Typography variant="subtitle1">Email Subject Line</Typography>
                         <TextField
-                          label="Email Text"
+                          label=""
+                          value={item.subjectLine}
+                          onChange={(e) => handleSubjectLineChange(e.target.value, index)}
+                          variant="outlined"
+                          fullWidth
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1">Email Body</Typography>
+                        <TextField
+                          label=""
                           multiline
                           rows={4}
                           value={item.template}
