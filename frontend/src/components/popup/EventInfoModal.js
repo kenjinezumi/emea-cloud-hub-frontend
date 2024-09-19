@@ -88,25 +88,27 @@ export default function EventInfoPopup({ event, close }) {
   const handleGmailInvite = async () => {
     try {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
-  
+
       // Fetch the access token from localStorage
       const accessToken = localStorage.getItem("accessToken");
-  
+
       if (!accessToken) {
         console.error("Access token not found. Please log in again.");
         alert("Access token not found. Please log in again.");
         return;
       }
-  
+
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.emails?.[0]?.value;
-  
+
       if (!email || !selectedLanguage) {
-        console.error("No email or selected language found. Aborting draft creation.");
+        console.error(
+          "No email or selected language found. Aborting draft creation."
+        );
         alert("No email or template selected.");
         return;
       }
-  
+
       // Define the template based on the selected language
       const template = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
@@ -115,7 +117,7 @@ export default function EventInfoPopup({ event, close }) {
       const subjectLine = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.subjectLine;
-  
+
       if (!template) {
         console.error("No template found for the selected language.");
         alert("No template found for the selected language.");
@@ -126,37 +128,43 @@ export default function EventInfoPopup({ event, close }) {
         alert("No subject line found for the selected language.");
         return;
       }
-  
+
       // Prepare the email details to send to the backend
       const emailDetails = {
         to: email,
         subject: subjectLine,
         body: template,
       };
-  
-      console.log("Sending request to create Gmail draft with email details:", emailDetails);
-  
+
+      console.log(
+        "Sending request to create Gmail draft with email details:",
+        emailDetails
+      );
+
       // Send request to backend to create the Gmail draft
       const response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
-        credentials: 'include',
+        credentials: "include",
         headers: {
-          'Content-Type': 'text/plain',
-          'Authorization': `Bearer ${accessToken}`, // Include the access token
+          "Content-Type": "text/plain",
+          Authorization: `Bearer ${accessToken}`, // Include the access token
         },
         body: JSON.stringify(emailDetails),
       });
-  
+
       console.log("Response from server:", response);
-  
+
       if (!response.ok) {
-        console.error("Failed to create draft. Response status:", response.status);
+        console.error(
+          "Failed to create draft. Response status:",
+          response.status
+        );
         throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
       }
-  
+
       const data = await response.json();
       console.log("Draft created successfully. Server response:", data);
-  
+
       if (data.success) {
         console.log("Redirecting to Gmail drafts at:", data.draftUrl);
         window.open(data.draftUrl, "_blank");
@@ -169,8 +177,6 @@ export default function EventInfoPopup({ event, close }) {
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
-  
-  
 
   const formatListWithSpaces = (list) => {
     if (!list) return "";
@@ -349,7 +355,7 @@ export default function EventInfoPopup({ event, close }) {
           <Typography
             variant="body2"
             sx={{
-              marginLeft: "30px",
+              marginLeft: "5px",
               wordBreak: "break-word",
               whiteSpace: "normal",
             }}
@@ -380,7 +386,7 @@ export default function EventInfoPopup({ event, close }) {
           <Typography
             variant="body2"
             sx={{
-              marginLeft: "30px",
+              marginLeft: "5px",
               wordBreak: "break-word",
               whiteSpace: "normal",
             }}
@@ -711,75 +717,66 @@ export default function EventInfoPopup({ event, close }) {
               sx={{ p: 2, justifyContent: "flex-end" }}
               alignItems="center"
             >
-              {languagesAndTemplates.length > 1 && (
-                <div>
-                  {/* Display the selected language */}
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    {selectedLanguage && (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          maxWidth: 200, // Limit the width to prevent overflow
-                          whiteSpace: "nowrap", // Prevent text from wrapping to the next line
-                          overflow: "hidden", // Hide overflowing text
-                          textOverflow: "ellipsis", // Add ellipsis if the text overflows
-                        }}
-                      >
-                        Selected Language: {selectedLanguage}
-                      </Typography>
-                    )}
+              <div>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  {selectedLanguage && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        maxWidth: 200,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      Selected Language: {selectedLanguage}
+                    </Typography>
+                  )}
 
-                    <Tooltip title="Select Language">
-                      <IconButton onClick={handleLanguageClick}>
-                        <LanguageIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Stack>
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleCloseMenu}
-                    disablePortal
-                    transformOrigin={{
-                      vertical: "center",
-                      horizontal: "center",
-                    }}
-                    PaperProps={{
-                      sx: {
-                        zIndex: 10000, // Keep above other components
-                        boxShadow: "0px 4px 10px rgba(0,0,0,0.5)", // Consistent with Paper
-                        borderRadius: "8px", // Match the modal's border radius
-                        bgcolor: "background.paper", // Match background color
-                        minWidth: 600, // Match the modal's width
-                        paddingBottom: "16px", // Optional for spacing within the Menu
-                      },
-                    }}
-                    MenuListProps={{
-                      sx: {
-                        maxHeight: "100vh", // Consistent height
-                        overflowY: "auto", // To allow scrolling within the menu
-                      },
-                    }}
-                  >
-                    {languagesAndTemplates.map((item) => (
-                      <MenuItem
-                        key={item.language}
-                        selected={item.language === selectedLanguage}
-                        onClick={() => handleLanguageSelect(item.language)}
-                      >
-                        {item.language}
-                      </MenuItem>
-                    ))}
-                  </Menu>
-                </div>
-              )}
+                  <Tooltip title="Select Language">
+                    <IconButton onClick={handleLanguageClick}>
+                      <LanguageIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
 
-              {/* If only one language, show it directly */}
-              {languagesAndTemplates.length === 1 && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  Language: {languagesAndTemplates[0].language}
-                </Typography>
-              )}
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleCloseMenu}
+                  disablePortal
+                  transformOrigin={{
+                    vertical: "center",
+                    horizontal: "center",
+                  }}
+                  PaperProps={{
+                    sx: {
+                      zIndex: 10000,
+                      boxShadow: "0px 4px 10px rgba(0,0,0,0.5)",
+                      borderRadius: "8px",
+                      bgcolor: "background.paper",
+                      minWidth: 600,
+                      paddingBottom: "16px",
+                    },
+                  }}
+                  MenuListProps={{
+                    sx: {
+                      maxHeight: "100vh",
+                      overflowY: "auto",
+                    },
+                  }}
+                >
+                  {languagesAndTemplates.map((item) => (
+                    <MenuItem
+                      key={item.language}
+                      selected={item.language === selectedLanguage}
+                      onClick={() => handleLanguageSelect(item.language)}
+                    >
+                      {item.language}
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </div>
 
               <Button
                 variant="contained"
