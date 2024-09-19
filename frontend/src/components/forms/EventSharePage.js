@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Grid, Chip, Divider, Paper, Link, Accordion, AccordionSummary, AccordionDetails, Checkbox, Input } from "@mui/material";
+import {
+  Typography,
+  Grid,
+  Chip,
+  Divider,
+  Paper,
+  Link,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Checkbox,
+  Input,
+} from "@mui/material";
 import CalendarHeaderEventShare from "../commons/CalendarHeaderEventShare";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import LinkIcon from "@mui/icons-material/Link";
@@ -16,10 +28,18 @@ import { getEventData } from "../../api/getEventData";
 import { useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // For customer use approval
-import AssignmentIcon from "@mui/icons-material/Assignment"; // For OKR
-import BusinessCenterIcon from "@mui/icons-material/BusinessCenter"; // For Partner involvement
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore"; 
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PersonIcon from "@mui/icons-material/Person";
+import BusinessIcon from "@mui/icons-material/Business";
+import DomainIcon from "@mui/icons-material/Domain";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import CategoryIcon from "@mui/icons-material/Category";
+import SettingsIcon from "@mui/icons-material/Settings";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
+import MemoryIcon from "@mui/icons-material/Memory";
 
 function ShareEventPage() {
   const { eventId } = useParams();
@@ -411,88 +431,117 @@ function ShareEventPage() {
               </Grid>
 
               {/* Extra Details */}
-<Grid item xs={12}>
-  <Typography variant="h5" gutterBottom component="div">
-    <InfoIcon style={{ color: blue[500], marginRight: 8 }} />
-    Extra details
-  </Typography>
-  <hr />
-</Grid>
+              <Grid item xs={12}>
+                <Typography variant="h5" gutterBottom component="div">
+                  <InfoIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Extra details
+                </Typography>
+                <hr />
+              </Grid>
 
-{/* Approved for Customer Use */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-    <CheckCircleIcon style={{ color: blue[500], marginRight: 8 }} />
-    Approved for customer use:
-    <Typography variant="body1" sx={{ marginLeft: '8px' }}>
-      {eventDetails.customerUseApproved ? "Yes" : "No"}
-    </Typography>
-  </Typography>
-</Grid>
+              {/* Approved for Customer Use */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <CheckCircleIcon
+                    style={{ color: blue[500], marginRight: 8 }}
+                  />
+                  Approved for customer use:
+                  <Typography variant="body1" sx={{ marginLeft: "8px" }}>
+                    {eventDetails.customerUseApproved ? "Yes" : "No"}
+                  </Typography>
+                </Typography>
+              </Grid>
 
-{/* OKR Selection (Expandable Accordion) */}
-{/* OKR Selection */}
-<Grid item xs={12}>
-  <Accordion>
-    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="okr-panel-content" id="okr-panel-header">
-      <Typography>
-        <AssignmentIcon style={{ marginRight: 8, color: blue[500] }} />
-        OKR Selection
-      </Typography>
-    </AccordionSummary>
-    <AccordionDetails>
-      {eventDetails.okr?.map((okr, index) => (
-        <Grid container alignItems="center" key={index} sx={{ marginBottom: '8px' }}>
-          <Grid item xs={1}>
-            <Checkbox checked disabled />
-          </Grid>
-          <Grid item xs={7}>
-            <Typography variant="body2">{okr.type}</Typography>
-          </Grid>
-          <Grid item xs={4}>
-            <Input
-              type="number"
-              value={okr.percentage}
-              endAdornment="%"
-              disabled
-              sx={{ width: '80%' }}
-            />
-          </Grid>
-        </Grid>
-      )) || <Typography>No OKR selections available</Typography>}
-    </AccordionDetails>
-  </Accordion>
-</Grid>
+              {/* OKR Selection (Expandable Accordion) */}
+              {/* OKR Selection */}
+              <Grid item xs={12}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="okr-panel-content"
+                    id="okr-panel-header"
+                  >
+                    <Typography>
+                      <AssignmentIcon
+                        style={{ marginRight: 8, color: blue[500] }}
+                      />
+                      OKR Selection
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {eventDetails.okr?.map((okr, index) => (
+                      <Grid
+                        container
+                        alignItems="center"
+                        key={index}
+                        sx={{ marginBottom: "8px" }}
+                      >
+                        <Grid item xs={1}>
+                          <Checkbox checked disabled />
+                        </Grid>
+                        <Grid item xs={7}>
+                          <Typography variant="body2">{okr.type}</Typography>
+                        </Grid>
+                        <Grid item xs={4}>
+                          <Input
+                            type="number"
+                            value={okr.percentage}
+                            endAdornment="%"
+                            disabled
+                            sx={{ width: "80%" }}
+                          />
+                        </Grid>
+                      </Grid>
+                    )) || <Typography>No OKR selections available</Typography>}
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
 
-{/* GEP Selection */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-    <PublicIcon style={{ color: blue[500], marginRight: 8 }} />
-    GEP:
-  </Typography>
-  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginLeft: '32px', marginTop: '8px' }}>
-    {eventDetails.gep?.map((gep, index) => (
-      <Chip
-        key={index}
-        label={gep}
-        
-      />
-    )) || <Typography>No GEP selections available</Typography>}
-  </div>
-</Grid>
+              {/* GEP Selection */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <PublicIcon style={{ color: blue[500], marginRight: 8 }} />
+                  GEP:
+                </Typography>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginLeft: "32px",
+                    marginTop: "8px",
+                  }}
+                >
+                  {eventDetails.gep?.map((gep, index) => (
+                    <Chip key={index} label={gep} />
+                  )) || <Typography>No GEP selections available</Typography>}
+                </div>
+              </Grid>
 
-
-{/* Partner Involvement */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-    <BusinessCenterIcon style={{ color: blue[500], marginRight: 8 }} />
-    Are partners involved?
-    <Typography variant="body1" sx={{ marginLeft: '8px' }}>
-      {eventDetails.partnerInvolvement ? `Yes (${eventDetails.partnerRole})` : "No"}
-    </Typography>
-  </Typography>
-</Grid>
-             
+              {/* Partner Involvement */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <BusinessCenterIcon
+                    style={{ color: blue[500], marginRight: 8 }}
+                  />
+                  Are partners involved?
+                  <Typography variant="body1" sx={{ marginLeft: "8px" }}>
+                    {eventDetails.partnerInvolvement
+                      ? `Yes (${eventDetails.partnerRole})`
+                      : "No"}
+                  </Typography>
+                </Typography>
+              </Grid>
+              {/* Audience Section */}
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
                   <PeopleIcon
@@ -501,24 +550,313 @@ function ShareEventPage() {
                       color: blue[500],
                       marginRight: 8,
                     }}
-                    id="audience-section"
                   />
                   Audience
                 </Typography>
                 <hr />
               </Grid>
+
+              {/* Audience Seniority */}
               <Grid item xs={12}>
-                <Typography variant="subtitle1">Audience Persona:</Typography>
-                {Array.isArray(eventDetails.audiencePersona) ? (
-                  eventDetails.audiencePersona.map((persona, index) => (
-                    <Chip key={index} label={persona} style={{ margin: 2 }} />
-                  ))
-                ) : (
-                  <Typography variant="body1" gutterBottom>
-                    N/A
-                  </Typography>
-                )}
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <AssignmentIcon
+                    style={{ color: blue[500], marginRight: 8 }}
+                  />
+                  Audience Seniority:
+                </Typography>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginLeft: "32px",
+                    marginTop: "8px",
+                  }}
+                >
+                  {eventDetails.audienceSeniority?.map((seniority, index) => (
+                    <Chip key={index} label={seniority} />
+                  ))}
+                </div>
               </Grid>
+
+              {/* Audience Persona */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <PersonIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Audience Persona:
+                </Typography>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginLeft: "32px",
+                    marginTop: "8px",
+                  }}
+                >
+                  {eventDetails.audiencePersona?.map((persona, index) => (
+                    <Chip key={index} label={persona} />
+                  ))}
+                </div>
+              </Grid>
+
+              {/* Industry */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <BusinessIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Industry:
+                </Typography>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginLeft: "32px",
+                    marginTop: "8px",
+                  }}
+                >
+                  {eventDetails.industry?.map((industry, index) => (
+                    <Chip key={index} label={industry} />
+                  ))}
+                </div>
+              </Grid>
+
+              {/* Account Sectors */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <DomainIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Account Sectors:
+                </Typography>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginLeft: "32px",
+                    marginTop: "8px",
+                  }}
+                >
+                  {eventDetails.accountSectors?.commercial && (
+                    <Chip label="Commercial" />
+                  )}
+                  {eventDetails.accountSectors?.public && (
+                    <Chip label="Public" />
+                  )}
+                </div>
+              </Grid>
+              {/* Account Segments */}
+              <Grid item xs={12}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="account-segments-content"
+                    id="account-segments-header"
+                  >
+                    <Typography>
+                      <AccountBalanceIcon
+                        style={{ marginRight: 8, color: blue[500] }}
+                      />
+                      Account Segments
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {Object.entries(eventDetails.accountSegments || {}).map(
+                      ([segment, details], index) => (
+                        <Grid
+                          container
+                          alignItems="center"
+                          key={index}
+                          sx={{ marginBottom: "8px" }}
+                        >
+                          <Grid item xs={7}>
+                            <Typography variant="body2">{segment}</Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Input
+                              type="number"
+                              value={details.percentage}
+                              endAdornment="%"
+                              disabled
+                              sx={{ width: "80%" }}
+                            />
+                          </Grid>
+                        </Grid>
+                      )
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+
+              {/* Account Category */}
+              <Grid item xs={12}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="account-category-content"
+                    id="account-category-header"
+                  >
+                    <Typography>
+                      <CategoryIcon
+                        style={{ marginRight: 8, color: blue[500] }}
+                      />
+                      Account Category
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {Object.entries(eventDetails.accountCategory || {}).map(
+                      ([category, details], index) => (
+                        <Grid
+                          container
+                          alignItems="center"
+                          key={index}
+                          sx={{ marginBottom: "8px" }}
+                        >
+                          <Grid item xs={7}>
+                            <Typography variant="body2">{category}</Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Input
+                              type="number"
+                              value={details.percentage}
+                              endAdornment="%"
+                              disabled
+                              sx={{ width: "80%" }}
+                            />
+                          </Grid>
+                        </Grid>
+                      )
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+
+              {/* Account Type */}
+              <Grid item xs={12}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="account-type-content"
+                    id="account-type-header"
+                  >
+                    <Typography>
+                      <BusinessCenterIcon
+                        style={{ marginRight: 8, color: blue[500] }}
+                      />
+                      Account Type
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {Object.entries(eventDetails.accountType || {}).map(
+                      ([type, details], index) => (
+                        <Grid
+                          container
+                          alignItems="center"
+                          key={index}
+                          sx={{ marginBottom: "8px" }}
+                        >
+                          <Grid item xs={7}>
+                            <Typography variant="body2">{type}</Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Input
+                              type="number"
+                              value={details.percentage}
+                              endAdornment="%"
+                              disabled
+                              sx={{ width: "80%" }}
+                            />
+                          </Grid>
+                        </Grid>
+                      )
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+
+              {/* Product Alignment */}
+              <Grid item xs={12}>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="product-alignment-content"
+                    id="product-alignment-header"
+                  >
+                    <Typography>
+                      <SettingsIcon
+                        style={{ marginRight: 8, color: blue[500] }}
+                      />
+                      Product Alignment
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    {Object.entries(eventDetails.productAlignment || {}).map(
+                      ([product, details], index) => (
+                        <Grid
+                          container
+                          alignItems="center"
+                          key={index}
+                          sx={{ marginBottom: "8px" }}
+                        >
+                          <Grid item xs={7}>
+                            <Typography variant="body2">{product}</Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Input
+                              type="number"
+                              value={details.percentage}
+                              endAdornment="%"
+                              disabled
+                              sx={{ width: "80%" }}
+                            />
+                          </Grid>
+                        </Grid>
+                      )
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              </Grid>
+              {/* AI vs Core and Max Event Capacity */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <MemoryIcon style={{ color: blue[500], marginRight: 8 }} />
+                  AI vs Core:{" "}
+                  <span style={{ marginLeft: "8px" }}>
+                    {eventDetails.aiVsCore}
+                  </span>
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginTop: "8px",
+                  }}
+                >
+                  <PeopleOutlineIcon
+                    style={{ color: blue[500], marginRight: 8 }}
+                  />
+                  Max Event Capacity:{" "}
+                  <span style={{ marginLeft: "8px" }}>
+                    {eventDetails.maxEventCapacity}
+                  </span>
+                </Typography>
+              </Grid>
+
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
                   <LinkIcon
