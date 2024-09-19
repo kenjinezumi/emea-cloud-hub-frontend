@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Grid, Chip, Divider, Paper, Link } from "@mui/material";
+import { Typography, Grid, Chip, Divider, Paper, Link, Accordion, AccordionSummary, AccordionDetails, Checkbox, Input } from "@mui/material";
 import CalendarHeaderEventShare from "../commons/CalendarHeaderEventShare";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import LinkIcon from "@mui/icons-material/Link";
@@ -16,6 +16,10 @@ import { getEventData } from "../../api/getEventData";
 import { useParams } from "react-router-dom";
 import dayjs from "dayjs";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // For customer use approval
+import AssignmentIcon from "@mui/icons-material/Assignment"; // For OKR
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter"; // For Partner involvement
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"; 
 
 function ShareEventPage() {
   const { eventId } = useParams();
@@ -406,32 +410,89 @@ function ShareEventPage() {
                 </Typography>
               </Grid>
 
-              <Grid item xs={12}>
-                <Typography variant="h5" gutterBottom component="div">
-                  <InfoIcon
-                    style={{
-                      verticalAlign: "middle",
-                      color: blue[500],
-                      marginRight: 8,
-                    }}
-                    id="extra-details-section"
-                  />
-                  Extra details
-                </Typography>
-                <hr />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">Email Language:</Typography>
-                <Typography variant="body1" gutterBottom>
-                  {eventDetails.emailLanguage}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">Email Text:</Typography>
-                <Typography variant="body1" gutterBottom>
-                  {eventDetails.emailText}
-                </Typography>
-              </Grid>
+              {/* Extra Details */}
+<Grid item xs={12}>
+  <Typography variant="h5" gutterBottom component="div">
+    <InfoIcon style={{ color: blue[500], marginRight: 8 }} />
+    Extra details
+  </Typography>
+  <hr />
+</Grid>
+
+{/* Approved for Customer Use */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+    <CheckCircleIcon style={{ color: blue[500], marginRight: 8 }} />
+    Approved for customer use:
+    <Typography variant="body1" sx={{ marginLeft: '8px' }}>
+      {eventDetails.customerUseApproved ? "Yes" : "No"}
+    </Typography>
+  </Typography>
+</Grid>
+
+{/* OKR Selection (Expandable Accordion) */}
+{/* OKR Selection */}
+<Grid item xs={12}>
+  <Accordion>
+    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="okr-panel-content" id="okr-panel-header">
+      <Typography>
+        <AssignmentIcon style={{ marginRight: 8, color: blue[500] }} />
+        OKR Selection
+      </Typography>
+    </AccordionSummary>
+    <AccordionDetails>
+      {eventDetails.okr?.map((okr, index) => (
+        <Grid container alignItems="center" key={index} sx={{ marginBottom: '8px' }}>
+          <Grid item xs={1}>
+            <Checkbox checked disabled />
+          </Grid>
+          <Grid item xs={7}>
+            <Typography variant="body2">{okr.type}</Typography>
+          </Grid>
+          <Grid item xs={4}>
+            <Input
+              type="number"
+              value={okr.percentage}
+              endAdornment="%"
+              disabled
+              sx={{ width: '80%' }}
+            />
+          </Grid>
+        </Grid>
+      )) || <Typography>No OKR selections available</Typography>}
+    </AccordionDetails>
+  </Accordion>
+</Grid>
+
+{/* GEP Selection */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+    <PublicIcon style={{ color: blue[500], marginRight: 8 }} />
+    GEP:
+  </Typography>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginLeft: '32px', marginTop: '8px' }}>
+    {eventDetails.gep?.map((gep, index) => (
+      <Chip
+        key={index}
+        label={gep}
+        
+      />
+    )) || <Typography>No GEP selections available</Typography>}
+  </div>
+</Grid>
+
+
+{/* Partner Involvement */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+    <BusinessCenterIcon style={{ color: blue[500], marginRight: 8 }} />
+    Are partners involved?
+    <Typography variant="body1" sx={{ marginLeft: '8px' }}>
+      {eventDetails.partnerInvolvement ? `Yes (${eventDetails.partnerRole})` : "No"}
+    </Typography>
+  </Typography>
+</Grid>
+             
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
                   <PeopleIcon
