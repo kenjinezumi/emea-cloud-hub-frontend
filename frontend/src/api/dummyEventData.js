@@ -3,7 +3,7 @@ const dummyEventData = [
     "eventId": "b48dd1c6-8d8a-461f-83da-b86ea8335edc",
     "tacticId": null,
     "title": "That's a test done by Kenji",
-    "description": "This is a description. This is a description...",
+    "description": "This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...",
     "emoji": "🦖",
     "organisedBy": [
       "ktsuchiya@google.com",

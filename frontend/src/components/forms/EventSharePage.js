@@ -158,23 +158,24 @@ function ShareEventPage() {
                 </Typography>
                 <hr />
               </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">Title:</Typography>
-                <Typography variant="body1" gutterBottom>
-                  {eventDetails.title} {eventDetails.emoji}
-                </Typography>
-              </Grid>
 
               <Grid item xs={12}>
-                <Typography variant="subtitle1">Description:</Typography>
-                <Typography variant="body1" gutterBottom>
-                  {eventDetails.description}
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <PeopleIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Organised by:
                 </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">Organised By:</Typography>
-                {eventDetails.organisedBy &&
-                  eventDetails.organisedBy.map((organiser, index) => (
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginTop: "8px",
+                  }}
+                >
+                  {eventDetails.organisedBy?.map((organiser, index) => (
                     <Chip
                       key={index}
                       label={cleanOrganiserName(organiser)}
@@ -183,12 +184,91 @@ function ShareEventPage() {
                         cleanOrganiserName(organiser)
                       )}`}
                       clickable
-                      style={{ margin: 2 }}
                       target="_blank"
                       rel="noopener noreferrer"
                     />
                   ))}
+                </div>
               </Grid>
+
+              {/* Event Series (Inline) */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <InfoIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Is the event part of a series?
+                  <Typography variant="body1" sx={{ marginLeft: "8px" }}>
+                    {eventDetails.isEventSeries ? "Yes" : "No"}
+                  </Typography>
+                </Typography>
+              </Grid>
+
+              {/* Description */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <InfoIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Description:
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ marginLeft: "32px", marginTop: "8px" }}
+                >
+                  {eventDetails.description}
+                </Typography>
+              </Grid>
+
+              {/* Speakers (Inline Chips on Two Lines) */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <PeopleIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Speakers:
+                </Typography>
+                {/* Separate line for the chips */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "8px",
+                    marginTop: "8px",
+                  }}
+                >
+                  {eventDetails.speakers?.map((speaker, index) => (
+                    <Chip
+                      key={index}
+                      label={speaker}
+                      component="a"
+                      href={`https://moma.corp.google.com/person/${encodeURIComponent(
+                        cleanOrganiserName(speaker)
+                      )}`}
+                      clickable
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  ))}
+                </div>
+              </Grid>
+              {/* Marketing Program Instance ID */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <InfoIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Marketing Program Instance ID:
+                  <Typography variant="body1" sx={{ marginLeft: "8px" }}>
+                    {eventDetails.marketingProgramInstanceId || "Not provided"}
+                  </Typography>
+                </Typography>
+              </Grid>
+
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
                   <LocationOnIcon
