@@ -1,120 +1,119 @@
 const dummyEventData = [
   {
-    "eventId": "event-001",
-    "tacticId": "tactic-001",
-    "title": "Sample Event Title",
-    "description": "This is a test event description.",
-    "emoji": "🎉",
+    "eventId": "b48dd1c6-8d8a-461f-83da-b86ea8335edc",
+    "tacticId": null,
+    "title": "That's a test done by Kenji",
+    "description": "This is a description. This is a description...",
+    "emoji": "🦖",
     "organisedBy": [
-      "Org1",
-      "Org2"
+      "ktsuchiya@google.com",
+      "nicon@google.com"
     ],
-    "startDate": "2024-09-19T10:00:00Z",
-    "endDate": "2024-09-19T18:00:00Z",
-    "marketingProgramInstanceId": "MP-001",
-    "eventType": "Physical Event",
+    "startDate": "2024-09-26T03:20:42.000Z",
+    "endDate": "2024-09-27T03:19:42.000Z",
+    "marketingProgramInstanceId": "12345",
+    "eventType": "Online Event",
     "region": "GLOBAL",
     "subRegion": [
+      "France",
       "Benelux",
-      "Germany"
+      "CEE"
     ],
     "country": [
+      "FR",
       "BE",
-      "DE"
+      "NL",
+      "PL"
     ],
-    "activityOwner": [
-      "Owner1",
-      "Owner2"
-    ],
+    "activityOwner": [],
     "speakers": [
-      "speaker1@example.com",
-      "speaker2@example.com"
+      "nicon@google.com"
     ],
-    "eventSeries": "no",
+    "isEventSeries": false,
     "languagesAndTemplates": [
       {
         "platform": "Gmail",
         "language": "English",
-        "template": "Template1"
-      },
-      {
-        "platform": "Salesloft",
-        "language": "French",
-        "template": "Template2"
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
       }
     ],
-    "customerUse": "yes",
     "okr": [
       {
         "type": "CHAMPION DEI & CULTURE",
-        "percentage": "50"
+        "percentage": "80"
       },
       {
-        "type": "SOURCE DEMAND",
-        "percentage": "50"
+        "type": "LIFT MINDSHARE",
+        "percentage": "20"
       }
     ],
-"gep": ["Infrastructure Modernization", "Reimagine FSI"],
+    "gep": [
+      "Data Cloud",
+      "Digital Natives - Early Stage Startups",
+      "Google Workspace"
+    ],
     "audiencePersona": [
-      "Developer",
-      "Finance"
+      "Industry LOB - Edu",
+      "Industry LOB - FinServ",
+      "Industry LOB - Gaming"
     ],
     "audienceSeniority": [
       "Decision Maker",
-      "Practitioner"
+      "Practitioner",
+      "Executive"
     ],
     "accountSectors": {
       "commercial": true,
-      "public": false
+      "public": true
     },
     "accountSegments": {
       "Corporate": {
         "selected": true,
-        "percentage": "60"
+        "percentage": "25"
       },
       "SMB": {
-        "selected": false,
-        "percentage": "0"
+        "selected": true,
+        "percentage": "25"
       },
       "Select": {
         "selected": true,
-        "percentage": "20"
+        "percentage": "25"
       },
       "Enterprise": {
-        "selected": false,
-        "percentage": "0"
-      },
-      "Startup": {
         "selected": true,
-        "percentage": "20"
+        "percentage": "25"
       }
     },
-    "maxEventCapacity": "200",
-    "peopleMeetingCriteria": "150",
+    "maxEventCapacity": "1234567887",
+    "peopleMeetingCriteria": null,
     "landingPageLinks": [
-      "http://landingpage1.com"
+      "https://cloudhub.googleplex.com/links"
     ],
     "salesKitLinks": [
-      "http://saleskitlink1.com"
+      "https://cloudhub.googleplex.com/links"
     ],
     "hailoLinks": [
-      "http://hailolink1.com"
+      "https://cloudhub.googleplex.com/links"
     ],
     "otherDocumentsLinks": [
-      "http://otherdoclink1.com"
+      "https://cloudhub.googleplex.com/links",
+      "https://cloudhub.googleplex.com/links"
     ],
-    "approvedForCustomerUse": true,
+    "isApprovedForCustomerUse": true,
+    "isDraft": false,
+    "isPublished": true,
     "isHighPriority": true,
     "isPartneredEvent": true,
-    "partnerRole": "Host Event (Webinar, Townhall, Workshop, Demo)",
+    "partnerRole": "Speak at Google / 3rd Party Roundtable, Forum",
     "accountCategory": {
       "Digital Native": {
         "selected": true,
-        "percentage": "100"
+        "percentage": "50"
       },
       "Traditional": {
-        "selected": false,
-        "percentage": "0"
+        "selected": true,
+        "percentage": "50"
       }
     },
     "accountType": {
@@ -130,134 +129,26 @@ const dummyEventData = [
     "productAlignment": {
       "GCP": {
         "selected": true,
-        "percentage": "70"
+        "percentage": "50"
       },
       "GWS": {
         "selected": true,
-        "percentage": "30"
-      }
-    },
-    "aiVsCore": "AI",
-    "industry": "Healthcare",
-    "city": "London",
-    "locationVenue": "O2 Arena",
-    "marketingActivityType": "Marketing Activity Type 1",
-    "isDraft": true
-  },
-  {
-    "eventId": "event-002",
-    "tacticId": "tactic-002",
-    "title": "Matching Event",
-    "description": "This event matches all filters.",
-    "emoji": "📅",
-    "organisedBy": [
-      "Org3",
-      "Org4"
-    ],
-    "startDate": "2024-10-05T09:00:00Z",
-    "endDate": "2024-10-05T17:00:00Z",
-    "marketingProgramInstanceId": "MP-002",
-    "eventType": "Physical Event",
-    "region": "EMEA",
-    "subRegion": [
-      "Benelux",
-      "Germany"
-    ],
-    "country": [
-      "BE",
-      "DE"
-    ],
-    "activityOwner": [
-      "Owner3",
-      "Owner4"
-    ],
-    "speakers": [
-      "speaker3@example.com"
-    ],
-    "eventSeries": "yes",
-    "languagesAndTemplates": [
-      {
-        "platform": "Gmail",
-        "language": "English",
-        "template": "Template3"
-      }
-    ],
-    "customerUse": "yes",
-    "okr": [
-      {
-        "type": "CHAMPION DEI & CULTURE",
-        "percentage": "60"
-      },
-      {
-        "type": "SOURCE DEMAND",
-        "percentage": "40"
-      }
-    ],
-    "gep": ["Infrastructure Modernization", "Reimagine FSI"],
-    "audiencePersona": [
-      "Developer",
-      "Finance"
-    ],
-    "audienceSeniority": [
-      "Decision Maker",
-      "Executive"
-    ],
-    "accountSectors": {
-      "commercial": true,
-      "public": true
-    },
-    "accountSegments": {
-      "Corporate": {
-        "selected": true,
         "percentage": "50"
-      },
-      "SMB": {
-        "selected": true,
-        "percentage": "30"
-      }
-    },
-    "maxEventCapacity": "100",
-    "peopleMeetingCriteria": "80",
-    "landingPageLinks": [
-      "http://landingpage2.com"
-    ],
-    "salesKitLinks": [
-      "http://saleskitlink2.com"
-    ],
-    "hailoLinks": [
-      "http://hailolink2.com"
-    ],
-    "otherDocumentsLinks": [
-      "http://otherdoclink2.com"
-    ],
-    "approvedForCustomerUse": true,
-    "isHighPriority": false,
-    "isPartneredEvent": true,
-    "partnerRole": "Co-Host",
-    "accountCategory": {
-      "Digital Native": {
-        "selected": true,
-        "percentage": "100"
-      }
-    },
-    "accountType": {
-      "Greenfield": {
-        "selected": true,
-        "percentage": "70"
-      }
-    },
-    "productAlignment": {
-      "GCP": {
-        "selected": true,
-        "percentage": "80"
       }
     },
     "aiVsCore": "AI",
-    "industry": "Healthcare",
-    "city": "Berlin",
-    "locationVenue": "Berlin Conference Center",
-    "marketingActivityType": "Workshop",
-    "isDraft": true
+    "industry": [
+      "Manufacturing",
+      "Healthcare",
+      "Education",
+      "Financial Services",
+      "Government",
+      "Retail"
+    ],
+    "city": "Paris",
+    "locationVenue": "Bercy",
+    "marketingActivityType": null,
+    "userTimezone": "Europe/London"
   }
 ];
 
