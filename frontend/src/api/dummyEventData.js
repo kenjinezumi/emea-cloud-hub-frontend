@@ -11,7 +11,7 @@ const dummyEventData = [
     ],
     "startDate": "2024-09-26T03:20:42.000Z",
     "endDate": "2024-09-27T03:19:42.000Z",
-    "marketingProgramInstanceId": "",
+    "marketingProgramInstanceId": "23423423",
     "eventType": "Online Event",
     "region": "GLOBAL",
     "subRegion": [
@@ -32,8 +32,14 @@ const dummyEventData = [
     "isEventSeries": false,
     "languagesAndTemplates": [
       {
-        "platform": "Gmail",
+        "platform": "Salesloft",
         "language": "English",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "Spanish",
         "template": "This is a test for Gmail ok?",
         "subjectLine": "This is a test"
       }
@@ -136,7 +142,7 @@ const dummyEventData = [
         "percentage": "50"
       }
     },
-    "aiVsCore": "AI",
+    "aiVsCore": "Core",
     "industry": [
       "Manufacturing",
       "Healthcare",

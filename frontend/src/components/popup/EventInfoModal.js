@@ -17,6 +17,16 @@ import {
   Menu,
   MenuItem,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  FormControl,
+  
+  RadioGroup,
+  Radio,
+  FormControlLabel
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -40,29 +50,33 @@ export default function EventInfoPopup({ event, close }) {
   const { formData, selectedEvent, setShowInfoEventModal, updateFormData } =
     useContext(GlobalContext);
   const [currentSection, setCurrentSection] = useState("Overview");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
+  const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const [selectedLanguage, setSelectedLanguage] = useState(
-    event &&
-      event.languagesAndTemplates &&
-      event.languagesAndTemplates.length > 0
-      ? event.languagesAndTemplates[0].language
+    selectedEvent?.languagesAndTemplates?.length > 0
+      ? selectedEvent.languagesAndTemplates[0].language
       : ""
   );
+
   const [anchorEl, setAnchorEl] = useState(null);
 
-  const handleLanguageClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleLanguageDialogClose = () => {
+    setLanguageDialogOpen(false);
   };
-
-  const handleLanguageSelect = (language) => {
-    setSelectedLanguage(language);
-    setAnchorEl(null);
+  const handleLanguageClick = () => {
+    setLanguageDialogOpen(true);
+  };
+  const handleLanguageSelect = (event) => {
+    setSelectedLanguage(event.target.value); // event.target.value contains the selected language
   };
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
   };
 
-  const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const nodeRef = useRef(null);
 
   const handleClose = () => {
@@ -83,6 +97,75 @@ export default function EventInfoPopup({ event, close }) {
     if (selectedEvent) {
       updateFormData({ ...formData, ...selectedEvent });
       navigate("/create-event");
+    }
+  };
+
+  //Salesloft!!
+  const handleSalesLoftInvite = () => {
+    const salesLoftTemplate = languagesAndTemplates.find(
+      (item) =>
+        item.platform === "Salesloft" && item.language === selectedLanguage
+    );
+
+    if (!salesLoftTemplate) {
+      setSnackbarMessage("SalesLoft template not provided.");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    if (!salesLoftTemplate.subjectLine) {
+      setSnackbarMessage("SalesLoft subject line not provided.");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    setDialogOpen(true);
+  };
+
+  const handleSalesLoftConfirmation = async () => {
+    try {
+      const salesLoftTemplate = languagesAndTemplates.find(
+        (item) =>
+          item.platform === "Salesloft" && item.language === selectedLanguage
+      );
+
+      if (!salesLoftTemplate) {
+        throw new Error("Salesoft template not found.");
+      }
+      const accessToken = process.env.SALESLOFT_API_TOKEN;
+      const apiUrl = "https://api.salesloft.com/v2/email_templates";
+
+      const emailDetails = new FormData();
+      emailDetails.append("title", "SalesLoft Email");
+      emailDetails.append("subject", salesLoftTemplate.subjectLine);
+      emailDetails.append("body", salesLoftTemplate.template);
+      emailDetails.append("open_tracking", true); // Enable open tracking
+      emailDetails.append("click_tracking", true); // Enable click tracking
+      emailDetails.append("attachment_ids", "");
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: emailDetails,
+      });
+
+      if (!response.ok) {
+        throw new Error(`SalesLoft API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("SalesLoft template created:", data);
+      setSnackbarMessage("SalesLoft email template created successfully!");
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Error creating SalesLoft email template:", error);
+      setSnackbarMessage("Failed to create SalesLoft template. Try again.");
+      setSnackbarOpen(true);
+    } finally {
+      setDialogOpen(false);
     }
   };
 
@@ -132,7 +215,7 @@ export default function EventInfoPopup({ event, close }) {
         to: email,
         subject: subjectLine,
         body: template,
-        accessToken: accessToken
+        accessToken: accessToken,
       };
 
       console.log(
@@ -181,6 +264,8 @@ export default function EventInfoPopup({ event, close }) {
     if (!Array.isArray(list)) return "";
     return list.map((item) => item.replace(/,/g, ", ")).join(", ");
   };
+    console.log('languagesAndTemplates:', languagesAndTemplates);
+
 
   const googleColors = [
     "rgba(66, 133, 244, 0.6)", // Google Blue
@@ -239,7 +324,10 @@ export default function EventInfoPopup({ event, close }) {
             : "Registrations"}
           :{" "}
           {!selectedEvent.marketingProgramInstanceId ? (
-            <em style={{marginLeft:5}}>  Marketing instance program id not provided</em>
+            <em style={{ marginLeft: 5 }}>
+              {" "}
+              Marketing instance program id not provided
+            </em>
           ) : (
             selectedEvent.registeredCount || 0
           )}
@@ -1038,6 +1126,7 @@ export default function EventInfoPopup({ event, close }) {
                   boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                   margin: "10px",
                 }}
+                onClick={handleSalesLoftInvite}
               >
                 Salesloft Invite
               </Button>
@@ -1045,6 +1134,74 @@ export default function EventInfoPopup({ event, close }) {
           </Paper>
         </div>
       </Draggable>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        sx={{ zIndex: 10000 }}
+      >
+        <DialogTitle>Confirm SalesLoft Invite</DialogTitle>
+        <DialogContent>
+          Are you sure you want to create a SalesLoft cadence?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="secondary">
+            No
+          </Button>
+          <Button onClick={handleSalesLoftConfirmation} color="primary">
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Language Dialog */}
+      <Dialog
+  open={languageDialogOpen}
+  onClose={handleLanguageDialogClose}
+  maxWidth="xs"
+  fullWidth
+  sx={{ zIndex: 10000 }}
+>
+  <DialogTitle>Select Language</DialogTitle>
+  <DialogContent>
+    <FormControl component="fieldset">
+      <RadioGroup
+        value={selectedLanguage}
+        onChange={(event) => setSelectedLanguage(event.target.value)}
+      >
+        {languagesAndTemplates.length > 0 ? (
+          languagesAndTemplates.map((item) => (
+            <FormControlLabel
+              key={item.language}
+              value={item.language}
+              control={<Radio />}
+              label={item.language}
+            />
+          ))
+        ) : (
+          <Typography>No languages available</Typography>
+        )}
+      </RadioGroup>
+    </FormControl>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleLanguageDialogClose} color="secondary">
+      Cancel
+    </Button>
+    <Button
+      onClick={handleLanguageDialogClose}
+      color="primary"
+      variant="contained"
+    >
+      Confirm
+    </Button>
+  </DialogActions>
+</Dialog>
+          
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
     </div>
   );
 }
