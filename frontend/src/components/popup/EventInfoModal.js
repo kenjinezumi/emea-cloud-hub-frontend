@@ -16,6 +16,7 @@ import {
   Tooltip,
   Menu,
   MenuItem,
+  Box,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -26,7 +27,7 @@ import LabelIcon from "@mui/icons-material/Label";
 import PeopleIcon from "@mui/icons-material/People";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import LanguageIcon from "@mui/icons-material/Language";
-import PublicIcon from "@mui/icons-material/Public"; // Added for world icon
+import PublicIcon from "@mui/icons-material/Public";
 import DescriptionIcon from "@mui/icons-material/Description";
 import LinkIcon from "@mui/icons-material/Link";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -54,7 +55,7 @@ export default function EventInfoPopup({ event, close }) {
 
   const handleLanguageSelect = (language) => {
     setSelectedLanguage(language);
-    setAnchorEl(null); // Close the menu
+    setAnchorEl(null);
   };
 
   const handleCloseMenu = () => {
@@ -89,7 +90,6 @@ export default function EventInfoPopup({ event, close }) {
     try {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
 
-      // Fetch the access token from localStorage
       const accessToken = localStorage.getItem("accessToken");
 
       if (!accessToken) {
@@ -109,7 +109,6 @@ export default function EventInfoPopup({ event, close }) {
         return;
       }
 
-      // Define the template based on the selected language
       const template = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.template;
@@ -129,7 +128,6 @@ export default function EventInfoPopup({ event, close }) {
         return;
       }
 
-      // Prepare the email details to send to the backend
       const emailDetails = {
         to: email,
         subject: subjectLine,
@@ -141,13 +139,12 @@ export default function EventInfoPopup({ event, close }) {
         emailDetails
       );
 
-      // Send request to backend to create the Gmail draft
       const response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "text/plain",
-          Authorization: `Bearer ${accessToken}`, // Include the access token
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(emailDetails),
       });
@@ -236,7 +233,11 @@ export default function EventInfoPopup({ event, close }) {
           }}
         >
           <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Registrations: {selectedEvent.registeredCount || 0}
+          {/* Check if the event has ended */}
+          {dayjs().isAfter(dayjs(selectedEvent.endDate))
+            ? "Attended"
+            : "Registrations"}
+          : {selectedEvent.registeredCount || 0}
         </Typography>
 
         <Typography
@@ -298,7 +299,7 @@ export default function EventInfoPopup({ event, close }) {
           <Stack
             direction="row"
             spacing={1}
-            sx={{ pl: 4, pr: 2, flexWrap: "wrap" }}
+            sx={{ pl: 2, pr: 2, flexWrap: "wrap" }}
           >
             {selectedEvent.organisedBy.map((organiser, index) => (
               <Chip
@@ -312,8 +313,50 @@ export default function EventInfoPopup({ event, close }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
-                  margin: "5px",
-                  backgroundColor: getRandomColor(),
+                  margin: "5px 0 5px 10px",
+                  backgroundColor: "#4285F4",
+                  color: "white",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  cursor: "pointer",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                }}
+              />
+            ))}
+          </Stack>
+        </Typography>
+        <Typography
+          variant="body2"
+          display="flex"
+          alignItems="center"
+          sx={{
+            pl: 2,
+            pr: 2,
+            color: "#5f6368",
+            mt: 1,
+            wordBreak: "break-word",
+            whiteSpace: "normal",
+          }}
+        >
+          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Speakers:
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ pl: 2, pr: 2, flexWrap: "wrap" }}
+          >
+            {selectedEvent.speakers.map((speaker, index) => (
+              <Chip
+                key={index}
+                label={speaker}
+                component="a"
+                href={`mailto:${speaker}`}
+                clickable
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  margin: "5px 0 5px 10px",
+                  backgroundColor: "#4285F4",
                   color: "white",
                   border: "1px solid rgba(255, 255, 255, 0.3)",
                   cursor: "pointer",
@@ -326,12 +369,8 @@ export default function EventInfoPopup({ event, close }) {
         </Typography>
 
         <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>
+          {/* Other chips */}
           <Chip label={selectedEvent.eventType} color="primary" size="small" />
-          {selectedEvent.isHighPriority && (
-            <Tooltip title="High Priority">
-              <WhatshotIcon style={{ color: red[500] }} />
-            </Tooltip>
-          )}
           {selectedEvent.isDirectPartner && (
             <Chip label="Direct Partner" color="secondary" size="small" />
           )}
@@ -341,6 +380,16 @@ export default function EventInfoPopup({ event, close }) {
               label="Newly published"
               color="success"
               variant="outlined"
+              size="small"
+            />
+          )}
+
+          {/* High Priority chip at the end */}
+          {selectedEvent.isHighPriority && (
+            <Chip
+              label="High Priority"
+              icon={<WhatshotIcon style={{ color: red[500] }} />}
+              sx={{ backgroundColor: red[50], color: red[500] }}
               size="small"
             />
           )}
@@ -591,138 +640,138 @@ export default function EventInfoPopup({ event, close }) {
       <Stack spacing={2} sx={{ p: 3 }}>
         {/* Landing Page Links */}
         <Typography
-  variant="body2"
-  display="flex"
-  sx={{ whiteSpace: "normal" }}
->
-  <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Landing Page Links:{" "}
-  <Typography
-    variant="body2"
-    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-  >
-    {selectedEvent.landingPageLinks && selectedEvent.landingPageLinks.length > 0
-      ? selectedEvent.landingPageLinks.map((link, index) => (
-          <MuiLink
-            key={index}
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: "#4285F4", // Keeps the blue color for the hyperlink
-              marginLeft: index > 0 ? "5px" : "0px", // Adds space between links
-              wordBreak: "break-word",
-              whiteSpace: "normal",
-            }}
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Landing Page Links:{" "}
+          <Typography
+            variant="body2"
+            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {link}
-          </MuiLink>
-        ))
-      : "N/A"}
-  </Typography>
-</Typography>
+            {selectedEvent.landingPageLinks &&
+            selectedEvent.landingPageLinks.length > 0
+              ? selectedEvent.landingPageLinks.map((link, index) => (
+                  <MuiLink
+                    key={index}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "#4285F4",
+                      marginLeft: index > 0 ? "5px" : "0px",
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {link}
+                  </MuiLink>
+                ))
+              : "N/A"}
+          </Typography>
+        </Typography>
 
+        <Typography
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Sales Kit Links:{" "}
+          <Typography
+            variant="body2"
+            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+          >
+            {selectedEvent.salesKitLinks &&
+            selectedEvent.salesKitLinks.length > 0
+              ? selectedEvent.salesKitLinks
+                  .map((link) => (
+                    <MuiLink
+                      key={link}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#4285F4",
+                        wordBreak: "break-word",
+                        whiteSpace: "normal",
+                      }}
+                    >
+                      {link}
+                    </MuiLink>
+                  ))
+                  .reduce((prev, curr) => [prev, ", ", curr])
+              : "N/A"}
+          </Typography>
+        </Typography>
 
-<Typography
-  variant="body2"
-  display="flex"
-  sx={{ whiteSpace: "normal" }}
->
-  <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Sales Kit Links:{" "}
-  <Typography
-    variant="body2"
-    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-  >
-    {selectedEvent.salesKitLinks && selectedEvent.salesKitLinks.length > 0
-      ? selectedEvent.salesKitLinks
-          .map((link) => (
-            <MuiLink
-              key={link}
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "#4285F4", // Keeping the blue color for links
-                wordBreak: "break-word",
-                whiteSpace: "normal",
-              }}
-            >
-              {link}
-            </MuiLink>
-          ))
-          .reduce((prev, curr) => [prev, ", ", curr]) // Adding commas between links
-      : "N/A"}
-  </Typography>
-</Typography>
+        <Typography
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Hailo Links:{" "}
+          <Typography
+            variant="body2"
+            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+          >
+            {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
+              ? selectedEvent.hailoLinks
+                  .map((link) => (
+                    <MuiLink
+                      key={link}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#4285F4",
+                        wordBreak: "break-word",
+                        whiteSpace: "normal",
+                      }}
+                    >
+                      {link}
+                    </MuiLink>
+                  ))
+                  .reduce((prev, curr) => [prev, ", ", curr])
+              : "N/A"}
+          </Typography>
+        </Typography>
 
-
-<Typography
-  variant="body2"
-  display="flex"
-  sx={{ whiteSpace: "normal" }}
->
-  <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Hailo Links:{" "}
-  <Typography
-    variant="body2"
-    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-  >
-    {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
-      ? selectedEvent.hailoLinks
-          .map((link) => (
-            <MuiLink
-              key={link}
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "#4285F4", // Keeping the blue color for links
-                wordBreak: "break-word",
-                whiteSpace: "normal",
-              }}
-            >
-              {link}
-            </MuiLink>
-          ))
-          .reduce((prev, curr) => [prev, ", ", curr]) // Adding commas between links
-      : "N/A"}
-  </Typography>
-</Typography>
-
-<Typography
-  variant="body2"
-  display="flex"
-  sx={{ whiteSpace: "normal" }}
->
-  <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-  Other Documents:{" "}
-  <Typography
-    variant="body2"
-    sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-  >
-    {selectedEvent.otherDocumentsLinks && selectedEvent.otherDocumentsLinks.length > 0
-      ? selectedEvent.otherDocumentsLinks
-          .map((link) => (
-            <MuiLink
-              key={link}
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "#4285F4", // Keeping the blue color for links
-                wordBreak: "break-word",
-                whiteSpace: "normal",
-              }}
-            >
-              {link}
-            </MuiLink>
-          ))
-          .reduce((prev, curr) => [prev, ", ", curr]) // Adding commas between links
-      : "N/A"}
-  </Typography>
-</Typography>
-
+        <Typography
+          variant="body2"
+          display="flex"
+          sx={{ whiteSpace: "normal" }}
+        >
+          <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          Other Documents:{" "}
+          <Typography
+            variant="body2"
+            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+          >
+            {selectedEvent.otherDocumentsLinks &&
+            selectedEvent.otherDocumentsLinks.length > 0
+              ? selectedEvent.otherDocumentsLinks
+                  .map((link) => (
+                    <MuiLink
+                      key={link}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: "#4285F4",
+                        wordBreak: "break-word",
+                        whiteSpace: "normal",
+                      }}
+                    >
+                      {link}
+                    </MuiLink>
+                  ))
+                  .reduce((prev, curr) => [prev, ", ", curr])
+              : "N/A"}
+          </Typography>
+        </Typography>
       </Stack>
     ),
   };
@@ -830,7 +879,6 @@ export default function EventInfoPopup({ event, close }) {
               {dayjs(selectedEvent.endDate).format("dddd, MMMM D, YYYY h:mm A")}
             </Typography>
 
-            {/* Region and Location Details */}
             <Typography
               variant="body2"
               display="flex"
@@ -845,9 +893,15 @@ export default function EventInfoPopup({ event, close }) {
               }}
             >
               <PublicIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-              {formatListWithSpaces(selectedEvent.region)},{" "}
-              {formatListWithSpaces(selectedEvent.subregion)},{" "}
-              {formatListWithSpaces(selectedEvent.country)}
+              {[
+                formatListWithSpaces(selectedEvent.region),
+                formatListWithSpaces(selectedEvent.subregion),
+                formatListWithSpaces(selectedEvent.country),
+                selectedEvent.city,
+                selectedEvent.locationVenue,
+              ]
+                .filter(Boolean)
+                .join(", ")}
             </Typography>
 
             <Divider sx={{ width: "100%", my: 1 }} />
@@ -966,7 +1020,7 @@ export default function EventInfoPopup({ event, close }) {
                   boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                   margin: "10px",
                 }}
-                onClick={handleGmailInvite} // Add the handler here
+                onClick={handleGmailInvite}
               >
                 Gmail Invite
               </Button>
