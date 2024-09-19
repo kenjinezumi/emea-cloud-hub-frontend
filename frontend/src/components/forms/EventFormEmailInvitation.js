@@ -325,10 +325,11 @@ const EventFormEmailInvitation = () => {
                         {/* Check if the platform is Salesloft, then show ReactQuill */}
                         {item.platform === "Salesloft" ? (
                           <>
+                          
                             <ReactQuill
                               value={editorContent}
                               onChange={handleEditorChange}
-                              style={{ height: "300px", maxHeight: "400px" }} // Set a minimum and maximum height
+                              style={{ height: "300px", maxHeight: "400px" , marginBottom: "20px"}} // Set a minimum and maximum height
                               modules={{
                                 toolbar: [
                                   [
@@ -343,8 +344,9 @@ const EventFormEmailInvitation = () => {
                                 ],
                               }}
                             />
-                            <div style={{ marginTop: "10px" }}>
-                              <Typography variant="subtitle1">
+                            <div style={{ marginTop: "20px", pt: "40px" }}>
+                            
+                              <Typography variant="subtitle1" style={{ marginTop: "50px", pt: "40px" }}>
                                 Insert Personalization Tokens:
                               </Typography>
                               {personalizationOptions.map((token, idx) => (
