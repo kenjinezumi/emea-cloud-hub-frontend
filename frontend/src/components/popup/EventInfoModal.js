@@ -107,23 +107,24 @@ export default function EventInfoPopup({ event, close }) {
         return;
       }
   
-      // Define the template based on the selected language
-      const template = languagesAndTemplates.find(
+      // Find the selected template and subject line based on the selected language
+      const selectedLanguageData = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
-      )?.template;
+      );
   
-      if (!template) {
-        console.error("No template found for the selected language.");
-        alert("No template found for the selected language.");
+      if (!selectedLanguageData || !selectedLanguageData.template || !selectedLanguageData.subjectLine) {
+        console.error("No template or subject line found for the selected language.");
+        alert("No template or subject line found for the selected language.");
         return;
       }
   
-      // Prepare the email details to send to the backend, including the access token
+      const { template, subjectLine } = selectedLanguageData;
+
       const emailDetails = {
         to: email,
-        subject: 'Event Invitation',
+        subject: subjectLine,  
         body: template,
-        accessToken: accessToken, // Include the access token in the body
+        accessToken: accessToken, 
       };
   
       console.log("Sending request to create Gmail draft with email details:", emailDetails);
