@@ -32,8 +32,14 @@ const dummyEventData = [
     "isEventSeries": false,
     "languagesAndTemplates": [
       {
-        "platform": "Gmail",
+        "platform": "Salesloft",
         "language": "English",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "Spanish",
         "template": "This is a test for Gmail ok?",
         "subjectLine": "This is a test"
       }
