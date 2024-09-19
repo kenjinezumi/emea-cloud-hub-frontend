@@ -128,7 +128,7 @@ export default function EventInfoPopup({ event, close }) {
       console.log("Sending request to create Gmail draft with email details:", emailDetails);
   
       // Send request to backend to create the Gmail draft
-      const response = await fetch(`${apiUrl}/send-gmail-invite`, {
+      const response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
         credentials: 'include',
         credentials: 'include',
@@ -142,7 +142,7 @@ export default function EventInfoPopup({ event, close }) {
       console.log("Response from server:", response);
   
       if (!response.ok) {
-        console.error("Failed to create Gmail draft. Response status:", response.status);
+        console.error("Failed to create draft. Response status:", response.status);
         throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
       }
   
