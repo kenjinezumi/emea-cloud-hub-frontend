@@ -118,11 +118,12 @@ export default function EventInfoPopup({ event, close }) {
         return;
       }
   
-      // Prepare the email details to send to the backend
+      // Prepare the email details to send to the backend, including the access token
       const emailDetails = {
         to: email,
         subject: 'Event Invitation',
         body: template,
+        accessToken: accessToken, // Include the access token in the body
       };
   
       console.log("Sending request to create Gmail draft with email details:", emailDetails);
@@ -131,10 +132,8 @@ export default function EventInfoPopup({ event, close }) {
       const response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
         credentials: 'include',
-        credentials: 'include',
         headers: {
           'Content-Type': 'text/plain',
-          'Authorization': `Bearer ${accessToken}`, // Include the access token
         },
         body: JSON.stringify(emailDetails),
       });
@@ -142,7 +141,7 @@ export default function EventInfoPopup({ event, close }) {
       console.log("Response from server:", response);
   
       if (!response.ok) {
-        console.error("Failed to create draft. Response status:", response.status);
+        console.error("Failed to create Gmail draft. Response status:", response.status);
         throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
       }
   
@@ -161,6 +160,7 @@ export default function EventInfoPopup({ event, close }) {
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
+  
   
   
 
