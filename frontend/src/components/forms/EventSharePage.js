@@ -857,60 +857,83 @@ function ShareEventPage() {
                 </Typography>
               </Grid>
 
-              <Grid item xs={12}>
-                <Typography variant="h5" gutterBottom component="div">
-                  <LinkIcon
-                    style={{
-                      verticalAlign: "middle",
-                      color: blue[500],
-                      marginRight: 8,
-                    }}
-                    id="links-section"
-                  />
-                  Links
-                </Typography>
-                <hr />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="body1" gutterBottom>
-                  Landing Page:{" "}
-                  <Link href={eventDetails.landingPageLink} target="_blank">
-                    {eventDetails.landingPageLink}
-                  </Link>
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  Sales Kit:{" "}
-                  <Link
-                    href={eventDetails.salesKitLink}
-                    sx={{ marginBottom: 2 }}
-                    target="_blank"
-                  >
-                    {eventDetails.salesKitLink}
-                  </Link>
-                  <br />
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  HAILO Link:{" "}
-                  <Link
-                    href={eventDetails.hailoLink}
-                    sx={{ marginBottom: 2 }}
-                    target="_blank"
-                  >
-                    {eventDetails.hailoLink}
-                  </Link>
-                  <br />
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  Other Documents:{" "}
-                  <Link
-                    href={eventDetails.otherDocumentsLink}
-                    sx={{ marginBottom: 2 }}
-                    target="_blank"
-                  >
-                    {eventDetails.otherDocumentsLink}
-                  </Link>
-                </Typography>
-              </Grid>
+{/* Links Section */}
+<Grid item xs={12}>
+  <Typography variant="h5" gutterBottom component="div">
+    <LinkIcon
+      style={{
+        verticalAlign: "middle",
+        color: blue[500],
+        marginRight: 8,
+      }}
+      id="links-section"
+    />
+    Links
+  </Typography>
+  <hr />
+</Grid>
+
+{/* Landing Page Links */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+    <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
+    Landing Page Links:
+  </Typography>
+  {eventDetails.landingPageLinks?.map((link, index) => (
+    <Typography key={index} variant="body1" sx={{ ml: 4 }}>
+      <Link href={link} target="_blank" rel="noopener noreferrer">
+        {link}
+      </Link>
+    </Typography>
+  ))}
+</Grid>
+
+{/* Sales Kit Links */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+    <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
+    Sales Kit Links:
+  </Typography>
+  {eventDetails.salesKitLinks?.map((link, index) => (
+    <Typography key={index} variant="body1" sx={{ ml: 4 }}>
+      <Link href={link} target="_blank" rel="noopener noreferrer">
+        {link}
+      </Link>
+    </Typography>
+  ))}
+</Grid>
+
+{/* Hailo Links */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+    <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
+    Hailo Links:
+  </Typography>
+  {eventDetails.hailoLinks?.map((link, index) => (
+    <Typography key={index} variant="body1" sx={{ ml: 4 }}>
+      <Link href={link} target="_blank" rel="noopener noreferrer">
+        {link}
+      </Link>
+    </Typography>
+  ))}
+</Grid>
+
+{/* Other Documents Links */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+    <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
+    Other Documents Links:
+  </Typography>
+  {eventDetails.otherDocumentsLinks?.map((link, index) => (
+    <Typography key={index} variant="body1" sx={{ ml: 4 }}>
+      <Link href={link} target="_blank" rel="noopener noreferrer">
+        {link}
+      </Link>
+    </Typography>
+  ))}
+</Grid>
+
+              
             </Grid>
           </Paper>
         </div>
