@@ -9,6 +9,8 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { blue } from "@mui/material/colors";
 import { getEventData } from "../../api/getEventData";
 import { useParams } from "react-router-dom";
+import dayjs from "dayjs";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
 
 function ShareEventPage() {
   const { eventId } = useParams();
@@ -53,6 +55,89 @@ function ShareEventPage() {
               boxShadow: "0px 0px 0px rgba(0,0,0,0.1)",
             }}
           >
+            {/* Header Section */}
+            <div style={{ marginBottom: "20px" }}>
+              {/* First Line: Emoji and Title with Draft Status */}
+              <Typography
+                variant="h4"
+                component="div"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px", // Adds space between elements
+                  fontWeight: "bold",
+                }}
+              >
+                {eventDetails.emoji} {/* Emoji */}
+                <span>{eventDetails.title}</span> {/* Title */}
+                {eventDetails.isDraft && (
+                  <Typography
+                    variant="body2"
+                    sx={{ fontStyle: "italic", color: "#757575" }}
+                  >
+                    Draft
+                  </Typography>
+                )}
+              </Typography>
+
+              {/* Second Line: Start Date - End Date */}
+              <Typography variant="body2" sx={{ mt: 1, color: "#757575" }}>
+                {`${new Date(
+                  eventDetails.startDate
+                ).toLocaleDateString()} ${new Date(
+                  eventDetails.startDate
+                ).toLocaleTimeString()} - 
+    ${new Date(eventDetails.endDate).toLocaleDateString()} ${new Date(
+                  eventDetails.endDate
+                ).toLocaleTimeString()}`}
+              </Typography>
+
+              {/* Third Line: Region, Subregion, Countries, City, Venue */}
+              <Typography variant="body2" sx={{ mt: 1, color: "#757575" }}>
+                {[
+                  eventDetails.region,
+                  eventDetails.subRegion?.join(", "),
+                  eventDetails.country?.join(", "),
+                  eventDetails.city,
+                  eventDetails.locationVenue,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+              </Typography>
+
+              {/* Fourth Line: Chips for Activity Type, Newly Published, and High Priority */}
+              <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                <Chip
+                  label={eventDetails.eventType}
+                  color="primary"
+                  size="small"
+                />
+
+                {dayjs().diff(dayjs(eventDetails.publishedDate), "day", true) <=
+                  7 && (
+                  <Chip
+                    label="Newly Published"
+                    color="success"
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+
+                {eventDetails.isHighPriority && (
+                  <Chip
+                    label={
+                      <span style={{ display: "flex", alignItems: "center" }}>
+                        <WhatshotIcon style={{ marginRight: "4px" }} />
+                        High Priority
+                      </span>
+                    }
+                    color="error"
+                    size="small"
+                  />
+                )}
+              </div>
+            </div>
+
             <Grid
               container
               spacing={3}
@@ -79,6 +164,7 @@ function ShareEventPage() {
                   {eventDetails.title} {eventDetails.emoji}
                 </Typography>
               </Grid>
+
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Description:</Typography>
                 <Typography variant="body1" gutterBottom>
@@ -119,30 +205,39 @@ function ShareEventPage() {
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Regions:</Typography>
-                {Array.isArray(eventDetails.region)
-                  ? eventDetails.region.map((region, index) => (
-                      <Chip key={index} label={region} style={{ margin: 2 }} />
-                    ))
-                  : <Typography variant="body1" gutterBottom>N/A</Typography>
-                }
+                {Array.isArray(eventDetails.region) ? (
+                  eventDetails.region.map((region, index) => (
+                    <Chip key={index} label={region} style={{ margin: 2 }} />
+                  ))
+                ) : (
+                  <Typography variant="body1" gutterBottom>
+                    N/A
+                  </Typography>
+                )}
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Sub Regions:</Typography>
-                {Array.isArray(eventDetails.subRegion)
-                  ? eventDetails.subRegion.map((subRegion, index) => (
-                      <Chip key={index} label={subRegion} style={{ margin: 2 }} />
-                    ))
-                  : <Typography variant="body1" gutterBottom>N/A</Typography>
-                }
+                {Array.isArray(eventDetails.subRegion) ? (
+                  eventDetails.subRegion.map((subRegion, index) => (
+                    <Chip key={index} label={subRegion} style={{ margin: 2 }} />
+                  ))
+                ) : (
+                  <Typography variant="body1" gutterBottom>
+                    N/A
+                  </Typography>
+                )}
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Countries:</Typography>
-                {Array.isArray(eventDetails.country)
-                  ? eventDetails.country.map((country, index) => (
-                      <Chip key={index} label={country} style={{ margin: 2 }} />
-                    ))
-                  : <Typography variant="body1" gutterBottom>N/A</Typography>
-                }
+                {Array.isArray(eventDetails.country) ? (
+                  eventDetails.country.map((country, index) => (
+                    <Chip key={index} label={country} style={{ margin: 2 }} />
+                  ))
+                ) : (
+                  <Typography variant="body1" gutterBottom>
+                    N/A
+                  </Typography>
+                )}
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
@@ -160,12 +255,15 @@ function ShareEventPage() {
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="subtitle1">Audience Persona:</Typography>
-                {Array.isArray(eventDetails.audiencePersona)
-                  ? eventDetails.audiencePersona.map((persona, index) => (
-                      <Chip key={index} label={persona} style={{ margin: 2 }} />
-                    ))
-                  : <Typography variant="body1" gutterBottom>N/A</Typography>
-                }
+                {Array.isArray(eventDetails.audiencePersona) ? (
+                  eventDetails.audiencePersona.map((persona, index) => (
+                    <Chip key={index} label={persona} style={{ margin: 2 }} />
+                  ))
+                ) : (
+                  <Typography variant="body1" gutterBottom>
+                    N/A
+                  </Typography>
+                )}
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
