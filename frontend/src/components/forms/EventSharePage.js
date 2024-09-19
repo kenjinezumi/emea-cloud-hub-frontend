@@ -11,6 +11,7 @@ import {
   AccordionDetails,
   Checkbox,
   Input,
+  TextField,
 } from "@mui/material";
 import CalendarHeaderEventShare from "../commons/CalendarHeaderEventShare";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -40,6 +41,7 @@ import CategoryIcon from "@mui/icons-material/Category";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import MemoryIcon from "@mui/icons-material/Memory";
+import EmailIcon from '@mui/icons-material/Email';
 
 function ShareEventPage() {
   const { eventId } = useParams();
@@ -433,7 +435,8 @@ function ShareEventPage() {
               {/* Extra Details */}
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
-                  <InfoIcon style={{ color: blue[500], marginRight: 8 }} />
+                  <InfoIcon style={{ color: blue[500], marginRight: 8 }}  id="extra-details-section"
+                  />
                   Extra details
                 </Typography>
                 <hr />
@@ -541,8 +544,100 @@ function ShareEventPage() {
                   </Typography>
                 </Typography>
               </Grid>
-              {/* Audience Section */}
+              {/* Email Invitation Section */}
               <Grid item xs={12}>
+                <Typography variant="h5" gutterBottom component="div">
+                  <EmailIcon
+                    style={{
+                      verticalAlign: "middle",
+                      color: blue[500],
+                      marginRight: 8,
+                    }}
+                    id="email-invitation-section"/>Email Invitation
+                </Typography>
+                <hr />
+              </Grid>
+
+              {/* Email Invitation Accordion */}
+              <Grid item xs={12}>
+                {eventDetails.languagesAndTemplates?.map(
+                  (templateData, index) => (
+                    <Accordion key={index}>
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls={`panel-${index}-content`}
+                        id={`panel-${index}-header`}
+                      >
+                        <Typography variant="subtitle1">
+                          Language: {templateData.language}
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        {/* Platform */}
+                        <Grid item xs={12} sx={{ mb: 2 }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#757575", mb: 1 }}
+                          >
+                            Platform:
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            value={templateData.platform}
+                            variant="outlined"
+                            disabled
+                            InputProps={{
+                              style: { backgroundColor: "#e0e0e0" },
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Subject Line */}
+                        <Grid item xs={12} sx={{ mb: 2 }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#757575", mb: 1 }}
+                          >
+                            Subject Line:
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            value={templateData.subjectLine}
+                            variant="outlined"
+                            disabled
+                            InputProps={{
+                              style: { backgroundColor: "#e0e0e0" },
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Template Body */}
+                        <Grid item xs={12}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#757575", mb: 1 }}
+                          >
+                            Template Body:
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            multiline
+                            rows={3}
+                            value={templateData.template}
+                            variant="outlined"
+                            disabled
+                            InputProps={{
+                              style: { backgroundColor: "#e0e0e0" },
+                            }}
+                          />
+                        </Grid>
+                      </AccordionDetails>
+                    </Accordion>
+                  )
+                )}
+              </Grid>
+                {/* Audience Section */}
+                <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
                   <PeopleIcon
                     style={{
@@ -550,6 +645,7 @@ function ShareEventPage() {
                       color: blue[500],
                       marginRight: 8,
                     }}
+                    id="audience-section"
                   />
                   Audience
                 </Typography>
@@ -565,7 +661,7 @@ function ShareEventPage() {
                   <AssignmentIcon
                     style={{ color: blue[500], marginRight: 8 }}
                   />
-                  Audience Seniority:
+                  Buyer Segment Rollup:
                 </Typography>
                 <div
                   style={{
@@ -588,8 +684,10 @@ function ShareEventPage() {
                   variant="subtitle1"
                   sx={{ display: "flex", alignItems: "center" }}
                 >
-                  <PersonIcon style={{ color: blue[500], marginRight: 8 }} />
-                  Audience Persona:
+                  <PersonIcon
+                    style={{ color: blue[500], marginRight: 8 }}
+                  />
+                  Buyer Segment:
                 </Typography>
                 <div
                   style={{
@@ -754,7 +852,7 @@ function ShareEventPage() {
                       <BusinessCenterIcon
                         style={{ marginRight: 8, color: blue[500] }}
                       />
-                      Account Type
+                      Greenfield Status
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -797,7 +895,7 @@ function ShareEventPage() {
                       <SettingsIcon
                         style={{ marginRight: 8, color: blue[500] }}
                       />
-                      Product Alignment
+                      Product Family
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails>
@@ -857,83 +955,93 @@ function ShareEventPage() {
                 </Typography>
               </Grid>
 
-{/* Links Section */}
-<Grid item xs={12}>
-  <Typography variant="h5" gutterBottom component="div">
-    <LinkIcon
-      style={{
-        verticalAlign: "middle",
-        color: blue[500],
-        marginRight: 8,
-      }}
-      id="links-section"
-    />
-    Links
-  </Typography>
-  <hr />
-</Grid>
+              {/* Links Section */}
+              <Grid item xs={12}>
+                <Typography variant="h5" gutterBottom component="div">
+                  <LinkIcon
+                    style={{
+                      verticalAlign: "middle",
+                      color: blue[500],
+                      marginRight: 8,
+                    }}
+                    id="links-section"
+                  />
+                  Links
+                </Typography>
+                <hr />
+              </Grid>
 
-{/* Landing Page Links */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-    <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
-    Landing Page Links:
-  </Typography>
-  {eventDetails.landingPageLinks?.map((link, index) => (
-    <Typography key={index} variant="body1" sx={{ ml: 4 }}>
-      <Link href={link} target="_blank" rel="noopener noreferrer">
-        {link}
-      </Link>
-    </Typography>
-  ))}
-</Grid>
+              {/* Landing Page Links */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Landing Page Links:
+                </Typography>
+                {eventDetails.landingPageLinks?.map((link, index) => (
+                  <Typography key={index} variant="body1" sx={{ ml: 4 }}>
+                    <Link href={link} target="_blank" rel="noopener noreferrer">
+                      {link}
+                    </Link>
+                  </Typography>
+                ))}
+              </Grid>
 
-{/* Sales Kit Links */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-    <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
-    Sales Kit Links:
-  </Typography>
-  {eventDetails.salesKitLinks?.map((link, index) => (
-    <Typography key={index} variant="body1" sx={{ ml: 4 }}>
-      <Link href={link} target="_blank" rel="noopener noreferrer">
-        {link}
-      </Link>
-    </Typography>
-  ))}
-</Grid>
+              {/* Sales Kit Links */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Sales Kit Links:
+                </Typography>
+                {eventDetails.salesKitLinks?.map((link, index) => (
+                  <Typography key={index} variant="body1" sx={{ ml: 4 }}>
+                    <Link href={link} target="_blank" rel="noopener noreferrer">
+                      {link}
+                    </Link>
+                  </Typography>
+                ))}
+              </Grid>
 
-{/* Hailo Links */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-    <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
-    Hailo Links:
-  </Typography>
-  {eventDetails.hailoLinks?.map((link, index) => (
-    <Typography key={index} variant="body1" sx={{ ml: 4 }}>
-      <Link href={link} target="_blank" rel="noopener noreferrer">
-        {link}
-      </Link>
-    </Typography>
-  ))}
-</Grid>
+              {/* Hailo Links */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Hailo Links:
+                </Typography>
+                {eventDetails.hailoLinks?.map((link, index) => (
+                  <Typography key={index} variant="body1" sx={{ ml: 4 }}>
+                    <Link href={link} target="_blank" rel="noopener noreferrer">
+                      {link}
+                    </Link>
+                  </Typography>
+                ))}
+              </Grid>
 
-{/* Other Documents Links */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-    <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
-    Other Documents Links:
-  </Typography>
-  {eventDetails.otherDocumentsLinks?.map((link, index) => (
-    <Typography key={index} variant="body1" sx={{ ml: 4 }}>
-      <Link href={link} target="_blank" rel="noopener noreferrer">
-        {link}
-      </Link>
-    </Typography>
-  ))}
-</Grid>
-
-              
+              {/* Other Documents Links */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Other Documents Links:
+                </Typography>
+                {eventDetails.otherDocumentsLinks?.map((link, index) => (
+                  <Typography key={index} variant="body1" sx={{ ml: 4 }}>
+                    <Link href={link} target="_blank" rel="noopener noreferrer">
+                      {link}
+                    </Link>
+                  </Typography>
+                ))}
+              </Grid>
             </Grid>
           </Paper>
         </div>

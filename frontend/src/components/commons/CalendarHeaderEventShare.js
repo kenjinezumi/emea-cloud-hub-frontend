@@ -52,7 +52,7 @@ const NavigationSidebar = () => {
         <span>Extra Details</span>
       </button>
       <button
-        onClick={() => scrollToSection('audience-section')}
+        onClick={() => scrollToSection('email-invitation-section')}
         className="block w-full text-left p-2 rounded flex items-center"
       >
         <span className="mr-2">
@@ -60,9 +60,9 @@ const NavigationSidebar = () => {
         </span>
         <span>Email Invitation</span>
       </button>
-      
+
       <button
-        onClick={() => scrollToSection('email-invitation')}
+        onClick={() => scrollToSection('audience-section')}
         className="block w-full text-left p-2 rounded flex items-center"
       >
         <span className="mr-2">
