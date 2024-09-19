@@ -160,8 +160,7 @@ module.exports = (firestoreStore) => {
 
 
     router.post('/send-gmail-invite', async (req, res) => {
-      const { to, subject, body } = req.body;
-      const accessToken = req.headers['authorization']?.split(' ')[1]; // Extract token from Authorization header
+      const { to, subject, body, accessToken } = req.body;
     
       if (!accessToken) {
         logger.error("Access token not found.");
