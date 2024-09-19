@@ -62,20 +62,39 @@ export default function AudiencePersonaForm() {
   
 
   const [accountCategory, setAccountCategory] = useState({
-    "Digital Native": { selected: false, percentage: "" },
-    Traditional: { selected: false, percentage: "" },
+    "Digital Native": {
+      selected: selectedEvent?.accountCategory?.["Digital Native"]?.selected || false,
+      percentage: selectedEvent?.accountCategory?.["Digital Native"]?.percentage || "",
+    },
+    Traditional: {
+      selected: selectedEvent?.accountCategory?.Traditional?.selected || false,
+      percentage: selectedEvent?.accountCategory?.Traditional?.percentage || "",
+    },
   });
+  
 
   const [accountType, setAccountType] = useState({
-    Greenfield: { selected: false, percentage: "" },
-    "Existing Customer": { selected: false, percentage: "" },
+    Greenfield: {
+      selected: selectedEvent?.accountType?.Greenfield?.selected || false,
+      percentage: selectedEvent?.accountType?.Greenfield?.percentage || "",
+    },
+    "Existing Customer": {
+      selected: selectedEvent?.accountType?.["Existing Customer"]?.selected || false,
+      percentage: selectedEvent?.accountType?.["Existing Customer"]?.percentage || "",
+    },
   });
-
+  
   const [productAlignment, setProductAlignment] = useState({
-    GCP: { selected: false, percentage: "" },
-    GWS: { selected: false, percentage: "" },
+    GCP: {
+      selected: selectedEvent?.productAlignment?.GCP?.selected || false,
+      percentage: selectedEvent?.productAlignment?.GCP?.percentage || "",
+    },
+    GWS: {
+      selected: selectedEvent?.productAlignment?.GWS?.selected || false,
+      percentage: selectedEvent?.productAlignment?.GWS?.percentage || "",
+    },
   });
-
+  
   const [accountSectors, setAccountSectors] = useState({
     commercial: selectedEvent?.accountSectors?.commercial ?? false,
     public: selectedEvent?.accountSectors?.public ?? false,

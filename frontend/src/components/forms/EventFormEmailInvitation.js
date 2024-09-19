@@ -367,7 +367,6 @@ const EventFormEmailInvitation = () => {
                         ) : (
                           // Render a regular text field for Gmail
                           <TextField
-                            label="Email Body"
                             multiline
                             rows={8} // Increase the number of rows for larger input
                             value={item.template}
