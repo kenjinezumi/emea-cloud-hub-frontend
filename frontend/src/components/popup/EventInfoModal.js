@@ -88,7 +88,15 @@ export default function EventInfoPopup({ event, close }) {
   const handleGmailInvite = async () => {
     try {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
-      window.location.href = `${apiUrl}auth/google`;
+  
+      // Fetch the access token from localStorage
+      const accessToken = localStorage.getItem("accessToken");
+  
+      if (!accessToken) {
+        console.error("Access token not found. Please log in again.");
+        alert("Access token not found. Please log in again.");
+        return;
+      }
   
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.emails?.[0]?.value;
@@ -103,8 +111,6 @@ export default function EventInfoPopup({ event, close }) {
       const template = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.template;
-  
-      console.log("The selected template is:", template);
   
       if (!template) {
         console.error("No template found for the selected language.");
@@ -125,8 +131,10 @@ export default function EventInfoPopup({ event, close }) {
       const response = await fetch(`${apiUrl}/send-gmail-invite`, {
         method: "POST",
         credentials: 'include',
+        credentials: 'include',
         headers: {
           'Content-Type': 'text/plain',
+          'Authorization': `Bearer ${accessToken}`, // Include the access token
         },
         body: JSON.stringify(emailDetails),
       });
@@ -153,6 +161,7 @@ export default function EventInfoPopup({ event, close }) {
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
+  
   
 
   const formatListWithSpaces = (list) => {
