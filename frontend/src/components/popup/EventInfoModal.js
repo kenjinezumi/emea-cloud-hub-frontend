@@ -28,6 +28,8 @@ import {
   Radio,
   FormControlLabel
 } from "@mui/material";
+import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import BusinessIcon from "@mui/icons-material/Business"; 
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import ShareIcon from "@mui/icons-material/Share";
@@ -1113,6 +1115,7 @@ export default function EventInfoPopup({ event, close }) {
                   boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                   margin: "10px",
                 }}
+                startIcon={<MailOutlineIcon />}  
                 onClick={handleGmailInvite}
               >
                 Gmail Invite
@@ -1126,6 +1129,7 @@ export default function EventInfoPopup({ event, close }) {
                   boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                   margin: "10px",
                 }}
+                startIcon={<BusinessIcon />}
                 onClick={handleSalesLoftInvite}
               >
                 Salesloft Invite
