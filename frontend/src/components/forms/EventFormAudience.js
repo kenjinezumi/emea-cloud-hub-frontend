@@ -37,8 +37,19 @@ export default function AudiencePersonaForm() {
   );
 
   const [aiVsCore, setAiVsCore] = useState(
-    selectedEvent ? selectedEvent.aiVsCore : formData.aiVsCore || "Core"
+    selectedEvent ? selectedEvent.aiVsCore : formData.aiVsCore || null
   );
+
+  const [isAudiencePersonaError, setIsAudiencePersonaError] = useState(false);
+  const [isAudienceSeniorityError, setIsAudienceSeniorityError] = useState(false);
+  const [isAccountSegmentsError, setIsAccountSegmentsError] = useState(false);
+  const [isAccountCategoryError, setIsAccountCategoryError] = useState(false);
+  const [isAccountTypeError, setIsAccountTypeError] = useState(false);
+  const [isProductAlignmentError, setIsProductAlignmentError] = useState(false);
+  const [isAiVsCoreError, setIsAiVsCoreError] = useState(false);
+  const [isIndustryError, setIsIndustryError] = useState(false);
+  const [isAccountSectorsError, setIsAccountSectorsError] = useState(false);
+
 
   const industryOptions = [
     'Manufacturing',
@@ -181,7 +192,9 @@ export default function AudiencePersonaForm() {
   };
 
   const handleNext = () => {
-    // Calculate and validate Account Segments
+    
+
+
     const selectedSegments = Object.keys(accountSegments)
     .filter((key) => accountSegments[key].selected) // Only selected segments
     .map((key) => ({
@@ -287,6 +300,45 @@ export default function AudiencePersonaForm() {
       setSnackbarOpen(true);
       return;
     }
+  }
+
+  const isAudiencePersonaValid = audiencePersona.length > 0;
+    const isAudienceSeniorityValid = audienceSeniority.length > 0;
+    const isAccountSegmentsValid = selectedSegments.length > 0;
+    const isAccountCategoryValid = selectedCategories.length > 0;
+    const isAccountTypeValid = selectedTypes.length > 0;
+    const isProductAlignmentValid = selectedAlignments.length > 0;
+    const isAiVsCoreValid = aiVsCore !== null && aiVsCore !== undefined && aiVsCore !== "";
+    const isIndustryValid = industry.length > 0;
+    const isAccountSectorsValid = accountSectors.commercial || accountSectors.public;
+
+    setIsAudiencePersonaError(!isAudiencePersonaValid);
+    setIsAudienceSeniorityError(!isAudienceSeniorityValid);
+    setIsAccountSegmentsError(!isAccountSegmentsValid);
+    setIsAccountCategoryError(!isAccountCategoryValid);
+    setIsAccountTypeError(!isAccountTypeValid);
+    setIsProductAlignmentError(!isProductAlignmentValid);
+    setIsAiVsCoreError(!isAiVsCoreValid);
+    setIsIndustryError(!isIndustryValid);
+    setIsAccountSectorsError(!isAccountSectorsValid);
+
+    const formIsValid =
+    isAudiencePersonaValid &&
+    isAudienceSeniorityValid &&
+    isAccountSegmentsValid &&
+    isAccountCategoryValid &&
+    isAccountTypeValid &&
+    isProductAlignmentValid &&
+    isAiVsCoreValid &&
+    isIndustryValid &&
+    isAccountSectorsValid;
+
+  setIsFormValid(formIsValid);
+
+  if (!formIsValid) {
+    setSnackbarMessage("Please fill in all required fields.");
+    setSnackbarOpen(true);
+    return;
   }
 
 
@@ -499,13 +551,14 @@ export default function AudiencePersonaForm() {
             <span className="mr-1 text-xl text-black cursor-pointer">
               Audience 
             </span>
+            
           </Typography>
 
  {/* Audience Seniority */}
  <Grid item xs={12}>
             <Typography variant="subtitle1">Buyer Segment Rollup</Typography>
-            <FormControl fullWidth>
-              <Select
+            <FormControl fullWidth error={isAudienceSeniorityError}>
+            <Select
                 multiple
                 value={audienceSeniority}
                 onChange={(e) => setAudienceSeniority(e.target.value)}
@@ -527,13 +580,18 @@ export default function AudiencePersonaForm() {
                   </MenuItem>
                 ))}
               </Select>
+              {isAudienceSeniorityError && (
+      <Typography variant="body2" color="error">
+        Please select at least one buyer segment rollup.
+      </Typography>
+    )}
             </FormControl>
           </Grid>
           {/* Audience Persona */}
           <Grid item xs={12}>
             <Typography variant="subtitle1"> Buyer Segment</Typography>
-            <FormControl fullWidth>
-              <Select
+            <FormControl fullWidth error={isAudiencePersonaError}>
+            <Select
                 multiple
                 value={audiencePersona}
                 onChange={(e) => setAudiencePersona(e.target.value)}
@@ -562,6 +620,11 @@ export default function AudiencePersonaForm() {
 ))}
 
               </Select>
+              {isAudiencePersonaError && (
+      <Typography variant="body2" color="error">
+        Please select at least one buyer segment.
+      </Typography>
+    )}
             </FormControl>
           </Grid>
 
@@ -570,7 +633,7 @@ export default function AudiencePersonaForm() {
 {/* Industry Multi-Select */}
 <Grid item xs={12}>
   <Typography variant="subtitle1">Industry</Typography>
-  <FormControl fullWidth>
+  <FormControl fullWidth error={isIndustryError}>
     <Select
       multiple
       value={industry}
@@ -590,19 +653,20 @@ export default function AudiencePersonaForm() {
         </MenuItem>
       ))}
     </Select>
+    {isIndustryError && (
+      <Typography variant="body2" color="error">
+        Please select at least one industry.
+      </Typography>
+    )}
   </FormControl>
 </Grid>
 
 
 
 {/* Account Sectors Accordion */}
-<Grid item xs={12} sx={{ mb: 2, mt:2 }}>
+<Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.accountSectors} onChange={() => handleToggleSection('accountSectors')}>
-    <AccordionSummary
-      expandIcon={<ExpandMoreIcon />}
-      aria-controls="account-sectors-content"
-      id="account-sectors-header"
-    >
+    <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="account-sectors-content" id="account-sectors-header">
       <Typography>Account Sectors</Typography>
     </AccordionSummary>
     <AccordionDetails>
@@ -630,9 +694,15 @@ export default function AudiencePersonaForm() {
           <Typography variant="body2">Public Sector</Typography>
         </Grid>
       </Grid>
+      {isAccountSectorsError && (
+        <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+          Please select at least one account sector.
+        </Typography>
+      )}
     </AccordionDetails>
   </Accordion>
 </Grid>
+
 
 {/* Account Segments Accordion */}
 <Grid item xs={12} sx={{ mb: 2 }}>
@@ -657,24 +727,24 @@ export default function AudiencePersonaForm() {
               type="number"
               value={accountSegments[segment].percentage}
               onWheel={(e) => e.target.blur()}
-              onChange={(e) =>
-                handlePercentageChange(segment, e.target.value, setAccountSegments)
-              }
+              onChange={(e) => handlePercentageChange(segment, e.target.value, setAccountSegments)}
               placeholder="Percentage"
               sx={{ width: "80%" }}
-              inputProps={{
-                min: 0,
-                max: 100,
-                step: 1,
-              }}
+              inputProps={{ min: 0, max: 100, step: 1 }}
               disabled={!accountSegments[segment].selected}
             />
           </Grid>
         </Grid>
       ))}
     </AccordionDetails>
+    {isAccountSegmentsError && (
+      <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+        Please select at least one account segment and ensure total percentage equals 100%.
+      </Typography>
+    )}
   </Accordion>
 </Grid>
+
 
 {/* Account Category Accordion */}
 <Grid item xs={12} sx={{ mb: 2 }}>
@@ -699,24 +769,24 @@ export default function AudiencePersonaForm() {
               type="number"
               value={accountCategory[category].percentage}
               onWheel={(e) => e.target.blur()}
-              onChange={(e) =>
-                handlePercentageChange(category, e.target.value, setAccountCategory)
-              }
+              onChange={(e) => handlePercentageChange(category, e.target.value, setAccountCategory)}
               placeholder="Percentage"
               sx={{ width: "80%" }}
-              inputProps={{
-                min: 0,
-                max: 100,
-                step: 1,
-              }}
+              inputProps={{ min: 0, max: 100, step: 1 }}
               disabled={!accountCategory[category].selected}
             />
           </Grid>
         </Grid>
       ))}
     </AccordionDetails>
+    {isAccountCategoryError && (
+      <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+        Please select at least one account category and ensure total percentage equals 100%.
+      </Typography>
+    )}
   </Accordion>
 </Grid>
+
 
 {/* Account Type Accordion */}
 <Grid item xs={12} sx={{ mb: 2 }}>
@@ -741,24 +811,24 @@ export default function AudiencePersonaForm() {
               type="number"
               value={accountType[type].percentage}
               onWheel={(e) => e.target.blur()}
-              onChange={(e) =>
-                handlePercentageChange(type, e.target.value, setAccountType)
-              }
+              onChange={(e) => handlePercentageChange(type, e.target.value, setAccountType)}
               placeholder="Percentage"
               sx={{ width: "80%" }}
-              inputProps={{
-                min: 0,
-                max: 100,
-                step: 1,
-              }}
+              inputProps={{ min: 0, max: 100, step: 1 }}
               disabled={!accountType[type].selected}
             />
           </Grid>
         </Grid>
       ))}
     </AccordionDetails>
+    {isAccountTypeError && (
+      <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+        Please select at least one account type and ensure total percentage equals 100%.
+      </Typography>
+    )}
   </Accordion>
 </Grid>
+
 
 {/* Product Alignment Accordion */}
 <Grid item xs={12} sx={{ mb: 2 }}>
@@ -783,24 +853,24 @@ export default function AudiencePersonaForm() {
               type="number"
               value={productAlignment[alignment].percentage}
               onWheel={(e) => e.target.blur()}
-              onChange={(e) =>
-                handlePercentageChange(alignment, e.target.value, setProductAlignment)
-              }
+              onChange={(e) => handlePercentageChange(alignment, e.target.value, setProductAlignment)}
               placeholder="Percentage"
               sx={{ width: "80%" }}
-              inputProps={{
-                min: 0,
-                max: 100,
-                step: 1,
-              }}
+              inputProps={{ min: 0, max: 100, step: 1 }}
               disabled={!productAlignment[alignment].selected}
             />
           </Grid>
         </Grid>
       ))}
     </AccordionDetails>
+    {isProductAlignmentError && (
+      <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+        Please select at least one product alignment and ensure total percentage equals 100%.
+      </Typography>
+    )}
   </Accordion>
 </Grid>
+
 {/* AI vs Core Accordion */}
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.aiVsCore} onChange={() => handleToggleSection("aiVsCore")}>
@@ -808,7 +878,7 @@ export default function AudiencePersonaForm() {
       <Typography>AI vs Core</Typography>
     </AccordionSummary>
     <AccordionDetails>
-      <FormControl fullWidth>
+      <FormControl fullWidth error={isAiVsCoreError}>
         <Select
           value={aiVsCore}
           onChange={(e) => setAiVsCore(e.target.value)}
@@ -816,10 +886,16 @@ export default function AudiencePersonaForm() {
           <MenuItem value="AI">AI</MenuItem>
           <MenuItem value="Core">Core</MenuItem>
         </Select>
+        {isAiVsCoreError && (
+          <Typography variant="body2" color="error">
+            Please select AI or Core.
+          </Typography>
+        )}
       </FormControl>
     </AccordionDetails>
   </Accordion>
 </Grid>
+
 
           {/* Max Event Capacity */}
           <Grid item xs={12}>
@@ -896,7 +972,7 @@ export default function AudiencePersonaForm() {
             >
               Next
             </Button>
-            <Button
+            {/* <Button
               variant="contained"
               onClick={handleSaveAsDraft}
               style={{
@@ -907,7 +983,7 @@ export default function AudiencePersonaForm() {
               }}
             >
               Save as Draft
-            </Button>
+            </Button> */}
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}
