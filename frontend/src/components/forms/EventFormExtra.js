@@ -20,7 +20,7 @@ import {
   AccordionDetails,
   Checkbox,
   Input,
-  Switch
+  Switch,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import "../styles/Forms.css";
@@ -40,7 +40,6 @@ const partnerRoleOptions = [
   "Other",
 ];
 
-
 export default function ExtraDetailsForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -54,6 +53,8 @@ export default function ExtraDetailsForm() {
   const [gep, setGep] = useState([]);
   const [isPartneredEvent, setIsPartneredEvent] = useState(false);
   const [partnerRole, setPartnerRole] = useState("");
+  const [isCustomerUseError, setIsCustomerUseError] = useState(false);
+  const [isGepError, setIsGepError] = useState(false);
 
   useEffect(() => {
     if (selectedEvent) {
@@ -67,7 +68,9 @@ export default function ExtraDetailsForm() {
 
       // Initialize OKR selections from event data
       const okrDictionary = okrOptions.reduce((acc, option) => {
-        const okrItem = selectedEvent.okr.find(item => item.type === option.label);
+        const okrItem = selectedEvent.okr.find(
+          (item) => item.type === option.label
+        );
         acc[option.label] = {
           selected: !!okrItem,
           percentage: okrItem ? okrItem.percentage : "",
@@ -86,7 +89,7 @@ export default function ExtraDetailsForm() {
 
       // Initialize OKR selections from form data
       const okrDictionary = okrOptions.reduce((acc, option) => {
-        const okrItem = formData.okr.find(item => item.type === option.label);
+        const okrItem = formData.okr.find((item) => item.type === option.label);
         acc[option.label] = {
           selected: !!okrItem,
           percentage: okrItem ? okrItem.percentage : "",
@@ -148,34 +151,47 @@ export default function ExtraDetailsForm() {
   };
 
   const handleNext = () => {
+    const isCustomerUseValid = customerUse !== "";
+    const isGepValid = gep.length > 0;
+
+    setIsCustomerUseError(!isCustomerUseValid);
+    setIsGepError(!isGepValid);
+
+    if (!isCustomerUseValid || !isGepValid) {
+      setIsFormValid(false);
+      setSnackbarMessage("Please fill in all required fields.");
+      setSnackbarOpen(true);
+      return;
+    }
+
     const selectedOkrs = Object.keys(okrSelections)
-    .filter((key) => okrSelections[key].selected)
-    .map((key) => ({
-      type: key,
-      percentage: okrSelections[key].percentage,
-    }));
+      .filter((key) => okrSelections[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: okrSelections[key].percentage,
+      }));
 
-  if (selectedOkrs.length > 0) {
-    const okrTotalPercentage = selectedOkrs.reduce(
-      (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
-      0
-    );
+    if (selectedOkrs.length > 0) {
+      const okrTotalPercentage = selectedOkrs.reduce(
+        (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
+        0
+      );
 
-    if (okrTotalPercentage > 100) {
-      setSnackbarMessage("Total OKR percentage cannot exceed 100%");
-      setSnackbarOpen(true);
-      return;
+      if (okrTotalPercentage > 100) {
+        setSnackbarMessage("Total OKR percentage cannot exceed 100%");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      if (okrTotalPercentage !== 100) {
+        setSnackbarMessage("Total OKR percentage must equal 100%");
+        setSnackbarOpen(true);
+        return;
+      }
     }
-
-    if (okrTotalPercentage !== 100) {
-      setSnackbarMessage("Total OKR percentage must equal 100%");
-      setSnackbarOpen(true);
-      return;
-    }
-  }
 
     // const formIsValid =
-    //   customerUse && selectedOkrs.length > 0 && gep.length > 0 
+    //   customerUse && selectedOkrs.length > 0 && gep.length > 0
 
     // setIsFormValid(formIsValid);
 
@@ -201,31 +217,30 @@ export default function ExtraDetailsForm() {
     const isDraft = formData.isDraft !== undefined ? formData.isDraft : true;
 
     const selectedOkrs = Object.keys(okrSelections)
-    .filter((key) => okrSelections[key].selected)
-    .map((key) => ({
-      type: key,
-      percentage: okrSelections[key].percentage,
-    }));
+      .filter((key) => okrSelections[key].selected)
+      .map((key) => ({
+        type: key,
+        percentage: okrSelections[key].percentage,
+      }));
 
-  if (selectedOkrs.length > 0) {
-    const okrTotalPercentage = selectedOkrs.reduce(
-      (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
-      0
-    );
+    if (selectedOkrs.length > 0) {
+      const okrTotalPercentage = selectedOkrs.reduce(
+        (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
+        0
+      );
 
-    if (okrTotalPercentage > 100) {
-      setSnackbarMessage("Total OKR percentage cannot exceed 100%");
-      setSnackbarOpen(true);
-      return;
+      if (okrTotalPercentage > 100) {
+        setSnackbarMessage("Total OKR percentage cannot exceed 100%");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      if (okrTotalPercentage !== 100) {
+        setSnackbarMessage("Total OKR percentage must equal 100%");
+        setSnackbarOpen(true);
+        return;
+      }
     }
-
-    if (okrTotalPercentage !== 100) {
-      setSnackbarMessage("Total OKR percentage must equal 100%");
-      setSnackbarOpen(true);
-      return;
-    }
-  }
-
 
     const draftData = {
       activityOwner,
@@ -235,8 +250,8 @@ export default function ExtraDetailsForm() {
       okr: selectedOkrs,
       gep,
       isPartneredEvent: isPartneredEvent === true,
-      isDraft: true, 
-      isPublished: false, 
+      isDraft: true,
+      isPublished: false,
     };
 
     const updatedFormData = { ...formData, ...draftData };
@@ -280,7 +295,7 @@ export default function ExtraDetailsForm() {
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <FormControl component="fieldset">
+              <FormControl component="fieldset" error={isCustomerUseError}>
                 <Typography variant="subtitle1">
                   Approved for customer use?
                 </Typography>
@@ -295,6 +310,11 @@ export default function ExtraDetailsForm() {
                   />
                   <FormControlLabel value="no" control={<Radio />} label="No" />
                 </RadioGroup>
+                {isCustomerUseError && (
+                  <Typography variant="body2" color="error">
+                    Please select an option for customer use approval.
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
 
@@ -345,14 +365,16 @@ export default function ExtraDetailsForm() {
             </Grid>
 
             <Grid item xs={12}>
-              <FormControl fullWidth>
+              <FormControl fullWidth error={isGepError}>
                 <Typography variant="subtitle1">GEP</Typography>
                 <Select
                   multiple
                   value={gep}
                   onChange={(e) => setGep(e.target.value)}
                   renderValue={(selected) => (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+                    <div
+                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
+                    >
                       {selected.map((gepItem) => (
                         <Chip
                           key={gepItem}
@@ -370,14 +392,22 @@ export default function ExtraDetailsForm() {
                     </MenuItem>
                   ))}
                 </Select>
+                {isGepError && (
+                  <Typography variant="body2" color="error">
+                    Please select at least one GEP option.
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
-            
+
             <Grid item xs={12}>
-            <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
-                    Are Partner(s) involved?
-                  </Typography>
-              
+              <Typography
+                variant="subtitle1"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                Are Partner(s) involved?
+              </Typography>
+
               <FormControlLabel
                 control={
                   <Switch
@@ -387,7 +417,6 @@ export default function ExtraDetailsForm() {
                     color="primary"
                   />
                 }
-                
               />
             </Grid>
 
@@ -409,8 +438,6 @@ export default function ExtraDetailsForm() {
                 </FormControl>
               </Grid>
             )}
-
-           
           </Grid>
           {/* {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>
@@ -444,7 +471,7 @@ export default function ExtraDetailsForm() {
             >
               Next
             </Button>
-            <Button
+            {/* <Button
               variant="contained"
               onClick={handleSaveAsDraft}
               style={{
@@ -455,7 +482,7 @@ export default function ExtraDetailsForm() {
               }}
             >
               Save as Draft
-            </Button>
+            </Button> */}
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}
