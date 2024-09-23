@@ -451,7 +451,7 @@ const EventFormEmailInvitation = () => {
               >
                 Next
               </Button>
-              <Button
+              {/* <Button
                 variant="contained"
                 onClick={handleSaveAsDraft}
                 sx={{
@@ -463,7 +463,7 @@ const EventFormEmailInvitation = () => {
                 }}
               >
                 Save as Draft
-              </Button>
+              </Button> */}
             </div>
           </form>
         </div>

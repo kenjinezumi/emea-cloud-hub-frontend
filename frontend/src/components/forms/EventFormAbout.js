@@ -51,7 +51,7 @@ const EventForm = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [eventType, setEventType] = useState(
-    formData.eventType || eventTypeOptions[0].label
+    formData.eventType || ''
   );
   const [title, setTitle] = useState(
     selectedEvent ? selectedEvent.title : formData.title || ""
@@ -84,14 +84,15 @@ const EventForm = () => {
     selectedEvent ? selectedEvent.isEventSeries : formData.isEventSeries || false
   );
   const [startDate, setStartDate] = useState(
-    selectedEvent ? selectedEvent.startDate : formData.startDate || new Date()
+    selectedEvent?.startDate || formData?.startDate || null
   );
+  
   const [speakers, setSpeakers] = useState(
     selectedEvent ? selectedEvent.speakers || [] : formData.speakers || []
   );
   const [newSpeaker, setNewSpeaker] = useState("");
   const [endDate, setEndDate] = useState(
-    selectedEvent ? selectedEvent.endDate : formData.endDate || new Date()
+    selectedEvent ? selectedEvent.endDate : formData.endDate || null
   );
   const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(
     selectedEvent
@@ -102,6 +103,12 @@ const EventForm = () => {
   const [userTimezone, setUserTimezone] = useState(
     Intl.DateTimeFormat().resolvedOptions().timeZone
   );
+  const [isTitleError, setIsTitleError] = useState(false);
+  const [isDescriptionError, setIsDescriptionError] = useState(false);
+  const [isStartDateError, setIsStartDateError] = useState(false);
+  const [isEndDateError, setIsEndDateError] = useState(false);
+  const [isOrganisedByError, setIsOrganisedByError] = useState(false);
+  const [isEventTypeError, setIsEventTypeError] = useState(false);
   const saveAndNavigate = useFormNavigation();
 
   const handleStartDateChange = (newDate) => setStartDate(newDate);
@@ -197,22 +204,37 @@ const EventForm = () => {
     const eventId = existingEventId || uuidv4();
 
     const isTitleValid = title.trim() !== "";
-    const isEventTypeValid = eventType.trim() !== "";
     const isDescriptionValid = description.trim() !== "";
-    const isMarketingProgramInstanceIdValid =
-      marketingProgramInstanceId.trim() !== "";
-      
+    const isStartDateValid = !!startDate;
+    const isEndDateValid = !!endDate;
+    const isOrganisedByValid = organisedBy.length > 0;
+    const isEventTypeValid = eventType.trim() !== "";
+    const isEventIdValid = !!eventId;
 
+    setIsTitleError(!isTitleValid);
+    setIsDescriptionError(!isDescriptionValid);
+    setIsStartDateError(!isStartDateValid);
+    setIsEndDateError(!isEndDateValid);
+    setIsOrganisedByError(!isOrganisedByValid);
+    setIsEventTypeError(!isEventTypeValid);
+
+  
     const formIsValid =
       isTitleValid &&
-      isEventTypeValid &&
       isDescriptionValid &&
-      isMarketingProgramInstanceIdValid;
-
+      isStartDateValid &&
+      isEndDateValid &&
+      isOrganisedByValid &&
+      isEventTypeValid &&
+      isEventIdValid;
+  
     setIsFormValid(formIsValid);
-
-    if (!formIsValid) return;
-
+  
+    if (!formIsValid) {
+      setSnackbarMessage("Please fill in all required fields.");
+      setSnackbarOpen(true);
+      return;
+    }
     const newFormData = {
       eventId,
       title,
@@ -276,48 +298,48 @@ const EventForm = () => {
   };
   const toggleEmojiPicker = () => setIsEmojiPickerOpen((prev) => !prev);
 
-  const handleSaveAsDraft = async () => {
-    const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
-    const eventId = existingEventId || uuidv4();
-    const isDraft = true;
-    const newFormData = {
-      eventId,
-      title,
-      description,
-      emoji,
-      organisedBy,
-      marketingActivityType,
-      isHighPriority,
-      isEventSeries, 
-      startDate,
-      endDate,
-      marketingProgramInstanceId,
-      eventType,
-      isDraft,
-      userTimezone,
-      speakers,
-      isDraft: true, 
-      isPublished: false, 
-    };
+  // const handleSaveAsDraft = async () => {
+  //   const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
+  //   const eventId = existingEventId || uuidv4();
+  //   const isDraft = true;
+  //   const newFormData = {
+  //     eventId,
+  //     title,
+  //     description,
+  //     emoji,
+  //     organisedBy,
+  //     marketingActivityType,
+  //     isHighPriority,
+  //     isEventSeries, 
+  //     startDate,
+  //     endDate,
+  //     marketingProgramInstanceId,
+  //     eventType,
+  //     isDraft,
+  //     userTimezone,
+  //     speakers,
+  //     isDraft: true, 
+  //     isPublished: false, 
+  //   };
 
-    updateFormData(newFormData);
+  //   updateFormData(newFormData);
 
-    try {
-      const response = await sendDataToAPI(newFormData);
-      if (response.success) {
-        updateFormData(newFormData);
-        setSnackbarMessage("Draft saved successfully!");
-        setSnackbarOpen(true);
-      } else {
-        setSnackbarMessage("Failed to save draft.");
-        setSnackbarOpen(true);
-      }
-    } catch (error) {
-      setSnackbarMessage("An error occurred while saving the draft.");
-      setSnackbarOpen(true);
-    }
-  };
-
+  //   try {
+  //     const response = await sendDataToAPI(newFormData);
+  //     if (response.success) {
+  //       updateFormData(newFormData);
+  //       setSnackbarMessage("Draft saved successfully!");
+  //       setSnackbarOpen(true);
+  //     } else {
+  //       setSnackbarMessage("Failed to save draft.");
+  //       setSnackbarOpen(true);
+  //     }
+  //   } catch (error) {
+  //     setSnackbarMessage("An error occurred while saving the draft.");
+  //     setSnackbarOpen(true);
+  //   }
+  // };
+  const isDefaultDate = (date) => date && date.getTime() === 0
   return (
     <div
       className="h-screen flex flex-col"
@@ -336,6 +358,8 @@ const EventForm = () => {
                   fullWidth
                   placeholder="Enter activity name"
                   value={title}
+                  error={isTitleError}  
+                  helperText={isTitleError ? "Title is required" : ""} 
                   onChange={(e) => setTitle(e.target.value)}
                   sx={{ ml: 2, flexGrow: 1 }}
                 />
@@ -366,6 +390,7 @@ const EventForm = () => {
               variant="outlined"
               placeholder="Enter email and press Enter, or paste multiple emails"
               value={newOrganiser}
+              error={isOrganisedByError} 
               onChange={(e) => setNewOrganiser(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleAddOrganiser();
@@ -380,6 +405,7 @@ const EventForm = () => {
                   </InputAdornment>
                 ),
               }}
+
               margin="normal"
             />
             <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginTop: "10px" }}>
@@ -398,7 +424,7 @@ const EventForm = () => {
 
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>Activity type</Typography>
-                <FormControl fullWidth>
+                <FormControl fullWidth error={isEventTypeError}>
                   <Select
                     value={eventType}
                     onChange={(e) => setEventType(e.target.value)}
@@ -409,6 +435,11 @@ const EventForm = () => {
                       </MenuItem>
                     ))}
                   </Select>
+                  {isEventTypeError && (
+    <Typography variant="body2" color="error">
+      Event type is required
+    </Typography>
+  )}
                 </FormControl>
               </Grid>
             </Grid>
@@ -458,10 +489,15 @@ const EventForm = () => {
                     <DatePicker
                       label={`Event start date (${userTimezone})`}
                       inputFormat="MM/dd/yyyy"
-                      value={new Date(startDate)}
+                      value={isDefaultDate(startDate) ? "" : startDate}
                       onChange={handleStartDateChange}
                       renderInput={(params) => (
-                        <TextField {...params} fullWidth />
+                        <TextField
+                          {...params}
+                          fullWidth
+                          error={isStartDateError}  // Highlight in red if start date is missing
+                          helperText={isStartDateError ? "Start date is required" : ""}  // Show error message
+                        />
                       )}
                     />
                   ) : (
@@ -471,7 +507,12 @@ const EventForm = () => {
                       value={new Date(startDate)}
                       onChange={handleStartDateChange}
                       renderInput={(params) => (
-                        <TextField {...params} fullWidth />
+                        <TextField
+                          {...params}
+                          fullWidth
+                          error={isStartDateError}  // Highlight in red if start date is missing
+                          helperText={isStartDateError ? "Start date is required" : ""}  // Show error message
+                        />
                       )}
                     />
                   )}
@@ -487,7 +528,12 @@ const EventForm = () => {
                       value={new Date(endDate)}
                       onChange={handleEndDateChange}
                       renderInput={(params) => (
-                        <TextField {...params} fullWidth />
+                        <TextField
+                          {...params}
+                          fullWidth
+                          error={isEndDateError}  // Highlight in red if end date is missing
+                          helperText={isEndDateError ? "End date is required" : ""}  // Show error message
+                        />
                       )}
                     />
                   </LocalizationProvider>
@@ -506,8 +552,9 @@ const EventForm = () => {
                 variant="outlined"
                 fullWidth
                 margin="dense"
+                error={isDescriptionError}  // Highlight in red if description is missing
+                helperText={isDescriptionError ? "Description is required" : ""} 
                 inputProps={{ maxLength: 400 }}
-                helperText={`${description.length}/400`}
               />
             </Grid>
             {/* Speakers Section */}
@@ -573,7 +620,7 @@ const EventForm = () => {
             )}
 
             <div style={{ marginTop: "20px", textAlign: "right" }}>
-              <Button
+              {/* <Button
                 variant="contained"
                 onClick={handleSaveAsDraft}
                 sx={{
@@ -586,7 +633,7 @@ const EventForm = () => {
                 }}
               >
                 Save as Draft
-              </Button>
+              </Button> */}
               <Button
                 variant="contained"
                 onClick={handleNext}

@@ -5,8 +5,8 @@ const initialFormData = {
   description: '', // STRING
   emoji: '', // STRING
   organisedBy: [], // ARRAY<STRING>
-  startDate: new Date(), // STRING, but initializing with Date object for user inputs
-  endDate: new Date(), // STRING, but initializing with Date object for user inputs
+  startDate: null, // STRING, but initializing with Date object for user inputs
+  endDate: null, // STRING, but initializing with Date object for user inputs
   marketingProgramInstanceId: '', // STRING
   eventType: '', // STRING
   region: '', // STRING

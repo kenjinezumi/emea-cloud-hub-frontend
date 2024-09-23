@@ -14,13 +14,13 @@ import {
   Select,
   MenuItem,
   Chip,
-  TextField
+  TextField,
 } from "@mui/material";
 import "../styles/Forms.css";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { blue } from "@mui/material/colors";
-import { sendDataToAPI } from "../../api/pushData"; 
+import { sendDataToAPI } from "../../api/pushData";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 
 export default function LocationFormPage() {
@@ -48,15 +48,19 @@ export default function LocationFormPage() {
   const [locationVenue, setLocationVenue] = useState(
     selectedEvent ? selectedEvent.locationVenue : formData.locationVenue || ""
   );
-  
+
   const [city, setCity] = useState(
     selectedEvent ? selectedEvent.city : formData.city || ""
   );
 
-
   const [isFormValid, setIsFormValid] = useState(true);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+  const [isRegionError, setIsRegionError] = useState(false);
+  const [isSubRegionError, setIsSubRegionError] = useState(false);
+  const [isCountryError, setIsCountryError] = useState(false);
+  const [isCityError, setIsCityError] = useState(false);
 
   const saveAndNavigate = useFormNavigation();
 
@@ -82,22 +86,27 @@ export default function LocationFormPage() {
     const {
       target: { value },
     } = event;
-    setSubRegion(
-      typeof value === "string" ? value.split(",") : value
-    );
+    setSubRegion(typeof value === "string" ? value.split(",") : value);
   };
 
   const handleNext = () => {
-    let formIsValid = Array.isArray(region)
-      ? region.map(String).join("").trim()
-      : String(region).trim();
+    const isRegionValid = region.trim() !== "";
+    const isSubRegionValid = subRegion.length > 0;
+    const isCountryValid = country.length > 0;
+    const isCityValid = city.trim() !== "";
+    setIsRegionError(!isRegionValid);
+    setIsSubRegionError(!isSubRegionValid);
+    setIsCountryError(!isCountryValid);
+    setIsCityError(!isCityValid);
+    const formIsValid =
+      isRegionValid && isSubRegionValid && isCountryValid && isCityValid;
 
-    if (!formIsValid || !subRegion.length || !country.length) {
+    if (!formIsValid) {
       setIsFormValid(false);
       return;
     }
 
-    const currentFormData = { region, subRegion, country,  city, locationVenue };
+    const currentFormData = { region, subRegion, country, city, locationVenue };
     saveAndNavigate(currentFormData, "/extra");
   };
 
@@ -139,7 +148,6 @@ export default function LocationFormPage() {
       locationVenue,
       isDraft: true,
       isPublished: false,
-
     };
 
     const updatedFormData = { ...formData, ...draftData };
@@ -184,7 +192,7 @@ export default function LocationFormPage() {
           <Grid container spacing={3} className="form-grid">
             {/* Region Dropdown */}
             <Grid item xs={12}>
-              <FormControl fullWidth>
+              <FormControl fullWidth error={isRegionError}>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   Region
                 </Typography>
@@ -195,12 +203,17 @@ export default function LocationFormPage() {
                     </MenuItem>
                   ))}
                 </Select>
+                {isRegionError && (
+                  <Typography variant="body2" color="error">
+                    Region is required
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
 
             {/* Sub-Region Dropdown */}
             <Grid item xs={12}>
-              <FormControl fullWidth>
+              <FormControl fullWidth error={isSubRegionError}>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   Sub-region
                 </Typography>
@@ -209,7 +222,9 @@ export default function LocationFormPage() {
                   value={subRegion}
                   onChange={handleSubRegionChange}
                   renderValue={(selected) => (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+                    <div
+                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
+                    >
                       {selected.map((subRegion) => (
                         <Chip
                           key={subRegion}
@@ -231,11 +246,16 @@ export default function LocationFormPage() {
                       </MenuItem>
                     ))}
                 </Select>
+                {isSubRegionError && (
+                  <Typography variant="body2" color="error">
+                    Sub-region is required
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
             {/* Country Dropdown */}
             <Grid item xs={12}>
-              <FormControl fullWidth>
+              <FormControl fullWidth error={isCountryError}>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   Country
                 </Typography>
@@ -244,7 +264,9 @@ export default function LocationFormPage() {
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
                   renderValue={(selected) => (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+                    <div
+                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
+                    >
                       {selected.map((country) => (
                         <Chip
                           key={country}
@@ -265,10 +287,15 @@ export default function LocationFormPage() {
                     </MenuItem>
                   ))}
                 </Select>
+                {isCountryError && (
+                  <Typography variant="body2" color="error">
+                    Country is required
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-              <FormControl fullWidth>
+              <FormControl fullWidth error={isCityError}>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   City
                 </Typography>
@@ -276,22 +303,23 @@ export default function LocationFormPage() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   fullWidth
+                  error={isCityError}
+                  helperText={isCityError ? "City is required" : ""} //
                 />
               </FormControl>
             </Grid>
             <Grid item xs={12}>
-  <FormControl fullWidth>
-    <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-      Location Venue
-    </Typography>
-    <TextField
-      value={locationVenue}
-      onChange={(e) => setLocationVenue(e.target.value)}
-      fullWidth
-    />
-  </FormControl>
-</Grid>
-
+              <FormControl fullWidth>
+                <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
+                  Location Venue
+                </Typography>
+                <TextField
+                  value={locationVenue}
+                  onChange={(e) => setLocationVenue(e.target.value)}
+                  fullWidth
+                />
+              </FormControl>
+            </Grid>
           </Grid>
           {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>
@@ -326,7 +354,7 @@ export default function LocationFormPage() {
             >
               Next
             </Button>
-            <Button
+            {/* <Button
               variant="contained"
               onClick={handleSaveAsDraft}
               style={{
@@ -337,7 +365,7 @@ export default function LocationFormPage() {
               }}
             >
               Save as Draft
-            </Button>
+            </Button> */}
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}
