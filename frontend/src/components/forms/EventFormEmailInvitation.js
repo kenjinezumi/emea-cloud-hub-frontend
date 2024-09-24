@@ -28,7 +28,7 @@ import "../styles/Forms.css";
 const platformOptions = ["Gmail", "Salesloft"];
 const personalizationOptions = [
   "{{first_name}}",
-  "{{last_name}}", 
+  "{{last_name}}",
   "{{name}}",
   "{{company}}",
   "{{title}}",
@@ -36,7 +36,8 @@ const personalizationOptions = [
   "{{My.name}}",
   "{{My.first_name}}",
   "{{My.last_name}}",
-  "{{My.email_address}}"];
+  "{{My.email_address}}",
+];
 const EventFormEmailInvitation = () => {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -313,11 +314,14 @@ const EventFormEmailInvitation = () => {
                         {/* Check if the platform is Salesloft, then show ReactQuill */}
                         {item.platform === "Salesloft" ? (
                           <>
-                          
                             <ReactQuill
                               value={editorContent}
                               onChange={handleEditorChange}
-                              style={{ height: "300px", maxHeight: "400px" , marginBottom: "20px"}} // Set a minimum and maximum height
+                              style={{
+                                height: "300px",
+                                maxHeight: "400px",
+                                marginBottom: "20px",
+                              }} // Set a minimum and maximum height
                               modules={{
                                 toolbar: [
                                   [
@@ -333,8 +337,10 @@ const EventFormEmailInvitation = () => {
                               }}
                             />
                             <div style={{ marginTop: "20px", pt: "40px" }}>
-                            
-                              <Typography variant="subtitle1" style={{ marginTop: "50px", pt: "40px" }}>
+                              <Typography
+                                variant="subtitle1"
+                                style={{ marginTop: "50px", pt: "40px" }}
+                              >
                                 Insert Personalisation Tokens:
                               </Typography>
                               {personalizationOptions.map((token, idx) => (

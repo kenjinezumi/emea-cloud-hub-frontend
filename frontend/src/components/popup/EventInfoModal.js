@@ -23,13 +23,12 @@ import {
   DialogActions,
   Snackbar,
   FormControl,
-  
   RadioGroup,
   Radio,
-  FormControlLabel
+  FormControlLabel,
 } from "@mui/material";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
-import BusinessIcon from "@mui/icons-material/Business"; 
+import BusinessIcon from "@mui/icons-material/Business";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import ShareIcon from "@mui/icons-material/Share";
@@ -46,6 +45,8 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
 import { red, blue } from "@mui/material/colors";
+import salesloftLogo from './logo/salesloft.png';
+
 
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
@@ -266,8 +267,7 @@ export default function EventInfoPopup({ event, close }) {
     if (!Array.isArray(list)) return "";
     return list.map((item) => item.replace(/,/g, ", ")).join(", ");
   };
-    console.log('languagesAndTemplates:', languagesAndTemplates);
-
+  console.log("languagesAndTemplates:", languagesAndTemplates);
 
   const googleColors = [
     "rgba(66, 133, 244, 0.6)", // Google Blue
@@ -1109,13 +1109,31 @@ export default function EventInfoPopup({ event, close }) {
 
               <Button
                 variant="contained"
-                style={{
-                  backgroundColor: blue[500],
-                  color: "white",
+                sx={{
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  color: "#5f6368",
                   boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                   margin: "10px",
+                  "&:hover": {
+                    backgroundColor: "rgba(66, 133, 244, 0.1)",
+                    borderColor: blue[500],
+                    "&:hover": {
+                      backgroundColor: "rgba(66, 133, 244, 0.1)",
+                      borderColor: blue[500],
+                    },
+                  },
                 }}
-                startIcon={<MailOutlineIcon />}  
+                startIcon={
+                  <img
+                    src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
+                    alt="Gmail Logo"
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      marginRight: "8px",
+                    }}
+                  />
+                }
                 onClick={handleGmailInvite}
               >
                 Gmail Invite
@@ -1123,13 +1141,31 @@ export default function EventInfoPopup({ event, close }) {
 
               <Button
                 variant="contained"
-                style={{
-                  backgroundColor: blue[500],
-                  color: "white",
+                sx={{
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  color: "#5f6368",
                   boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
                   margin: "10px",
+                  "&:hover": {
+                    backgroundColor: "rgba(66, 133, 244, 0.1)",
+                    borderColor: blue[500],
+                    "&:hover": {
+                      backgroundColor: "rgba(66, 133, 244, 0.1)",
+                      borderColor: blue[500],
+                    },
+                  },
                 }}
-                startIcon={<BusinessIcon />}
+                startIcon={
+                  <img
+                  src={salesloftLogo}
+                  alt="SalesLoft Logo"                  
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      marginRight: "8px",
+                    }}
+                  />
+                }
                 onClick={handleSalesLoftInvite}
               >
                 Salesloft Invite
@@ -1158,48 +1194,48 @@ export default function EventInfoPopup({ event, close }) {
       </Dialog>
       {/* Language Dialog */}
       <Dialog
-  open={languageDialogOpen}
-  onClose={handleLanguageDialogClose}
-  maxWidth="xs"
-  fullWidth
-  sx={{ zIndex: 10000 }}
->
-  <DialogTitle>Select Language</DialogTitle>
-  <DialogContent>
-    <FormControl component="fieldset">
-      <RadioGroup
-        value={selectedLanguage}
-        onChange={(event) => setSelectedLanguage(event.target.value)}
+        open={languageDialogOpen}
+        onClose={handleLanguageDialogClose}
+        maxWidth="xs"
+        fullWidth
+        sx={{ zIndex: 10000 }}
       >
-        {languagesAndTemplates.length > 0 ? (
-          languagesAndTemplates.map((item) => (
-            <FormControlLabel
-              key={item.language}
-              value={item.language}
-              control={<Radio />}
-              label={item.language}
-            />
-          ))
-        ) : (
-          <Typography>No languages available</Typography>
-        )}
-      </RadioGroup>
-    </FormControl>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleLanguageDialogClose} color="secondary">
-      Cancel
-    </Button>
-    <Button
-      onClick={handleLanguageDialogClose}
-      color="primary"
-      variant="contained"
-    >
-      Confirm
-    </Button>
-  </DialogActions>
-</Dialog>
-          
+        <DialogTitle>Select Language</DialogTitle>
+        <DialogContent>
+          <FormControl component="fieldset">
+            <RadioGroup
+              value={selectedLanguage}
+              onChange={(event) => setSelectedLanguage(event.target.value)}
+            >
+              {languagesAndTemplates.length > 0 ? (
+                languagesAndTemplates.map((item) => (
+                  <FormControlLabel
+                    key={item.language}
+                    value={item.language}
+                    control={<Radio />}
+                    label={item.language}
+                  />
+                ))
+              ) : (
+                <Typography>No languages available</Typography>
+              )}
+            </RadioGroup>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleLanguageDialogClose} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleLanguageDialogClose}
+            color="primary"
+            variant="contained"
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
