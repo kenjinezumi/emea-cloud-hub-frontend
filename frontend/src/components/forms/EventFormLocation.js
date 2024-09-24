@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import {
   regionOptions,
@@ -109,6 +109,28 @@ export default function LocationFormPage() {
     const currentFormData = { region, subRegion, country, city, locationVenue };
     saveAndNavigate(currentFormData, "/extra");
   };
+  useEffect(() => {
+    const currentFormData = {
+      region,
+      subRegion,
+      country,
+      city,
+      locationVenue,
+      availableSubregions,
+      availableCountries,
+    };
+
+    updateFormData(currentFormData);
+  }, [
+    region,
+    subRegion,
+    country,
+    city,
+    locationVenue,
+    availableSubregions,
+    availableCountries,
+    updateFormData,
+  ]);
 
   const handleRegionChange = (e) => {
     const selectedRegion = e.target.value;
@@ -152,6 +174,7 @@ export default function LocationFormPage() {
 
     const updatedFormData = { ...formData, ...draftData };
     updateFormData(updatedFormData);
+
 
     try {
       const response = await sendDataToAPI(updatedFormData, "draft");

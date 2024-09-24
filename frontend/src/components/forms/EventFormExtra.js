@@ -45,60 +45,36 @@ export default function ExtraDetailsForm() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isFormValid, setIsFormValid] = useState(true);
-  const [activityOwner, setActivityOwner] = useState([]);
-  const [speakers, setSpeakers] = useState([]);
-  const [eventSeries, setEventSeries] = useState("no");
-  const [customerUse, setCustomerUse] = useState("no");
-  const [okrSelections, setOkrSelections] = useState({});
-  const [gep, setGep] = useState([]);
-  const [isPartneredEvent, setIsPartneredEvent] = useState(false);
-  const [partnerRole, setPartnerRole] = useState("");
+  const [customerUse, setCustomerUse] = useState(
+    selectedEvent?.customerUse || formData?.customerUse || "no"
+  );
+
+  const [okrSelections, setOkrSelections] = useState(() => {
+    const dataSource = selectedEvent || formData;
+    return okrOptions.reduce((acc, option) => {
+      const okrItem = dataSource?.okr?.find(
+        (item) => item.type === option.label
+      );
+      acc[option.label] = {
+        selected: !!okrItem && okrItem.percentage !== "",
+        percentage: okrItem ? okrItem.percentage : "",
+      };
+      return acc;
+    }, {});
+  });
+
+  const [gep, setGep] = useState(selectedEvent?.gep || formData?.gep || []);
+
+  const [isPartneredEvent, setIsPartneredEvent] = useState(
+    selectedEvent?.isPartneredEvent || formData?.isPartneredEvent || false
+  );
+
+  const [partnerRole, setPartnerRole] = useState(
+    selectedEvent?.partnerRole || formData?.partnerRole || ""
+  );
+
   const [isCustomerUseError, setIsCustomerUseError] = useState(false);
   const [isGepError, setIsGepError] = useState(false);
-
-  useEffect(() => {
-    if (selectedEvent) {
-      setActivityOwner(selectedEvent.activityOwner || []);
-      setSpeakers(selectedEvent.speakers || []);
-      setEventSeries(selectedEvent.eventSeries || "no");
-      setCustomerUse(selectedEvent.customerUse || "no");
-      setGep(selectedEvent.gep || []);
-      setIsPartneredEvent(selectedEvent.isPartneredEvent || false);
-      setPartnerRole(selectedEvent.partnerRole || "");
-
-      // Initialize OKR selections from event data
-      const okrDictionary = okrOptions.reduce((acc, option) => {
-        const okrItem = selectedEvent.okr.find(
-          (item) => item.type === option.label
-        );
-        acc[option.label] = {
-          selected: !!okrItem,
-          percentage: okrItem ? okrItem.percentage : "",
-        };
-        return acc;
-      }, {});
-      setOkrSelections(okrDictionary);
-    } else {
-      setActivityOwner(formData.activityOwner || []);
-      setSpeakers(formData.speakers || []);
-      setEventSeries(formData.eventSeries || "no");
-      setCustomerUse(formData.customerUse || "no");
-      setGep(formData.gep || []);
-      setIsPartneredEvent(formData.isPartneredEvent || false);
-      setPartnerRole(formData.partnerRole || "");
-
-      // Initialize OKR selections from form data
-      const okrDictionary = okrOptions.reduce((acc, option) => {
-        const okrItem = formData.okr.find((item) => item.type === option.label);
-        acc[option.label] = {
-          selected: !!okrItem,
-          percentage: okrItem ? okrItem.percentage : "",
-        };
-        return acc;
-      }, {});
-      setOkrSelections(okrDictionary);
-    }
-  }, [selectedEvent, formData]);
 
   const handleToggleOkr = (label) => {
     setOkrSelections((prev) => ({
@@ -119,6 +95,32 @@ export default function ExtraDetailsForm() {
       },
     }));
   };
+  useEffect(() => {
+    const updatedFormData = {
+      ...formData,
+      customerUse,
+      okr: Object.keys(okrSelections).map((label) => ({
+        type: label,
+        percentage: okrSelections[label].percentage,
+      })),
+      gep,
+      isPartneredEvent,
+      partnerRole,
+    };
+
+    // Only update the form if the data has changed
+    if (JSON.stringify(updatedFormData) !== JSON.stringify(formData)) {
+      updateFormData(updatedFormData);
+    }
+  }, [
+    customerUse,
+    okrSelections,
+    gep,
+    isPartneredEvent,
+    partnerRole,
+    updateFormData,
+    formData,
+  ]);
 
   const saveAndNavigate = useFormNavigation();
 
@@ -132,9 +134,6 @@ export default function ExtraDetailsForm() {
 
     saveAndNavigate(
       {
-        activityOwner,
-        speakers,
-        isEventSeries: eventSeries === "yes",
         okr: selectedOkrs,
         gep,
         isPartneredEvent: isPartneredEvent === true,
@@ -200,9 +199,6 @@ export default function ExtraDetailsForm() {
     // }
 
     const currentFormData = {
-      activityOwner,
-      speakers,
-      isEventSeries: eventSeries === "yes",
       okr: selectedOkrs,
       gep,
       isPartneredEvent: isPartneredEvent === true,
@@ -243,9 +239,6 @@ export default function ExtraDetailsForm() {
     }
 
     const draftData = {
-      activityOwner,
-      speakers,
-      isEventSeries: eventSeries === "yes",
       isApprovedForCustomerUse: customerUse === "yes",
       okr: selectedOkrs,
       gep,

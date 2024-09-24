@@ -42,12 +42,16 @@ const EventFormEmailInvitation = () => {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [languagesAndTemplates, setLanguagesAndTemplates] = useState([
-    { platform: "Gmail", language: "English", template: "", subjectLine: "" },
-  ]);
+  const [languagesAndTemplates, setLanguagesAndTemplates] = useState(
+    selectedEvent?.languagesAndTemplates?.length > 0
+      ? selectedEvent.languagesAndTemplates
+      : formData.languagesAndTemplates?.length > 0
+      ? formData.languagesAndTemplates
+      : [{ platform: "Gmail", language: "English", template: "", subjectLine: "" }]
+  );
   const [isFormValid, setIsFormValid] = useState(true);
   const saveAndNavigate = useFormNavigation();
-  const [editorContent, setEditorContent] = useState("");
+  const [ setEditorContent] = useState("");
 
   useEffect(() => {
     if (selectedEvent) {
@@ -78,6 +82,13 @@ const EventFormEmailInvitation = () => {
       );
     }
   }, [selectedEvent, formData]);
+  useEffect(() => {
+    const updatedFormData = { ...formData, languagesAndTemplates };
+
+    // Only update formData if it has changed
+      updateFormData(updatedFormData);
+    
+  }, [languagesAndTemplates, formData, updateFormData]);
 
   const handleAddLanguageAndTemplate = () => {
     setLanguagesAndTemplates([
@@ -116,9 +127,12 @@ const EventFormEmailInvitation = () => {
     setLanguagesAndTemplates(updatedItems);
   };
 
-  const handleEditorChange = (content) => {
-    setEditorContent(content);
+  const handleEditorChange = (content, index) => {
+    const updatedItems = [...languagesAndTemplates];
+    updatedItems[index].template = content;
+    setLanguagesAndTemplates(updatedItems);
   };
+  
 
   const handlePersonalizationInsert = (token) => {
     setEditorContent((prevContent) => `${prevContent} ${token}`);
@@ -315,27 +329,23 @@ const EventFormEmailInvitation = () => {
                         {item.platform === "Salesloft" ? (
                           <>
                             <ReactQuill
-                              value={editorContent}
-                              onChange={handleEditorChange}
-                              style={{
-                                height: "300px",
-                                maxHeight: "400px",
-                                marginBottom: "20px",
-                              }} // Set a minimum and maximum height
-                              modules={{
-                                toolbar: [
-                                  [
-                                    { header: "1" },
-                                    { header: "2" },
-                                    { font: [] },
-                                  ],
-                                  [{ list: "ordered" }, { list: "bullet" }],
-                                  ["bold", "italic", "underline"],
-                                  ["link", "image"],
-                                  ["clean"], // removes formatting
-                                ],
-                              }}
-                            />
+  value={item.template} // Use item.template here
+  onChange={(content) => handleEditorChange(content, index)} // Pass the index to handleEditorChange
+  style={{
+    height: "300px",
+    maxHeight: "400px",
+    marginBottom: "20px",
+  }}
+  modules={{
+    toolbar: [
+      [{ header: "1" }, { header: "2" }, { font: [] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["bold", "italic", "underline"],
+      ["link", "image"],
+      ["clean"],
+    ],
+  }}
+/>
                             <div style={{ marginTop: "20px", pt: "40px" }}>
                               <Typography
                                 variant="subtitle1"

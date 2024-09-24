@@ -39,8 +39,6 @@ import "../styles/Forms.css";
 
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
-
-
 const EventForm = () => {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [colorMap, setColorMap] = useState({});
@@ -50,9 +48,7 @@ const EventForm = () => {
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [eventType, setEventType] = useState(
-    formData.eventType || ''
-  );
+  const [eventType, setEventType] = useState(formData.eventType || "");
   const [title, setTitle] = useState(
     selectedEvent ? selectedEvent.title : formData.title || ""
   );
@@ -60,9 +56,11 @@ const EventForm = () => {
     selectedEvent ? selectedEvent.description : formData.description || ""
   );
   const [selectedLabel, setSelectedLabel] = useState(
-    selectedEvent ? selectedEvent.label : formData.selectedLabel || labelsClasses[0]
+    selectedEvent
+      ? selectedEvent.label
+      : formData.selectedLabel || labelsClasses[0]
   );
-  
+
   const [emoji, setEmoji] = useState(
     selectedEvent ? selectedEvent.emoji : formData.emoji || ""
   );
@@ -78,15 +76,19 @@ const EventForm = () => {
     formData.marketingActivityType || ""
   );
   const [isHighPriority, setIsHighPriority] = useState(
-    selectedEvent ? selectedEvent.isHighPriority : formData.isHighPriority || false
+    selectedEvent
+      ? selectedEvent.isHighPriority
+      : formData.isHighPriority || false
   );
   const [isEventSeries, setIsEventSeries] = useState(
-    selectedEvent ? selectedEvent.isEventSeries : formData.isEventSeries || false
+    selectedEvent
+      ? selectedEvent.isEventSeries
+      : formData.isEventSeries || false
   );
   const [startDate, setStartDate] = useState(
     selectedEvent?.startDate || formData?.startDate || null
   );
-  
+
   const [speakers, setSpeakers] = useState(
     selectedEvent ? selectedEvent.speakers || [] : formData.speakers || []
   );
@@ -119,8 +121,6 @@ const EventForm = () => {
   }, [formData.eventType]);
 
   useEffect(() => setIsClient(true), []);
-
-
 
   useEffect(() => {
     const fetchMarketingProgramOptions = async () => {
@@ -197,10 +197,49 @@ const EventForm = () => {
     }
   };
 
-
+  useEffect(() => {
+    const eventId = selectedEvent?.eventId || formData.eventId || uuidv4();
+    const newFormData = {
+      eventId,
+      title,
+      description,
+      emoji,
+      organisedBy,
+      marketingActivityType,
+      isHighPriority,
+      isEventSeries,
+      startDate,
+      endDate,
+      marketingProgramInstanceId,
+      eventType,
+      userTimezone,
+      speakers,
+    };
+    
+    updateFormData(newFormData); // This will update the global context on each change
+  }, [
+    title,
+    description,
+    emoji,
+    organisedBy,
+    marketingActivityType,
+    isHighPriority,
+    isEventSeries,
+    startDate,
+    endDate,
+    marketingProgramInstanceId,
+    eventType,
+    speakers,
+    userTimezone,
+    updateFormData,
+    formData.eventId,
+    selectedEvent?.eventId,
+  ]);
 
   const handleNext = () => {
-    const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
+    const existingEventId = selectedEvent
+      ? selectedEvent.eventId
+      : formData.eventId;
     const eventId = existingEventId || uuidv4();
 
     const isTitleValid = title.trim() !== "";
@@ -218,7 +257,6 @@ const EventForm = () => {
     setIsOrganisedByError(!isOrganisedByValid);
     setIsEventTypeError(!isEventTypeValid);
 
-  
     const formIsValid =
       isTitleValid &&
       isDescriptionValid &&
@@ -227,9 +265,9 @@ const EventForm = () => {
       isOrganisedByValid &&
       isEventTypeValid &&
       isEventIdValid;
-  
+
     setIsFormValid(formIsValid);
-  
+
     if (!formIsValid) {
       setSnackbarMessage("Please fill in all required fields.");
       setSnackbarOpen(true);
@@ -243,7 +281,7 @@ const EventForm = () => {
       organisedBy,
       marketingActivityType,
       isHighPriority,
-      isEventSeries, 
+      isEventSeries,
       startDate,
       endDate,
       marketingProgramInstanceId,
@@ -262,7 +300,10 @@ const EventForm = () => {
 
   const handleAddOrganiser = () => {
     const trimmedOrganiser = newOrganiser.trim();
-    if (isValidEmail(trimmedOrganiser) && !organisedBy.includes(trimmedOrganiser)) {
+    if (
+      isValidEmail(trimmedOrganiser) &&
+      !organisedBy.includes(trimmedOrganiser)
+    ) {
       setOrganisedBy([...organisedBy, trimmedOrganiser]);
       setNewOrganiser(""); // Clear input after adding
     } else if (!isValidEmail(trimmedOrganiser)) {
@@ -294,7 +335,9 @@ const EventForm = () => {
 
   // Delete an organiser
   const handleDeleteOrganiser = (organiserToDelete) => {
-    setOrganisedBy(organisedBy.filter((organiser) => organiser !== organiserToDelete));
+    setOrganisedBy(
+      organisedBy.filter((organiser) => organiser !== organiserToDelete)
+    );
   };
   const toggleEmojiPicker = () => setIsEmojiPickerOpen((prev) => !prev);
 
@@ -310,7 +353,7 @@ const EventForm = () => {
   //     organisedBy,
   //     marketingActivityType,
   //     isHighPriority,
-  //     isEventSeries, 
+  //     isEventSeries,
   //     startDate,
   //     endDate,
   //     marketingProgramInstanceId,
@@ -318,8 +361,8 @@ const EventForm = () => {
   //     isDraft,
   //     userTimezone,
   //     speakers,
-  //     isDraft: true, 
-  //     isPublished: false, 
+  //     isDraft: true,
+  //     isPublished: false,
   //   };
 
   //   updateFormData(newFormData);
@@ -339,7 +382,7 @@ const EventForm = () => {
   //     setSnackbarOpen(true);
   //   }
   // };
-  const isDefaultDate = (date) => date && date.getTime() === 0
+  const isDefaultDate = (date) => date && date.getTime() === 0;
   return (
     <div
       className="h-screen flex flex-col"
@@ -349,17 +392,29 @@ const EventForm = () => {
 
       <div className="form-container" style={{ overscrollBehavior: "contain" }}>
         <div className="event-form">
-          <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+          <Grid
+            container
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mb: 3 }}
+          >
             <Grid item xs={12} md={6}>
-              <Typography variant="h4" sx={{ display: "flex", alignItems: "center", fontSize: '1.5rem' }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: "1.5rem",
+                }}
+              >
                 <span>{emoji}</span>
                 <TextField
                   variant="standard"
                   fullWidth
                   placeholder="Enter activity name"
                   value={title}
-                  error={isTitleError}  
-                  helperText={isTitleError ? "Title is required" : ""} 
+                  error={isTitleError}
+                  helperText={isTitleError ? "Title is required" : ""}
                   onChange={(e) => setTitle(e.target.value)}
                   sx={{ ml: 2, flexGrow: 1 }}
                 />
@@ -370,7 +425,7 @@ const EventForm = () => {
               {isEmojiPickerOpen && <EmojiPicker onEmojiClick={onEmojiClick} />}
             </Grid>
 
-            <Grid item xs={12} md={6} sx={{ textAlign: 'right' }}>
+            <Grid item xs={12} md={6} sx={{ textAlign: "right" }}>
               {selectedEvent ? (
                 <Typography variant="subtitle1">Edit Activity</Typography>
               ) : (
@@ -380,50 +435,57 @@ const EventForm = () => {
           </Grid>
 
           <form noValidate>
-{/* Organised By Section */}
-<Grid item xs={12} sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              Organised by (Email addresses)
-            </Typography>
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder="Enter email and press Enter, or paste multiple emails"
-              value={newOrganiser}
-              error={isOrganisedByError} 
-              onChange={(e) => setNewOrganiser(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleAddOrganiser();
-              }}
-              onPaste={handlePasteOrganisers}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={handleAddOrganiser} edge="end">
-                      <AddCircleOutlineIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-
-              margin="normal"
-            />
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginTop: "10px" }}>
-              {organisedBy.map((email, index) => (
-                <Chip
-                  key={index}
-                  label={email}
-                  onDelete={() => handleDeleteOrganiser(email)}
-                  color="primary"
-                />
-              ))}
-            </div>
-          </Grid>
+            {/* Organised By Section */}
+            <Grid item xs={12} sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Organised by (Email addresses)
+              </Typography>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Enter email and press Enter, or paste multiple emails"
+                value={newOrganiser}
+                error={isOrganisedByError}
+                onChange={(e) => setNewOrganiser(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddOrganiser();
+                }}
+                onPaste={handlePasteOrganisers}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={handleAddOrganiser} edge="end">
+                        <AddCircleOutlineIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                margin="normal"
+              />
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "5px",
+                  marginTop: "10px",
+                }}
+              >
+                {organisedBy.map((email, index) => (
+                  <Chip
+                    key={index}
+                    label={email}
+                    onDelete={() => handleDeleteOrganiser(email)}
+                    color="primary"
+                  />
+                ))}
+              </div>
+            </Grid>
 
             <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
-
               <Grid item xs={12} md={6}>
-                <Typography variant="subtitle1" sx={{ mb: 1 }}>Activity type</Typography>
+                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                  Activity type
+                </Typography>
                 <FormControl fullWidth error={isEventTypeError}>
                   <Select
                     value={eventType}
@@ -436,10 +498,10 @@ const EventForm = () => {
                     ))}
                   </Select>
                   {isEventTypeError && (
-    <Typography variant="body2" color="error">
-      Event type is required
-    </Typography>
-  )}
+                    <Typography variant="body2" color="error">
+                      Event type is required
+                    </Typography>
+                  )}
                 </FormControl>
               </Grid>
             </Grid>
@@ -456,7 +518,10 @@ const EventForm = () => {
                     />
                   }
                   label={
-                    <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ display: "flex", alignItems: "center" }}
+                    >
                       <WhatshotIcon sx={{ color: red[500], mr: 1 }} />
                       High priority status
                     </Typography>
@@ -464,7 +529,6 @@ const EventForm = () => {
                 />
               </FormGroup>
             </Grid>
-
 
             {/* Checkbox for event series */}
             <Grid item xs={12} sx={{ mb: 3 }}>
@@ -495,8 +559,10 @@ const EventForm = () => {
                         <TextField
                           {...params}
                           fullWidth
-                          error={isStartDateError}  // Highlight in red if start date is missing
-                          helperText={isStartDateError ? "Start date is required" : ""}  // Show error message
+                          error={isStartDateError} // Highlight in red if start date is missing
+                          helperText={
+                            isStartDateError ? "Start date is required" : ""
+                          } // Show error message
                         />
                       )}
                     />
@@ -510,8 +576,10 @@ const EventForm = () => {
                         <TextField
                           {...params}
                           fullWidth
-                          error={isStartDateError}  // Highlight in red if start date is missing
-                          helperText={isStartDateError ? "Start date is required" : ""}  // Show error message
+                          error={isStartDateError} // Highlight in red if start date is missing
+                          helperText={
+                            isStartDateError ? "Start date is required" : ""
+                          } // Show error message
                         />
                       )}
                     />
@@ -531,8 +599,10 @@ const EventForm = () => {
                         <TextField
                           {...params}
                           fullWidth
-                          error={isEndDateError}  // Highlight in red if end date is missing
-                          helperText={isEndDateError ? "End date is required" : ""}  // Show error message
+                          error={isEndDateError} // Highlight in red if end date is missing
+                          helperText={
+                            isEndDateError ? "End date is required" : ""
+                          } // Show error message
                         />
                       )}
                     />
@@ -542,7 +612,9 @@ const EventForm = () => {
             </Grid>
 
             <Grid item xs={12} sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>Description</Typography>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Description
+              </Typography>
               <TextField
                 label="Internal description (for internal use only)"
                 multiline
@@ -552,8 +624,8 @@ const EventForm = () => {
                 variant="outlined"
                 fullWidth
                 margin="dense"
-                error={isDescriptionError}  // Highlight in red if description is missing
-                helperText={isDescriptionError ? "Description is required" : ""} 
+                error={isDescriptionError} // Highlight in red if description is missing
+                helperText={isDescriptionError ? "Description is required" : ""}
                 inputProps={{ maxLength: 400 }}
               />
             </Grid>
@@ -583,7 +655,14 @@ const EventForm = () => {
                 }}
                 margin="normal"
               />
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginTop: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "5px",
+                  marginTop: "10px",
+                }}
+              >
                 {speakers.map((email, index) => (
                   <Chip
                     key={index}
@@ -596,7 +675,9 @@ const EventForm = () => {
             </Grid>
 
             <Grid item xs={12} sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>Marketing program instance ID</Typography>
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                Marketing program instance ID
+              </Typography>
               <TextField
                 value={marketingProgramInstanceId}
                 onChange={(e) => setMarketingProgramInstanceId(e.target.value)}
