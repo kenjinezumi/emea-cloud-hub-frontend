@@ -85,16 +85,19 @@ const EventForm = () => {
       ? selectedEvent.isEventSeries
       : formData.isEventSeries || false
   );
-  const [startDate, setStartDate] = useState(
-    selectedEvent?.startDate || formData?.startDate || null
-  );
+ 
 
   const [speakers, setSpeakers] = useState(
     selectedEvent ? selectedEvent.speakers || [] : formData.speakers || []
   );
   const [newSpeaker, setNewSpeaker] = useState("");
+  const today = new Date();
+  const [startDate, setStartDate] = useState(
+    selectedEvent?.startDate ? new Date(selectedEvent.startDate) : today
+  );
+  
   const [endDate, setEndDate] = useState(
-    selectedEvent ? selectedEvent.endDate : formData.endDate || null
+    selectedEvent?.endDate ? new Date(selectedEvent.endDate) : today
   );
   const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(
     selectedEvent
@@ -112,10 +115,16 @@ const EventForm = () => {
   const [isOrganisedByError, setIsOrganisedByError] = useState(false);
   const [isEventTypeError, setIsEventTypeError] = useState(false);
   const saveAndNavigate = useFormNavigation();
-
-  const handleStartDateChange = (newDate) => setStartDate(newDate);
-  const handleEndDateChange = (newDate) => setEndDate(newDate);
-
+  const [hasStartDateChanged, setHasStartDateChanged] = useState(false);
+  const [hasEndDateChanged, setHasEndDateChanged] = useState(false);
+  const handleStartDateChange = (newDate) => {
+    setStartDate(newDate);
+    setHasStartDateChanged(true); 
+  };  
+  const handleEndDateChange = (newDate) => {
+    setEndDate(newDate);
+    setHasEndDateChanged(true); 
+  };
   useEffect(() => {
     if (formData.eventType) setEventType(formData.eventType);
   }, [formData.eventType]);
@@ -236,6 +245,14 @@ const EventForm = () => {
     selectedEvent?.eventId,
   ]);
 
+  const isSameDate = (date1, date2) => {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
+  };
+
   const handleNext = () => {
     const existingEventId = selectedEvent
       ? selectedEvent.eventId
@@ -244,8 +261,10 @@ const EventForm = () => {
 
     const isTitleValid = title.trim() !== "";
     const isDescriptionValid = description.trim() !== "";
-    const isStartDateValid = !!startDate;
-    const isEndDateValid = !!endDate;
+    const isStartDateValid = startDate && !isSameDate(startDate, today);
+    const isEndDateValid = endDate && !isSameDate(endDate, today);
+
+    
     const isOrganisedByValid = organisedBy.length > 0;
     const isEventTypeValid = eventType.trim() !== "";
     const isEventIdValid = !!eventId;
