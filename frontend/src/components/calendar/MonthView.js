@@ -24,8 +24,22 @@ export default function MonthView({ month, isYearView = false }) {
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
-        // Only log filters once when they change
-        console.log('Selected Filters:', filters);
+        const hasFiltersApplied = [
+          ...filters.subRegions,
+          ...filters.gep,
+          ...filters.buyerSegmentRollup,
+          ...filters.accountSectors,
+          ...filters.accountSegments,
+          ...filters.productFamily,
+          ...filters.industry
+        ].some(filter => filter.checked) || filters.isPartneredEvent !== undefined || filters.isDraft !== undefined;
+  
+        if (!hasFiltersApplied) {
+          const eventData = await getEventData('eventDataQuery');
+          setEvents(eventData);  
+          setFilteredEvents(eventData);  
+          return;
+        }
   
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
@@ -41,54 +55,44 @@ export default function MonthView({ month, isYearView = false }) {
             // Check each filter match and log the results
             const subRegionMatch = filters.subRegions.some(subRegion => {
               const match = subRegion.checked && event.subRegion?.includes(subRegion.label);
-              console.log(`SubRegion Match for event ${event.eventId}:`, match);
               return match;
             });
   
             const gepMatch = filters.gep.some(gep => {
               const match = gep.checked && event.gep?.includes(gep.label);
-              console.log(`GEP Match for event ${event.eventId}:`, match);
               return match;
             });
   
             const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => {
               const match = segment.checked && event.buyerSegmentRollup?.includes(segment.label);
-              console.log(`Buyer Segment Rollup Match for event ${event.eventId}:`, match);
               return match;
             });
   
             const accountSectorMatch = filters.accountSectors.some(sector => {
               const match = sector.checked && event.accountSectors?.[sector.label];
-              console.log(`Account Sector Match for event ${event.eventId}:`, match);
               return match;
             });
   
             const accountSegmentMatch = filters.accountSegments.some(segment => {
               const match = segment.checked && event.accountSegments?.[segment.label]?.selected;
-              console.log(`Account Segment Match for event ${event.eventId}:`, match);
               return match;
             });
   
             const productFamilyMatch = filters.productFamily.some(product => {
               const match = product.checked && event.productAlignment?.[product.label]?.selected;
-              console.log(`Product Family Match for event ${event.eventId}:`, match);
               return match;
             });
   
             const industryMatch = filters.industry.some(industry => {
               const match = industry.checked && event.industry === industry.label;
-              console.log(`Industry Match for event ${event.eventId}:`, match);
               return match;
             });
   
             const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
-            console.log(`Is Partnered Event Match for event ${event.eventId}:`, isPartneredEventMatch);
   
             const isDraftMatch = filters.isDraft === event.isDraft;
-            console.log(`Is Draft Match for event ${event.eventId}:`, isDraftMatch);
   
-            const eventMatches = subRegionMatch || gepMatch || buyerSegmentRollupMatch || accountSectorMatch || accountSegmentMatch || productFamilyMatch || industryMatch || isPartneredEventMatch || isDraftMatch;
-            console.log(`Event ${event.eventId} Match Result:`, eventMatches);
+            const eventMatches = subRegionMatch && gepMatch && buyerSegmentRollupMatch && accountSectorMatch && accountSegmentMatch && productFamilyMatch && industryMatch && isPartneredEventMatch && isDraftMatch;
   
             return eventMatches;
           } catch (filterError) {

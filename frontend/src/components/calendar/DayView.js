@@ -84,9 +84,26 @@ export default function DayView() {
       try {
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
+        
   
         if (!Array.isArray(eventData)) {
           console.error("fetchAndFilterEvents was called with 'eventData' that is not an array:", eventData);
+          return;
+        }
+        const hasFiltersApplied = [
+          ...filters.subRegions,
+          ...filters.gep,
+          ...filters.buyerSegmentRollup,
+          ...filters.accountSectors,
+          ...filters.accountSegments,
+          ...filters.productFamily,
+          ...filters.industry
+        ].some(filter => filter.checked) || filters.isPartneredEvent !== undefined || filters.isDraft !== undefined;
+  
+        if (!hasFiltersApplied) {
+          const eventData = await getEventData('eventDataQuery');
+          setEvents(eventData);  
+          setFilteredEvents(eventData);  
           return;
         }
   

@@ -70,6 +70,22 @@ export default function YearView() {
       return [];
     }
 
+    const hasFiltersApplied = [
+      ...filters.subRegions,
+      ...filters.gep,
+      ...filters.buyerSegmentRollup,
+      ...filters.accountSectors,
+      ...filters.accountSegments,
+      ...filters.productFamily,
+      ...filters.industry
+    ].some(filter => filter.checked) || filters.isPartneredEvent !== undefined || filters.isDraft !== undefined;
+  
+    // If no filters are applied, return all events
+    if (!hasFiltersApplied) {
+      return events;
+    }
+    
+
     const results = await Promise.all(
       events.map(async (event) => {
         const subRegionMatch = filters.subRegions.some(

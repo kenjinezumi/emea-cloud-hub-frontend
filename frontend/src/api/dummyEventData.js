@@ -185,7 +185,105 @@ const dummyEventData = [
     "locationVenue": "Bercy",
     "marketingActivityType": null,
     "userTimezone": "Europe/London"
+  },
+  {
+    "eventId": "d0a9fa2b-77be-4898-bcfc-3e1ecb2c29e2234324324",
+    "tacticId": null,
+    "title": "",
+    "description": "",
+    "emoji": "",
+    "organisedBy": [],
+    "startDate": "2024-09-26T03:20:42.000Z",
+    "endDate": "2024-09-27T03:19:42.000Z",
+    "marketingProgramInstanceId": null,
+    "eventType": "",
+    "region": "GLOBAL",
+    "subRegion": ["Alps"],
+    "country": [],
+    "activityOwner": [],
+    "speakers": [],
+    "isEventSeries": false,
+    "languagesAndTemplates": [],
+    "okr": [],
+    "gep": [],
+    "audiencePersona": [],
+    "audienceSeniority": [],
+    "accountSectors": {
+      "commercial": false,
+      "public": false
+    },
+    "accountSegments": {
+      "Corporate": {
+        "selected": false,
+        "percentage": ""
+      },
+      "SMB": {
+        "selected": false,
+        "percentage": ""
+      },
+      "Select": {
+        "selected": false,
+        "percentage": ""
+      },
+      "Enterprise": {
+        "selected": false,
+        "percentage": ""
+      },
+      "Startup": {
+        "selected": false,
+        "percentage": ""
+      }
+    },
+    "maxEventCapacity": "",
+    "peopleMeetingCriteria": "",
+    "landingPageLinks": [],
+    "salesKitLinks": [],
+    "hailoLinks": [],
+    "otherDocumentsLinks": [],
+    "isApprovedForCustomerUse": false,
+    "isDraft": true,
+    "isPublished": false,
+    "isHighPriority": false,
+    "isPartneredEvent": false,
+    "partnerRole": "",
+    "accountCategory": {
+      "Digital Native": {
+        "selected": false,
+        "percentage": ""
+      },
+      "Traditional": {
+        "selected": false,
+        "percentage": ""
+      }
+    },
+    "accountType": {
+      "Greenfield": {
+        "selected": false,
+        "percentage": ""
+      },
+      "Existing Customer": {
+        "selected": false,
+        "percentage": ""
+      }
+    },
+    "productAlignment": {
+      "GCP": {
+        "selected": false,
+        "percentage": ""
+      },
+      "GWS": {
+        "selected": false,
+        "percentage": ""
+      }
+    },
+    "aiVsCore": "",
+    "industry": [],
+    "city": "",
+    "locationVenue": "",
+    "marketingActivityType": "",
+    "userTimezone": ""
   }
+  
 ];
 
 export default dummyEventData;
