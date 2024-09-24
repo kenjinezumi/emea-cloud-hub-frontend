@@ -24,6 +24,16 @@ export default function MonthView({ month, isYearView = false }) {
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
+        // Only log filters once when they change
+        console.log('Selected Filters:', filters);
+  
+        const eventData = await getEventData('eventDataQuery');
+        setEvents(eventData);
+  
+        if (!Array.isArray(eventData)) {
+          console.error("fetchAndFilterEvents was called with 'eventData' that is not an array:", eventData);
+          return;
+        }
         const hasFiltersApplied = [
           ...filters.subRegions,
           ...filters.gep,
@@ -33,20 +43,11 @@ export default function MonthView({ month, isYearView = false }) {
           ...filters.productFamily,
           ...filters.industry
         ].some(filter => filter.checked) || filters.isPartneredEvent !== undefined || filters.isDraft !== undefined;
-  
+       
+        // If no filters are applied, return all events
         if (!hasFiltersApplied) {
-          const eventData = await getEventData('eventDataQuery');
-          setEvents(eventData);  
-          setFilteredEvents(eventData);  
-          return;
-        }
-  
-        const eventData = await getEventData('eventDataQuery');
-        setEvents(eventData);
-  
-        if (!Array.isArray(eventData)) {
-          console.error("fetchAndFilterEvents was called with 'eventData' that is not an array:", eventData);
-          return;
+          console.log('The events are', events)
+          return events;
         }
   
         // Log once for each event, not repeatedly
@@ -92,7 +93,7 @@ export default function MonthView({ month, isYearView = false }) {
   
             const isDraftMatch = filters.isDraft === event.isDraft;
   
-            const eventMatches = subRegionMatch && gepMatch && buyerSegmentRollupMatch && accountSectorMatch && accountSegmentMatch && productFamilyMatch && industryMatch && isPartneredEventMatch && isDraftMatch;
+            const eventMatches = subRegionMatch || gepMatch || buyerSegmentRollupMatch || accountSectorMatch || accountSegmentMatch || productFamilyMatch || industryMatch || isPartneredEventMatch || isDraftMatch;
   
             return eventMatches;
           } catch (filterError) {

@@ -39,6 +39,8 @@ export default function WeekView() {
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
         const filtered = await applyFilters(eventData, filters);
+        console.log('Filtered events:', filtered);
+
         setFilteredEvents(filtered);
       } catch (error) {
         console.error('Error fetching event data:', error);
@@ -53,44 +55,45 @@ export default function WeekView() {
       console.error("applyFilters was called with 'events' that is not an array:", events);
       return [];
     }
+
+    const hasFiltersApplied = [
+      ...filters.subRegions,
+      ...filters.gep,
+      ...filters.buyerSegmentRollup,
+      ...filters.accountSectors,
+      ...filters.accountSegments,
+      ...filters.productFamily,
+      ...filters.industry
+    ].some(filter => filter.checked) || filters.isPartneredEvent !== undefined || filters.isDraft !== undefined;
+   
+    // If no filters are applied, return all events
+    if (!hasFiltersApplied) {
+      console.log('The events are', events)
+      return events;
+    }
+    
   
     const results = await Promise.all(events.map(async (event) => {
       try {
         const subRegionMatch = filters.subRegions.some(subRegion => subRegion.checked && event.subRegion?.includes(subRegion.label));
-  
         const gepMatch = filters.gep.some(gep => gep.checked && event.gep?.includes(gep.label));
-  
-        const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => 
-          segment.checked && event.buyerSegmentRollup?.includes(segment.label)
-        );
-  
-        const accountSectorMatch = filters.accountSectors.some(sector => 
-          sector.checked && event.accountSectors?.[sector.label]
-        );
-  
-        const accountSegmentMatch = filters.accountSegments.some(segment => 
-          segment.checked && event.accountSegments?.[segment.label]?.selected
-        );
-  
-        const productFamilyMatch = filters.productFamily.some(product => 
-          product.checked && event.productAlignment?.[product.label]?.selected
-        );
-  
-        const industryMatch = filters.industry.some(industry => 
-          industry.checked && event.industry === industry.label
-        );
-  
-        // Boolean checks for isPartneredEvent and isDraft
+        const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => segment.checked && event.buyerSegmentRollup?.includes(segment.label));
+        const accountSectorMatch = filters.accountSectors.some(sector => sector.checked && event.accountSectors?.[sector.label]);
+        const accountSegmentMatch = filters.accountSegments.some(segment => segment.checked && event.accountSegments?.[segment.label]?.selected);
+        const productFamilyMatch = filters.productFamily.some(product => product.checked && event.productAlignment?.[product.label]?.selected);
+        const industryMatch = filters.industry.some(industry => industry.checked && event.industry === industry.label);
         const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
         const isDraftMatch = filters.isDraft === event.isDraft;
-  
-        // Return true if all filter conditions match
-        return subRegionMatch && gepMatch && buyerSegmentRollupMatch &&
-          accountSectorMatch && accountSegmentMatch && productFamilyMatch &&
-          industryMatch && isPartneredEventMatch && isDraftMatch;
-      } catch (error) {
-        console.error("Error applying filters to event:", error, event);
-        return false;
+    
+        const eventMatches = subRegionMatch && gepMatch && buyerSegmentRollupMatch &&
+                             accountSectorMatch && accountSegmentMatch && productFamilyMatch &&
+                             industryMatch && isPartneredEventMatch && isDraftMatch;
+    
+        console.log('Event matches are', eventMatches);
+        return eventMatches; // Ensure this returns `false` when it doesn't match
+      } catch (filterError) {
+        console.error('Error applying filters to event:', filterError, event);
+        return false; // Ensure that errors return false
       }
     }));
   
@@ -192,15 +195,13 @@ export default function WeekView() {
             >
               {day.format('ddd, D MMM')}
             </Typography>
+
             <DayColumn 
               daySelected={day} 
-              events={filteredEvents.filter(event => 
-                dayjs(event.startDate).isSame(day, 'day') ||
-                dayjs(event.endDate).isSame(day, 'day') ||
-                (dayjs(event.startDate).isBefore(day, 'day') && dayjs(event.endDate).isAfter(day, 'day'))
-              )}
-              onEventClick={handleEventClick} 
+              events={filteredEvents} // Pass all filtered events
+              onEventClick={handleEventClick}
             />
+
           </Box>
         ))}
       </Box>

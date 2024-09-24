@@ -362,7 +362,7 @@ export default function DayView() {
             position: 'relative',
             height: `${hourHeight * (endHour - startHour)}px`,
             width: 'calc(100% - 40px)',
-            marginLeft: '50px',
+            marginLeft: '50px'  ,
           }}
         >
           {/* Hour Labels */}
@@ -437,7 +437,7 @@ export default function DayView() {
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     cursor: 'pointer',
-                    zIndex: 2,
+                    zIndex: 10,
                     boxSizing: 'border-box',
                     borderLeft: `4px solid ${eventTypeStyle.color}`,
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
