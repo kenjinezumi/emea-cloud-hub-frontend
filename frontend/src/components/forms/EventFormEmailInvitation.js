@@ -27,27 +27,16 @@ import "../styles/Forms.css";
 
 const platformOptions = ["Gmail", "Salesloft"];
 const personalizationOptions = [
-  "{{Account.name}}",
-  "{{Account.conversational_name}}",
-  "{{Account.domain}}",
-  "{{Account.industry}}",
-  "{{Account.size}}",
-  "{{Account.website}}",
-  "{{Account.twitter_handle}}",
-  "{{Account.city}}",
-  "{{Account.state}}",
-  "{{Account.description}}",
-  "{{Account.country}}",
-  "{{Account.GenAI_S1_P10}}",
-  "{{Account.GenAI_S1_P9}}",
-  "{{Account.GenAI_S1_P8}}",
-  "{{Account.GenAI_S1_P7}}",
-  "{{Account.GenAI_S1_P6}}",
-  "{{Account.GenAI_S1_P5}}",
-  "{{Account.GenAI_S1_P4}}",
-  "{{Account.GenAI_S1_P3}}",
-  "{{Account.GenAI_S1_P2}}",
-  "{{Account.GenAI_S1_P1}}",
+  "{{first_name}}",
+  "{{last_name}}",
+  "{{name}}",
+  "{{company}}",
+  "{{title}}",
+  "{{industry}}",
+  "{{My.name}}",
+  "{{My.first_name}}",
+  "{{My.last_name}}",
+  "{{My.email_address}}",
 ];
 const EventFormEmailInvitation = () => {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -325,11 +314,14 @@ const EventFormEmailInvitation = () => {
                         {/* Check if the platform is Salesloft, then show ReactQuill */}
                         {item.platform === "Salesloft" ? (
                           <>
-                          
                             <ReactQuill
                               value={editorContent}
                               onChange={handleEditorChange}
-                              style={{ height: "300px", maxHeight: "400px" , marginBottom: "20px"}} // Set a minimum and maximum height
+                              style={{
+                                height: "300px",
+                                maxHeight: "400px",
+                                marginBottom: "20px",
+                              }} // Set a minimum and maximum height
                               modules={{
                                 toolbar: [
                                   [
@@ -345,8 +337,10 @@ const EventFormEmailInvitation = () => {
                               }}
                             />
                             <div style={{ marginTop: "20px", pt: "40px" }}>
-                            
-                              <Typography variant="subtitle1" style={{ marginTop: "50px", pt: "40px" }}>
+                              <Typography
+                                variant="subtitle1"
+                                style={{ marginTop: "50px", pt: "40px" }}
+                              >
                                 Insert Personalisation Tokens:
                               </Typography>
                               {personalizationOptions.map((token, idx) => (

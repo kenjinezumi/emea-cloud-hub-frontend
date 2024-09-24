@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from "react";
+import React, { useEffect,useContext, useState, useRef } from "react";
 import dayjs from "dayjs";
 import GlobalContext from "../../context/GlobalContext";
 import Draggable from "react-draggable";
@@ -23,13 +23,12 @@ import {
   DialogActions,
   Snackbar,
   FormControl,
-  
   RadioGroup,
   Radio,
-  FormControlLabel
+  FormControlLabel,
 } from "@mui/material";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
-import BusinessIcon from "@mui/icons-material/Business"; 
+import BusinessIcon from "@mui/icons-material/Business";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import ShareIcon from "@mui/icons-material/Share";
@@ -46,6 +45,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
 import { red, blue } from "@mui/material/colors";
+import salesloftLogo from "./logo/salesloft.png";
 
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
@@ -62,6 +62,18 @@ export default function EventInfoPopup({ event, close }) {
       ? selectedEvent.languagesAndTemplates[0].language
       : ""
   );
+  const hasLanguagesAndTemplates = languagesAndTemplates.length > 0;
+  useEffect(() => {
+    // Pre-select English by default if available
+    const englishTemplate = languagesAndTemplates.find(
+      (item) => item.language === "English"
+    );
+    if (englishTemplate) {
+      setSelectedLanguage("English");
+    } else if (languagesAndTemplates.length > 0) {
+      setSelectedLanguage(languagesAndTemplates[0].language);
+    }
+  }, [languagesAndTemplates]);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -72,7 +84,7 @@ export default function EventInfoPopup({ event, close }) {
     setLanguageDialogOpen(true);
   };
   const handleLanguageSelect = (event) => {
-    setSelectedLanguage(event.target.value); // event.target.value contains the selected language
+    setSelectedLanguage(event.target.value);
   };
 
   const handleCloseMenu = () => {
@@ -260,14 +272,14 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
+
   const formatListWithSpaces = (list) => {
     if (!list) return "";
     if (typeof list === "string") return list.replace(/,/g, ", ");
     if (!Array.isArray(list)) return "";
     return list.map((item) => item.replace(/,/g, ", ")).join(", ");
   };
-    console.log('languagesAndTemplates:', languagesAndTemplates);
-
+  console.log("languagesAndTemplates:", languagesAndTemplates);
 
   const googleColors = [
     "rgba(66, 133, 244, 0.6)", // Google Blue
@@ -285,10 +297,11 @@ export default function EventInfoPopup({ event, close }) {
     const index = Math.floor(Math.random() * googleColors.length);
     return googleColors[index];
   };
-
+  
   const sections = {
-    Overview: (
-      <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
+  Overview: (
+    <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
+      {selectedEvent.description && (
         <Typography
           variant="body2"
           display="flex"
@@ -303,38 +316,11 @@ export default function EventInfoPopup({ event, close }) {
           }}
         >
           <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          {selectedEvent.description || "No description available."}
+          {selectedEvent.description}
         </Typography>
+      )}
 
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{
-            pl: 2,
-            pr: 2,
-            color: "#5f6368",
-            mt: 1,
-            wordBreak: "break-word",
-            whiteSpace: "normal",
-          }}
-        >
-          <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          {/* Check if the event has ended */}
-          {dayjs().isAfter(dayjs(selectedEvent.endDate))
-            ? "Attended"
-            : "Registrations"}
-          :{" "}
-          {!selectedEvent.marketingProgramInstanceId ? (
-            <em style={{ marginLeft: 5 }}>
-              {" "}
-              Marketing instance program id not provided
-            </em>
-          ) : (
-            selectedEvent.registeredCount || 0
-          )}
-        </Typography>
-
+      {selectedEvent.landingPageLinks?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -355,27 +341,26 @@ export default function EventInfoPopup({ event, close }) {
           >
             Landing Page:
           </Typography>
-          {selectedEvent.landingPageLinks &&
-          selectedEvent.landingPageLinks.length > 0
-            ? selectedEvent.landingPageLinks.map((link, index) => (
-                <MuiLink
-                  key={index}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#1a73e8",
-                    marginLeft: "5px",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  {link}
-                </MuiLink>
-              ))
-            : "No landing page"}
+          {selectedEvent.landingPageLinks.map((link, index) => (
+            <MuiLink
+              key={index}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                color: "#1a73e8",
+                marginLeft: "5px",
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+              }}
+            >
+              {link}
+            </MuiLink>
+          ))}
         </Typography>
+      )}
 
+      {selectedEvent.organisedBy?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -420,6 +405,9 @@ export default function EventInfoPopup({ event, close }) {
             ))}
           </Stack>
         </Typography>
+      )}
+
+      {selectedEvent.speakers?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -462,38 +450,39 @@ export default function EventInfoPopup({ event, close }) {
             ))}
           </Stack>
         </Typography>
+      )}
 
-        <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>
-          {/* Other chips */}
+      <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>
+        {selectedEvent.eventType && (
           <Chip label={selectedEvent.eventType} color="primary" size="small" />
-          {selectedEvent.isDirectPartner && (
-            <Chip label="Direct Partner" color="secondary" size="small" />
-          )}
-          {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <=
-            7 && (
-            <Chip
-              label="Newly published"
-              color="success"
-              variant="outlined"
-              size="small"
-            />
-          )}
+        )}
+        {selectedEvent.isDirectPartner && (
+          <Chip label="Direct Partner" color="secondary" size="small" />
+        )}
+        {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <= 7 && (
+          <Chip
+            label="Newly published"
+            color="success"
+            variant="outlined"
+            size="small"
+          />
+        )}
 
-          {/* High Priority chip at the end */}
-          {selectedEvent.isHighPriority && (
-            <Chip
-              label="High Priority"
-              icon={<WhatshotIcon style={{ color: red[500] }} />}
-              sx={{ backgroundColor: red[50], color: red[500] }}
-              size="small"
-            />
-          )}
-        </Stack>
+        {selectedEvent.isHighPriority && (
+          <Chip
+            label="High Priority"
+            icon={<WhatshotIcon style={{ color: red[500] }} />}
+            sx={{ backgroundColor: red[50], color: red[500] }}
+            size="small"
+          />
+        )}
       </Stack>
-    ),
-    Details: (
-      <Stack spacing={2} sx={{ p: 3 }}>
-        {/* Audience Seniority */}
+    </Stack>
+  ),
+
+  Details: (
+    <Stack spacing={2} sx={{ p: 3 }}>
+      {selectedEvent.audienceSeniority?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -510,14 +499,12 @@ export default function EventInfoPopup({ event, close }) {
               whiteSpace: "normal",
             }}
           >
-            {selectedEvent.audienceSeniority &&
-            selectedEvent.audienceSeniority.length > 0
-              ? selectedEvent.audienceSeniority.join(", ")
-              : "N/A"}
+            {selectedEvent.audienceSeniority.join(", ")}
           </Typography>
         </Typography>
+      )}
 
-        {/* Audience Persona */}
+      {selectedEvent.audiencePersona?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -525,13 +512,11 @@ export default function EventInfoPopup({ event, close }) {
         >
           <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
           Buyer Segment:{" "}
-          {selectedEvent.audiencePersona &&
-          selectedEvent.audiencePersona.length > 0
-            ? selectedEvent.audiencePersona.join(", ")
-            : "N/A"}
+          {selectedEvent.audiencePersona.join(", ") || "N/A"}
         </Typography>
+      )}
 
-        {/* Industry */}
+      {selectedEvent.industry?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -543,13 +528,12 @@ export default function EventInfoPopup({ event, close }) {
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.industry && selectedEvent.industry.length > 0
-              ? selectedEvent.industry.join(", ")
-              : "N/A"}
+            {selectedEvent.industry.join(", ")}
           </Typography>
         </Typography>
+      )}
 
-        {/* Account Sectors */}
+{selectedEvent.accountSectors && (selectedEvent.accountSectors.commercial || selectedEvent.accountSectors.public) && (
         <Typography
           variant="body2"
           display="flex"
@@ -567,12 +551,13 @@ export default function EventInfoPopup({ event, close }) {
             }}
           >
             {`Commercial: ${
-              selectedEvent.accountSectors?.commercial ? "Yes" : "No"
-            }, Public: ${selectedEvent.accountSectors?.public ? "Yes" : "No"}`}
+              selectedEvent.accountSectors.commercial ? "Yes" : "No"
+            }, Public: ${selectedEvent.accountSectors.public ? "Yes" : "No"}`}
           </Typography>
         </Typography>
+      )}
 
-        {/* Account Category */}
+      {selectedEvent.accountCategory && (
         <Typography
           variant="body2"
           display="flex"
@@ -584,19 +569,14 @@ export default function EventInfoPopup({ event, close }) {
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.accountCategory &&
-            Object.keys(selectedEvent.accountCategory).length > 0
-              ? Object.entries(selectedEvent.accountCategory)
-                  .map(
-                    ([category, details]) =>
-                      `${category}: ${details.percentage}%`
-                  )
-                  .join(", ")
-              : "N/A"}
+            {Object.entries(selectedEvent.accountCategory)
+              .map(([category, details]) => `${category}: ${details.percentage}%`)
+              .join(", ")}
           </Typography>
         </Typography>
+      )}
 
-        {/* Account Segments */}
+{selectedEvent.accountSegments && Object.values(selectedEvent.accountSegments).some((seg) => seg.selected) && (
         <Typography
           variant="body2"
           display="flex"
@@ -608,18 +588,14 @@ export default function EventInfoPopup({ event, close }) {
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.accountSegments &&
-            Object.keys(selectedEvent.accountSegments).length > 0
-              ? Object.entries(selectedEvent.accountSegments)
-                  .map(
-                    ([segment, details]) => `${segment}: ${details.percentage}%`
-                  )
-                  .join(", ")
-              : "N/A"}
+            {Object.entries(selectedEvent.accountSegments)
+              .map(([segment, details]) => `${segment}: ${details.percentage}%`)
+              .join(", ")}
           </Typography>
         </Typography>
+      )}
 
-        {/* Account Type */}
+{selectedEvent.accountType && Object.values(selectedEvent.accountType).some((type) => type.selected) && (
         <Typography
           variant="body2"
           display="flex"
@@ -631,16 +607,14 @@ export default function EventInfoPopup({ event, close }) {
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.accountType &&
-            Object.keys(selectedEvent.accountType).length > 0
-              ? Object.entries(selectedEvent.accountType)
-                  .map(([type, details]) => `${type}: ${details.percentage}%`)
-                  .join(", ")
-              : "N/A"}
+            {Object.entries(selectedEvent.accountType)
+              .map(([type, details]) => `${type}: ${details.percentage}%`)
+              .join(", ")}
           </Typography>
         </Typography>
+      )}
 
-        {/* Product Alignment */}
+{selectedEvent.productAlignment && Object.values(selectedEvent.productAlignment).some((product) => product.selected) && (
         <Typography
           variant="body2"
           display="flex"
@@ -652,18 +626,14 @@ export default function EventInfoPopup({ event, close }) {
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.productAlignment &&
-            Object.keys(selectedEvent.productAlignment).length > 0
-              ? Object.entries(selectedEvent.productAlignment)
-                  .map(
-                    ([product, details]) => `${product}: ${details.percentage}%`
-                  )
-                  .join(", ")
-              : "N/A"}
+            {Object.entries(selectedEvent.productAlignment)
+              .map(([product, details]) => `${product}: ${details.percentage}%`)
+              .join(", ")}
           </Typography>
         </Typography>
+      )}
 
-        {/* AI vs Core */}
+      {selectedEvent.aiVsCore && (
         <Typography
           variant="body2"
           display="flex"
@@ -680,11 +650,12 @@ export default function EventInfoPopup({ event, close }) {
               whiteSpace: "normal",
             }}
           >
-            {selectedEvent.aiVsCore || "N/A"}
+            {selectedEvent.aiVsCore}
           </Typography>
         </Typography>
+      )}
 
-        {/* OKR Information */}
+{selectedEvent.okr?.length > 0 && selectedEvent.okr.some(okr => okr.percentage !== "") && (
         <Typography
           variant="body2"
           display="flex"
@@ -701,15 +672,14 @@ export default function EventInfoPopup({ event, close }) {
               whiteSpace: "normal",
             }}
           >
-            {selectedEvent.okr && selectedEvent.okr.length > 0
-              ? selectedEvent.okr
-                  .map((okrItem) => `${okrItem.type}: ${okrItem.percentage}%`)
-                  .join(", ")
-              : "N/A"}
+            {selectedEvent.okr
+              .map((okrItem) => `${okrItem.type}: ${okrItem.percentage}%`)
+              .join(", ")}
           </Typography>
         </Typography>
+      )}
 
-        {/* Event Series and Customer Use */}
+      {selectedEvent.eventSeries !== undefined && (
         <Typography
           variant="body2"
           display="flex"
@@ -719,7 +689,9 @@ export default function EventInfoPopup({ event, close }) {
           <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
           Part of an event series? {selectedEvent.eventSeries ? "Yes" : "No"}
         </Typography>
+      )}
 
+      {selectedEvent.customerUse !== undefined && (
         <Typography
           variant="body2"
           display="flex"
@@ -729,11 +701,13 @@ export default function EventInfoPopup({ event, close }) {
           <CheckCircleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
           Approved for customer use? {selectedEvent.customerUse ? "Yes" : "No"}
         </Typography>
-      </Stack>
-    ),
-    Links: (
-      <Stack spacing={2} sx={{ p: 3 }}>
-        {/* Landing Page Links */}
+      )}
+    </Stack>
+  ),
+
+  Links: (
+    <Stack spacing={2} sx={{ p: 3 }}>
+      {selectedEvent.landingPageLinks?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -745,28 +719,27 @@ export default function EventInfoPopup({ event, close }) {
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.landingPageLinks &&
-            selectedEvent.landingPageLinks.length > 0
-              ? selectedEvent.landingPageLinks.map((link, index) => (
-                  <MuiLink
-                    key={index}
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: "#4285F4",
-                      marginLeft: index > 0 ? "5px" : "0px",
-                      wordBreak: "break-word",
-                      whiteSpace: "normal",
-                    }}
-                  >
-                    {link}
-                  </MuiLink>
-                ))
-              : "N/A"}
+            {selectedEvent.landingPageLinks.map((link, index) => (
+              <MuiLink
+                key={index}
+                href={link}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  color: "#4285F4",
+                  marginLeft: index > 0 ? "5px" : "0px",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                }}
+              >
+                {link}
+              </MuiLink>
+            ))}
           </Typography>
         </Typography>
+      )}
 
+      {selectedEvent.salesKitLinks?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -778,29 +751,28 @@ export default function EventInfoPopup({ event, close }) {
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.salesKitLinks &&
-            selectedEvent.salesKitLinks.length > 0
-              ? selectedEvent.salesKitLinks
-                  .map((link) => (
-                    <MuiLink
-                      key={link}
-                      href={link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: "#4285F4",
-                        wordBreak: "break-word",
-                        whiteSpace: "normal",
-                      }}
-                    >
-                      {link}
-                    </MuiLink>
-                  ))
-                  .reduce((prev, curr) => [prev, ", ", curr])
-              : "N/A"}
+            {selectedEvent.salesKitLinks
+              .map((link) => (
+                <MuiLink
+                  key={link}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#4285F4",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  {link}
+                </MuiLink>
+              ))
+              .reduce((prev, curr) => [prev, ", ", curr])}
           </Typography>
         </Typography>
+      )}
 
+      {selectedEvent.hailoLinks?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
@@ -812,65 +784,67 @@ export default function EventInfoPopup({ event, close }) {
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
-              ? selectedEvent.hailoLinks
-                  .map((link) => (
-                    <MuiLink
-                      key={link}
-                      href={link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: "#4285F4",
-                        wordBreak: "break-word",
-                        whiteSpace: "normal",
-                      }}
-                    >
-                      {link}
-                    </MuiLink>
-                  ))
-                  .reduce((prev, curr) => [prev, ", ", curr])
-              : "N/A"}
+            {selectedEvent.hailoLinks
+              .map((link) => (
+                <MuiLink
+                  key={link}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#4285F4",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  {link}
+                </MuiLink>
+              ))
+              .reduce((prev, curr) => [prev, ", ", curr])}
           </Typography>
         </Typography>
+      )}
 
+      {selectedEvent.otherDocumentsLinks?.length > 0 && (
         <Typography
           variant="body2"
           display="flex"
           sx={{ whiteSpace: "normal" }}
         >
-          <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          <DescriptionIcon
+            style={{ marginRight: "5px", color: "#1a73e8" }}
+          />
           Other Documents:{" "}
           <Typography
             variant="body2"
             sx={{ marginLeft: "5px", whiteSpace: "normal" }}
           >
-            {selectedEvent.otherDocumentsLinks &&
-            selectedEvent.otherDocumentsLinks.length > 0
-              ? selectedEvent.otherDocumentsLinks
-                  .map((link) => (
-                    <MuiLink
-                      key={link}
-                      href={link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: "#4285F4",
-                        wordBreak: "break-word",
-                        whiteSpace: "normal",
-                      }}
-                    >
-                      {link}
-                    </MuiLink>
-                  ))
-                  .reduce((prev, curr) => [prev, ", ", curr])
-              : "N/A"}
+            {selectedEvent.otherDocumentsLinks
+              .map((link) => (
+                <MuiLink
+                  key={link}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#4285F4",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                >
+                  {link}
+                </MuiLink>
+              ))
+              .reduce((prev, curr) => [prev, ", ", curr])}
           </Typography>
         </Typography>
-      </Stack>
-    ),
-  };
+      )}
+    </Stack>
+  ),
+};
 
+
+  
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20"
@@ -1047,8 +1021,8 @@ export default function EventInfoPopup({ event, close }) {
               alignItems="center"
             >
               <div>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  {selectedLanguage && (
+                {hasLanguagesAndTemplates ? (
+                  <Stack direction="row" alignItems="center" spacing={1}>
                     <Typography
                       variant="body2"
                       sx={{
@@ -1058,16 +1032,20 @@ export default function EventInfoPopup({ event, close }) {
                         textOverflow: "ellipsis",
                       }}
                     >
-                      Selected Language: {selectedLanguage}
+                      Language: {selectedLanguage}
                     </Typography>
-                  )}
 
-                  <Tooltip title="Select Language">
-                    <IconButton onClick={handleLanguageClick}>
-                      <LanguageIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
+                    <Tooltip title="Select Language">
+                      <IconButton onClick={handleLanguageClick}>
+                        <LanguageIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No languages provided
+                  </Typography>
+                )}
 
                 <Menu
                   anchorEl={anchorEl}
@@ -1109,30 +1087,69 @@ export default function EventInfoPopup({ event, close }) {
 
               <Button
                 variant="contained"
-                style={{
-                  backgroundColor: blue[500],
-                  color: "white",
-                  boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
+                sx={{
+                  backgroundColor: hasLanguagesAndTemplates
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(200, 200, 200, 0.5)",
+                  color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
+                  boxShadow: hasLanguagesAndTemplates ? "0 1px 2px 0 rgba(60,64,67,0.302)" : "none",
                   margin: "10px",
+                  "&:hover": {
+                    backgroundColor: hasLanguagesAndTemplates
+                      ? "rgba(66, 133, 244, 0.1)"
+                      : "rgba(200, 200, 200, 0.5)",
+                    borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
+                  },
                 }}
-                startIcon={<MailOutlineIcon />}  
+                disabled={!hasLanguagesAndTemplates} // Disable button if no templates
+                startIcon={
+                  <img
+                    src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
+                    alt="Gmail Logo"
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      marginRight: "8px",
+                    }}
+                  />
+                }
                 onClick={handleGmailInvite}
               >
                 Gmail Invite
               </Button>
 
+
               <Button
                 variant="contained"
-                style={{
-                  backgroundColor: blue[500],
-                  color: "white",
-                  boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
+                sx={{
+                  backgroundColor: hasLanguagesAndTemplates
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(200, 200, 200, 0.5)",
+                  color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
+                  boxShadow: hasLanguagesAndTemplates ? "0 1px 2px 0 rgba(60,64,67,0.302)" : "none",
                   margin: "10px",
+                  "&:hover": {
+                    backgroundColor: hasLanguagesAndTemplates
+                      ? "rgba(66, 133, 244, 0.1)"
+                      : "rgba(200, 200, 200, 0.5)",
+                    borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
+                  },
                 }}
-                startIcon={<BusinessIcon />}
+                disabled={!hasLanguagesAndTemplates} // Disable button if no templates
+                startIcon={
+                  <img
+                    src={salesloftLogo}
+                    alt="SalesLoft Logo"
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      marginRight: "8px",
+                    }}
+                  />
+                }
                 onClick={handleSalesLoftInvite}
               >
-                Salesloft Invite
+                SalesLoft Invite
               </Button>
             </Stack>
           </Paper>
@@ -1158,48 +1175,48 @@ export default function EventInfoPopup({ event, close }) {
       </Dialog>
       {/* Language Dialog */}
       <Dialog
-  open={languageDialogOpen}
-  onClose={handleLanguageDialogClose}
-  maxWidth="xs"
-  fullWidth
-  sx={{ zIndex: 10000 }}
->
-  <DialogTitle>Select Language</DialogTitle>
-  <DialogContent>
-    <FormControl component="fieldset">
-      <RadioGroup
-        value={selectedLanguage}
-        onChange={(event) => setSelectedLanguage(event.target.value)}
+        open={languageDialogOpen}
+        onClose={handleLanguageDialogClose}
+        maxWidth="xs"
+        fullWidth
+        sx={{ zIndex: 10000 }}
       >
-        {languagesAndTemplates.length > 0 ? (
-          languagesAndTemplates.map((item) => (
-            <FormControlLabel
-              key={item.language}
-              value={item.language}
-              control={<Radio />}
-              label={item.language}
-            />
-          ))
-        ) : (
-          <Typography>No languages available</Typography>
-        )}
-      </RadioGroup>
-    </FormControl>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleLanguageDialogClose} color="secondary">
-      Cancel
-    </Button>
-    <Button
-      onClick={handleLanguageDialogClose}
-      color="primary"
-      variant="contained"
-    >
-      Confirm
-    </Button>
-  </DialogActions>
-</Dialog>
-          
+        <DialogTitle>Select Language</DialogTitle>
+        <DialogContent>
+          <FormControl component="fieldset">
+            <RadioGroup
+              value={selectedLanguage}
+              onChange={(event) => setSelectedLanguage(event.target.value)}
+            >
+              {languagesAndTemplates.length > 0 ? (
+                languagesAndTemplates.map((item) => (
+                  <FormControlLabel
+                    key={item.language}
+                    value={item.language}
+                    control={<Radio />}
+                    label={item.language}
+                  />
+                ))
+              ) : (
+                <Typography>No languages available</Typography>
+              )}
+            </RadioGroup>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleLanguageDialogClose} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleLanguageDialogClose}
+            color="primary"
+            variant="contained"
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}

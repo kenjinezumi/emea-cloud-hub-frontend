@@ -337,7 +337,7 @@ export default function LinksForm() {
             >
               Previous
             </Button>
-            <Button
+            {/* <Button
               variant="contained"
               onClick={handleSaveAsDraft}
               style={{
@@ -348,7 +348,7 @@ export default function LinksForm() {
               }}
             >
               Save as Draft
-            </Button>
+            </Button> */}
             <Button
               variant="contained"
               onClick={handleSave}
@@ -359,7 +359,7 @@ export default function LinksForm() {
                 margin: "10px",
               }}
             >
-              Save
+              Publish
             </Button>
           </div>
         </div>
