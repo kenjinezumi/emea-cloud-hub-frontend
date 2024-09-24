@@ -46,7 +46,7 @@ export default function ExtraDetailsForm() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isFormValid, setIsFormValid] = useState(true);
   const [customerUse, setCustomerUse] = useState(
-    selectedEvent?.customerUse || formData?.customerUse || "no"
+    selectedEvent?.customerUse || formData?.customerUse || ""
   );
 
   const [okrSelections, setOkrSelections] = useState(() => {
