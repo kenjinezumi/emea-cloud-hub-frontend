@@ -31,48 +31,48 @@ const dummyEventData = [
     ],
     "isEventSeries": false,
     "languagesAndTemplates": [
-      {
-        "platform": "Salesloft",
-        "language": "English",
-        "template": "This is a test for Gmail ok?",
-        "subjectLine": "This is a test"
-      },
-      {
-        "platform": "Salesloft",
-        "language": "Spanish",
-        "template": "This is a test for Gmail ok?",
-        "subjectLine": "This is a test"
-      },
-      {
-        "platform": "Salesloft",
-        "language": "Klingon",
-        "template": "This is a test for Gmail ok?",
-        "subjectLine": "This is a test"
-      },
-      {
-        "platform": "Salesloft",
-        "language": "Italian",
-        "template": "This is a test for Gmail ok?",
-        "subjectLine": "This is a test"
-      },
-      {
-        "platform": "Salesloft",
-        "language": "French",
-        "template": "This is a test for Gmail ok?",
-        "subjectLine": "This is a test"
-      },
-      {
-        "platform": "Salesloft",
-        "language": "German",
-        "template": "This is a test for Gmail ok?",
-        "subjectLine": "This is a test"
-      },
-      {
-        "platform": "Salesloft",
-        "language": "Japanese",
-        "template": "This is a test for Gmail ok?",
-        "subjectLine": "This is a test"
-      }
+      // {
+      //   "platform": "Salesloft",
+      //   "language": "English",
+      //   "template": "This is a test for Gmail ok?",
+      //   "subjectLine": "This is a test"
+      // },
+      // {
+      //   "platform": "Salesloft",
+      //   "language": "Spanish",
+      //   "template": "This is a test for Gmail ok?",
+      //   "subjectLine": "This is a test"
+      // },
+      // {
+      //   "platform": "Salesloft",
+      //   "language": "Klingon",
+      //   "template": "This is a test for Gmail ok?",
+      //   "subjectLine": "This is a test"
+      // },
+      // {
+      //   "platform": "Salesloft",
+      //   "language": "Italian",
+      //   "template": "This is a test for Gmail ok?",
+      //   "subjectLine": "This is a test"
+      // },
+      // {
+      //   "platform": "Salesloft",
+      //   "language": "French",
+      //   "template": "This is a test for Gmail ok?",
+      //   "subjectLine": "This is a test"
+      // },
+      // {
+      //   "platform": "Salesloft",
+      //   "language": "German",
+      //   "template": "This is a test for Gmail ok?",
+      //   "subjectLine": "This is a test"
+      // },
+      // {
+      //   "platform": "Salesloft",
+      //   "language": "Japanese",
+      //   "template": "This is a test for Gmail ok?",
+      //   "subjectLine": "This is a test"
+      // }
     ],
     "okr": [
       {

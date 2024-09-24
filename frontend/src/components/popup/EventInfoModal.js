@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from "react";
+import React, { useEffect,useContext, useState, useRef } from "react";
 import dayjs from "dayjs";
 import GlobalContext from "../../context/GlobalContext";
 import Draggable from "react-draggable";
@@ -45,8 +45,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
 import { red, blue } from "@mui/material/colors";
-import salesloftLogo from './logo/salesloft.png';
-
+import salesloftLogo from "./logo/salesloft.png";
 
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
@@ -63,6 +62,18 @@ export default function EventInfoPopup({ event, close }) {
       ? selectedEvent.languagesAndTemplates[0].language
       : ""
   );
+  const hasLanguagesAndTemplates = languagesAndTemplates.length > 0;
+  useEffect(() => {
+    // Pre-select English by default if available
+    const englishTemplate = languagesAndTemplates.find(
+      (item) => item.language === "English"
+    );
+    if (englishTemplate) {
+      setSelectedLanguage("English");
+    } else if (languagesAndTemplates.length > 0) {
+      setSelectedLanguage(languagesAndTemplates[0].language);
+    }
+  }, [languagesAndTemplates]);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -73,7 +84,7 @@ export default function EventInfoPopup({ event, close }) {
     setLanguageDialogOpen(true);
   };
   const handleLanguageSelect = (event) => {
-    setSelectedLanguage(event.target.value); // event.target.value contains the selected language
+    setSelectedLanguage(event.target.value);
   };
 
   const handleCloseMenu = () => {
@@ -261,6 +272,7 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
+
   const formatListWithSpaces = (list) => {
     if (!list) return "";
     if (typeof list === "string") return list.replace(/,/g, ", ");
@@ -285,7 +297,7 @@ export default function EventInfoPopup({ event, close }) {
     const index = Math.floor(Math.random() * googleColors.length);
     return googleColors[index];
   };
-
+  
   const sections = {
     Overview: (
       <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
@@ -319,9 +331,9 @@ export default function EventInfoPopup({ event, close }) {
             whiteSpace: "normal",
           }}
         >
-          <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+          {/* <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} /> */}
           {/* Check if the event has ended */}
-          {dayjs().isAfter(dayjs(selectedEvent.endDate))
+          {/* {dayjs().isAfter(dayjs(selectedEvent.endDate))
             ? "Attended"
             : "Registrations"}
           :{" "}
@@ -332,7 +344,7 @@ export default function EventInfoPopup({ event, close }) {
             </em>
           ) : (
             selectedEvent.registeredCount || 0
-          )}
+          )} */}
         </Typography>
 
         <Typography
@@ -871,6 +883,7 @@ export default function EventInfoPopup({ event, close }) {
     ),
   };
 
+  
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20"
@@ -1047,8 +1060,8 @@ export default function EventInfoPopup({ event, close }) {
               alignItems="center"
             >
               <div>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  {selectedLanguage && (
+                {hasLanguagesAndTemplates ? (
+                  <Stack direction="row" alignItems="center" spacing={1}>
                     <Typography
                       variant="body2"
                       sx={{
@@ -1058,16 +1071,20 @@ export default function EventInfoPopup({ event, close }) {
                         textOverflow: "ellipsis",
                       }}
                     >
-                      Selected Language: {selectedLanguage}
+                      Language: {selectedLanguage}
                     </Typography>
-                  )}
 
-                  <Tooltip title="Select Language">
-                    <IconButton onClick={handleLanguageClick}>
-                      <LanguageIcon />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
+                    <Tooltip title="Select Language">
+                      <IconButton onClick={handleLanguageClick}>
+                        <LanguageIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                ) : (
+                  <Typography variant="body2" color="textSecondary">
+                    No languages provided
+                  </Typography>
+                )}
 
                 <Menu
                   anchorEl={anchorEl}
@@ -1110,19 +1127,20 @@ export default function EventInfoPopup({ event, close }) {
               <Button
                 variant="contained"
                 sx={{
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  color: "#5f6368",
-                  boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
+                  backgroundColor: hasLanguagesAndTemplates
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(200, 200, 200, 0.5)",
+                  color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
+                  boxShadow: hasLanguagesAndTemplates ? "0 1px 2px 0 rgba(60,64,67,0.302)" : "none",
                   margin: "10px",
                   "&:hover": {
-                    backgroundColor: "rgba(66, 133, 244, 0.1)",
-                    borderColor: blue[500],
-                    "&:hover": {
-                      backgroundColor: "rgba(66, 133, 244, 0.1)",
-                      borderColor: blue[500],
-                    },
+                    backgroundColor: hasLanguagesAndTemplates
+                      ? "rgba(66, 133, 244, 0.1)"
+                      : "rgba(200, 200, 200, 0.5)",
+                    borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
                   },
                 }}
+                disabled={!hasLanguagesAndTemplates} // Disable button if no templates
                 startIcon={
                   <img
                     src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
@@ -1139,26 +1157,28 @@ export default function EventInfoPopup({ event, close }) {
                 Gmail Invite
               </Button>
 
+
               <Button
                 variant="contained"
                 sx={{
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                  color: "#5f6368",
-                  boxShadow: "0 1px 2px 0 rgba(60,64,67,0.302)",
+                  backgroundColor: hasLanguagesAndTemplates
+                    ? "rgba(255, 255, 255, 0.1)"
+                    : "rgba(200, 200, 200, 0.5)",
+                  color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
+                  boxShadow: hasLanguagesAndTemplates ? "0 1px 2px 0 rgba(60,64,67,0.302)" : "none",
                   margin: "10px",
                   "&:hover": {
-                    backgroundColor: "rgba(66, 133, 244, 0.1)",
-                    borderColor: blue[500],
-                    "&:hover": {
-                      backgroundColor: "rgba(66, 133, 244, 0.1)",
-                      borderColor: blue[500],
-                    },
+                    backgroundColor: hasLanguagesAndTemplates
+                      ? "rgba(66, 133, 244, 0.1)"
+                      : "rgba(200, 200, 200, 0.5)",
+                    borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
                   },
                 }}
+                disabled={!hasLanguagesAndTemplates} // Disable button if no templates
                 startIcon={
                   <img
-                  src={salesloftLogo}
-                  alt="SalesLoft Logo"                  
+                    src={salesloftLogo}
+                    alt="SalesLoft Logo"
                     style={{
                       width: "24px",
                       height: "24px",
@@ -1168,7 +1188,7 @@ export default function EventInfoPopup({ event, close }) {
                 }
                 onClick={handleSalesLoftInvite}
               >
-                Salesloft Invite
+                SalesLoft Invite
               </Button>
             </Stack>
           </Paper>
