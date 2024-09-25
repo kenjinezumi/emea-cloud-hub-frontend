@@ -27,31 +27,34 @@ export default function LocationFormPage() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
 
   const [region, setRegion] = useState(
-    selectedEvent ? selectedEvent.region : formData.region || ""
+    formData?.region || selectedEvent?.region || ""
   );
-
+  
   const [subRegion, setSubRegion] = useState(
-    selectedEvent ? selectedEvent.subRegion : formData.subRegion || []
+    formData?.subRegion || selectedEvent?.subRegion || []
   );
-
+  
+  const [country, setCountry] = useState(
+    formData?.country || selectedEvent?.country || []
+  );
+  
+  const [locationVenue, setLocationVenue] = useState(
+    formData?.locationVenue || selectedEvent?.locationVenue || ""
+  );
+  
+  const [city, setCity] = useState(
+    formData?.city || selectedEvent?.city || ""
+  );
+  
   const [open, setOpen] = useState(false);
 
-  const [country, setCountry] = useState(
-    selectedEvent ? selectedEvent.country : formData.country || []
-  );
   const [availableSubregions, setAvailableSubregions] = useState(
     formData.availableSubregions || []
   );
   const [availableCountries, setAvailableCountries] = useState(
     formData.availableCountries || []
   );
-  const [locationVenue, setLocationVenue] = useState(
-    selectedEvent ? selectedEvent.locationVenue : formData.locationVenue || ""
-  );
 
-  const [city, setCity] = useState(
-    selectedEvent ? selectedEvent.city : formData.city || ""
-  );
 
   const [isFormValid, setIsFormValid] = useState(true);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -162,7 +165,20 @@ export default function LocationFormPage() {
     setSubRegion([]);
     setCountry([]);
   };
-
+  useEffect(() => {
+    if (selectedEvent) {
+      const subregionsForRegion =
+        regionsData.find((data) => data.region === selectedEvent.region)?.subregions || [];
+      setAvailableSubregions(subregionsForRegion);
+  
+      const countriesForSubregions = selectedEvent.subRegion.flatMap(
+        (selectedSubregion) =>
+          subregionsData.find((data) => data.subregion === selectedSubregion)?.countries || []
+      );
+      setAvailableCountries(countriesForSubregions);
+    }
+  }, [selectedEvent]);
+  
   const handleSubRegionChange = (e) => {
     const selectedSubregions = e.target.value;
     setSubRegion(selectedSubregions);
@@ -170,7 +186,7 @@ export default function LocationFormPage() {
     const countriesForSubregions = selectedSubregions.flatMap(
       (selectedSubregion) =>
         subregionsData.find((data) => data.subregion === selectedSubregion)
-          ?.countries || []
+          ?.countries || [] 
     );
     setAvailableCountries(countriesForSubregions);
     setCountry([...new Set(countriesForSubregions)]);

@@ -29,62 +29,82 @@ export default function AudiencePersonaForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
 
   const [audienceSeniority, setAudienceSeniority] = useState(
-    Array.isArray(selectedEvent?.audienceSeniority) ? selectedEvent.audienceSeniority : formData.audienceSeniority || []
+    Array.isArray(formData?.audienceSeniority) && formData.audienceSeniority.length > 0
+      ? formData.audienceSeniority
+      : Array.isArray(selectedEvent?.audienceSeniority) && selectedEvent.audienceSeniority.length > 0
+      ? selectedEvent.audienceSeniority
+      : []
   );
   
   const [audiencePersona, setAudiencePersona] = useState(
-    Array.isArray(selectedEvent?.audiencePersona) ? selectedEvent.audiencePersona : formData.audiencePersona || []
+    Array.isArray(formData?.audiencePersona) && formData.audiencePersona.length > 0
+      ? formData.audiencePersona
+      : Array.isArray(selectedEvent?.audiencePersona) && selectedEvent.audiencePersona.length > 0
+      ? selectedEvent.audiencePersona
+      : []
   );
   
   const [industry, setIndustry] = useState(
-    Array.isArray(selectedEvent?.industry) ? selectedEvent.industry : formData.industry || []
+    Array.isArray(formData?.industry) && formData.industry.length > 0
+      ? formData.industry
+      : Array.isArray(selectedEvent?.industry) && selectedEvent.industry.length > 0
+      ? selectedEvent.industry
+      : []
   );
   
   const [accountSectors, setAccountSectors] = useState(
-    selectedEvent?.accountSectors || formData.accountSectors || {
-      commercial: false,
-      public: false,
-    }
+    formData?.accountSectors !== undefined
+      ? formData.accountSectors
+      : selectedEvent?.accountSectors || { commercial: false, public: false }
   );
   
   const [accountSegments, setAccountSegments] = useState(
-    selectedEvent?.accountSegments || formData.accountSegments || {
-      Corporate: { selected: false, percentage: "" },
-      SMB: { selected: false, percentage: "" },
-      Select: { selected: false, percentage: "" },
-      Enterprise: { selected: false, percentage: "" },
-      Startup: { selected: false, percentage: "" },
-    }
+    formData?.accountSegments !== undefined
+      ? formData.accountSegments
+      : selectedEvent?.accountSegments || {
+          Corporate: { selected: false, percentage: "" },
+          SMB: { selected: false, percentage: "" },
+          Select: { selected: false, percentage: "" },
+          Enterprise: { selected: false, percentage: "" },
+          Startup: { selected: false, percentage: "" },
+        }
   );
   
   const [accountCategory, setAccountCategory] = useState(
-    selectedEvent?.accountCategory || formData.accountCategory || {
-      "Digital Native": { selected: false, percentage: "" },
-      Traditional: { selected: false, percentage: "" },
-    }
+    formData?.accountCategory !== undefined
+      ? formData.accountCategory
+      : selectedEvent?.accountCategory || {
+          "Digital Native": { selected: false, percentage: "" },
+          Traditional: { selected: false, percentage: "" },
+        }
   );
   
   const [accountType, setAccountType] = useState(
-    selectedEvent?.accountType || formData.accountType || {
-      Greenfield: { selected: false, percentage: "" },
-      "Existing Customer": { selected: false, percentage: "" },
-    }
+    formData?.accountType !== undefined
+      ? formData.accountType
+      : selectedEvent?.accountType || {
+          Greenfield: { selected: false, percentage: "" },
+          "Existing Customer": { selected: false, percentage: "" },
+        }
   );
   
   const [productAlignment, setProductAlignment] = useState(
-    selectedEvent?.productAlignment || formData.productAlignment || {
-      GCP: { selected: false, percentage: "" },
-      GWS: { selected: false, percentage: "" },
-    }
+    formData?.productAlignment !== undefined
+      ? formData.productAlignment
+      : selectedEvent?.productAlignment || {
+          GCP: { selected: false, percentage: "" },
+          GWS: { selected: false, percentage: "" },
+        }
   );
   
   const [aiVsCore, setAiVsCore] = useState(
-    selectedEvent?.aiVsCore || formData.aiVsCore || ""
+    formData?.aiVsCore || selectedEvent?.aiVsCore || ""
   );
   
   const [maxEventCapacity, setMaxEventCapacity] = useState(
-    selectedEvent?.maxEventCapacity || formData.maxEventCapacity || ""
+    formData?.maxEventCapacity || selectedEvent?.maxEventCapacity || ""
   );
+  
   
 
   const [isAudiencePersonaError, setIsAudiencePersonaError] = useState(false);
@@ -141,35 +161,7 @@ export default function AudiencePersonaForm() {
     updateFormData,
   ]);
 
-  useEffect(() => {
-    if (selectedEvent || formData) {
-      setAudienceSeniority(selectedEvent?.audienceSeniority || formData.audienceSeniority || []);
-      setAudiencePersona(selectedEvent?.audiencePersona || formData.audiencePersona || []);
-      setIndustry(selectedEvent?.industry || formData.industry || []);
-      setAccountSectors(selectedEvent?.accountSectors || formData.accountSectors || { commercial: false, public: false });
-      setAccountSegments(selectedEvent?.accountSegments || formData.accountSegments || {
-        Corporate: { selected: false, percentage: "" },
-        SMB: { selected: false, percentage: "" },
-        Select: { selected: false, percentage: "" },
-        Enterprise: { selected: false, percentage: "" },
-        Startup: { selected: false, percentage: "" },
-      });
-      setAccountCategory(selectedEvent?.accountCategory || formData.accountCategory || {
-        "Digital Native": { selected: false, percentage: "" },
-        Traditional: { selected: false, percentage: "" },
-      });
-      setAccountType(selectedEvent?.accountType || formData.accountType || {
-        Greenfield: { selected: false, percentage: "" },
-        "Existing Customer": { selected: false, percentage: "" },
-      });
-      setProductAlignment(selectedEvent?.productAlignment || formData.productAlignment || {
-        GCP: { selected: false, percentage: "" },
-        GWS: { selected: false, percentage: "" },
-      });
-      setAiVsCore(selectedEvent?.aiVsCore || formData.aiVsCore || "");
-      setMaxEventCapacity(selectedEvent?.maxEventCapacity || formData.maxEventCapacity || "");
-    }
-  }, [selectedEvent, formData]);
+
   
   const [peopleMeetingCriteria, setPeopleMeetingCriteria] = useState(
     selectedEvent ? selectedEvent.peopleMeetingCriteria : formData.peopleMeetingCriteria || ""
