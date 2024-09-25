@@ -53,18 +53,21 @@ export default function AudiencePersonaForm() {
   );
   
   const [accountSectors, setAccountSectors] = useState(
-    formData?.accountSectors 
+    (formData?.accountSectors && typeof formData.accountSectors === 'object') 
       ? { ...formData.accountSectors }
-      : selectedEvent?.accountSectors 
+      : (selectedEvent?.accountSectors && typeof selectedEvent.accountSectors === 'object') 
       ? { ...selectedEvent.accountSectors }
       : { commercial: false, public: false }
   );
   
   
+  
   const [accountSegments, setAccountSegments] = useState(
-    formData?.accountSegments !== undefined
-      ? formData.accountSegments
-      : selectedEvent?.accountSegments || {
+    (formData?.accountSegments && typeof formData.accountSegments === 'object') 
+      ? { ...formData.accountSegments }
+      : (selectedEvent?.accountSegments && typeof selectedEvent.accountSegments === 'object') 
+      ? { ...selectedEvent.accountSegments }
+      : {
           Corporate: { selected: false, percentage: "" },
           SMB: { selected: false, percentage: "" },
           Select: { selected: false, percentage: "" },
@@ -74,27 +77,33 @@ export default function AudiencePersonaForm() {
   );
   
   const [accountCategory, setAccountCategory] = useState(
-    formData?.accountCategory !== undefined
-      ? formData.accountCategory
-      : selectedEvent?.accountCategory || {
+    (formData?.accountCategory && typeof formData.accountCategory === 'object')
+      ? { ...formData.accountCategory }
+      : (selectedEvent?.accountCategory && typeof selectedEvent.accountCategory === 'object')
+      ? { ...selectedEvent.accountCategory }
+      : {
           "Digital Native": { selected: false, percentage: "" },
           Traditional: { selected: false, percentage: "" },
         }
   );
   
   const [accountType, setAccountType] = useState(
-    formData?.accountType !== undefined
-      ? formData.accountType
-      : selectedEvent?.accountType || {
+    (formData?.accountType && typeof formData.accountType === 'object')
+      ? { ...formData.accountType }
+      : (selectedEvent?.accountType && typeof selectedEvent.accountType === 'object')
+      ? { ...selectedEvent.accountType }
+      : {
           Greenfield: { selected: false, percentage: "" },
           "Existing Customer": { selected: false, percentage: "" },
         }
   );
   
   const [productAlignment, setProductAlignment] = useState(
-    formData?.productAlignment !== undefined
-      ? formData.productAlignment
-      : selectedEvent?.productAlignment || {
+    (formData?.productAlignment && typeof formData.productAlignment === 'object')
+      ? { ...formData.productAlignment }
+      : (selectedEvent?.productAlignment && typeof selectedEvent.productAlignment === 'object')
+      ? { ...selectedEvent.productAlignment }
+      : {
           GCP: { selected: false, percentage: "" },
           GWS: { selected: false, percentage: "" },
         }
