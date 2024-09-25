@@ -162,7 +162,20 @@ export default function LocationFormPage() {
     setSubRegion([]);
     setCountry([]);
   };
-
+  useEffect(() => {
+    if (selectedEvent) {
+      const subregionsForRegion =
+        regionsData.find((data) => data.region === selectedEvent.region)?.subregions || [];
+      setAvailableSubregions(subregionsForRegion);
+  
+      const countriesForSubregions = selectedEvent.subRegion.flatMap(
+        (selectedSubregion) =>
+          subregionsData.find((data) => data.subregion === selectedSubregion)?.countries || []
+      );
+      setAvailableCountries(countriesForSubregions);
+    }
+  }, [selectedEvent]);
+  
   const handleSubRegionChange = (e) => {
     const selectedSubregions = e.target.value;
     setSubRegion(selectedSubregions);
@@ -170,7 +183,7 @@ export default function LocationFormPage() {
     const countriesForSubregions = selectedSubregions.flatMap(
       (selectedSubregion) =>
         subregionsData.find((data) => data.subregion === selectedSubregion)
-          ?.countries || []
+          ?.countries || [] 
     );
     setAvailableCountries(countriesForSubregions);
     setCountry([...new Set(countriesForSubregions)]);
