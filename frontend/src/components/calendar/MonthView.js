@@ -46,56 +46,106 @@ export default function MonthView({ month, isYearView = false }) {
        
         // If no filters are applied, return all events
         if (!hasFiltersApplied) {
-          console.log('The events are', events)
-          return events;
+          console.log('The events are', events);
+          setFilteredEvents(eventData); // Ensure all events are shown
+          return;
         }
   
         // Log once for each event, not repeatedly
         const results = await Promise.all(eventData.map(async (event) => {
           try {
-            // Check each filter match and log the results
-            const subRegionMatch = filters.subRegions.some(subRegion => {
-              const match = subRegion.checked && event.subRegion?.includes(subRegion.label);
-              return match;
-            });
-  
-            const gepMatch = filters.gep.some(gep => {
-              const match = gep.checked && event.gep?.includes(gep.label);
-              return match;
-            });
-  
-            const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => {
-              const match = segment.checked && event.buyerSegmentRollup?.includes(segment.label);
-              return match;
-            });
-  
-            const accountSectorMatch = filters.accountSectors.some(sector => {
-              const match = sector.checked && event.accountSectors?.[sector.label];
-              return match;
-            });
-  
-            const accountSegmentMatch = filters.accountSegments.some(segment => {
-              const match = segment.checked && event.accountSegments?.[segment.label]?.selected;
-              return match;
-            });
-  
-            const productFamilyMatch = filters.productFamily.some(product => {
-              const match = product.checked && event.productAlignment?.[product.label]?.selected;
-              return match;
-            });
-  
-            const industryMatch = filters.industry.some(industry => {
-              const match = industry.checked && event.industry === industry.label;
-              return match;
-            });
-  
-            const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
-  
-            const isDraftMatch = filters.isDraft === event.isDraft;
-  
-            const eventMatches = subRegionMatch || gepMatch || buyerSegmentRollupMatch || accountSectorMatch || accountSegmentMatch || productFamilyMatch || industryMatch || isPartneredEventMatch || isDraftMatch;
-  
-            return eventMatches;
+            // Sub-region filter match
+            const subRegionMatch = !filters.subRegions.some(subRegion => subRegion.checked) ||
+              filters.subRegions.some(subRegion => {
+                try {
+                  return subRegion.checked && event.subRegion?.includes(subRegion.label);
+                } catch (err) {
+                  console.error('Error checking subRegion filter:', err, subRegion, event);
+                  return false;
+                }
+              });
+        
+            // GEP filter match
+            const gepMatch = !filters.gep.some(gep => gep.checked) ||
+              filters.gep.some(gep => {
+                try {
+                  return gep.checked && event.gep?.includes(gep.label);
+                } catch (err) {
+                  console.error('Error checking GEP filter:', err, gep, event);
+                  return false;
+                }
+              });
+        
+            // Buyer Segment Rollup filter match
+            const buyerSegmentRollupMatch = !filters.buyerSegmentRollup.some(segment => segment.checked) ||
+              filters.buyerSegmentRollup.some(segment => {
+                try {
+                  return segment.checked && event.buyerSegmentRollup?.includes(segment.label);
+                } catch (err) {
+                  console.error('Error checking buyerSegmentRollup filter:', err, segment, event);
+                  return false;
+                }
+              });
+        
+            // Account Sector filter match
+            const accountSectorMatch = !filters.accountSectors.some(sector => sector.checked) ||
+              filters.accountSectors.some(sector => {
+                try {
+                  return sector.checked && event.accountSectors?.[sector.label];
+                } catch (err) {
+                  console.error('Error checking accountSectors filter:', err, sector, event);
+                  return false;
+                }
+              });
+        
+            // Account Segment filter match
+            const accountSegmentMatch = !filters.accountSegments.some(segment => segment.checked) ||
+              filters.accountSegments.some(segment => {
+                try {
+                  return segment.checked && event.accountSegments?.[segment.label]?.selected;
+                } catch (err) {
+                  console.error('Error checking accountSegments filter:', err, segment, event);
+                  return false;
+                }
+              });
+        
+            // Product Family filter match
+            const productFamilyMatch = !filters.productFamily.some(product => product.checked) ||
+              filters.productFamily.some(product => {
+                try {
+                  return product.checked && event.productAlignment?.[product.label]?.selected;
+                } catch (err) {
+                  console.error('Error checking productFamily filter:', err, product, event);
+                  return false;
+                }
+              });
+        
+            // Industry filter match
+            const industryMatch = !filters.industry.some(industry => industry.checked) ||
+              filters.industry.some(industry => {
+                try {
+                  return industry.checked && event.industry === industry.label;
+                } catch (err) {
+                  console.error('Error checking industry filter:', err, industry, event);
+                  return false;
+                }
+              });
+        
+            // Boolean checks for isPartneredEvent and isDraft
+            const isPartneredEventMatch = filters.isPartneredEvent === undefined || filters.isPartneredEvent === event.isPartneredEvent;
+            const isDraftMatch = filters.isDraft === undefined || filters.isDraft === event.isDraft;
+        
+            return (
+              subRegionMatch &&
+              gepMatch &&
+              buyerSegmentRollupMatch &&
+              accountSectorMatch &&
+              accountSegmentMatch &&
+              productFamilyMatch &&
+              industryMatch &&
+              isPartneredEventMatch &&
+              isDraftMatch
+            );
           } catch (filterError) {
             console.error('Error applying filters to event:', filterError, event);
             return false;
