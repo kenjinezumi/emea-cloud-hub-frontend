@@ -92,17 +92,17 @@ export default function YearView() {
     }
 
     const hasFiltersApplied =
-      [
-        ...filters.subRegions,
-        ...filters.gep,
-        ...filters.buyerSegmentRollup,
-        ...filters.accountSectors,
-        ...filters.accountSegments,
-        ...filters.productFamily,
-        ...filters.industry,
-      ].some((filter) => filter.checked) ||
-      filters.isPartneredEvent !== undefined ||
-      filters.draftStatus !== undefined;
+    [
+      ...filters.subRegions,
+      ...filters.gep,
+      ...filters.buyerSegmentRollup,
+      ...filters.accountSectors,
+      ...filters.accountSegments,
+      ...filters.productFamily,
+      ...filters.industry,
+    ].some((filter) => filter.checked) ||
+    filters.partnerEvent !== undefined ||
+    filters.draftStatus !== undefined;
 
     // If no filters are applied, return all events
     if (!hasFiltersApplied) {
@@ -239,9 +239,17 @@ export default function YearView() {
             });
 
           // Boolean checks for isPartneredEvent and isDraft
+          const selectedPartneredStatuses = Array.isArray(
+            filters.partnerEvent
+          )
+            ? filters.partnerEvent
+                .filter((option) => option.checked)
+                .map((option) => option.value)
+            : [];
+  
           const isPartneredEventMatch =
-            filters.isPartneredEvent === undefined ||
-            filters.isPartneredEvent === event.isPartneredEvent;
+            selectedPartneredStatuses.length === 0 ||
+            selectedPartneredStatuses.includes(event.isPartneredEvent);
           const selectedDraftStatuses = Array.isArray(filters.draftStatus)
             ? filters.draftStatus
                 .filter((option) => option.checked)

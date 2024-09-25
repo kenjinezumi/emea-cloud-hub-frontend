@@ -44,7 +44,7 @@ export default function MonthView({ month, isYearView = false }) {
             ...filters.productFamily,
             ...filters.industry,
           ].some((filter) => filter.checked) ||
-          filters.isPartneredEvent !== undefined ||
+          filters.partnerEvent !== undefined ||
           filters.draftStatus !== undefined;
 
         // If no filters are applied, return all events
@@ -195,9 +195,19 @@ export default function MonthView({ month, isYearView = false }) {
                 });
 
               // Boolean checks for isPartneredEvent and isDraft
+
+              const selectedPartneredStatuses = Array.isArray(
+                filters.partnerEvent
+              )
+                ? filters.partnerEvent
+                    .filter((option) => option.checked)
+                    .map((option) => option.value)
+                : [];
+
               const isPartneredEventMatch =
-                filters.isPartneredEvent === undefined ||
-                filters.isPartneredEvent === event.isPartneredEvent;
+                selectedPartneredStatuses.length === 0 ||
+                selectedPartneredStatuses.includes(event.isPartneredEvent);
+
               const selectedDraftStatuses = Array.isArray(filters.draftStatus)
                 ? filters.draftStatus
                     .filter((option) => option.checked)

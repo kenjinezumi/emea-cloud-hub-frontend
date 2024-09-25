@@ -287,7 +287,8 @@ export const industryOptions = [
 ];
 
 export const partnerEventOptions = [
-  { label: 'Partner Event', checked: false },
+  { label: 'Yes', value: true, checked: false },
+  { label: 'No', value: false, checked: false },
 ];
 
 export const draftStatusOptions = [
