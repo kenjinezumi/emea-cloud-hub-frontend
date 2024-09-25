@@ -18,7 +18,8 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `languagesAndTemplates` ARRAY<STRUCT<
     `platform` STRING,
     `language` STRING,
-    `template` STRING
+    `template` STRING,
+    `subjectLine` STRING
   >>,
   `okr` ARRAY<STRUCT<
     `type` STRING,
