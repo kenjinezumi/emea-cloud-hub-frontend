@@ -55,8 +55,11 @@ export default function ContextWrapper(props) {
     accountSegments: [],
     productFamily: [],
     industry: [],
-    isPartneredEvent: true,
-    isDraft: true
+    isPartneredEvent: '',
+    isDraft: [
+      { label: 'Yes', value: true, checked: false },
+      { label: 'No', value: false, checked: false },
+    ],  
   });
   
   const [searchText, setSearchText] = useState('');
@@ -209,7 +212,6 @@ export default function ContextWrapper(props) {
         eventDetails, 
         setEventDetails,
         isAuthenticated, 
-        setIsAuthenticated,
         setIsAuthenticated,
         user,
         handleLogin,  // Add login function to the context

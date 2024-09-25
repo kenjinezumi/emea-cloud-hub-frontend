@@ -154,6 +154,6 @@ export default function Filters() {
       {renderFilterSection('Industry', localIndustryOptions, setLocalIndustryOptions, isIndustryExpanded, setIsIndustryExpanded)}
       {renderFilterSection('Is Partner Event', localPartnerEventOptions, setLocalPartnerEventOptions, isPartnerEventExpanded, setIsPartnerEventExpanded)}
       {renderFilterSection('Draft Status', localDraftStatusOptions, setLocalDraftStatusOptions, isDraftStatusExpanded, setIsDraftStatusExpanded)}
-    </div>
+      </div>
   );
 }

@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useState, useMemo, useCallback } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import dayjs from "dayjs";
 import MonthView from "./MonthView";
 import { createYearData } from "../../util";
@@ -20,16 +26,28 @@ import SecurityIcon from "@mui/icons-material/Security";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 
 export const gepOptions = [
-  { label: 'Build Modern Apps', icon: BuildIcon, color: '#ff5722' },  // Orange
-  { label: 'Data Cloud', icon: CloudIcon, color: '#2196f3' },  // Blue
-  { label: 'Developer', icon: DeveloperModeIcon, color: '#4caf50' },  // Green
-  { label: 'Digital Natives - Early Stage Startups', icon: PeopleIcon, color: '#9c27b0' },  // Purple
-  { label: 'Google Workspace', icon: WorkspacePremiumIcon, color: '#fbc02d' },  // Yellow
-  { label: 'Infrastructure Modernization', icon: StorageIcon, color: '#795548' },  // Brown
-  { label: 'Not Application (Not tied to Any Global Engagement Plays)', icon: PublicIcon, color: '#607d8b' },  // Grey
-  { label: 'Reimagine FSI', icon: PeopleIcon, color: '#ff9800' },  // Orange
-  { label: 'Secure What Matters Most', icon: SecurityIcon, color: '#e91e63' },  // Pink
-  { label: 'Solving for Innovation', icon: LightbulbIcon, color: '#ffc107' },  // Amber
+  { label: "Build Modern Apps", icon: BuildIcon, color: "#ff5722" }, // Orange
+  { label: "Data Cloud", icon: CloudIcon, color: "#2196f3" }, // Blue
+  { label: "Developer", icon: DeveloperModeIcon, color: "#4caf50" }, // Green
+  {
+    label: "Digital Natives - Early Stage Startups",
+    icon: PeopleIcon,
+    color: "#9c27b0",
+  }, // Purple
+  { label: "Google Workspace", icon: WorkspacePremiumIcon, color: "#fbc02d" }, // Yellow
+  {
+    label: "Infrastructure Modernization",
+    icon: StorageIcon,
+    color: "#795548",
+  }, // Brown
+  {
+    label: "Not Application (Not tied to Any Global Engagement Plays)",
+    icon: PublicIcon,
+    color: "#607d8b",
+  }, // Grey
+  { label: "Reimagine FSI", icon: PeopleIcon, color: "#ff9800" }, // Orange
+  { label: "Secure What Matters Most", icon: SecurityIcon, color: "#e91e63" }, // Pink
+  { label: "Solving for Innovation", icon: LightbulbIcon, color: "#ffc107" }, // Amber
 ];
 
 export default function YearView() {
@@ -66,125 +84,189 @@ export default function YearView() {
   // Apply filters to the events data
   const applyFilters = useCallback(async (events, filters) => {
     if (!Array.isArray(events)) {
-      console.error("applyFilters was called with 'events' that is not an array:", events);
+      console.error(
+        "applyFilters was called with 'events' that is not an array:",
+        events
+      );
       return [];
     }
 
-    const hasFiltersApplied = [
-      ...filters.subRegions,
-      ...filters.gep,
-      ...filters.buyerSegmentRollup,
-      ...filters.accountSectors,
-      ...filters.accountSegments,
-      ...filters.productFamily,
-      ...filters.industry
-    ].some(filter => filter.checked) || filters.isPartneredEvent !== undefined || filters.isDraft !== undefined;
-  
+    const hasFiltersApplied =
+      [
+        ...filters.subRegions,
+        ...filters.gep,
+        ...filters.buyerSegmentRollup,
+        ...filters.accountSectors,
+        ...filters.accountSegments,
+        ...filters.productFamily,
+        ...filters.industry,
+      ].some((filter) => filter.checked) ||
+      filters.isPartneredEvent !== undefined ||
+      filters.draftStatus !== undefined;
+
     // If no filters are applied, return all events
     if (!hasFiltersApplied) {
       return events;
     }
-    
 
-    const results = await Promise.all(events.map(async (event) => {
-      try {
-        // Sub-region filter match
-        const subRegionMatch = !filters.subRegions.some(subRegion => subRegion.checked) ||
-          filters.subRegions.some(subRegion => {
-            try {
-              return subRegion.checked && event.subRegion?.includes(subRegion.label);
-            } catch (err) {
-              console.error('Error checking subRegion filter:', err, subRegion, event);
-              return false;
-            }
-          });
-    
-        // GEP filter match
-        const gepMatch = !filters.gep.some(gep => gep.checked) ||
-          filters.gep.some(gep => {
-            try {
-              return gep.checked && event.gep?.includes(gep.label);
-            } catch (err) {
-              console.error('Error checking GEP filter:', err, gep, event);
-              return false;
-            }
-          });
-    
-        // Buyer Segment Rollup filter match
-        const buyerSegmentRollupMatch = !filters.buyerSegmentRollup.some(segment => segment.checked) ||
-          filters.buyerSegmentRollup.some(segment => {
-            try {
-              return segment.checked && event.buyerSegmentRollup?.includes(segment.label);
-            } catch (err) {
-              console.error('Error checking buyerSegmentRollup filter:', err, segment, event);
-              return false;
-            }
-          });
-    
-        // Account Sector filter match
-        const accountSectorMatch = !filters.accountSectors.some(sector => sector.checked) ||
-          filters.accountSectors.some(sector => {
-            try {
-              return sector.checked && event.accountSectors?.[sector.label];
-            } catch (err) {
-              console.error('Error checking accountSectors filter:', err, sector, event);
-              return false;
-            }
-          });
-    
-        // Account Segment filter match
-        const accountSegmentMatch = !filters.accountSegments.some(segment => segment.checked) ||
-          filters.accountSegments.some(segment => {
-            try {
-              return segment.checked && event.accountSegments?.[segment.label]?.selected;
-            } catch (err) {
-              console.error('Error checking accountSegments filter:', err, segment, event);
-              return false;
-            }
-          });
-    
-        // Product Family filter match
-        const productFamilyMatch = !filters.productFamily.some(product => product.checked) ||
-          filters.productFamily.some(product => {
-            try {
-              return product.checked && event.productAlignment?.[product.label]?.selected;
-            } catch (err) {
-              console.error('Error checking productFamily filter:', err, product, event);
-              return false;
-            }
-          });
-    
-        // Industry filter match
-        const industryMatch = !filters.industry.some(industry => industry.checked) ||
-          filters.industry.some(industry => {
-            try {
-              return industry.checked && event.industry === industry.label;
-            } catch (err) {
-              console.error('Error checking industry filter:', err, industry, event);
-              return false;
-            }
-          });
-    
-        // Boolean checks for isPartneredEvent and isDraft
-        const isPartneredEventMatch = filters.isPartneredEvent === undefined || filters.isPartneredEvent === event.isPartneredEvent;
-        const isDraftMatch = filters.isDraft === undefined || filters.isDraft === event.isDraft;
-    
-        return (
-          subRegionMatch &&
-          gepMatch &&
-          buyerSegmentRollupMatch &&
-          accountSectorMatch &&
-          accountSegmentMatch &&
-          productFamilyMatch &&
-          industryMatch &&
-          isPartneredEventMatch &&
-          isDraftMatch
-        );
-      } catch (filterError) {
-        console.error('Error applying filters to event:', filterError, event);
-        return false;
-      }
-    }));
+    const results = await Promise.all(
+      events.map(async (event) => {
+        try {
+          // Sub-region filter match
+          const subRegionMatch =
+            !filters.subRegions.some((subRegion) => subRegion.checked) ||
+            filters.subRegions.some((subRegion) => {
+              try {
+                return (
+                  subRegion.checked &&
+                  event.subRegion?.includes(subRegion.label)
+                );
+              } catch (err) {
+                console.error(
+                  "Error checking subRegion filter:",
+                  err,
+                  subRegion,
+                  event
+                );
+                return false;
+              }
+            });
+
+          // GEP filter match
+          const gepMatch =
+            !filters.gep.some((gep) => gep.checked) ||
+            filters.gep.some((gep) => {
+              try {
+                return gep.checked && event.gep?.includes(gep.label);
+              } catch (err) {
+                console.error("Error checking GEP filter:", err, gep, event);
+                return false;
+              }
+            });
+
+          // Buyer Segment Rollup filter match
+          const buyerSegmentRollupMatch =
+            !filters.buyerSegmentRollup.some((segment) => segment.checked) ||
+            filters.buyerSegmentRollup.some((segment) => {
+              try {
+                return (
+                  segment.checked &&
+                  event.buyerSegmentRollup?.includes(segment.label)
+                );
+              } catch (err) {
+                console.error(
+                  "Error checking buyerSegmentRollup filter:",
+                  err,
+                  segment,
+                  event
+                );
+                return false;
+              }
+            });
+
+          // Account Sector filter match
+          const accountSectorMatch =
+            !filters.accountSectors.some((sector) => sector.checked) ||
+            filters.accountSectors.some((sector) => {
+              try {
+                return sector.checked && event.accountSectors?.[sector.label];
+              } catch (err) {
+                console.error(
+                  "Error checking accountSectors filter:",
+                  err,
+                  sector,
+                  event
+                );
+                return false;
+              }
+            });
+
+          // Account Segment filter match
+          const accountSegmentMatch =
+            !filters.accountSegments.some((segment) => segment.checked) ||
+            filters.accountSegments.some((segment) => {
+              try {
+                return (
+                  segment.checked &&
+                  event.accountSegments?.[segment.label]?.selected
+                );
+              } catch (err) {
+                console.error(
+                  "Error checking accountSegments filter:",
+                  err,
+                  segment,
+                  event
+                );
+                return false;
+              }
+            });
+
+          // Product Family filter match
+          const productFamilyMatch =
+            !filters.productFamily.some((product) => product.checked) ||
+            filters.productFamily.some((product) => {
+              try {
+                return (
+                  product.checked &&
+                  event.productAlignment?.[product.label]?.selected
+                );
+              } catch (err) {
+                console.error(
+                  "Error checking productFamily filter:",
+                  err,
+                  product,
+                  event
+                );
+                return false;
+              }
+            });
+
+          // Industry filter match
+          const industryMatch =
+            !filters.industry.some((industry) => industry.checked) ||
+            filters.industry.some((industry) => {
+              try {
+                return industry.checked && event.industry === industry.label;
+              } catch (err) {
+                console.error(
+                  "Error checking industry filter:",
+                  err,
+                  industry,
+                  event
+                );
+                return false;
+              }
+            });
+
+          // Boolean checks for isPartneredEvent and isDraft
+          const isPartneredEventMatch =
+            filters.isPartneredEvent === undefined ||
+            filters.isPartneredEvent === event.isPartneredEvent;
+          const selectedDraftStatuses = Array.isArray(filters.draftStatus)
+            ? filters.draftStatus
+                .filter((option) => option.checked)
+                .map((option) => option.value)
+            : [];
+          const isDraftMatch =
+            selectedDraftStatuses.length === 0 ||
+            selectedDraftStatuses.includes(event.isDraft);
+          return (
+            subRegionMatch &&
+            gepMatch &&
+            buyerSegmentRollupMatch &&
+            accountSectorMatch &&
+            accountSegmentMatch &&
+            productFamilyMatch &&
+            industryMatch &&
+            isPartneredEventMatch &&
+            isDraftMatch
+          );
+        } catch (filterError) {
+          console.error("Error applying filters to event:", filterError, event);
+          return false;
+        }
+      })
+    );
 
     return events.filter((_, index) => results[index]);
   }, []);
@@ -205,7 +287,11 @@ export default function YearView() {
 
         event.gep.forEach((gep) => {
           if (counts[gep]) {
-            for (let monthIndex = startMonth; monthIndex <= endMonth; monthIndex++) {
+            for (
+              let monthIndex = startMonth;
+              monthIndex <= endMonth;
+              monthIndex++
+            ) {
               counts[gep][monthIndex]++; // Increment the count for this GEP and month
             }
           }
@@ -246,25 +332,53 @@ export default function YearView() {
   };
 
   return (
-    <div style={{ padding: 16, marginLeft: "40px", width: "90%", textAlign: "center" }}>
-      <Typography variant="h6" align="center" gutterBottom style={{ marginBottom: "30px" }}>
+    <div
+      style={{
+        padding: 16,
+        marginLeft: "40px",
+        width: "90%",
+        textAlign: "center",
+      }}
+    >
+      <Typography
+        variant="h6"
+        align="center"
+        gutterBottom
+        style={{ marginBottom: "30px" }}
+      >
         Year Overview - {year}
       </Typography>
       <Grid container spacing={2}>
         {yearData.map((month, index) => (
           <Grid key={index} item xs={12} sm={6} md={4}>
             <Paper className="month-container">
-              <div style={{ cursor: "pointer", padding: "16px", border: "1px solid transparent" }}>
+              <div
+                style={{
+                  cursor: "pointer",
+                  padding: "16px",
+                  border: "1px solid transparent",
+                }}
+              >
                 <Typography align="center" style={{ marginBottom: "4px" }}>
                   {dayjs(new Date(year, index)).format("MMMM")}
                 </Typography>
-                <Box display="flex" justifyContent="center" alignItems="center" flexWrap="wrap" gap={2}>
-                  {Object.entries(gepCounts).map(([gepLabel, counts]) => (
+                <Box
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  flexWrap="wrap"
+                  gap={2}
+                >
+                  {Object.entries(gepCounts).map(([gepLabel, counts]) =>
                     getGepChip(gepLabel, counts[index], index)
-                  ))}
+                  )}
                 </Box>
                 <div style={{ padding: "8px" }}>
-                  <MonthView month={month} daySelected={daySelected} isYearView={true} />
+                  <MonthView
+                    month={month}
+                    daySelected={daySelected}
+                    isYearView={true}
+                  />
                 </div>
               </div>
             </Paper>

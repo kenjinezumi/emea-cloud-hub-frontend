@@ -13,17 +13,12 @@ const dummyEventData = [
     "endDate": "2024-09-27T03:19:42.000Z",
     "marketingProgramInstanceId": "23423423",
     "eventType": "Online Event",
-    "region": "GLOBAL",
+    "region": "",
     "subRegion": [
-      "France",
-      "Benelux",
-      "CEE"
+     
     ],
     "country": [
-      "FR",
-      "BE",
-      "NL",
-      "PL"
+     
     ],
     "activityOwner": [],
     "speakers": [
@@ -181,8 +176,8 @@ const dummyEventData = [
       "Government",
       "Retail"
     ],
-    "city": "Paris",
-    "locationVenue": "Bercy",
+    "city": "",
+    "locationVenue": "",
     "marketingActivityType": null,
     "userTimezone": "Europe/London"
   },
@@ -218,48 +213,48 @@ const dummyEventData = [
     ],
     "isEventSeries": false,
     "languagesAndTemplates": [
-      // {
-      //   "platform": "Salesloft",
-      //   "language": "English",
-      //   "template": "This is a test for Gmail ok?",
-      //   "subjectLine": "This is a test"
-      // },
-      // {
-      //   "platform": "Salesloft",
-      //   "language": "Spanish",
-      //   "template": "This is a test for Gmail ok?",
-      //   "subjectLine": "This is a test"
-      // },
-      // {
-      //   "platform": "Salesloft",
-      //   "language": "Klingon",
-      //   "template": "This is a test for Gmail ok?",
-      //   "subjectLine": "This is a test"
-      // },
-      // {
-      //   "platform": "Salesloft",
-      //   "language": "Italian",
-      //   "template": "This is a test for Gmail ok?",
-      //   "subjectLine": "This is a test"
-      // },
-      // {
-      //   "platform": "Salesloft",
-      //   "language": "French",
-      //   "template": "This is a test for Gmail ok?",
-      //   "subjectLine": "This is a test"
-      // },
-      // {
-      //   "platform": "Salesloft",
-      //   "language": "German",
-      //   "template": "This is a test for Gmail ok?",
-      //   "subjectLine": "This is a test"
-      // },
-      // {
-      //   "platform": "Salesloft",
-      //   "language": "Japanese",
-      //   "template": "This is a test for Gmail ok?",
-      //   "subjectLine": "This is a test"
-      // }
+      {
+        "platform": "Salesloft",
+        "language": "English",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "Spanish",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "Klingon",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "Italian",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "French",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "German",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      },
+      {
+        "platform": "Salesloft",
+        "language": "Japanese",
+        "template": "This is a test for Gmail ok?",
+        "subjectLine": "This is a test"
+      }
     ],
     "okr": [
       {
@@ -331,12 +326,12 @@ const dummyEventData = [
     "partnerRole": "Speak at Google / 3rd Party Roundtable, Forum",
     "accountCategory": {
       "Digital Native": {
-        "selected": true,
-        "percentage": "50"
+        "selected": false,
+        "percentage": ""
       },
       "Traditional": {
-        "selected": true,
-        "percentage": "50"
+        "selected": false,
+        "percentage": ""
       }
     },
     "accountType": {
@@ -351,8 +346,8 @@ const dummyEventData = [
     },
     "productAlignment": {
       "GCP": {
-        "selected": true,
-        "percentage": "50"
+        "selected": false,
+        "percentage": ""
       },
       "GWS": {
         "selected": true,
@@ -364,7 +359,6 @@ const dummyEventData = [
       "Manufacturing",
       "Healthcare",
       "Education",
-      "Financial Services",
       "Government",
       "Retail"
     ],
