@@ -319,6 +319,8 @@ const EventForm = () => {
           if (response.success) {
             setSnackbarMessage("Draft saved successfully!");
             setSnackbarOpen(true);
+            saveAndNavigate(updatedFormData, "/location");
+
           } else {
             setSnackbarMessage("Failed to save draft.");
             setSnackbarOpen(true);
@@ -328,7 +330,6 @@ const EventForm = () => {
           setSnackbarOpen(true);
         }
 
-    saveAndNavigate(updatedFormData, "/location");
   };
 
   const onEmojiClick = (emojiData, event) => {

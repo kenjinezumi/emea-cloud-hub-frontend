@@ -133,12 +133,9 @@ const EventFormEmailInvitation = () => {
     setLanguagesAndTemplates(updatedItems);
   };
 
-
-
   const handlePersonalizationInsert = (token) => {
     setEditorContent((prevContent) => `${prevContent} ${token}`);
   };
-
 
   const handleSubjectLineChange = (value, index) => {
     setLanguagesAndTemplates((prev) =>
@@ -147,13 +144,14 @@ const EventFormEmailInvitation = () => {
       )
     );
   };
-  
+
   const handleEditorChange = (content, index) => {
     setLanguagesAndTemplates((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, template: content } : item))
+      prev.map((item, i) =>
+        i === index ? { ...item, template: content } : item
+      )
     );
   };
-  
 
   const handleNext = async () => {
     const formIsValid = languagesAndTemplates.every(
@@ -184,6 +182,7 @@ const EventFormEmailInvitation = () => {
       if (response.success) {
         setSnackbarMessage("Draft saved successfully!");
         setSnackbarOpen(true);
+        saveAndNavigate(updatedFormData, "/audience");
       } else {
         setSnackbarMessage("Failed to save draft.");
         setSnackbarOpen(true);
@@ -192,8 +191,6 @@ const EventFormEmailInvitation = () => {
       setSnackbarMessage("An error occurred while saving the draft.");
       setSnackbarOpen(true);
     }
-
-    saveAndNavigate(updatedFormData, "/audience");
   };
 
   const handlePrevious = () => {
@@ -406,15 +403,29 @@ const EventFormEmailInvitation = () => {
                           </>
                         ) : (
                           // Render a regular text field for Gmail
-                          <TextField
-                            multiline
-                            rows={8} // Increase the number of rows for larger input
+                          <ReactQuill
                             value={item.template}
-                            onChange={(e) =>
-                              handleTemplateChange(e.target.value, index)
+                            onChange={(content) =>
+                              handleEditorChange(content, index)
                             }
-                            variant="outlined"
-                            fullWidth
+                            style={{
+                              height: "300px",
+                              maxHeight: "400px",
+                              marginBottom: "20px",
+                            }}
+                            modules={{
+                              toolbar: [
+                                [
+                                  { header: "1" },
+                                  { header: "2" },
+                                  { font: [] },
+                                ],
+                                [{ list: "ordered" }, { list: "bullet" }],
+                                ["bold", "italic", "underline"],
+                                ["link", "image"],
+                                ["clean"],
+                              ],
+                            }}
                           />
                         )}
                       </Grid>

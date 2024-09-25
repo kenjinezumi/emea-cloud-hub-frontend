@@ -158,6 +158,20 @@ module.exports = (firestoreStore) => {
         }
     };
 
+    const baseTemplate = `
+  <html>
+    <body>
+      {{bodyContent}}
+    </body>
+  </html>
+`;
+
+// Function to populate the base template with content
+function populateTemplate(template, bodyContent) {
+  // Replace newlines with <br> for HTML formatting
+  // Replace the placeholder in the base template with actual content
+  return template.replace('{{bodyContent}}', formattedContent);
+}
 
     router.post('/send-gmail-invite', async (req, res) => {
       const { to, subject, body, accessToken } = req.body;
@@ -181,6 +195,8 @@ module.exports = (firestoreStore) => {
           auth: oauth2Client,
         });
     
+        const emailBody = populateTemplate(baseTemplate, body);
+
         // Prepare the raw email format
         const email = [
           `To: ${to}`,
@@ -188,7 +204,7 @@ module.exports = (firestoreStore) => {
           'MIME-Version: 1.0',
           `Subject: ${subject}`,
           '',
-          body,
+          emailBody,
         ].join('\n');
     
         const encodedMessage = Buffer.from(email)
