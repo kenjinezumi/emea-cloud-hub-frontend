@@ -86,7 +86,7 @@ export default function WeekView() {
         !filters.buyerSegmentRollup.some((segment) => segment.checked) ||
         filters.buyerSegmentRollup.some(
           (segment) =>
-            segment.checked && event.buyerSegmentRollup?.includes(segment.label)
+            segment.checked && event.audienceSeniority?.includes(segment.label)
         );
 
       const accountSectorMatch =
