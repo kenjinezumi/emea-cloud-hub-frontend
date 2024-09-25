@@ -11,9 +11,7 @@ export default function MonthView({ month, isYearView = false }) {
     setShowEventModal,
     setShowInfoEventModal,
     filters,
-    selectedEvent,    // Assume these are coming from the GlobalContext
     setSelectedEvent, // Assume these are coming from the GlobalContext
-    selectedEvents,   // Assume these are coming from the GlobalContext
     setSelectedEvents // Assume these are coming from the GlobalContext
   } = useContext(GlobalContext);
 

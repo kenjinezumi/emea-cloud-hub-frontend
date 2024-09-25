@@ -119,14 +119,13 @@ export default function DayColumn({ daySelected, events, onEventClick }) {
   }, [daySelected, setDaySelected, setShowEventModal]);
 
   const dayEvents = useMemo(() => {
-
-
     return events.filter(evt =>
       dayjs(evt.startDate).isSame(daySelected, 'day') ||
       dayjs(evt.endDate).isSame(daySelected, 'day') ||
       (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
     );
-  }, [filteredEvents, daySelected]);
+  }, [events, daySelected]);
+  
 
   const getEventStyleAndIcon = useCallback((eventType) => {
     switch (eventType) {
