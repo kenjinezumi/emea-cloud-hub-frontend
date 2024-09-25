@@ -424,6 +424,8 @@ export default function AudiencePersonaForm() {
           if (response.success) {
             setSnackbarMessage("Draft saved successfully!");
             setSnackbarOpen(true);
+            saveAndNavigate(updatedFormData, "/links");
+
           } else {
             setSnackbarMessage("Failed to save draft.");
             setSnackbarOpen(true);
@@ -432,7 +434,6 @@ export default function AudiencePersonaForm() {
           setSnackbarMessage("An error occurred while saving the draft.");
           setSnackbarOpen(true);
         }
-    saveAndNavigate(updatedFormData, "/links");
   };
   
 

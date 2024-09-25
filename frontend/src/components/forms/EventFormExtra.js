@@ -214,6 +214,8 @@ export default function ExtraDetailsForm() {
       if (response.success) {
         setSnackbarMessage("Draft saved successfully!");
         setSnackbarOpen(true);
+        saveAndNavigate(updatedFormData, "/audience");
+
       } else {
         setSnackbarMessage("Failed to save draft.");
         setSnackbarOpen(true);
@@ -223,7 +225,6 @@ export default function ExtraDetailsForm() {
       setSnackbarOpen(true);
     }
 
-    saveAndNavigate(updatedFormData, "/audience");
   };
 
   const handleSaveAsDraft = async () => {
