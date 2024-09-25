@@ -1,4 +1,4 @@
-import React, { useEffect,useContext, useState, useRef } from "react";
+import React, { useEffect, useContext, useState, useRef } from "react";
 import dayjs from "dayjs";
 import GlobalContext from "../../context/GlobalContext";
 import Draggable from "react-draggable";
@@ -272,7 +272,6 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-
   const formatListWithSpaces = (list) => {
     if (!list) return "";
     if (typeof list === "string") return list.replace(/,/g, ", ");
@@ -297,428 +296,50 @@ export default function EventInfoPopup({ event, close }) {
     const index = Math.floor(Math.random() * googleColors.length);
     return googleColors[index];
   };
-  
+
   const sections = {
-  Overview: (
-    <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
-      {selectedEvent.description && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{
-            pl: 2,
-            pr: 2,
-            color: "#5f6368",
-            mt: 1,
-            wordBreak: "break-word",
-            whiteSpace: "normal",
-          }}
-        >
-          <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          {selectedEvent.description}
-        </Typography>
-      )}
-
-      {selectedEvent.landingPageLinks?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{
-            pl: 2,
-            pr: 2,
-            color: "#5f6368",
-            mt: 1,
-            wordBreak: "break-word",
-            whiteSpace: "normal",
-          }}
-        >
-          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+    Overview: (
+      <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
+        {selectedEvent.description && (
           <Typography
             variant="body2"
-            sx={{ display: "inline", marginRight: "5px" }}
+            display="flex"
+            alignItems="center"
+            sx={{
+              pl: 2,
+              pr: 2,
+              color: "#5f6368",
+              mt: 1,
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+            }}
           >
-            Landing Page:
+            <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            {selectedEvent.description}
           </Typography>
-          {selectedEvent.landingPageLinks.map((link, index) => (
-            <MuiLink
-              key={index}
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                color: "#1a73e8",
-                marginLeft: "5px",
-                wordBreak: "break-word",
-                whiteSpace: "normal",
-              }}
+        )}
+
+        {selectedEvent.landingPageLinks?.length > 0 && (
+          <Typography
+            variant="body2"
+            display="flex"
+            alignItems="center"
+            sx={{
+              pl: 2,
+              pr: 2,
+              color: "#5f6368",
+              mt: 1,
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+            }}
+          >
+            <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            <Typography
+              variant="body2"
+              sx={{ display: "inline", marginRight: "5px" }}
             >
-              {link}
-            </MuiLink>
-          ))}
-        </Typography>
-      )}
-
-      {selectedEvent.organisedBy?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{
-            pl: 2,
-            pr: 2,
-            color: "#5f6368",
-            mt: 1,
-            wordBreak: "break-word",
-            whiteSpace: "normal",
-          }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Organized by:
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ pl: 2, pr: 2, flexWrap: "wrap" }}
-          >
-            {selectedEvent.organisedBy.map((organiser, index) => (
-              <Chip
-                key={index}
-                label={organiser}
-                component="a"
-                href={`https://moma.corp.google.com/person/${encodeURIComponent(
-                  organiser
-                )}`}
-                clickable
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{
-                  margin: "5px 0 5px 10px",
-                  backgroundColor: "#4285F4",
-                  color: "white",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                  cursor: "pointer",
-                  wordBreak: "break-word",
-                  whiteSpace: "normal",
-                }}
-              />
-            ))}
-          </Stack>
-        </Typography>
-      )}
-
-      {selectedEvent.speakers?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{
-            pl: 2,
-            pr: 2,
-            color: "#5f6368",
-            mt: 1,
-            wordBreak: "break-word",
-            whiteSpace: "normal",
-          }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Speakers:
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ pl: 2, pr: 2, flexWrap: "wrap" }}
-          >
-            {selectedEvent.speakers.map((speaker, index) => (
-              <Chip
-                key={index}
-                label={speaker}
-                component="a"
-                href={`mailto:${speaker}`}
-                clickable
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{
-                  margin: "5px 0 5px 10px",
-                  backgroundColor: "#4285F4",
-                  color: "white",
-                  border: "1px solid rgba(255, 255, 255, 0.3)",
-                  cursor: "pointer",
-                  wordBreak: "break-word",
-                  whiteSpace: "normal",
-                }}
-              />
-            ))}
-          </Stack>
-        </Typography>
-      )}
-
-      <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>
-        {selectedEvent.eventType && (
-          <Chip label={selectedEvent.eventType} color="primary" size="small" />
-        )}
-        {selectedEvent.isDirectPartner && (
-          <Chip label="Direct Partner" color="secondary" size="small" />
-        )}
-        {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <= 7 && (
-          <Chip
-            label="Newly published"
-            color="success"
-            variant="outlined"
-            size="small"
-          />
-        )}
-
-        {selectedEvent.isHighPriority && (
-          <Chip
-            label="High Priority"
-            icon={<WhatshotIcon style={{ color: red[500] }} />}
-            sx={{ backgroundColor: red[50], color: red[500] }}
-            size="small"
-          />
-        )}
-      </Stack>
-    </Stack>
-  ),
-
-  Details: (
-    <Stack spacing={2} sx={{ p: 3 }}>
-      {selectedEvent.audienceSeniority?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Buyer Segment Rollup:
-          <Typography
-            variant="body2"
-            sx={{
-              marginLeft: "5px",
-              wordBreak: "break-word",
-              whiteSpace: "normal",
-            }}
-          >
-            {selectedEvent.audienceSeniority.join(", ")}
-          </Typography>
-        </Typography>
-      )}
-
-      {selectedEvent.audiencePersona?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Buyer Segment:{" "}
-          {selectedEvent.audiencePersona.join(", ") || "N/A"}
-        </Typography>
-      )}
-
-      {selectedEvent.industry?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Industry:
-          <Typography
-            variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-          >
-            {selectedEvent.industry.join(", ")}
-          </Typography>
-        </Typography>
-      )}
-
-{selectedEvent.accountSectors && (selectedEvent.accountSectors.commercial || selectedEvent.accountSectors.public) && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Account Sectors:
-          <Typography
-            variant="body2"
-            sx={{
-              marginLeft: "5px",
-              wordBreak: "break-word",
-              whiteSpace: "normal",
-            }}
-          >
-            {`Commercial: ${
-              selectedEvent.accountSectors.commercial ? "Yes" : "No"
-            }, Public: ${selectedEvent.accountSectors.public ? "Yes" : "No"}`}
-          </Typography>
-        </Typography>
-      )}
-
-      {selectedEvent.accountCategory && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Account Category:{" "}
-          <Typography
-            variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-          >
-            {Object.entries(selectedEvent.accountCategory)
-              .map(([category, details]) => `${category}: ${details.percentage}%`)
-              .join(", ")}
-          </Typography>
-        </Typography>
-      )}
-
-{selectedEvent.accountSegments && Object.values(selectedEvent.accountSegments).some((seg) => seg.selected) && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Account Segments:{" "}
-          <Typography
-            variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-          >
-            {Object.entries(selectedEvent.accountSegments)
-              .map(([segment, details]) => `${segment}: ${details.percentage}%`)
-              .join(", ")}
-          </Typography>
-        </Typography>
-      )}
-
-{selectedEvent.accountType && Object.values(selectedEvent.accountType).some((type) => type.selected) && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Greenfield Status:{" "}
-          <Typography
-            variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-          >
-            {Object.entries(selectedEvent.accountType)
-              .map(([type, details]) => `${type}: ${details.percentage}%`)
-              .join(", ")}
-          </Typography>
-        </Typography>
-      )}
-
-{selectedEvent.productAlignment && Object.values(selectedEvent.productAlignment).some((product) => product.selected) && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Product Family:{" "}
-          <Typography
-            variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-          >
-            {Object.entries(selectedEvent.productAlignment)
-              .map(([product, details]) => `${product}: ${details.percentage}%`)
-              .join(", ")}
-          </Typography>
-        </Typography>
-      )}
-
-      {selectedEvent.aiVsCore && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          AI vs Core:
-          <Typography
-            variant="body2"
-            sx={{
-              marginLeft: "5px",
-              wordBreak: "break-word",
-              whiteSpace: "normal",
-            }}
-          >
-            {selectedEvent.aiVsCore}
-          </Typography>
-        </Typography>
-      )}
-
-{selectedEvent.okr?.length > 0 && selectedEvent.okr.some(okr => okr.percentage !== "") && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          OKR:
-          <Typography
-            variant="body2"
-            sx={{
-              marginLeft: "5px",
-              wordBreak: "break-word",
-              whiteSpace: "normal",
-            }}
-          >
-            {selectedEvent.okr
-              .map((okrItem) => `${okrItem.type}: ${okrItem.percentage}%`)
-              .join(", ")}
-          </Typography>
-        </Typography>
-      )}
-
-      {selectedEvent.eventSeries !== undefined && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Part of an event series? {selectedEvent.eventSeries ? "Yes" : "No"}
-        </Typography>
-      )}
-
-      {selectedEvent.customerUse !== undefined && (
-        <Typography
-          variant="body2"
-          display="flex"
-          alignItems="center"
-          sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
-        >
-          <CheckCircleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Approved for customer use? {selectedEvent.customerUse ? "Yes" : "No"}
-        </Typography>
-      )}
-    </Stack>
-  ),
-
-  Links: (
-    <Stack spacing={2} sx={{ p: 3 }}>
-      {selectedEvent.landingPageLinks?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Landing Page Links:{" "}
-          <Typography
-            variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
-          >
+              Landing Page:
+            </Typography>
             {selectedEvent.landingPageLinks.map((link, index) => (
               <MuiLink
                 key={index}
@@ -726,8 +347,8 @@ export default function EventInfoPopup({ event, close }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  color: "#4285F4",
-                  marginLeft: index > 0 ? "5px" : "0px",
+                  color: "#1a73e8",
+                  marginLeft: "5px",
                   wordBreak: "break-word",
                   whiteSpace: "normal",
                 }}
@@ -736,115 +357,519 @@ export default function EventInfoPopup({ event, close }) {
               </MuiLink>
             ))}
           </Typography>
-        </Typography>
-      )}
+        )}
 
-      {selectedEvent.salesKitLinks?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Sales Kit Links:{" "}
+        {selectedEvent.organisedBy?.length > 0 && (
           <Typography
             variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+            display="flex"
+            alignItems="center"
+            sx={{
+              pl: 2,
+              pr: 2,
+              color: "#5f6368",
+              mt: 1,
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+            }}
           >
-            {selectedEvent.salesKitLinks
-              .map((link) => (
+            <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Organized by:
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ pl: 2, pr: 2, flexWrap: "wrap" }}
+            >
+              {selectedEvent.organisedBy.map((organiser, index) => (
+                <Chip
+                  key={index}
+                  label={organiser}
+                  component="a"
+                  href={`https://moma.corp.google.com/person/${encodeURIComponent(
+                    organiser
+                  )}`}
+                  clickable
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    margin: "5px 0 5px 10px",
+                    backgroundColor: "#4285F4",
+                    color: "white",
+                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                    cursor: "pointer",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                />
+              ))}
+            </Stack>
+          </Typography>
+        )}
+
+        {selectedEvent.speakers?.length > 0 && (
+          <Typography
+            variant="body2"
+            display="flex"
+            alignItems="center"
+            sx={{
+              pl: 2,
+              pr: 2,
+              color: "#5f6368",
+              mt: 1,
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+            }}
+          >
+            <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Speakers:
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ pl: 2, pr: 2, flexWrap: "wrap" }}
+            >
+              {selectedEvent.speakers.map((speaker, index) => (
+                <Chip
+                  key={index}
+                  label={speaker}
+                  component="a"
+                  href={`mailto:${speaker}`}
+                  clickable
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    margin: "5px 0 5px 10px",
+                    backgroundColor: "#4285F4",
+                    color: "white",
+                    border: "1px solid rgba(255, 255, 255, 0.3)",
+                    cursor: "pointer",
+                    wordBreak: "break-word",
+                    whiteSpace: "normal",
+                  }}
+                />
+              ))}
+            </Stack>
+          </Typography>
+        )}
+
+        <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>
+          {selectedEvent.eventType && (
+            <Chip
+              label={selectedEvent.eventType}
+              color="primary"
+              size="small"
+            />
+          )}
+          {selectedEvent.isDirectPartner && (
+            <Chip label="Direct Partner" color="secondary" size="small" />
+          )}
+          {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <=
+            7 && (
+            <Chip
+              label="Newly published"
+              color="success"
+              variant="outlined"
+              size="small"
+            />
+          )}
+
+          {selectedEvent.isHighPriority && (
+            <Chip
+              label="High Priority"
+              icon={<WhatshotIcon style={{ color: red[500] }} />}
+              sx={{ backgroundColor: red[50], color: red[500] }}
+              size="small"
+            />
+          )}
+        </Stack>
+      </Stack>
+    ),
+
+    Details: (
+      <Stack spacing={2} sx={{ p: 3 }}>
+        {selectedEvent.audienceSeniority?.length > 0 && (
+          <Typography
+            variant="body2"
+            display="flex"
+            alignItems="center"
+            sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+          >
+            <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Buyer Segment Rollup:
+            <Typography
+              variant="body2"
+              sx={{
+                marginLeft: "5px",
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+              }}
+            >
+              {selectedEvent.audienceSeniority.join(", ")}
+            </Typography>
+          </Typography>
+        )}
+
+        {selectedEvent.audiencePersona?.length > 0 && (
+          <Typography
+            variant="body2"
+            display="flex"
+            sx={{ whiteSpace: "normal" }}
+          >
+            <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Buyer Segment: {selectedEvent.audiencePersona.join(", ") || "N/A"}
+          </Typography>
+        )}
+
+        {selectedEvent.industry?.length > 0 && (
+          <Typography
+            variant="body2"
+            display="flex"
+            sx={{ whiteSpace: "normal" }}
+          >
+            <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Industry:
+            <Typography
+              variant="body2"
+              sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+            >
+              {selectedEvent.industry.join(", ")}
+            </Typography>
+          </Typography>
+        )}
+
+        {selectedEvent.accountSectors &&
+          (selectedEvent.accountSectors.commercial ||
+            selectedEvent.accountSectors.public) && (
+            <Typography
+              variant="body2"
+              display="flex"
+              alignItems="center"
+              sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+            >
+              <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+              Account Sectors:
+              <Typography
+                variant="body2"
+                sx={{
+                  marginLeft: "5px",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                }}
+              >
+                {`Commercial: ${
+                  selectedEvent.accountSectors.commercial ? "Yes" : "No"
+                }, Public: ${
+                  selectedEvent.accountSectors.public ? "Yes" : "No"
+                }`}
+              </Typography>
+            </Typography>
+          )}
+
+        {selectedEvent.accountCategory &&
+          Object.values(selectedEvent.accountCategory).some(
+            (category) => category.selected
+          ) && (
+            <Typography
+              variant="body2"
+              display="flex"
+              sx={{ whiteSpace: "normal" }}
+            >
+              <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+              Account Category:{" "}
+              <Typography
+                variant="body2"
+                sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+              >
+                {Object.entries(selectedEvent.accountCategory)
+                  .filter(([_, details]) => details.selected)
+                  .map(
+                    ([category, details]) =>
+                      `${category}: ${details.percentage}%`
+                  )
+                  .join(", ")}
+              </Typography>
+            </Typography>
+          )}
+
+        {selectedEvent.accountSegments &&
+          Object.values(selectedEvent.accountSegments).some(
+            (seg) => seg.selected
+          ) && (
+            <Typography
+              variant="body2"
+              display="flex"
+              sx={{ whiteSpace: "normal" }}
+            >
+              <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+              Account Segments:{" "}
+              <Typography
+                variant="body2"
+                sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+              >
+                {Object.entries(selectedEvent.accountSegments)
+                  .map(
+                    ([segment, details]) => `${segment}: ${details.percentage}%`
+                  )
+                  .join(", ")}
+              </Typography>
+            </Typography>
+          )}
+
+        {selectedEvent.accountType &&
+          Object.values(selectedEvent.accountType).some(
+            (type) => type.selected
+          ) && (
+            <Typography
+              variant="body2"
+              display="flex"
+              sx={{ whiteSpace: "normal" }}
+            >
+              <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+              Greenfield Status:{" "}
+              <Typography
+                variant="body2"
+                sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+              >
+                {Object.entries(selectedEvent.accountType)
+                  .map(([type, details]) => `${type}: ${details.percentage}%`)
+                  .join(", ")}
+              </Typography>
+            </Typography>
+          )}
+
+        {selectedEvent.productAlignment &&
+          Object.values(selectedEvent.productAlignment).some(
+            (product) => product.selected
+          ) && (
+            <Typography
+              variant="body2"
+              display="flex"
+              sx={{ whiteSpace: "normal" }}
+            >
+              <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+              Product Family:{" "}
+              <Typography
+                variant="body2"
+                sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+              >
+                {Object.entries(selectedEvent.productAlignment)
+                  .map(
+                    ([product, details]) => `${product}: ${details.percentage}%`
+                  )
+                  .join(", ")}
+              </Typography>
+            </Typography>
+          )}
+
+        {selectedEvent.aiVsCore && (
+          <Typography
+            variant="body2"
+            display="flex"
+            alignItems="center"
+            sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+          >
+            <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            AI vs Core:
+            <Typography
+              variant="body2"
+              sx={{
+                marginLeft: "5px",
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+              }}
+            >
+              {selectedEvent.aiVsCore}
+            </Typography>
+          </Typography>
+        )}
+
+        {selectedEvent.okr?.length > 0 &&
+          selectedEvent.okr.some((okr) => okr.percentage !== "") && (
+            <Typography
+              variant="body2"
+              display="flex"
+              alignItems="center"
+              sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+            >
+              <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+              OKR:
+              <Typography
+                variant="body2"
+                sx={{
+                  marginLeft: "5px",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                }}
+              >
+                {selectedEvent.okr
+                  .map((okrItem) => `${okrItem.type}: ${okrItem.percentage}%`)
+                  .join(", ")}
+              </Typography>
+            </Typography>
+          )}
+
+        {selectedEvent.eventSeries !== undefined && (
+          <Typography
+            variant="body2"
+            display="flex"
+            alignItems="center"
+            sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+          >
+            <InfoIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Part of an event series? {selectedEvent.eventSeries ? "Yes" : "No"}
+          </Typography>
+        )}
+
+        {selectedEvent.customerUse !== undefined && (
+          <Typography
+            variant="body2"
+            display="flex"
+            alignItems="center"
+            sx={{ wordBreak: "break-word", whiteSpace: "normal" }}
+          >
+            <CheckCircleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Approved for customer use?{" "}
+            {selectedEvent.customerUse ? "Yes" : "No"}
+          </Typography>
+        )}
+      </Stack>
+    ),
+
+    Links: (
+      <Stack spacing={2} sx={{ p: 3 }}>
+        {selectedEvent.landingPageLinks?.length > 0 && (
+          <Typography
+            variant="body2"
+            display="flex"
+            sx={{ whiteSpace: "normal" }}
+          >
+            <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Landing Page Links:{" "}
+            <Typography
+              variant="body2"
+              sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+            >
+              {selectedEvent.landingPageLinks.map((link, index) => (
                 <MuiLink
-                  key={link}
+                  key={index}
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
                     color: "#4285F4",
+                    marginLeft: index > 0 ? "5px" : "0px",
                     wordBreak: "break-word",
                     whiteSpace: "normal",
                   }}
                 >
                   {link}
                 </MuiLink>
-              ))
-              .reduce((prev, curr) => [prev, ", ", curr])}
+              ))}
+            </Typography>
           </Typography>
-        </Typography>
-      )}
+        )}
 
-      {selectedEvent.hailoLinks?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-          Hailo Links:{" "}
+        {selectedEvent.salesKitLinks?.length > 0 && (
           <Typography
             variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+            display="flex"
+            sx={{ whiteSpace: "normal" }}
           >
-            {selectedEvent.hailoLinks
-              .map((link) => (
-                <MuiLink
-                  key={link}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#4285F4",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  {link}
-                </MuiLink>
-              ))
-              .reduce((prev, curr) => [prev, ", ", curr])}
+            <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Sales Kit Links:{" "}
+            <Typography
+              variant="body2"
+              sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+            >
+              {selectedEvent.salesKitLinks
+                .map((link) => (
+                  <MuiLink
+                    key={link}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "#4285F4",
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {link}
+                  </MuiLink>
+                ))
+                .reduce((prev, curr) => [prev, ", ", curr])}
+            </Typography>
           </Typography>
-        </Typography>
-      )}
+        )}
 
-      {selectedEvent.otherDocumentsLinks?.length > 0 && (
-        <Typography
-          variant="body2"
-          display="flex"
-          sx={{ whiteSpace: "normal" }}
-        >
-          <DescriptionIcon
-            style={{ marginRight: "5px", color: "#1a73e8" }}
-          />
-          Other Documents:{" "}
+        {selectedEvent.hailoLinks?.length > 0 && (
           <Typography
             variant="body2"
-            sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+            display="flex"
+            sx={{ whiteSpace: "normal" }}
           >
-            {selectedEvent.otherDocumentsLinks
-              .map((link) => (
-                <MuiLink
-                  key={link}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#4285F4",
-                    wordBreak: "break-word",
-                    whiteSpace: "normal",
-                  }}
-                >
-                  {link}
-                </MuiLink>
-              ))
-              .reduce((prev, curr) => [prev, ", ", curr])}
+            <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Hailo Links:{" "}
+            <Typography
+              variant="body2"
+              sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+            >
+              {selectedEvent.hailoLinks
+                .map((link) => (
+                  <MuiLink
+                    key={link}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "#4285F4",
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {link}
+                  </MuiLink>
+                ))
+                .reduce((prev, curr) => [prev, ", ", curr])}
+            </Typography>
           </Typography>
-        </Typography>
-      )}
-    </Stack>
-  ),
-};
+        )}
 
+        {selectedEvent.otherDocumentsLinks?.length > 0 && (
+          <Typography
+            variant="body2"
+            display="flex"
+            sx={{ whiteSpace: "normal" }}
+          >
+            <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Other Documents:{" "}
+            <Typography
+              variant="body2"
+              sx={{ marginLeft: "5px", whiteSpace: "normal" }}
+            >
+              {selectedEvent.otherDocumentsLinks
+                .map((link) => (
+                  <MuiLink
+                    key={link}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: "#4285F4",
+                      wordBreak: "break-word",
+                      whiteSpace: "normal",
+                    }}
+                  >
+                    {link}
+                  </MuiLink>
+                ))
+                .reduce((prev, curr) => [prev, ", ", curr])}
+            </Typography>
+          </Typography>
+        )}
+      </Stack>
+    ),
+  };
 
-  
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20"
@@ -1092,7 +1117,9 @@ export default function EventInfoPopup({ event, close }) {
                     ? "rgba(255, 255, 255, 0.1)"
                     : "rgba(200, 200, 200, 0.5)",
                   color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
-                  boxShadow: hasLanguagesAndTemplates ? "0 1px 2px 0 rgba(60,64,67,0.302)" : "none",
+                  boxShadow: hasLanguagesAndTemplates
+                    ? "0 1px 2px 0 rgba(60,64,67,0.302)"
+                    : "none",
                   margin: "10px",
                   "&:hover": {
                     backgroundColor: hasLanguagesAndTemplates
@@ -1118,7 +1145,6 @@ export default function EventInfoPopup({ event, close }) {
                 Gmail Invite
               </Button>
 
-
               <Button
                 variant="contained"
                 sx={{
@@ -1126,7 +1152,9 @@ export default function EventInfoPopup({ event, close }) {
                     ? "rgba(255, 255, 255, 0.1)"
                     : "rgba(200, 200, 200, 0.5)",
                   color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
-                  boxShadow: hasLanguagesAndTemplates ? "0 1px 2px 0 rgba(60,64,67,0.302)" : "none",
+                  boxShadow: hasLanguagesAndTemplates
+                    ? "0 1px 2px 0 rgba(60,64,67,0.302)"
+                    : "none",
                   margin: "10px",
                   "&:hover": {
                     backgroundColor: hasLanguagesAndTemplates
