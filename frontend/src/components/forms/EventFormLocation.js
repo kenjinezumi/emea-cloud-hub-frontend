@@ -116,12 +116,17 @@ export default function LocationFormPage() {
       isDraft: true,
       isPublished: false,
     };
+    console.log(currentFormData)
     updateFormData(currentFormData);
+
+
     try {
       const response = await sendDataToAPI(currentFormData);
       if (response.success) {
         setSnackbarMessage("Details saved and published successfully!");
         setSnackbarOpen(true);
+        saveAndNavigate(currentFormData, "/extra");
+
       } else {
         setSnackbarMessage("Failed to save and publish.");
         setSnackbarOpen(true);
@@ -130,8 +135,9 @@ export default function LocationFormPage() {
       setSnackbarMessage("An error occurred while saving and publishing.");
       setSnackbarOpen(true);
     } 
-    saveAndNavigate(currentFormData, "/extra");
   };
+
+
   useEffect(() => {
     const currentFormData = {
       region,
@@ -139,21 +145,10 @@ export default function LocationFormPage() {
       country,
       city,
       locationVenue,
-      availableSubregions,
-      availableCountries,
     };
-
+  
     updateFormData(currentFormData);
-  }, [
-    region,
-    subRegion,
-    country,
-    city,
-    locationVenue,
-    availableSubregions,
-    availableCountries,
-    updateFormData,
-  ]);
+  }, [region, subRegion, country, city, locationVenue, updateFormData]);
 
   const handleRegionChange = (e) => {
     const selectedRegion = e.target.value;
@@ -181,6 +176,7 @@ export default function LocationFormPage() {
     setCountry([...new Set(countriesForSubregions)]);
   };
 
+  
   const handleSaveAsDraft = async () => {
     const isDraft = formData.isDraft !== undefined ? formData.isDraft : true;
 
