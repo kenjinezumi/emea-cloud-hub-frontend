@@ -133,21 +133,27 @@ const EventFormEmailInvitation = () => {
     setLanguagesAndTemplates(updatedItems);
   };
 
-  const handleEditorChange = (content, index) => {
-    const updatedItems = [...languagesAndTemplates];
-    updatedItems[index].template = content;
-    setLanguagesAndTemplates(updatedItems);
-  };
+
 
   const handlePersonalizationInsert = (token) => {
     setEditorContent((prevContent) => `${prevContent} ${token}`);
   };
 
+
   const handleSubjectLineChange = (value, index) => {
-    const updatedItems = [...languagesAndTemplates];
-    updatedItems[index].subjectLine = value;
-    setLanguagesAndTemplates(updatedItems);
+    setLanguagesAndTemplates((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, subjectLine: value } : item
+      )
+    );
   };
+  
+  const handleEditorChange = (content, index) => {
+    setLanguagesAndTemplates((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, template: content } : item))
+    );
+  };
+  
 
   const handleNext = async () => {
     const formIsValid = languagesAndTemplates.every(
