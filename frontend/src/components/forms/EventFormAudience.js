@@ -247,10 +247,8 @@ export default function AudiencePersonaForm() {
     }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     
-
-
     const selectedSegments = Object.keys(accountSegments)
     .filter((key) => accountSegments[key].selected) // Only selected segments
     .map((key) => ({
@@ -400,7 +398,7 @@ export default function AudiencePersonaForm() {
 
   
     // If all checks pass, save the form data and move to the next step
-    const currentFormData = {
+    const draftData = {
       audiencePersona,
       audienceSeniority,
       accountSectors,
@@ -411,12 +409,30 @@ export default function AudiencePersonaForm() {
       accountType,
       productAlignment,
       aiVsCore,
-      industry  // Include industry in the form data
+      industry,
+      isDraft: true,
+      isPublished: false
     };
   
     setIsFormValid(true);
-    updateFormData(currentFormData);
-    saveAndNavigate(currentFormData, "/links");
+    updateFormData(draftData);
+    const updatedFormData = { ...formData, ...draftData };
+
+
+    try {
+          const response = await sendDataToAPI(updatedFormData);
+          if (response.success) {
+            setSnackbarMessage("Draft saved successfully!");
+            setSnackbarOpen(true);
+          } else {
+            setSnackbarMessage("Failed to save draft.");
+            setSnackbarOpen(true);
+          }
+        } catch (error) {
+          setSnackbarMessage("An error occurred while saving the draft.");
+          setSnackbarOpen(true);
+        }
+    saveAndNavigate(updatedFormData, "/links");
   };
   
 

@@ -47,11 +47,18 @@ const EventFormEmailInvitation = () => {
       ? selectedEvent.languagesAndTemplates
       : formData.languagesAndTemplates?.length > 0
       ? formData.languagesAndTemplates
-      : [{ platform: "Gmail", language: "English", template: "", subjectLine: "" }]
+      : [
+          {
+            platform: "Gmail",
+            language: "English",
+            template: "",
+            subjectLine: "",
+          },
+        ]
   );
   const [isFormValid, setIsFormValid] = useState(true);
   const saveAndNavigate = useFormNavigation();
-  const [ setEditorContent] = useState("");
+  const [setEditorContent] = useState("");
 
   useEffect(() => {
     if (selectedEvent) {
@@ -86,8 +93,7 @@ const EventFormEmailInvitation = () => {
     const updatedFormData = { ...formData, languagesAndTemplates };
 
     // Only update formData if it has changed
-      updateFormData(updatedFormData);
-    
+    updateFormData(updatedFormData);
   }, [languagesAndTemplates, formData, updateFormData]);
 
   const handleAddLanguageAndTemplate = () => {
@@ -132,7 +138,6 @@ const EventFormEmailInvitation = () => {
     updatedItems[index].template = content;
     setLanguagesAndTemplates(updatedItems);
   };
-  
 
   const handlePersonalizationInsert = (token) => {
     setEditorContent((prevContent) => `${prevContent} ${token}`);
@@ -144,7 +149,7 @@ const EventFormEmailInvitation = () => {
     setLanguagesAndTemplates(updatedItems);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const formIsValid = languagesAndTemplates.every(
       (item) =>
         item.language.trim() !== "" &&
@@ -160,8 +165,27 @@ const EventFormEmailInvitation = () => {
       return;
     }
 
-    const updatedFormData = { ...formData, languagesAndTemplates };
+    const updatedFormData = {
+      ...formData,
+      languagesAndTemplates,
+      isDraft: true,
+      isPublished: false,
+    };
     updateFormData(updatedFormData);
+
+    try {
+      const response = await sendDataToAPI(updatedFormData, "draft");
+      if (response.success) {
+        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save draft.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarOpen(true);
+    }
 
     saveAndNavigate(updatedFormData, "/audience");
   };
@@ -329,23 +353,29 @@ const EventFormEmailInvitation = () => {
                         {item.platform === "Salesloft" ? (
                           <>
                             <ReactQuill
-  value={item.template} // Use item.template here
-  onChange={(content) => handleEditorChange(content, index)} // Pass the index to handleEditorChange
-  style={{
-    height: "300px",
-    maxHeight: "400px",
-    marginBottom: "20px",
-  }}
-  modules={{
-    toolbar: [
-      [{ header: "1" }, { header: "2" }, { font: [] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["bold", "italic", "underline"],
-      ["link", "image"],
-      ["clean"],
-    ],
-  }}
-/>
+                              value={item.template} // Use item.template here
+                              onChange={(content) =>
+                                handleEditorChange(content, index)
+                              } // Pass the index to handleEditorChange
+                              style={{
+                                height: "300px",
+                                maxHeight: "400px",
+                                marginBottom: "20px",
+                              }}
+                              modules={{
+                                toolbar: [
+                                  [
+                                    { header: "1" },
+                                    { header: "2" },
+                                    { font: [] },
+                                  ],
+                                  [{ list: "ordered" }, { list: "bullet" }],
+                                  ["bold", "italic", "underline"],
+                                  ["link", "image"],
+                                  ["clean"],
+                                ],
+                              }}
+                            />
                             <div style={{ marginTop: "20px", pt: "40px" }}>
                               <Typography
                                 variant="subtitle1"

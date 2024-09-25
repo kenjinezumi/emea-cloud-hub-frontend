@@ -89,7 +89,7 @@ export default function LocationFormPage() {
     setSubRegion(typeof value === "string" ? value.split(",") : value);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const isRegionValid = region.trim() !== "";
     const isSubRegionValid = subRegion.length > 0;
     const isCountryValid = country.length > 0;
@@ -106,7 +106,32 @@ export default function LocationFormPage() {
       return;
     }
 
-    const currentFormData = { region, subRegion, country, city, locationVenue };
+    const currentFormData = {
+      ...formData,
+      region,
+      subRegion,
+      country,
+      city,
+      locationVenue,
+      isDraft: true,
+      isPublished: false,
+    };
+    updateFormData(currentFormData);
+    try {
+      const response = await sendDataToAPI(currentFormData);
+      if (response.success) {
+        setSnackbarMessage("Details saved and published successfully!");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save and publish.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving and publishing.");
+      setSnackbarOpen(true);
+    } finally {
+      saveAndNavigate({}, "/");
+    }
     saveAndNavigate(currentFormData, "/extra");
   };
   useEffect(() => {
@@ -174,7 +199,6 @@ export default function LocationFormPage() {
 
     const updatedFormData = { ...formData, ...draftData };
     updateFormData(updatedFormData);
-
 
     try {
       const response = await sendDataToAPI(updatedFormData, "draft");

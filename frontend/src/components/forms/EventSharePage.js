@@ -56,17 +56,24 @@ function ShareEventPage() {
   };
 
   useEffect(() => {
-    getEventData(eventId)
-      .then((data) => {
-        setEventDetails(data[0]);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch event details:", error);
-        setError("Failed to load event details.");
-        setLoading(false);
-      });
-  }, [eventId]);
+    if (eventId) {
+      getEventData(eventId)
+        .then((data) => {
+          if (data.length > 0) {
+            setEventDetails(data[0]);  // Assuming `data[0]` contains the event details
+          } else {
+            setError("Event not found.");
+          }
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch event details:", error);
+          setError("Failed to load event details.");
+          setLoading(false);
+        });
+    }
+  }, [eventId]);  // Make sure this useEffect depends on `eventId`
+  
 
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography color="error">{error}</Typography>;

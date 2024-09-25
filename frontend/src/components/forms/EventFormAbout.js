@@ -253,7 +253,7 @@ const EventForm = () => {
     );
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const existingEventId = selectedEvent
       ? selectedEvent.eventId
       : formData.eventId;
@@ -292,7 +292,7 @@ const EventForm = () => {
       setSnackbarOpen(true);
       return;
     }
-    const newFormData = {
+    const draftData = {
       eventId,
       title,
       description,
@@ -307,9 +307,28 @@ const EventForm = () => {
       eventType,
       userTimezone,
       speakers,
+      isDraft: true,
+      isPublished: false
     };
 
-    saveAndNavigate(newFormData, "/location");
+    const updatedFormData = { ...formData, ...draftData };
+
+
+    try {
+          const response = await sendDataToAPI(updatedFormData);
+          if (response.success) {
+            setSnackbarMessage("Draft saved successfully!");
+            setSnackbarOpen(true);
+          } else {
+            setSnackbarMessage("Failed to save draft.");
+            setSnackbarOpen(true);
+          }
+        } catch (error) {
+          setSnackbarMessage("An error occurred while saving the draft.");
+          setSnackbarOpen(true);
+        }
+
+    saveAndNavigate(updatedFormData, "/location");
   };
 
   const onEmojiClick = (emojiData, event) => {

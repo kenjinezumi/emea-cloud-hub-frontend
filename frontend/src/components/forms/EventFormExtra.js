@@ -149,7 +149,7 @@ export default function ExtraDetailsForm() {
     setGep((currentGep) => currentGep.filter((gep) => gep !== gepToDelete));
   };
 
-  const handleNext = () => {
+  const handleNext =  async () => {
     const isCustomerUseValid = customerUse !== "";
     const isGepValid = gep.length > 0;
 
@@ -198,15 +198,32 @@ export default function ExtraDetailsForm() {
     //   return;
     // }
 
-    const currentFormData = {
+    const updatedFormData = {
+      ...formData,
       okr: selectedOkrs,
       gep,
       isPartneredEvent: isPartneredEvent === true,
       isApprovedForCustomerUse: customerUse === "yes",
       partnerRole,
+      isDraft: true,
+      isPublished: false,
+      
     };
+    try {
+      const response = await sendDataToAPI(updatedFormData, "draft");
+      if (response.success) {
+        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save draft.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarOpen(true);
+    }
 
-    saveAndNavigate(currentFormData, "/audience");
+    saveAndNavigate(updatedFormData, "/audience");
   };
 
   const handleSaveAsDraft = async () => {

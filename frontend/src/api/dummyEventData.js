@@ -189,7 +189,7 @@ const dummyEventData = [
   {
     "eventId": "b48dd1c6-wer8d8a-461f-83da-b86ea8335edc",
     "tacticId": null,
-    "title": "That's a test done by Kenji",
+    "title": "That's aiiii",
     "description": "This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...This is a description. This is a description...",
     "emoji": "🦖",
     "organisedBy": [
