@@ -46,15 +46,23 @@ export default function ExtraDetailsForm() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isFormValid, setIsFormValid] = useState(true);
   const [customerUse, setCustomerUse] = useState(
-    selectedEvent?.customerUse || formData?.customerUse || ""
+    formData?.isApprovedForCustomerUse !== undefined
+      ? formData.isApprovedForCustomerUse
+        ? "yes"
+        : "no"
+      : selectedEvent?.isApprovedForCustomerUse !== undefined
+      ? selectedEvent.isApprovedForCustomerUse
+        ? "yes"
+        : "no"
+      : ""
   );
-
+  
+  
+  
   const [okrSelections, setOkrSelections] = useState(() => {
-    const dataSource = selectedEvent || formData;
+    const dataSource = formData || selectedEvent;
     return okrOptions.reduce((acc, option) => {
-      const okrItem = dataSource?.okr?.find(
-        (item) => item.type === option.label
-      );
+      const okrItem = dataSource?.okr?.find((item) => item.type === option.label);
       acc[option.label] = {
         selected: !!okrItem && okrItem.percentage !== "",
         percentage: okrItem ? okrItem.percentage : "",
@@ -62,17 +70,17 @@ export default function ExtraDetailsForm() {
       return acc;
     }, {});
   });
-
-  const [gep, setGep] = useState(selectedEvent?.gep || formData?.gep || []);
-
+  
+  const [gep, setGep] = useState(formData?.gep || selectedEvent?.gep || []);
+  
   const [isPartneredEvent, setIsPartneredEvent] = useState(
-    selectedEvent?.isPartneredEvent || formData?.isPartneredEvent || false
+    formData?.isPartneredEvent || selectedEvent?.isPartneredEvent || false
   );
-
+  
   const [partnerRole, setPartnerRole] = useState(
-    selectedEvent?.partnerRole || formData?.partnerRole || ""
+    formData?.partnerRole || selectedEvent?.partnerRole || ""
   );
-
+  
   const [isCustomerUseError, setIsCustomerUseError] = useState(false);
   const [isGepError, setIsGepError] = useState(false);
 

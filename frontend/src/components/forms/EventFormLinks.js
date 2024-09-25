@@ -44,11 +44,32 @@ const formatLabel = (key) => {
 export default function LinksForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [links, setLinks] = useState({
-    landingPageLinks: Array.isArray(selectedEvent?.landingPageLinks) ? selectedEvent.landingPageLinks : formData.landingPageLinks || [],
-    salesKitLinks: Array.isArray(selectedEvent?.salesKitLinks) ? selectedEvent.salesKitLinks : formData.salesKitLinks || [],
-    hailoLinks: Array.isArray(selectedEvent?.hailoLinks) ? selectedEvent.hailoLinks : formData.hailoLinks || [],
-    otherDocumentsLinks: Array.isArray(selectedEvent?.otherDocumentsLinks) ? selectedEvent.otherDocumentsLinks : formData.otherDocumentsLinks || [],
+    landingPageLinks:
+      Array.isArray(formData?.landingPageLinks) && formData.landingPageLinks.length > 0
+        ? formData.landingPageLinks
+        : Array.isArray(selectedEvent?.landingPageLinks) && selectedEvent.landingPageLinks.length > 0
+        ? selectedEvent.landingPageLinks
+        : [],
+    salesKitLinks:
+      Array.isArray(formData?.salesKitLinks) && formData.salesKitLinks.length > 0
+        ? formData.salesKitLinks
+        : Array.isArray(selectedEvent?.salesKitLinks) && selectedEvent.salesKitLinks.length > 0
+        ? selectedEvent.salesKitLinks
+        : [],
+    hailoLinks:
+      Array.isArray(formData?.hailoLinks) && formData.hailoLinks.length > 0
+        ? formData.hailoLinks
+        : Array.isArray(selectedEvent?.hailoLinks) && selectedEvent.hailoLinks.length > 0
+        ? selectedEvent.hailoLinks
+        : [],
+    otherDocumentsLinks:
+      Array.isArray(formData?.otherDocumentsLinks) && formData.otherDocumentsLinks.length > 0
+        ? formData.otherDocumentsLinks
+        : Array.isArray(selectedEvent?.otherDocumentsLinks) && selectedEvent.otherDocumentsLinks.length > 0
+        ? selectedEvent.otherDocumentsLinks
+        : [],
   });
+  
 
   // Initialize `newLink` for inputs
   const [newLink, setNewLink] = useState({
@@ -69,23 +90,7 @@ export default function LinksForm() {
       updateFormData(currentFormData);
     }
   }, [links, formData, updateFormData]);
-  useEffect(() => {
-    if (selectedEvent) {
-      setLinks({
-        landingPageLinks: selectedEvent.landingPageLinks || [],
-        salesKitLinks: selectedEvent.salesKitLinks || [],
-        hailoLinks: selectedEvent.hailoLinks || [],
-        otherDocumentsLinks: selectedEvent.otherDocumentsLinks || [],
-      });
-    } else {
-      setLinks({
-        landingPageLinks: formData.landingPageLinks || [],
-        salesKitLinks: formData.salesKitLinks || [],
-        hailoLinks: formData.hailoLinks || [],
-        otherDocumentsLinks: formData.otherDocumentsLinks || [],
-      });
-    }
-  }, [selectedEvent, formData]);
+  
 
   const handleLinkChange = (type, value) => {
     setNewLink({ ...newLink, [type]: value });

@@ -49,61 +49,63 @@ const EventForm = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [eventType, setEventType] = useState(formData.eventType || "");
+  
+
   const [title, setTitle] = useState(
-    selectedEvent ? selectedEvent.title : formData.title || ""
+    formData?.title || selectedEvent?.title || ""
   );
+  
   const [description, setDescription] = useState(
-    selectedEvent ? selectedEvent.description : formData.description || ""
+    formData?.description || selectedEvent?.description || ""
   );
-  const [selectedLabel, setSelectedLabel] = useState(
-    selectedEvent
-      ? selectedEvent.label
-      : formData.selectedLabel || labelsClasses[0]
-  );
-
+  
   const [emoji, setEmoji] = useState(
-    selectedEvent ? selectedEvent.emoji : formData.emoji || ""
+    formData?.emoji || selectedEvent?.emoji || ""
   );
+  
   const [isClient, setIsClient] = useState(
-    selectedEvent ? selectedEvent.isClient : false
+    formData?.isClient || selectedEvent?.isClient || false
   );
+  
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  
   const [organisedBy, setOrganisedBy] = useState(
-    selectedEvent ? selectedEvent.organisedBy : formData.organisedBy || []
+    formData?.organisedBy || selectedEvent?.organisedBy || []
   );
-  const [dropdownValue2] = useState(formData.dropdownValue2 || "");
+  
   const [marketingActivityType, setMarketingActivityType] = useState(
-    formData.marketingActivityType || ""
+    formData?.marketingActivityType || ""
   );
+  
   const [isHighPriority, setIsHighPriority] = useState(
-    selectedEvent
-      ? selectedEvent.isHighPriority
-      : formData.isHighPriority || false
+    formData?.isHighPriority || selectedEvent?.isHighPriority || false
   );
+  
   const [isEventSeries, setIsEventSeries] = useState(
-    selectedEvent
-      ? selectedEvent.isEventSeries
-      : formData.isEventSeries || false
+    formData?.isEventSeries || selectedEvent?.isEventSeries || false
   );
- 
-
+  
   const [speakers, setSpeakers] = useState(
-    selectedEvent ? selectedEvent.speakers || [] : formData.speakers || []
+    formData?.speakers || selectedEvent?.speakers || []
   );
+  
   const [newSpeaker, setNewSpeaker] = useState("");
+  
   const today = new Date();
+  
   const [startDate, setStartDate] = useState(
-    selectedEvent?.startDate ? new Date(selectedEvent.startDate) : today
+    formData?.startDate ? new Date(formData.startDate) : selectedEvent?.startDate ? new Date(selectedEvent.startDate) : today
   );
   
   const [endDate, setEndDate] = useState(
-    selectedEvent?.endDate ? new Date(selectedEvent.endDate) : today
+    formData?.endDate ? new Date(formData.endDate) : selectedEvent?.endDate ? new Date(selectedEvent.endDate) : today
   );
+  
   const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(
-    selectedEvent
-      ? selectedEvent.marketingProgramInstanceId
-      : formData.marketingProgramInstanceId || ""
+    formData?.marketingProgramInstanceId || selectedEvent?.marketingProgramInstanceId || ""
   );
+  
+
   const [isFormValid, setIsFormValid] = useState(true);
   const [userTimezone, setUserTimezone] = useState(
     Intl.DateTimeFormat().resolvedOptions().timeZone
