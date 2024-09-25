@@ -291,5 +291,6 @@ export const partnerEventOptions = [
 ];
 
 export const draftStatusOptions = [
-  { label: 'Draft', checked: false},
+  { label: 'Yes', value: true, checked: false },
+  { label: 'No', value: false, checked: false },
 ];

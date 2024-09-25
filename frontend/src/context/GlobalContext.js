@@ -35,8 +35,10 @@ const GlobalContext = createContext({
     productFamily: [],
     industry: [],
     isPartneredEvent: '',
-    isDraft:''
-  },
+    isDraft: [
+      { label: 'Yes', value: true, checked: false },
+      { label: 'No', value: false, checked: false },
+    ],  },
   updateFilters: () => {},
   showEventInfoModal: false,
   setShowInfoEventModal: () => {},
@@ -56,7 +58,6 @@ export const GlobalProvider = ({ children }) => {
   const [showEventInfoModal, setShowInfoEventModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [eventDetails, setEventDetails] = useState(null);
-  const [isDraft, setIsDraft] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null); 
 
@@ -77,7 +78,10 @@ export const GlobalProvider = ({ children }) => {
     productFamily: [],
     industry: [],
     isPartneredEvent: [],
-    isDraft: []
+    isDraft: [
+      { label: 'Yes', value: true, checked: false },
+      { label: 'No', value: false, checked: false },
+    ],  
   });
 
   const toggleSidebar = () => {
@@ -89,7 +93,10 @@ export const GlobalProvider = ({ children }) => {
     setFormData({ ...formData, ...newData });
   };
   const updateFilters = (newFilters) => {
-    setFilters(newFilters);
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      ...newFilters,
+    }));
   };
   const resetFormData = () => {
     setFormData(initialFormData);

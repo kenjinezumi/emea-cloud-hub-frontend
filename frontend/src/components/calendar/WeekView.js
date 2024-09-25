@@ -46,9 +46,8 @@ export default function WeekView() {
       ...filters.accountSectors,
       ...filters.accountSegments,
       ...filters.productFamily,
-      ...filters.industry,
-    ].some((filter) => filter.checked) || filters.isPartneredEvent !== undefined || filters.isDraft !== undefined;
-  
+      ...filters.industry
+    ].some(filter => filter.checked) || filters.isPartneredEvent !== undefined || filters.draftStatus !== undefined;
     // If no filters are applied, return all events
     if (!hasFiltersApplied) {
       return events;
@@ -77,8 +76,11 @@ export default function WeekView() {
         filters.industry.some((industry) => industry.checked && event.industry === industry.label);
   
       const isPartneredEventMatch = filters.isPartneredEvent === undefined || filters.isPartneredEvent === event.isPartneredEvent;
-      const isDraftMatch = filters.isDraft === undefined || filters.isDraft === event.isDraft;
-  
+      const selectedDraftStatuses = Array.isArray(filters.draftStatus) 
+      ? filters.draftStatus.filter(option => option.checked).map(option => option.value)
+      : [];
+      const isDraftMatch = selectedDraftStatuses.length === 0 || selectedDraftStatuses.includes(event.isDraft);
+      
       return (
         subRegionMatch &&
         gepMatch &&
@@ -94,7 +96,6 @@ export default function WeekView() {
   }, [filters, events]);
 
   useEffect(() => {
-    console.log('Filtered Events:', filteredEvents);
   }, [filteredEvents]);
   
   useEffect(() => {
