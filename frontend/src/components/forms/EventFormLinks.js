@@ -394,8 +394,8 @@ export default function LinksForm() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            The details you are saving need to be accurate because we are going
-            to save it for customers. Are you sure you want to save and publish?
+          In case you added email invite copy, users will be able to invite customers with that copy. 
+          Please make sure your information is accurate.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
