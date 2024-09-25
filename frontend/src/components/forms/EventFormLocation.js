@@ -129,9 +129,7 @@ export default function LocationFormPage() {
     } catch (error) {
       setSnackbarMessage("An error occurred while saving and publishing.");
       setSnackbarOpen(true);
-    } finally {
-      saveAndNavigate({}, "/");
-    }
+    } 
     saveAndNavigate(currentFormData, "/extra");
   };
   useEffect(() => {
