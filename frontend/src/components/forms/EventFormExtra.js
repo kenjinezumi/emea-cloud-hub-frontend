@@ -98,7 +98,7 @@ export default function ExtraDetailsForm() {
   useEffect(() => {
     const updatedFormData = {
       ...formData,
-      customerUse,
+      isApprovedForCustomerUse: customerUse === "yes" ? true : false,
       okr: Object.keys(okrSelections).map((label) => ({
         type: label,
         percentage: okrSelections[label].percentage,
