@@ -53,10 +53,13 @@ export default function AudiencePersonaForm() {
   );
   
   const [accountSectors, setAccountSectors] = useState(
-    formData?.accountSectors !== undefined
-      ? formData.accountSectors
-      : selectedEvent?.accountSectors || { commercial: false, public: false }
+    formData?.accountSectors 
+      ? { ...formData.accountSectors }
+      : selectedEvent?.accountSectors 
+      ? { ...selectedEvent.accountSectors }
+      : { commercial: false, public: false }
   );
+  
   
   const [accountSegments, setAccountSegments] = useState(
     formData?.accountSegments !== undefined
