@@ -341,7 +341,7 @@ const EventFormEmailInvitation = () => {
                         </Typography>
                         <TextField
                           label=""
-                          value={item.subjectLine}
+                          value={item.subjectLine || ""}
                           onChange={(e) =>
                             handleSubjectLineChange(e.target.value, index)
                           }
@@ -356,10 +356,10 @@ const EventFormEmailInvitation = () => {
                         {item.platform === "Salesloft" ? (
                           <>
                             <ReactQuill
-                              value={item.template} // Use item.template here
+                              value={item.template || ""}
                               onChange={(content) =>
                                 handleEditorChange(content, index)
-                              } // Pass the index to handleEditorChange
+                              }
                               style={{
                                 height: "300px",
                                 maxHeight: "400px",
@@ -379,6 +379,7 @@ const EventFormEmailInvitation = () => {
                                 ],
                               }}
                             />
+
                             <div style={{ marginTop: "20px", pt: "40px" }}>
                               <Typography
                                 variant="subtitle1"
@@ -404,7 +405,7 @@ const EventFormEmailInvitation = () => {
                         ) : (
                           // Render a regular text field for Gmail
                           <ReactQuill
-                            value={item.template}
+                            value={item.template || ""}
                             onChange={(content) =>
                               handleEditorChange(content, index)
                             }
