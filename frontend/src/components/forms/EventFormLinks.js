@@ -399,8 +399,9 @@ export default function LinksForm() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-          In case you added email invite copy, users will be able to invite customers with that copy. 
-          Please make sure your information is accurate.
+          In case you added email invite copy, users will be able to invite customers with that copy.
+          <br/><br/>
+          Please make sure your information is accurate
           </DialogContentText>
         </DialogContent>
         <DialogActions>
