@@ -90,10 +90,10 @@ export default function LocationFormPage() {
   };
 
   const handleNext = async () => {
-    const isRegionValid = region.trim() !== "";
+    const isRegionValid = region?.trim() !== "";    
     const isSubRegionValid = subRegion.length > 0;
     const isCountryValid = country.length > 0;
-    const isCityValid = city.trim() !== "";
+    const isCityValid = city?.trim() !== "";
     setIsRegionError(!isRegionValid);
     setIsSubRegionError(!isSubRegionValid);
     setIsCountryError(!isCountryValid);
@@ -243,7 +243,7 @@ export default function LocationFormPage() {
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
                   Region
                 </Typography>
-                <Select value={region} onChange={handleRegionChange}>
+                <Select value={region || ''}  onChange={handleRegionChange}>
                   {regionOptions.map((region, idx) => (
                     <MenuItem key={idx} value={region}>
                       {region}
