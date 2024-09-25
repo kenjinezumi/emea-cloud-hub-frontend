@@ -149,7 +149,9 @@ const NavigationSidebar = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="exit-dialog-description">
-            Are you sure you want to leave this page? All unsaved data will be lost.
+            Are you sure you want to leave this page? All unsaved data will be lost. 
+            <br/><br/>
+            Clicking on the Next button save the current form.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -34,8 +34,8 @@ const GlobalContext = createContext({
     accountSegments: [],
     productFamily: [],
     industry: [],
-    isPartneredEvent: true,
-    isDraft: true
+    isPartneredEvent: '',
+    isDraft:''
   },
   updateFilters: () => {},
   showEventInfoModal: false,

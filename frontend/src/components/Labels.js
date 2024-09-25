@@ -18,13 +18,13 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 export default function Filters() {
-  const [localSubRegionFilters, setLocalSubRegionFilters] = useState(subRegionOptions.map(option => ({ label: option, checked: true })));
-  const [localGepOptions, setLocalGepOptions] = useState(gepOptions.map(option => ({ label: option, checked: true })));
+  const [localSubRegionFilters, setLocalSubRegionFilters] = useState(subRegionOptions.map(option => ({ label: option, checked:false })));
+  const [localGepOptions, setLocalGepOptions] = useState(gepOptions.map(option => ({ label: option, checked: false })));
   const [localAccountSectorOptions, setLocalAccountSectorOptions] = useState(accountSectorOptions);
   const [localAccountSegmentOptions, setLocalAccountSegmentOptions] = useState(accountSegmentOptions);
   const [localBuyerSegmentRollupOptions, setLocalBuyerSegmentRollupOptions] = useState(buyerSegmentRollupOptions);
   const [localProductFamilyOptions, setLocalProductFamilyOptions] = useState(productFamilyOptions);
-  const [localIndustryOptions, setLocalIndustryOptions] = useState(industryOptions.map(option => ({ label: option, checked: true })));
+  const [localIndustryOptions, setLocalIndustryOptions] = useState(industryOptions.map(option => ({ label: option, checked: false})));
   const [localPartnerEventOptions, setLocalPartnerEventOptions] = useState(partnerEventOptions);
   const [localDraftStatusOptions, setLocalDraftStatusOptions] = useState(draftStatusOptions);
 

@@ -44,11 +44,13 @@ const formatLabel = (key) => {
 export default function LinksForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [links, setLinks] = useState({
-    landingPageLinks: [],
-    salesKitLinks: [],
-    hailoLinks: [],
-    otherDocumentsLinks: [],
+    landingPageLinks: Array.isArray(selectedEvent?.landingPageLinks) ? selectedEvent.landingPageLinks : formData.landingPageLinks || [],
+    salesKitLinks: Array.isArray(selectedEvent?.salesKitLinks) ? selectedEvent.salesKitLinks : formData.salesKitLinks || [],
+    hailoLinks: Array.isArray(selectedEvent?.hailoLinks) ? selectedEvent.hailoLinks : formData.hailoLinks || [],
+    otherDocumentsLinks: Array.isArray(selectedEvent?.otherDocumentsLinks) ? selectedEvent.otherDocumentsLinks : formData.otherDocumentsLinks || [],
   });
+
+  // Initialize `newLink` for inputs
   const [newLink, setNewLink] = useState({
     landingPage: "",
     salesKit: "",
@@ -60,7 +62,13 @@ export default function LinksForm() {
   const [isError, setIsError] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const saveAndNavigate = useFormNavigation();
+  useEffect(() => {
+    const currentFormData = { ...formData, ...links };
 
+    if (JSON.stringify(formData) !== JSON.stringify(currentFormData)) {
+      updateFormData(currentFormData);
+    }
+  }, [links, formData, updateFormData]);
   useEffect(() => {
     if (selectedEvent) {
       setLinks({

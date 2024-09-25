@@ -254,27 +254,27 @@ export const audienceRoles = [
 ];
 
 export const accountSectorOptions = [
-  { label: 'Commercial', checked: true },
-  { label: 'Public', checked: true },
+  { label: 'Commercial', checked: false },
+  { label: 'Public', checked: false },
 ];
 
 export const accountSegmentOptions = [
-  { label: 'Corporate', checked: true },
-  { label: 'SMB', checked: true },
-  { label: 'Select', checked: true },
-  { label: 'Enterprise', checked: true },
-  { label: 'Startup', checked: true },
+  { label: 'Corporate', checked: false },
+  { label: 'SMB', checked: false},
+  { label: 'Select', checked: false },
+  { label: 'Enterprise', checked: false },
+  { label: 'Startup', checked: false},
 ];
 
 export const buyerSegmentRollupOptions = [
-  { label: 'Decision Maker', checked: true },
-  { label: 'Practitioner', checked: true },
-  { label: 'Executive', checked: true },
+  { label: 'Decision Maker', checked: false },
+  { label: 'Practitioner', checked: false },
+  { label: 'Executive', checked: false },
 ];
 
 export const productFamilyOptions = [
-  { label: 'GCP', checked: true },
-  { label: 'GWS', checked: true },
+  { label: 'GCP', checked: false },
+  { label: 'GWS', checked: false },
 ];
 
 export const industryOptions = [
@@ -287,9 +287,9 @@ export const industryOptions = [
 ];
 
 export const partnerEventOptions = [
-  { label: 'Partner Event', checked: true },
+  { label: 'Partner Event', checked: false },
 ];
 
 export const draftStatusOptions = [
-  { label: 'Draft', checked: true },
+  { label: 'Draft', checked: false},
 ];

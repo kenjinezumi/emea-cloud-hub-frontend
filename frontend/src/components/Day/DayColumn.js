@@ -11,7 +11,7 @@ import ArticleIcon from '@mui/icons-material/Article';
 
 dayjs.extend(minMax);
 
-export default function DayColumn({ daySelected, onEventClick }) {
+export default function DayColumn({ daySelected, events, onEventClick }) {
   const {
     setShowEventModal,
     setDaySelected,
@@ -20,7 +20,6 @@ export default function DayColumn({ daySelected, onEventClick }) {
     filters,
   } = useContext(GlobalContext);
 
-  const [events, setEvents] = useState([]);
   const [eventGroups, setEventGroups] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [currentTimePosition, setCurrentTimePosition] = useState(0); // State for current time position
@@ -29,57 +28,6 @@ export default function DayColumn({ daySelected, onEventClick }) {
   const endHour = 24;
   const dayColumnRef = useRef(null); // Reference for auto-scroll
 
-  useEffect(() => {
-    const applyFilters = async (events, filters) => {
-      if (!Array.isArray(events)) {
-        console.error("applyFilters was called with 'events' that is not an array:", events);
-        return [];
-      }
-  
-      const results = await Promise.all(events.map(async (event) => {
-        const subRegionMatch = filters.subRegions.some(subRegion => subRegion.checked && event.subRegion?.includes(subRegion.label));
-        const eventTypeMatch = filters.eventType.some(type => type.checked && event.eventType === type.label);
-  
-        const gepMatch = filters.gep.some(gep => gep.checked && event.gep?.includes(gep.label));
-  
-        const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment =>
-          segment.checked && event.buyerSegmentRollup?.includes(segment.label)
-        );
-  
-        const accountSectorMatch = filters.accountSectors.some(sector =>
-          sector.checked && event.accountSectors?.[sector.label]
-        );
-  
-        const accountSegmentMatch = filters.accountSegments.some(segment =>
-          segment.checked && event.accountSegments?.[segment.label]?.selected
-        );
-  
-        const productFamilyMatch = filters.productFamily.some(product =>
-          product.checked && event.productAlignment?.[product.label]?.selected
-        );
-  
-        const industryMatch = filters.industry.some(industry =>
-          industry.checked && event.industry === industry.label
-        );
-  
-        // Since isPartneredEvent and isDraft are booleans, we check them directly
-        const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
-        const isDraftMatch = filters.isDraft === event.isDraft;
-  
-        return subRegionMatch && eventTypeMatch && gepMatch && buyerSegmentRollupMatch &&
-               accountSectorMatch && accountSegmentMatch && productFamilyMatch &&
-               industryMatch && isPartneredEventMatch && isDraftMatch;
-      }));
-  
-      return events.filter((_, index) => results[index]);
-    };
-  
-    (async () => {
-      const filteredEvents = await applyFilters(events, filters);
-      setFilteredEvents(filteredEvents);
-    })();
-  }, [events, filters]);
-  
 
 
   useEffect(() => {
@@ -171,12 +119,13 @@ export default function DayColumn({ daySelected, onEventClick }) {
   }, [daySelected, setDaySelected, setShowEventModal]);
 
   const dayEvents = useMemo(() => {
-    return filteredEvents.filter(evt =>
+    return events.filter(evt =>
       dayjs(evt.startDate).isSame(daySelected, 'day') ||
       dayjs(evt.endDate).isSame(daySelected, 'day') ||
       (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
     );
-  }, [filteredEvents, daySelected]);
+  }, [events, daySelected]);
+  
 
   const getEventStyleAndIcon = useCallback((eventType) => {
     switch (eventType) {
