@@ -79,7 +79,7 @@ export default function AudiencePersonaForm() {
   );
   
   const [aiVsCore, setAiVsCore] = useState(
-    selectedEvent?.aiVsCore || formData.aiVsCore || null
+    selectedEvent?.aiVsCore || formData.aiVsCore || ""
   );
   
   const [maxEventCapacity, setMaxEventCapacity] = useState(
@@ -166,7 +166,7 @@ export default function AudiencePersonaForm() {
         GCP: { selected: false, percentage: "" },
         GWS: { selected: false, percentage: "" },
       });
-      setAiVsCore(selectedEvent?.aiVsCore || formData.aiVsCore || null);
+      setAiVsCore(selectedEvent?.aiVsCore || formData.aiVsCore || "");
       setMaxEventCapacity(selectedEvent?.maxEventCapacity || formData.maxEventCapacity || "");
     }
   }, [selectedEvent, formData]);

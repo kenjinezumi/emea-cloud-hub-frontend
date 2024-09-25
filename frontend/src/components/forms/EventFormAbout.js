@@ -259,14 +259,14 @@ const EventForm = () => {
       : formData.eventId;
     const eventId = existingEventId || uuidv4();
 
-    const isTitleValid = title.trim() !== "";
-    const isDescriptionValid = description.trim() !== "";
+    const isTitleValid = title?.trim() !== "";  
+    const isDescriptionValid = description?.trim() !== "";
     const isStartDateValid = startDate && !isSameDate(startDate, today);
     const isEndDateValid = endDate && !isSameDate(endDate, today);
 
     
     const isOrganisedByValid = organisedBy.length > 0;
-    const isEventTypeValid = eventType.trim() !== "";
+    const isEventTypeValid = eventType?.trim() !== ""; 
     const isEventIdValid = !!eventId;
 
     setIsTitleError(!isTitleValid);

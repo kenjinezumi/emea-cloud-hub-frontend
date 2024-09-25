@@ -23,11 +23,10 @@ export default function MonthView({ month, isYearView = false }) {
     const fetchAndFilterEvents = async () => {
       try {
         // Only log filters once when they change
-        console.log('Selected Filters:', filters);
   
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
-  
+
         if (!Array.isArray(eventData)) {
           console.error("fetchAndFilterEvents was called with 'eventData' that is not an array:", eventData);
           return;
@@ -44,11 +43,16 @@ export default function MonthView({ month, isYearView = false }) {
        
         // If no filters are applied, return all events
         if (!hasFiltersApplied) {
-          console.log('The events are', events);
           setFilteredEvents(eventData); // Ensure all events are shown
           return;
         }
-  
+        
+        const selectedDraftStatuses = filters.draftStatusOptions
+        .filter(option => option.checked)
+        .map(option => option.value);
+
+      console.log('Selected Draft Statuses:', selectedDraftStatuses); 
+    
         // Log once for each event, not repeatedly
         const results = await Promise.all(eventData.map(async (event) => {
           try {
@@ -131,8 +135,11 @@ export default function MonthView({ month, isYearView = false }) {
         
             // Boolean checks for isPartneredEvent and isDraft
             const isPartneredEventMatch = filters.isPartneredEvent === undefined || filters.isPartneredEvent === event.isPartneredEvent;
-            const isDraftMatch = filters.isDraft === undefined || filters.isDraft === event.isDraft;
-        
+            const selectedDraftStatus = filters.isDraft.find(option => option.checked)?.value;
+            
+            const isDraftMatch = selectedDraftStatus === undefined || event.isDraft === selectedDraftStatus;
+            
+            
             return (
               subRegionMatch &&
               gepMatch &&
@@ -151,12 +158,19 @@ export default function MonthView({ month, isYearView = false }) {
         }));
   
         setFilteredEvents(eventData.filter((_, index) => results[index]));
+
       } catch (error) {
         console.error('Error fetching event data:', error);
       }
     };
   
     fetchAndFilterEvents();
+    console.log(filters)
+    console.log(events)
+    
+    console.log('Selected Draft Status:');
+
+
   }, [location, filters]); // Add the necessary dependencies here
   
   

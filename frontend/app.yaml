@@ -17,3 +17,6 @@ handlers:
 
 runtime_config:
   start_command: npm start
+
+env_variables:
+  WDS_SOCKET_PORT: '0'
