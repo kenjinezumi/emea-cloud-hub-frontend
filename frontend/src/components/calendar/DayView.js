@@ -172,7 +172,7 @@ export default function DayView() {
                   try {
                     return (
                       segment.checked &&
-                      event.buyerSegmentRollup?.includes(segment.label)
+                      event.audienceSeniority?.includes(segment.label)
                     );
                   } catch (err) {
                     console.error(

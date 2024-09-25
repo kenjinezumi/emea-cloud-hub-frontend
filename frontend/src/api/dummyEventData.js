@@ -198,8 +198,7 @@ const dummyEventData = [
     "region": "GLOBAL",
     "subRegion": [
       "France",
-      "Benelux",
-      "CEE"
+     
     ],
     "country": [
       "FR",
@@ -390,13 +389,13 @@ const dummyEventData = [
     "audiencePersona": [],
     "audienceSeniority": [],
     "accountSectors": {
-      "commercial": false,
+      "commercial": true,
       "public": false
     },
     "accountSegments": {
       "Corporate": {
-        "selected": false,
-        "percentage": ""
+        "selected": true,
+        "percentage": "100"
       },
       "SMB": {
         "selected": false,
@@ -449,8 +448,8 @@ const dummyEventData = [
     },
     "productAlignment": {
       "GCP": {
-        "selected": false,
-        "percentage": ""
+        "selected": true,
+        "percentage": "100"
       },
       "GWS": {
         "selected": false,
