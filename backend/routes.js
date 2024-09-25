@@ -168,10 +168,13 @@ module.exports = (firestoreStore) => {
 
 // Function to populate the base template with content
 function populateTemplate(template, bodyContent) {
-  // Replace newlines with <br> for HTML formatting
-  // Replace the placeholder in the base template with actual content
-  return template.replace('{{bodyContent}}', formattedContent);
-}
+    // Replace newlines in the body content with <br> for proper HTML rendering
+    const formattedContent = bodyContent.replace(/\n/g, '<br>');
+    
+    // Replace the placeholder in the base template with the formatted content
+    return template.replace('{{bodyContent}}', formattedContent);
+  }
+  
 
     router.post('/send-gmail-invite', async (req, res) => {
       const { to, subject, body, accessToken } = req.body;
