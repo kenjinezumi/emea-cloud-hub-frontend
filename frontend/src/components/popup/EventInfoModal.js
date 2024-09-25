@@ -973,30 +973,38 @@ export default function EventInfoPopup({ event, close }) {
               {dayjs(selectedEvent.endDate).format("dddd, MMMM D, YYYY h:mm A")}
             </Typography>
 
-            <Typography
-              variant="body2"
-              display="flex"
-              alignItems="center"
-              sx={{
-                pl: 2,
-                pr: 2,
-                mt: 1,
-                color: "#5f6368",
-                wordBreak: "break-word",
-                whiteSpace: "normal",
-              }}
-            >
-              <PublicIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-              {[
-                formatListWithSpaces(selectedEvent.region),
-                formatListWithSpaces(selectedEvent.subregion),
-                formatListWithSpaces(selectedEvent.country),
-                selectedEvent.city,
-                selectedEvent.locationVenue,
-              ]
-                .filter(Boolean)
-                .join(", ")}
-            </Typography>
+            {[
+              selectedEvent.region,
+              selectedEvent.subregion,
+              selectedEvent.country,
+              selectedEvent.city,
+              selectedEvent.locationVenue,
+            ].some(Boolean) && (
+              <Typography
+                variant="body2"
+                display="flex"
+                alignItems="center"
+                sx={{
+                  pl: 2,
+                  pr: 2,
+                  mt: 1,
+                  color: "#5f6368",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                }}
+              >
+                <PublicIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+                {[
+                  formatListWithSpaces(selectedEvent.region),
+                  formatListWithSpaces(selectedEvent.subregion),
+                  formatListWithSpaces(selectedEvent.country),
+                  selectedEvent.city,
+                  selectedEvent.locationVenue,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+              </Typography>
+            )}
 
             <Divider sx={{ width: "100%", my: 1 }} />
 
