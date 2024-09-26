@@ -13,7 +13,7 @@ function AuthSuccess() {
     const fetchUserDetails = async () => {
       try {
         const response = await fetch(`${apiUrl}api/current_user`, {
-          credentials: 'include',  // Include cookies in the request
+          credentials: 'include',  
         });
 
         if (!response.ok) {
@@ -21,45 +21,38 @@ function AuthSuccess() {
         }
 
         const data = await response.json();
-        console.log('Received Data:', data);
 
         if (data.isAuthenticated) {
-          // Save authentication state globally
           setIsAuthenticated(true);
           sessionStorage.setItem('isAuthenticated', 'true');
           localStorage.setItem('isAuthenticated', 'true');
 
-          // Store user data in session storage
           const user = data.user;
-          console.log('User data to be stored:', user);
           sessionStorage.setItem('user', JSON.stringify(user));
           localStorage.setItem('user', JSON.stringify(user));
 
-          // Extract the email and first part before "@"
           const email = user.emails[0].value;
-          const username = email.split('@')[0];  // Get first part of email
+          const username = email.split('@')[0]; 
 
-          // Store the email and username in session storage for later use
           sessionStorage.setItem('email', email);
           sessionStorage.setItem('username', username);
 
-          // Scrape the external page with the username
           scrapePersonDetails(username);
-
+ 
           if (data.accessToken) {
-            // Store access token in session storage instead of local storage
+            const currentDate = new Date().toISOString();  
             sessionStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('accessToken', data.accessToken);            
-            console.log('Access token stored:', data.accessToken);
+            localStorage.setItem('accessToken', data.accessToken);   
+            sessionStorage.setItem('dateAccessToken', currentDate);
+            localStorage.setItem('dateAccessToken', currentDate);         
           } else {
             console.log('Access token not found.');
           }
 
-          // Navigate to the homepage after successful authentication
           navigate('/');
         } else {
           setErrorMessage('Authentication failed. Please try again.');
-          navigate('/login');  // Redirect to login if not authenticated
+          navigate('/login'); 
         }
       } catch (error) {
         console.error('Error fetching user details:', error);
@@ -73,7 +66,6 @@ function AuthSuccess() {
     fetchUserDetails();
   }, [setIsAuthenticated, navigate]);
 
-  // Function to scrape the external page for person details
   const scrapePersonDetails = async (username) => {
     const scrapeUrl = `https://iiiiii.com/person/${username}`;
 
@@ -81,16 +73,13 @@ function AuthSuccess() {
       const response = await fetch(scrapeUrl);
       const html = await response.text();
       
-      // Parse the HTML to find the desired div using DOMParser or regex
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
       const personDetailsDiv = doc.querySelector('.br0wK-r4nke');
 
       if (personDetailsDiv) {
         const personDetails = personDetailsDiv.textContent;
-        console.log('Person Details:', personDetails);
 
-        // You can store or display this information as needed
         sessionStorage.setItem('personDetails', personDetails);
       } else {
         console.log('Person details not found on the page.');
@@ -103,7 +92,7 @@ function AuthSuccess() {
   if (loading) return <p>Loading...</p>;
   if (errorMessage) return <p>{errorMessage}</p>;
 
-  return null;  // Render nothing or a loading spinner
+  return null;  
 }
 
 export default AuthSuccess;
