@@ -107,7 +107,7 @@ export default function CalendarHeaderEventShare() {
         <div className="flex items-center">
           <img src={logo} alt="calendar" className="mr-2 w-8 h-8 cursor-pointer" onClick={navigateToHome}/>
           <h1 className="mr-1 text-xl text-black  cursor-pointer" onClick={navigateToHome}>
-          EMEA Cloud Hub
+          One Cloud
           </h1>
           <img src={beta} alt="beta" className="mr-2 w-12 h-12" />
         </div>
