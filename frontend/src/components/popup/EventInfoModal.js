@@ -189,10 +189,12 @@ export default function EventInfoPopup({ event, close }) {
 
       const accessToken = localStorage.getItem("accessToken");
       const dateAccessToken = localStorage.getItem("dateAccessToken");
-  
+
       // Check if access token or its date is missing
       if (!accessToken || !dateAccessToken) {
-        setSnackbarMessage("Token missing. Redirecting to login...");
+        sessionStorage.clear();
+        localStorage.clear();
+        setSnackbarMessage("Gmail token missing. Redirecting to login...");
         setSnackbarOpen(true);
         setTimeout(() => {
           window.location.href = "/login";
@@ -201,18 +203,19 @@ export default function EventInfoPopup({ event, close }) {
       }
 
       const tokenDate = new Date(dateAccessToken);
-    const now = new Date();
-    const minutesPassed = (now - tokenDate) / (1000 * 60);
-    if (minutesPassed > 50) {
-      setSnackbarMessage("Token expired. Redirecting to login...");
-      setSnackbarOpen(true);
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 2000);
-      return;
-    }
+      const now = new Date();
+      const minutesPassed = (now - tokenDate) / (1000 * 60);
+      if (minutesPassed > 50) {
+        sessionStorage.clear();
+        localStorage.clear();
+        setSnackbarMessage("Gmail token expired. Redirecting to login...");
+        setSnackbarOpen(true);
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
+        return;
+      }
 
-    
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.emails?.[0]?.value;
 
@@ -991,34 +994,40 @@ export default function EventInfoPopup({ event, close }) {
               {dayjs(selectedEvent.endDate).format("dddd, MMMM D, YYYY h:mm A")}
             </Typography>
 
-            {[selectedEvent.region, selectedEvent.subRegion, selectedEvent.country, selectedEvent.city, selectedEvent.locationVenue]
-  .flat()
-  .filter(Boolean).length > 0 && (
-  <Typography
-    variant="body2"
-    display="flex"
-    alignItems="center"
-    sx={{
-      pl: 2,
-      pr: 2,
-      mt: 1,
-      color: "#5f6368",
-      wordBreak: "break-word",
-      whiteSpace: "normal",
-    }}
-  >
-    <PublicIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-    {[
-      formatListWithSpaces(selectedEvent.region),
-      formatListWithSpaces(selectedEvent.subRegion),
-      formatListWithSpaces(selectedEvent.country),
-      selectedEvent.city,
-      selectedEvent.locationVenue,
-    ]
-      .filter(Boolean)
-      .join(", ")}
-  </Typography>
-)}
+            {[
+              selectedEvent.region,
+              selectedEvent.subRegion,
+              selectedEvent.country,
+              selectedEvent.city,
+              selectedEvent.locationVenue,
+            ]
+              .flat()
+              .filter(Boolean).length > 0 && (
+              <Typography
+                variant="body2"
+                display="flex"
+                alignItems="center"
+                sx={{
+                  pl: 2,
+                  pr: 2,
+                  mt: 1,
+                  color: "#5f6368",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                }}
+              >
+                <PublicIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+                {[
+                  formatListWithSpaces(selectedEvent.region),
+                  formatListWithSpaces(selectedEvent.subRegion),
+                  formatListWithSpaces(selectedEvent.country),
+                  selectedEvent.city,
+                  selectedEvent.locationVenue,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+              </Typography>
+            )}
 
             <Divider sx={{ width: "100%", my: 1 }} />
 
