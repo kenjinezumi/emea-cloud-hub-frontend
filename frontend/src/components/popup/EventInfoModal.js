@@ -188,13 +188,31 @@ export default function EventInfoPopup({ event, close }) {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
 
       const accessToken = localStorage.getItem("accessToken");
-
-      if (!accessToken) {
-        console.error("Access token not found. Please log in again.");
-        alert("Access token not found. Please log in again.");
+      const dateAccessToken = localStorage.getItem("dateAccessToken");
+  
+      // Check if access token or its date is missing
+      if (!accessToken || !dateAccessToken) {
+        setSnackbarMessage("Token missing. Redirecting to login...");
+        setSnackbarOpen(true);
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
         return;
       }
 
+      const tokenDate = new Date(dateAccessToken);
+    const now = new Date();
+    const minutesPassed = (now - tokenDate) / (1000 * 60);
+    if (minutesPassed > 50) {
+      setSnackbarMessage("Token expired. Redirecting to login...");
+      setSnackbarOpen(true);
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
+      return;
+    }
+
+    
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.emails?.[0]?.value;
 
