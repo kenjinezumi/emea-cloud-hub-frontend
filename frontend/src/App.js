@@ -70,18 +70,16 @@ function App() {
         <Route path="/auth/success" element={<AuthSuccess />} />
 
         {/* Protected Routes */}
-        <Route >
-        <Route path="/" element={<PrivateRoute element={<RenderCalendarView />} />} />
-        <Route path="/create-event" element={<PrivateRoute element={<EventForm />} />} />
-        <Route path="/location" element={<PrivateRoute element={<EventFormLocation />} />} />
-        <Route path="/extra" element={<PrivateRoute element={<EventFormExtra />} />} />
-        <Route path="/email-invitation" element={<PrivateRoute element={<EventFormEmailInvitation />} />} />
-        <Route path="/audience" element={<PrivateRoute element={<EventFormAudience />} />} />
-        <Route path="/links" element={<PrivateRoute element={<EventFormLinks />} />} />
-        <Route path="/event/:eventId" element={<PrivateRoute element={<EventSharePage />} />} />
-
+        <Route element={<PrivateRoute />}>
+          <Route path="/" element={<RenderCalendarView />} />
+          <Route path="/create-event" element={<EventForm />} />
+          <Route path="/location" element={<EventFormLocation />} />
+          <Route path="/extra" element={<EventFormExtra />} />
+          <Route path="/email-invitation" element={<EventFormEmailInvitation />} />
+          <Route path="/audience" element={<EventFormAudience />} />
+          <Route path="/links" element={<EventFormLinks />} />
+          <Route path="/event/:eventId" element={<EventSharePage />} />
         </Route>
-
         {/* Fallback Route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
