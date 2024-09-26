@@ -53,27 +53,7 @@ function App() {
     }
   }
 
-  useEffect(() => {
-    const user = sessionStorage.getItem('user') || localStorage.getItem('user');
-    const accessToken = sessionStorage.getItem('accessToken') || localStorage.getItem('accessToken');
-    const dateAccessToken = sessionStorage.getItem('dateAccessToken') || localStorage.getItem('dateAccessToken');
-  
-    if (!user || !accessToken || !dateAccessToken) {
-      setIsAuthenticated(false);
-    } else {
-      const tokenDate = new Date(dateAccessToken);
-      const now = new Date();
-      const minutesPassed = (now - tokenDate) / (1000 * 60); 
-  
-      if (minutesPassed > 50) {
-        sessionStorage.clear();
-        localStorage.clear();
-        setIsAuthenticated(false);
-      } else {
-        setIsAuthenticated(true);
-      }
-    }
-  }, [setIsAuthenticated]);
+
   
 
   return (
