@@ -44,7 +44,6 @@ export default function CalendarHeader() {
   useEffect(() => {
     // Fetch user data from localStorage
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    console.log('Stored user in localStorage:', storedUser);
 
     if (storedUser) {
       setUser(storedUser);
@@ -206,7 +205,7 @@ export default function CalendarHeader() {
           style={{ maxWidth: "200px", textOverflow: "ellipsis" }}
           onClick={navigateToHome}
         >
-          EMEA Cloud Hub
+          One Cloud
         </h1>
         <img src={beta} alt="beta" className="w-8 h-8" />
         <span className="text-xs text-gray-500">V. {versionInfo.version}</span>
