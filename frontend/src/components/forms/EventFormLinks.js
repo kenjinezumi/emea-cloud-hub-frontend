@@ -150,6 +150,30 @@ export default function LinksForm() {
     setDialogOpen(false);
   };
 
+  const handlePaste = (type, event) => {
+    const pastedData = event.clipboardData.getData('text');
+    const linkArray = pastedData.split(/[ ,;\n]+/).filter(Boolean);
+    const validLinks = linkArray.filter((link) => isValidUrl(link));
+    const invalidLinks = linkArray.filter((link) => !isValidUrl(link));
+  
+    if (validLinks.length > 0) {
+      setLinks({
+        ...links,
+        [`${type}Links`]: [...links[`${type}Links`], ...validLinks],
+      });
+      setNewLink({ ...newLink, [type]: "" }); // Clear the input field after adding
+    }
+  
+    if (invalidLinks.length > 0) {
+      setSnackbarMessage(`Invalid URLs: ${invalidLinks.join(", ")}`);
+      setIsError(true);
+      setSnackbarOpen(true);
+    }
+  
+    event.preventDefault(); // Prevent the default paste behavior
+  };
+
+  
   const handleSaveAndPublish = async () => {
     const requiredFields = {
       organisedBy: formData.organisedBy,
@@ -293,7 +317,8 @@ export default function LinksForm() {
                   onChange={(e) =>
                     handleLinkChange(key.replace("Links", ""), e.target.value)
                   }
-                  onKeyDown={(e) => handleKeyPress(key.replace("Links", ""), e)} // Handle "Enter" key
+                  onKeyDown={(e) => handleKeyPress(key.replace("Links", ""), e)}
+                  onPaste={(e) => handlePaste(key.replace("Links", ""), e)} // Handle paste
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">

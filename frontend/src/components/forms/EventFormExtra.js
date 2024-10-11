@@ -385,7 +385,7 @@ export default function ExtraDetailsForm() {
 
             <Grid item xs={12}>
               <FormControl fullWidth error={isGepError}>
-                <Typography variant="subtitle1">GEP</Typography>
+                <Typography variant="subtitle1">Solution</Typography>
                 <Select
                   multiple
                   value={gep}
