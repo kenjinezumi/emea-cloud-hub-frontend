@@ -1,6 +1,8 @@
 import React, { useEffect, useContext, useState, useRef } from "react";
 import dayjs from "dayjs";
 import GlobalContext from "../../context/GlobalContext";
+import { createSalesLoftEmailTemplate } from "../../api/salesloft";
+
 import Draggable from "react-draggable";
 import {
   IconButton,
@@ -114,6 +116,8 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
+  const accessToken = process.env.REACT_APP_SALESLOFT_API_TOKEN;
+
   //Salesloft!!
   const handleSalesLoftInvite = () => {
     const salesLoftTemplate = languagesAndTemplates.find(
@@ -142,46 +146,26 @@ export default function EventInfoPopup({ event, close }) {
         (item) =>
           item.platform === "Salesloft" && item.language === selectedLanguage
       );
-
+  
       if (!salesLoftTemplate) {
-        throw new Error("Salesoft template not found.");
+        throw new Error("SalesLoft template not found.");
       }
-      const accessToken = process.env.SALESLOFT_API_TOKEN;
-      const apiUrl = "https://api.salesloft.com/v2/email_templates";
-
-      const emailDetails = new FormData();
-      emailDetails.append("title", "SalesLoft Email");
-      emailDetails.append("subject", salesLoftTemplate.subjectLine);
-      emailDetails.append("body", salesLoftTemplate.template);
-      emailDetails.append("open_tracking", true); // Enable open tracking
-      emailDetails.append("click_tracking", true); // Enable click tracking
-      emailDetails.append("attachment_ids", "");
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: emailDetails,
-      });
-
-      if (!response.ok) {
-        throw new Error(`SalesLoft API error: ${response.statusText}`);
+  
+      const result = await createSalesLoftEmailTemplate(accessToken, salesLoftTemplate);
+      if (result.success) {
+        setSnackbarMessage("SalesLoft email template created successfully!");
+      } else {
+        setSnackbarMessage("Failed to create SalesLoft template. Please try again.");
       }
-
-      const data = await response.json();
-      console.log("SalesLoft template created:", data);
-      setSnackbarMessage("SalesLoft email template created successfully!");
-      setSnackbarOpen(true);
     } catch (error) {
       console.error("Error creating SalesLoft email template:", error);
-      setSnackbarMessage("Failed to create SalesLoft template. Try again.");
-      setSnackbarOpen(true);
+      setSnackbarMessage(`Failed to create SalesLoft template: ${error.message}`);
     } finally {
       setDialogOpen(false);
+      setSnackbarOpen(true);
     }
   };
+  
 
   const handleGmailInvite = async () => {
     try {
