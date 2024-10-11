@@ -413,7 +413,47 @@ function populateTemplate(template, bodyContent) {
                     message: 'Failed to execute query. Please try again later.'
                 });
             }
-        } else if (message === 'delete-data') {
+        } else if (message === 'salesloft-cadence') {
+            try {
+                logger.info('POST /: Sending data to SalesLoft.', { data });
+    
+                // Send the data to SalesLoft
+                const salesLoftResponse = await fetch('https://api.salesloft.com/v2/email_templates', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${data.token}`,
+                        'Content-Type': 'text/plain',
+                    },
+                    body: `
+                        title=SalesLoft Email&
+                        subject=${encodeURIComponent(data.subject)}&
+                        body=${encodeURIComponent(data.body)}&
+                        open_tracking=true&
+                        click_tracking=true&
+                        attachment_ids=&
+                        token=${encodeURIComponent(data.token)}
+                    `.replace(/\s+/g, '') // Clean up extra spaces
+                });
+    
+                if (!salesLoftResponse.ok) {
+                    throw new Error(`SalesLoft API error: Status ${salesLoftResponse.status}`);
+                }
+    
+                const responseData = await salesLoftResponse.text(); // Assuming SalesLoft responds with plain text
+                logger.info('POST /: SalesLoft response received successfully.', { responseData });
+    
+                res.status(200).json({
+                    success: true,
+                    message: 'SalesLoft cadence created successfully.',
+                    data: responseData
+                });
+            } catch (error) {
+                logger.error('POST /: Error sending data to SalesLoft.', { error });
+                res.status(500).json({
+                    success: false,
+                    message: 'Failed to create SalesLoft cadence. Please try again later.'
+                });}
+            }else if (message === 'delete-data') {
             // Handle delete event logic
             const {
                 eventId
@@ -463,7 +503,8 @@ function populateTemplate(template, bodyContent) {
                     message: 'Failed to delete event. Please try again later.'
                 });
             }
-        } else {
+        } 
+        else {
             try {
                 logger.info('POST /: Executing event data query.', {
                     queryName
