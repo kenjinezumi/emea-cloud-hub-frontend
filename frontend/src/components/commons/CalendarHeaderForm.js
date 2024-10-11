@@ -22,7 +22,6 @@ const NavigationSidebar = () => {
 
   const navigateTo = (path, currentFormData) => {
     updateFormData({ ...formData, ...currentFormData });
-    console.log("Initial form data:", JSON.stringify(formData, null, 2));
     navigate(path);
   };
 

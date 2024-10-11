@@ -15,7 +15,6 @@ function Login() {
   useEffect(() => {
     // Check if user is already cached in localStorage
     if (user) {
-      console.log("Cached user found:", user);
       setIsAuthenticated(true);  // Set the authentication state
       navigate('/');  // Redirect to homepage if user is authenticated
     }

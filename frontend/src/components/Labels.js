@@ -146,7 +146,7 @@ export default function Filters() {
       <hr style={{ margin: '8px 0', border: 0 }} />
 
       {renderFilterSection('Sub-Region', localSubRegionFilters, setLocalSubRegionFilters, isSubRegionExpanded, setIsSubRegionExpanded)}
-      {renderFilterSection('GEP', localGepOptions, setLocalGepOptions, isGepExpanded, setIsGepExpanded)}
+      {renderFilterSection('Solution', localGepOptions, setLocalGepOptions, isGepExpanded, setIsGepExpanded)}
       {renderFilterSection('Account Sector', localAccountSectorOptions, setLocalAccountSectorOptions, isAccountSectorExpanded, setIsAccountSectorExpanded)}
       {renderFilterSection('Account Segment', localAccountSegmentOptions, setLocalAccountSegmentOptions, isAccountSegmentExpanded, setIsAccountSegmentExpanded)}
       {renderFilterSection('Buyer Segment Rollup', localBuyerSegmentRollupOptions, setLocalBuyerSegmentRollupOptions, isBuyerSegmentRollupExpanded, setIsBuyerSegmentRollupExpanded)}
