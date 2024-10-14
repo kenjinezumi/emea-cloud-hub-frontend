@@ -146,13 +146,15 @@ export default function Filters() {
       <hr style={{ margin: '8px 0', border: 0 }} />
 
       {renderFilterSection('Sub-Region', localSubRegionFilters, setLocalSubRegionFilters, isSubRegionExpanded, setIsSubRegionExpanded)}
-      {renderFilterSection('Solution', localGepOptions, setLocalGepOptions, isGepExpanded, setIsGepExpanded)}
       {renderFilterSection('Account Sector', localAccountSectorOptions, setLocalAccountSectorOptions, isAccountSectorExpanded, setIsAccountSectorExpanded)}
       {renderFilterSection('Account Segment', localAccountSegmentOptions, setLocalAccountSegmentOptions, isAccountSegmentExpanded, setIsAccountSegmentExpanded)}
+      {renderFilterSection('Industry', localIndustryOptions, setLocalIndustryOptions, isIndustryExpanded, setIsIndustryExpanded)}
+
       {renderFilterSection('Buyer Segment Rollup', localBuyerSegmentRollupOptions, setLocalBuyerSegmentRollupOptions, isBuyerSegmentRollupExpanded, setIsBuyerSegmentRollupExpanded)}
       {renderFilterSection('Product Family', localProductFamilyOptions, setLocalProductFamilyOptions, isProductFamilyExpanded, setIsProductFamilyExpanded)}
-      {renderFilterSection('Industry', localIndustryOptions, setLocalIndustryOptions, isIndustryExpanded, setIsIndustryExpanded)}
-      {renderFilterSection('Is Partner Event', localPartnerEventOptions, setLocalPartnerEventOptions, isPartnerEventExpanded, setIsPartnerEventExpanded)}
+
+      {renderFilterSection('Solution', localGepOptions, setLocalGepOptions, isGepExpanded, setIsGepExpanded)}
+      {renderFilterSection('Is Partner Involved?', localPartnerEventOptions, setLocalPartnerEventOptions, isPartnerEventExpanded, setIsPartnerEventExpanded)}
       {renderFilterSection('Draft Status', localDraftStatusOptions, setLocalDraftStatusOptions, isDraftStatusExpanded, setIsDraftStatusExpanded)}
       </div>
   );

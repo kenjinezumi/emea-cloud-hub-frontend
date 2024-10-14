@@ -169,10 +169,10 @@ module.exports = (firestoreStore) => {
 // Function to populate the base template with content
 function populateTemplate(template, bodyContent) {
     // Replace newlines in the body content with <br> for proper HTML rendering
-    const formattedContent = bodyContent.replace(/\n/g, '<br>');
+    // const formattedContent = bodyContent.replace(/\n/g, '<br>');
     
     // Replace the placeholder in the base template with the formatted content
-    return template.replace('{{bodyContent}}', formattedContent);
+    return template.replace('{{bodyContent}}', bodyContent);
   }
   
 
