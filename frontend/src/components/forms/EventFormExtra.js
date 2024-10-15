@@ -148,7 +148,7 @@ export default function ExtraDetailsForm() {
         isApprovedForCustomerUse: customerUse === "yes",
         partnerRole,
       },
-      "/location"
+      "/email-invitation"
     );
   };
 

@@ -1218,49 +1218,48 @@ export default function EventInfoPopup({ event, close }) {
       </Dialog>
       {/* Language Dialog */}
       <Dialog
-        open={languageDialogOpen}
-        onClose={handleLanguageDialogClose}
-        maxWidth="xs"
-        fullWidth
-        sx={{ zIndex: 10000 }}
+  open={languageDialogOpen}
+  onClose={handleLanguageDialogClose}
+  maxWidth="xs"
+  fullWidth
+  sx={{ zIndex: 10000 }}
+>
+  <DialogTitle>Select Language</DialogTitle>
+  <DialogContent>
+    <FormControl component="fieldset">
+      <RadioGroup
+        value={selectedLanguage}
+        onChange={(event) => setSelectedLanguage(event.target.value)} // Update the selectedLanguage state
       >
-        <DialogTitle>Select Language</DialogTitle>
-        <DialogContent>
-          <FormControl component="fieldset">
-            <RadioGroup
-              value={selectedLanguage}
-              onChange={(event) => setSelectedLanguage(event.target.value)}
-            >
-             {languagesAndTemplates.length > 0 ? (
-  languagesAndTemplates.map((item) => (
-    <FormControlLabel
-      key={`${item.platform}-${item.language}`} // Unique key using both platform and language
-      value={item.language}
-      control={<Radio />}
-      // Display Platform - Language
-      label={`${item.platform} - ${item.language}`}
-    />
-  ))
-) : (
-  <Typography>No languages available</Typography>
-)}
+        {languagesAndTemplates.length > 0 ? (
+          languagesAndTemplates.map((item) => (
+            <FormControlLabel
+              key={`${item.platform}-${item.language}`} // Ensure unique keys
+              value={item.language} // Radio button's value
+              control={<Radio />} // Radio button component
+              label={`${item.platform} - ${item.language}`} // Label for each option
+            />
+          ))
+        ) : (
+          <Typography>No languages available</Typography>
+        )}
+      </RadioGroup>
+    </FormControl>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleLanguageDialogClose} color="secondary">
+      Cancel
+    </Button>
+    <Button
+      onClick={handleLanguageDialogClose}
+      color="primary"
+      variant="contained"
+    >
+      Confirm
+    </Button>
+  </DialogActions>
+</Dialog>
 
-            </RadioGroup>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleLanguageDialogClose} color="secondary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleLanguageDialogClose}
-            color="primary"
-            variant="contained"
-          >
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <Snackbar
         open={snackbarOpen}

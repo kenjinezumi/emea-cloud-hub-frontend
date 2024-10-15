@@ -20,7 +20,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PeopleIcon from "@mui/icons-material/People";
 import { blue } from "@mui/material/colors";
-import { audienceRoles, audienceSeniorityOptions } from "../filters/FiltersData";
+import { audienceRoles, audienceSeniorityOptions, industryOptions } from "../filters/FiltersData";
 import { sendDataToAPI } from "../../api/pushData";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
@@ -130,16 +130,7 @@ export default function AudiencePersonaForm() {
   const [isAccountSectorsError, setIsAccountSectorsError] = useState(false);
 
 
-  const industryOptions = [
-    'Manufacturing',
-    'Healthcare',
-    'Education',
-    'Financial Services',
-    'Government',
-    'Retail',
-  ];
-  
-  
+
   useEffect(() => {
     const currentFormData = {
       audiencePersona,

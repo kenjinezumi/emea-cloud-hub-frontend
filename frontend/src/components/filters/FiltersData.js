@@ -42,11 +42,14 @@ export const subregionsData = [
   },
   {
     subregion: 'Benelux',
-    countries: ['BE', 'NL'],
+    countries: ['BE', 'LU', 'NL'],
   },
   {
     subregion: 'CEE',
-    countries: ['PL'],
+    countries: [
+      'BG', 'CY', 'CZ', 'EE', 'GR', 'HU', 'LT', 'LV', 'PL', 
+      'RO', 'RU', 'SK', 'UA'
+    ],
   },
   {
     subregion: 'France',
@@ -70,23 +73,25 @@ export const subregionsData = [
   },
   {
     subregion: 'MEA',
-    countries: ['IL'],
+    countries: ['AE', 'EG', 'KE', 'KW', 'NG', 'OM', 'QA', 'SA', 'TR', 'ZA'],
   },
   {
     subregion: 'Nordics',
-    countries: ['NO', 'SE'],
+    countries: ['DK', 'FI', 'NO', 'SE'],
   },
   {
     subregion: 'UK/IE',
-    countries: ['UK'],
+    countries: ['GB', 'IE'],
   },
-
 ];
-
-
 export const countriesData = [
   {
     country: 'AT',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'Alps',
+  },
+  {
+    country: 'CH',
     region: ['EMEA', 'GLOBAL'],
     subregion: 'Alps',
   },
@@ -96,39 +101,9 @@ export const countriesData = [
     subregion: 'Benelux',
   },
   {
-    country: 'CH',
+    country: 'LU',
     region: ['EMEA', 'GLOBAL'],
-    subregion: 'Alps',
-  },
-  {
-    country: 'DE',
-    region: ['EMEA', 'GLOBAL'],
-    subregion: 'Germany',
-  },
-  {
-    country: 'ES',
-    region: ['EMEA', 'GLOBAL'],
-    subregion: 'Iberia',
-  },
-  {
-    country: 'FR',
-    region: ['EMEA', 'GLOBAL'],
-    subregion: 'France',
-  },
-  {
-    country: 'UK',
-    region: ['EMEA', 'GLOBAL'],
-    subregion: 'UK/IE',
-  },
-  {
-    country: 'IL',
-    region: ['EMEA', 'GLOBAL'],
-    subregion: 'MEA',
-  },
-  {
-    country: 'IT',
-    region: ['EMEA', 'GLOBAL'],
-    subregion: 'Italy',
+    subregion: 'Benelux',
   },
   {
     country: 'NL',
@@ -136,9 +111,44 @@ export const countriesData = [
     subregion: 'Benelux',
   },
   {
-    country: 'NO',
+    country: 'BG',
     region: ['EMEA', 'GLOBAL'],
-    subregion: 'Nordics',
+    subregion: 'CEE',
+  },
+  {
+    country: 'CY',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'CZ',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'EE',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'GR',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'HU',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'LT',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'LV',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
   },
   {
     country: 'PL',
@@ -146,14 +156,134 @@ export const countriesData = [
     subregion: 'CEE',
   },
   {
+    country: 'RO',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'RU',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'SK',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'UA',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'CEE',
+  },
+  {
+    country: 'FR',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'France',
+  },
+  {
+    country: 'DE',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'Germany',
+  },
+  {
+    country: 'IT',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'Italy',
+  },
+  {
+    country: 'ES',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'Iberia',
+  },
+  {
     country: 'PT',
     region: ['EMEA', 'GLOBAL'],
     subregion: 'Iberia',
   },
   {
+    country: 'IL',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'Israel',
+  },
+  {
+    country: 'AE',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'EG',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'KE',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'KW',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'NG',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'OM',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'QA',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'SA',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'TR',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'ZA',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'MEA',
+  },
+  {
+    country: 'DK',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'Nordics',
+  },
+  {
+    country: 'FI',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'Nordics',
+  },
+  {
+    country: 'NO',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'Nordics',
+  },
+  {
     country: 'SE',
     region: ['EMEA', 'GLOBAL'],
     subregion: 'Nordics',
+  },
+  {
+    country: 'GB',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'UK/IE',
+  },
+  {
+    country: 'IE',
+    region: ['EMEA', 'GLOBAL'],
+    subregion: 'UK/IE',
   },
 ];
 
@@ -174,21 +304,12 @@ export const subRegionOptions = [
 
 
 export const countryOptions = [
-  'AT',
-  'BE',
-  'CH',
-  'DE',
-  'ES',
-  'FR',
-  'UK',
-  'IL',
-  'IT',
-  'NL',
-  'NO',
-  'PL',
-  'PT',
-  'SE',
+  'AT', 'CH', 'BE', 'LU', 'NL', 'BG', 'CY', 'CZ', 'EE', 'GR', 'HU', 
+  'LT', 'LV', 'PL', 'RO', 'RU', 'SK', 'UA', 'FR', 'DE', 'IT', 'ES', 
+  'PT', 'IL', 'AE', 'EG', 'KE', 'KW', 'NG', 'OM', 'QA', 'SA', 'TR', 
+  'ZA', 'DK', 'FI', 'NO', 'SE', 'GB', 'IE'
 ];
+
 
 export const languageOptions = [
   'English',
@@ -199,33 +320,87 @@ export const languageOptions = [
 ];
 
 export const okrOptions = [
-
-  {label: 'CHAMPION DEI & CULTURE', checked: true},
-  {label: 'LIFT MINDSHARE', checked: true},
-  {label: 'SOURCE DEMAND', checked: true},
-  {label: 'SCALED ACQUISITION', checked: true},
-  {label: 'IMPROVE EFFICIENCY AND EFFECTIVENESS', checked: true},
-
+  { label: 'Acquire Revenue', checked: true },
+  { label: 'Champion Culture', checked: true },
+  { label: 'Improve Efficiency', checked: true },
+  { label: 'Lift Mindshare', checked: true },
+  { label: 'Source Demand', checked: true },
 ];
+
 
 export const gepOptions = [
+  'AI & Analytics Platform (BigQuery, Gemini, Vertex)',
+  'AI For Marketing',
+  'AI Infra',
+  'AI for Security',
+  'AI x Security for Executives (non CISO)',
+  'API Solutions',
+  'API Solutions (Legacy)',
+  'Accelerate innovation with modern collaboration',
+  'Accomplish more with Gemini',
+  'All Stages (Legacy)',
+  'Boosting Productivity with Gemini AI (Gemini GWS + GCP for CXO)',
+  'Born Digital (Legacy)',
   'Build Modern Apps',
-  'Data Cloud',
-  'Developer',
-  'Digital Natives - Early Stage Startups',
-  'Google Workspace',
+  'Build What’s Next (Legacy)',
+  'Business Intelligence (Looker)',
+  'CISO Focused',
+  'Cloud First with Managed Containers (Legacy)',
+  'Cloud Security',
+  'Cost Optimization (Legacy)',
+  'Databases',
+  'Dev Productivity with Gemini',
+  'Fraud Protection Solutions',
+  'Gen AI',
+  'Gen AI (Legacy)',
+  'Gen AI (Legacy)_Build Modern Apps (Legacy)',
+  'Gen AI (Legacy)_Digital Natives - Early Stage Startups (Legacy)',
+  'Gen AI (Legacy)_Digital Natives - Mid Stage Startups (Legacy)',
+  'Gen AI (Legacy)_Infrastructure Modernization (Legacy)',
+  'Gen AI_AI',
+  'Gen AI_Developer',
+  'General',
+  'General_AI',
+  'General_Data Cloud',
+  'General_Developer',
+  'General_Digital Natives - Mid Stage Startups (Legacy)',
+  'General_Google Workspace',
+  'General_Infrastructure Modernization (Legacy)',
+  'General_Modern Infrastructure and Apps',
+  'General_Not tied to any Global Campaign',
+  'Generic (Legacy)',
+  'Generic (Legacy)_Build Modern Apps (Legacy)',
+  'Generic (Legacy)_Digital Natives - Mid Stage Startups (Legacy)',
+  'Generic (Legacy)_Infrastructure Modernization (Legacy)',
+  'Human Powered Software (Legacy)',
+  'Hybrid Multi-cloud / Anthos (Legacy)',
+  'Idea Stage (Legacy)',
+  'Infra for AI (Legacy)',
   'Infrastructure Modernization',
-  'Not Application (Not tied to Any Global Engagement Plays)',
-  'Reimagine FSI',
-  'Secure What Matters Most',
-  'Solving for Innovation',
+  'Level up your security and privacy',
+  'Lift and Transform (Legacy)',
+  'Modern Apps and Databases (Legacy)',
+  'Modernize Apps & Platforms (Legacy)',
+  'Not Applicable (Not tied to Any Global Campaign)',
+  'Not tied to any Global Campaign',
+  'Pre-seed (Legacy)',
+  'Ready for Modern Threats',
+  'Responsible AI',
+  'Spanner / BigTable / Firestore (Legacy)',
+  'Sustainability',
+  'Threat Ready with Mandiant',
+  'Transforming SecOps',
 ];
 
+
 export const audienceSeniorityOptions = [
-  {label: 'Decision Maker', checked: true},
-  {label: 'Practitioner', checked: true},
-  {label: 'Executive', checked: true},
+  { label: 'Practitioner', checked: true },
+  { label: 'Decision Maker', checked: true },
+  { label: 'Executive', checked: true },
+  { label: 'Line of Business Target Titles', checked: true },
+  { label: 'Partner', checked: true },
 ];
+
 
 
 export const audienceRoles = [
@@ -267,9 +442,11 @@ export const accountSegmentOptions = [
 ];
 
 export const buyerSegmentRollupOptions = [
-  { label: 'Decision Maker', checked: false },
-  { label: 'Practitioner', checked: false },
-  { label: 'Executive', checked: false },
+  { label: 'Practitioner', checked: true },
+  { label: 'Decision Maker', checked: true },
+  { label: 'Executive', checked: true },
+  { label: 'Line of Business Target Titles', checked: true },
+  { label: 'Partner', checked: true },
 ];
 
 export const productFamilyOptions = [
@@ -278,13 +455,15 @@ export const productFamilyOptions = [
 ];
 
 export const industryOptions = [
-  'Manufacturing',
-  'Healthcare',
-  'Education',
+  'Telco, Media & Gaming',
   'Financial Services',
-  'Government',
+  'Manufacturing',
+  'Public Sector',
   'Retail',
+  'x-Industry',
+  'Health Care',
 ];
+
 
 export const partnerEventOptions = [
   { label: 'Yes', value: true, checked: false },
