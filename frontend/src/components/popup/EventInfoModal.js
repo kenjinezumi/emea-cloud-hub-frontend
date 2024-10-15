@@ -1231,18 +1231,20 @@ export default function EventInfoPopup({ event, close }) {
               value={selectedLanguage}
               onChange={(event) => setSelectedLanguage(event.target.value)}
             >
-              {languagesAndTemplates.length > 0 ? (
-                languagesAndTemplates.map((item) => (
-                  <FormControlLabel
-                    key={item.language}
-                    value={item.language}
-                    control={<Radio />}
-                    label={item.language}
-                  />
-                ))
-              ) : (
-                <Typography>No languages available</Typography>
-              )}
+             {languagesAndTemplates.length > 0 ? (
+  languagesAndTemplates.map((item) => (
+    <FormControlLabel
+      key={`${item.platform}-${item.language}`} // Unique key using both platform and language
+      value={item.language}
+      control={<Radio />}
+      // Display Platform - Language
+      label={`${item.platform} - ${item.language}`}
+    />
+  ))
+) : (
+  <Typography>No languages available</Typography>
+)}
+
             </RadioGroup>
           </FormControl>
         </DialogContent>
