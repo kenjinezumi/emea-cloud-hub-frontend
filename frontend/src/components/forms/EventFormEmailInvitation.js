@@ -56,11 +56,10 @@ const EventFormEmailInvitation = () => {
           },
         ]
   );
-  
+
   const [isFormValid, setIsFormValid] = useState(true);
   const saveAndNavigate = useFormNavigation();
   const [setEditorContent] = useState("");
-
 
   useEffect(() => {
     const updatedFormData = { ...formData, languagesAndTemplates };
@@ -245,11 +244,14 @@ const EventFormEmailInvitation = () => {
                     id={`panel-header-${index}`}
                   >
                     <Typography>
-                      {item.language
-                        ? `Email language: ${item.language}`
-                        : "Select Language"}
+                      {item.platform
+                        ? `${item.platform}${
+                            item.language ? ` - ${item.language}` : ""
+                          }`
+                        : `${item.language || "Select Language"}`}
                     </Typography>
                   </AccordionSummary>
+
                   <AccordionDetails>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
@@ -283,7 +285,6 @@ const EventFormEmailInvitation = () => {
                               variant="outlined"
                               style={{ backgroundColor: "#e0e0e0" }}
                             />
-                            
                           ) : (
                             <Autocomplete
                               value={item.language}
@@ -294,7 +295,10 @@ const EventFormEmailInvitation = () => {
                               options={languageOptions.filter(
                                 (language) =>
                                   !languagesAndTemplates.some(
-                                    (item) => item.language === language
+                                    (templateItem, idx) =>
+                                      templateItem.language === language &&
+                                      templateItem.platform === item.platform &&
+                                      idx !== index // Ignore the current index to avoid self-filtering
                                   )
                               )}
                               renderInput={(params) => (
@@ -313,14 +317,14 @@ const EventFormEmailInvitation = () => {
                           Email Subject Line
                         </Typography>
                         <TextField
-  label=""
-  value={item.subjectLine || ""}
-  onChange={(e) => handleSubjectLineChange(e.target.value, index)}
-  variant="outlined"
-  fullWidth
-/>
-
-                        
+                          label=""
+                          value={item.subjectLine || ""}
+                          onChange={(e) =>
+                            handleSubjectLineChange(e.target.value, index)
+                          }
+                          variant="outlined"
+                          fullWidth
+                        />
                       </Grid>
                       <Grid item xs={12}>
                         <Typography variant="subtitle1">Email Body</Typography>
@@ -328,24 +332,30 @@ const EventFormEmailInvitation = () => {
                         {/* Check if the platform is Salesloft, then show ReactQuill */}
                         {item.platform === "Salesloft" ? (
                           <>
-                           <ReactQuill
-  value={item.template || ""}
-  onChange={(content) => handleEditorChange(content, index)}
-  style={{
-    height: "300px",
-    maxHeight: "400px",
-    marginBottom: "20px",
-  }}
-  modules={{
-    toolbar: [
-      [{ header: "1" }, { header: "2" }, { font: [] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["bold", "italic", "underline"],
-      ["link", "image"],
-      ["clean"],
-    ],
-  }}
-/>
+                            <ReactQuill
+                              value={item.template || ""}
+                              onChange={(content) =>
+                                handleEditorChange(content, index)
+                              }
+                              style={{
+                                height: "300px",
+                                maxHeight: "400px",
+                                marginBottom: "20px",
+                              }}
+                              modules={{
+                                toolbar: [
+                                  [
+                                    { header: "1" },
+                                    { header: "2" },
+                                    { font: [] },
+                                  ],
+                                  [{ list: "ordered" }, { list: "bullet" }],
+                                  ["bold", "italic", "underline"],
+                                  ["link", "image"],
+                                  ["clean"],
+                                ],
+                              }}
+                            />
 
                             <div style={{ marginTop: "20px", pt: "40px" }}>
                               <Typography
@@ -372,24 +382,29 @@ const EventFormEmailInvitation = () => {
                         ) : (
                           // Render a regular text field for Gmail
                           <ReactQuill
-  value={item.template || ""}
-  onChange={(content) => handleEditorChange(content, index)}
-  style={{
-    height: "300px",
-    maxHeight: "400px",
-    marginBottom: "20px",
-  }}
-  modules={{
-    toolbar: [
-      [{ header: "1" }, { header: "2" }, { font: [] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      ["bold", "italic", "underline"],
-      ["link", "image"],
-      ["clean"],
-    ],
-  }}
-/>
-
+                            value={item.template || ""}
+                            onChange={(content) =>
+                              handleEditorChange(content, index)
+                            }
+                            style={{
+                              height: "300px",
+                              maxHeight: "400px",
+                              marginBottom: "20px",
+                            }}
+                            modules={{
+                              toolbar: [
+                                [
+                                  { header: "1" },
+                                  { header: "2" },
+                                  { font: [] },
+                                ],
+                                [{ list: "ordered" }, { list: "bullet" }],
+                                ["bold", "italic", "underline"],
+                                ["link", "image"],
+                                ["clean"],
+                              ],
+                            }}
+                          />
                         )}
                       </Grid>
                       {index > 0 && (
