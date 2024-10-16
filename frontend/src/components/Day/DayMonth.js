@@ -10,19 +10,37 @@ import LanguageIcon from "@mui/icons-material/Language";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ArticleIcon from "@mui/icons-material/Article";
 
-export default function Day({ day, events, isYearView }) {
+export default function Day({ day, events, isYearView, month }) {
   const maxEventsToShow = 3;
 
   // Memoize dayEvents to avoid recalculations on every render
   const dayEvents = useMemo(() => {
-    return events.filter(
-      (evt) =>
-        dayjs(evt.startDate).isBefore(day.endOf("day")) &&
-        dayjs(evt.endDate).isAfter(day.startOf("day"))
-    );
-  }, [events, day]);
+    return events.filter((evt) => {
+      // Conditional check based on year view
+      if (isYearView) {
+        // In year view, access `day.date` which is a `dayjs` object
+        return (
+          dayjs(evt.startDate).isBefore(day.date.endOf("day")) &&
+          dayjs(evt.endDate).isAfter(day.date.startOf("day"))
+        );
+      } else {
+        // Not in year view, `day` is a `dayjs` object directly
+        return (
+          dayjs(evt.startDate).isBefore(day.endOf("day")) &&
+          dayjs(evt.endDate).isAfter(day.startOf("day"))
+        );
+      }
+    });
+  }, [events, day, isYearView]);
+  
 
   const hasEvents = dayEvents.length > 0;
+
+const isCurrentMonth = isYearView
+    ? day.date.month() === month // In year view, compare day.date.month() to the month prop
+    : day.month() === month; // Not in year view, compare directly with day.month()
+
+
   const location = useLocation();
   const PopupState = {
     NONE: "NONE",
@@ -54,8 +72,11 @@ export default function Day({ day, events, isYearView }) {
   // Memoized event handlers to prevent re-creation on each render
   const handleDayClick = useCallback(
     (e) => {
-      setDaySelected(day);
-
+      if (isYearView) {
+        setDaySelected(day.date); 
+      } else {
+        setDaySelected(day);
+      }
       if (isYearView) {
         e.preventDefault();
         e.stopPropagation();
@@ -155,15 +176,21 @@ export default function Day({ day, events, isYearView }) {
     alignItems: "center",
     justifyContent: "center",
     height: "25px",
+    color: isYearView && !isCurrentMonth ? "#a9a9a9" : "#000000", // Gray non-current month days in YearView
+    backgroundColor: "transparent", // No background color by default
   };
-
+  
   const dayNumberCircleStyle = {
-    ...dayNumberStyle,
-    backgroundColor: hasEvents ? "#4285F4" : "transparent",
-    color: hasEvents ? "white" : "inherit",
-    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "25px",
     width: "25px",
+    borderRadius: "50%",
+    backgroundColor: isCurrentMonth && hasEvents ? "#4285F4" : "transparent", // Blue circle for current month with events
+    color: isCurrentMonth && hasEvents ? "white" : isYearView && !isCurrentMonth ? "#a9a9a9" : "#000000", // White for current month with events, gray for non-current month
   };
+  
 
   const renderPopup = useMemo(() => {
     switch (activePopup) {
@@ -203,8 +230,9 @@ export default function Day({ day, events, isYearView }) {
           style={{ pointerEvents: "auto" }}
           onClick={handleDayClick}
         >
-          {day.format("DD")}
-        </p>
+{isYearView 
+            ? day.date.format("DD") // In year view, use day.date.format()
+            : day.format("DD")}        </p>
       </header>
       {!isYearView && (
         <div className="flex-1 flex flex-col">

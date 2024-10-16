@@ -36,7 +36,12 @@ export function createYearData(year) {
     let currentDay = monthStart;
 
     while (currentDay.isBefore(monthEnd) || currentDay.isSame(monthEnd, 'day')) {
-      monthDays.push(currentDay);
+      // Make sure currentDay is a dayjs object
+      monthDays.push({
+        date: dayjs(currentDay), // Wrap it properly in dayjs
+        isCurrentMonth: currentDay.month() === month, // True if the day belongs to the current month
+        month: month, // Correct month check
+      });
       currentDay = currentDay.add(1, 'day');
     }
 
@@ -51,4 +56,3 @@ export function createYearData(year) {
 
   return yearData;
 }
-
