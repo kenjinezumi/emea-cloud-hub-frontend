@@ -1,90 +1,49 @@
 import React, { useContext, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import GlobalContext from '../../context/GlobalContext';
 import dayjs from 'dayjs';
-import minMax from 'dayjs/plugin/minMax';
-import { getEventData } from '../../api/getEventData';
 import { Box, Typography } from '@mui/material';
-import EventIcon from '@mui/icons-material/Event';
-import LanguageIcon from '@mui/icons-material/Language';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import ArticleIcon from '@mui/icons-material/Article';
+import { getEventStyleAndIcon } from '../../utils/eventStyles';
 
-dayjs.extend(minMax);
-
-export default function DayColumn({ daySelected, events, onEventClick }) {
-  const {
-    setShowEventModal,
-    setDaySelected,
-    setSelectedEvent,
-    setShowInfoEventModal,
-    filters,
-  } = useContext(GlobalContext);
-
-  const [eventGroups, setEventGroups] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
-  const [currentTimePosition, setCurrentTimePosition] = useState(0); // State for current time position
-  const hourHeight = 60;
+export default function DayColumn({ daySelected, events, onEventClick, showTimeLabels }) {
+  const { setShowEventModal, setDaySelected } = useContext(GlobalContext);
+  const [currentTimePosition, setCurrentTimePosition] = useState(0);
+  const hourHeight = 90; // Height for one hour
   const startHour = 0;
   const endHour = 24;
-  const dayColumnRef = useRef(null); // Reference for auto-scroll
+  const dayColumnRef = useRef(null);
 
-
-
+  // Update current time position
   useEffect(() => {
-    setShowEventModal(false);
-    setShowInfoEventModal(false);
-  }, [setShowEventModal, setShowInfoEventModal]);
-
-  useEffect(() => {
-    setEventGroups(calculateOverlapGroups(events));
-  }, [events]);
-
-  useEffect(() => {
-    // Update current time position
     const updateCurrentTimePosition = () => {
       const now = dayjs();
-      const position = now.hour() * hourHeight + (now.minute() / 60) * hourHeight;
+      const minutesFromMidnight = now.diff(now.startOf('day'), 'minutes');
+      const position = (minutesFromMidnight / 60) * hourHeight;
       setCurrentTimePosition(position);
     };
-
-    updateCurrentTimePosition(); // Initial update
+    updateCurrentTimePosition();
     const interval = setInterval(updateCurrentTimePosition, 60000); // Update every minute
-
-    return () => clearInterval(interval); // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, [hourHeight]);
 
-  const calculateOverlapGroups = useCallback((events) => {
-    const eventGroups = [];
-
-    if (!Array.isArray(events)) {
-      console.error("calculateOverlapGroups was called with 'events' that is not an array:", events);
-      return [];
-    }
-
-    events.forEach((event) => {
-      let added = false;
-      for (const group of eventGroups) {
-        if (isOverlapping(event, group)) {
-          group.push(event);
-          added = true;
-          break;
-        }
-      }
-      if (!added) {
-        eventGroups.push([event]);
-      }
+  // Separate multi-day events and single-day events
+  const { multiDayEvents, singleDayEvents } = useMemo(() => {
+    const multiDayEvents = events.filter((event) => {
+      const eventStart = dayjs(event.startDate);
+      const eventEnd = dayjs(event.endDate);
+      return eventStart.isBefore(daySelected.endOf('day')) && eventEnd.isAfter(daySelected.startOf('day'));
     });
-    return eventGroups;
-  }, []);
 
-  const isOverlapping = useCallback((event, group) => {
-    return group.some((groupEvent) => {
-      return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
-             dayjs(groupEvent.startDate).isBefore(event.endDate);
+    const singleDayEvents = events.filter((event) => {
+      const eventStart = dayjs(event.startDate);
+      const eventEnd = dayjs(event.endDate);
+      return eventStart.isSame(daySelected, 'day') && eventEnd.isSame(daySelected, 'day');
     });
-  }, []);
 
-  const calculateEventBlockStyles = useCallback((event) => {
+    return { multiDayEvents, singleDayEvents };
+  }, [events, daySelected]);
+
+  // Calculate event block styles (top, height, width, and left)
+  const calculateEventBlockStyles = useCallback((event, overlappingEvents) => {
     const eventStart = dayjs(event.startDate);
     const eventEnd = dayjs(event.endDate);
     const startOfDay = daySelected.startOf('day');
@@ -99,79 +58,154 @@ export default function DayColumn({ daySelected, events, onEventClick }) {
     const top = (minutesFromMidnight / 60) * hourHeight;
     const height = (durationInMinutes / 60) * hourHeight;
 
-    const group = eventGroups.find((g) => g.includes(event));
-    const width = group ? 100 / group.length : 100;
-    const index = group ? group.indexOf(event) : 0;
-    const left = width * index;
+    // Calculate width based on number of overlapping events
+    const overlapCount = overlappingEvents.length;
+    const width = 100 / overlapCount;  // Divide the width by number of overlapping events
+    const left = overlappingEvents.indexOf(event) * width;
 
-    return { top, height, left, width };
-  }, [daySelected, eventGroups]);
+    return { top, height, width, left };
+  }, [daySelected, hourHeight]);
 
-  const handleEventClickInternal = useCallback((event) => {
-    if (onEventClick) {
-      onEventClick(event);
-    }
-  }, [onEventClick]);
+  // Group overlapping single-day events
+  const groupOverlappingEvents = (events) => {
+    const groups = [];
 
-  const handleSlotClick = useCallback((hour) => {
-    setDaySelected(daySelected.hour(hour).minute(0));
-    setShowEventModal(true);
-  }, [daySelected, setDaySelected, setShowEventModal]);
+    events.forEach((event) => {
+      let addedToGroup = false;
+      for (const group of groups) {
+        const isOverlapping = group.some((groupEvent) => {
+          return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
+                 dayjs(event.endDate).isAfter(groupEvent.startDate);
+        });
 
-  const dayEvents = useMemo(() => {
-    return events.filter(evt =>
-      dayjs(evt.startDate).isSame(daySelected, 'day') ||
-      dayjs(evt.endDate).isSame(daySelected, 'day') ||
-      (dayjs(evt.startDate).isBefore(daySelected, 'day') && dayjs(evt.endDate).isAfter(daySelected, 'day'))
-    );
-  }, [events, daySelected]);
-  
+        if (isOverlapping) {
+          group.push(event);
+          addedToGroup = true;
+          break;
+        }
+      }
 
-  const getEventStyleAndIcon = useCallback((eventType) => {
-    switch (eventType) {
-      case 'Online Event':
-        return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <LanguageIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      case 'Physical Event':
-        return { backgroundColor: '#fce4ec', color: '#d32f2f', icon: <LocationOnIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      case 'Hybrid Event':
-        return { backgroundColor: '#f3e5f5', color: '#6a1b9a', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      case 'Customer Story':
-        return { backgroundColor: '#e8f5e9', color: '#2e7d32', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      case 'Blog Post':
-        return { backgroundColor: '#fffde7', color: '#f57f17', icon: <ArticleIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-      default:
-        return { backgroundColor: '#e3f2fd', color: '#1a73e8', icon: <EventIcon fontSize="small" style={{ marginRight: '5px' }} /> };
-    }
-  }, []);
+      if (!addedToGroup) {
+        groups.push([event]);
+      }
+    });
+
+    return groups;
+  };
+
+  const overlappingEventGroups = useMemo(() => groupOverlappingEvents(singleDayEvents), [singleDayEvents]);
 
   return (
     <Box
       sx={{
         position: 'relative',
-        height: `${hourHeight * (endHour - startHour)}px`,
-        borderRight: '2px solid #bbb',
-        borderBottom: '1px solid #ddd',
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',  // Adjusted for transparency
+        height: `${hourHeight * (endHour - startHour)}px`, // Ensures it stretches fully
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        width: '100%',
+        flex: 1,
+        boxSizing: 'border-box',
+        borderLeft: '1px solid #ccc',
+        borderBottom: '1px solid #ccc',
       }}
       ref={dayColumnRef}
     >
-      {/* Render Hour Lines and Clickable Slots */}
-      {Array.from({ length: endHour - startHour }, (_, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            top: `${i * hourHeight}px`,
-            left: 0,
-            right: 0,
-            height: `${hourHeight}px`,
-            borderTop: '1px solid #ddd',
-            borderBottom: i === (endHour - startHour - 1) ? 'none' : '1px solid rgba(0, 0, 0, 0.1)', // Add a bottom border for visibility
-            cursor: 'pointer',
-          }}
-          onClick={() => handleSlotClick(i + startHour)}
-        />
+      {Array.from({ length: endHour - startHour }, (_, hour) => (
+        <React.Fragment key={hour}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: `${hour * hourHeight}px`,
+              left: 0,
+              right: 0,
+              height: '1px',
+              backgroundColor: '#ddd',
+              zIndex: 1,
+            }}
+          />
+          {/* {showTimeLabels && (
+            <Typography
+              sx={{
+                position: 'absolute',
+                top: `${hour * hourHeight}px`,
+                width: '50px',
+                textAlign: 'right',
+                paddingRight: '10px',
+                fontSize: '12px',
+                color: '#666',
+                zIndex: 1200,
+              }}
+            >
+              {dayjs().hour(hour).minute(0).format('HH:mm')}
+            </Typography>
+          )} */}
+        </React.Fragment>
       ))}
+
+      {/* Render Multi-Day Events */}
+      {multiDayEvents.map((event, index) => {
+        const { top, height, left, width } = calculateEventBlockStyles(event, multiDayEvents); // Multi-day events
+        const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
+        return (
+          <div
+            key={event.eventId}
+            style={{
+              position: 'absolute',
+              top: `${index * 30}px`, // Stack multi-day events at the top
+              left: '0%',
+              width: '100%',
+              height: '30px', // Fixed height for multi-day events
+              backgroundColor,
+              color,
+              padding: '2px 4px',
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              zIndex: 2,
+              borderLeft: `2px solid ${color}`,
+              boxSizing: 'border-box',
+            }}
+            onClick={() => onEventClick(event)}
+          >
+            {icon}
+            <Typography noWrap>{event.title}</Typography>
+          </div>
+        );
+      })}
+
+      {/* Render Single-Day Events */}
+      {overlappingEventGroups.map((group, groupIndex) =>
+        group.map((event) => {
+          const { top, height, left, width } = calculateEventBlockStyles(event, group);
+          const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
+          return (
+            <div
+              key={event.eventId}
+              style={{
+                position: 'absolute',
+                top,               // Top position based on time
+                left: `${left}%`,  // Left position based on overlapping events
+                width: `${width}%`,// Width is divided among overlapping events
+                height: `${height}px`,
+                backgroundColor,
+                color,
+                padding: '2px 4px',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                zIndex: 2,
+                borderLeft: `2px solid ${color}`,
+                boxSizing: 'border-box',
+              }}
+              onClick={() => onEventClick(event)}
+            >
+              {icon}
+              <Typography noWrap>{event.title}</Typography>
+            </div>
+          );
+        })
+      )}
 
       {/* Current Time Line */}
       <Box
@@ -180,63 +214,11 @@ export default function DayColumn({ daySelected, events, onEventClick }) {
           top: `${currentTimePosition}px`,
           left: '0',
           right: '0',
-          height: '2px',  // Make the line thicker
+          height: '2px',
+          width: '100%',
           backgroundColor: '#d32f2f',
-          zIndex: 5,
         }}
       />
-
-      {/* Render Events */}
-      {dayEvents.map((event) => {
-        const { top, height, left, width } = calculateEventBlockStyles(event);
-        const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
-        return (
-          <div
-            key={event.eventId}
-            style={{
-              position: 'absolute',
-              top: `${top}px`,
-              left: `${left}%`,
-              width: `${width}%`,
-              height: `${height}px`,
-              backgroundColor: backgroundColor,
-              color: color,
-              padding: '2px 4px',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              cursor: 'pointer',
-              zIndex: 2,
-              marginLeft: "4px",
-              marginRight: "4px",
-              boxSizing: 'border-box',
-              borderLeft: `2px solid ${color}`,
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-              transition: 'background-color 0.2s, box-shadow 0.2s',
-              fontSize: '0.875rem',
-              fontWeight: '500',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#c5e1f9';
-              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = backgroundColor;
-              e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleEventClickInternal(event);
-            }}
-          >
-            {icon}
-            <Typography>{event.title}</Typography>
-          </div>
-        );
-      })}
     </Box>
   );
 }

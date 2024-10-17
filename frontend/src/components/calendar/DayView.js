@@ -13,48 +13,17 @@ import minMax from "dayjs/plugin/minMax";
 import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
 import EventInfoPopup from "../popup/EventInfoModal";
-import OnlineEventIcon from "@mui/icons-material/Computer";
-import PhysicalEventIcon from "@mui/icons-material/LocationOn";
-import HybridEventIcon from "@mui/icons-material/Autorenew";
-import CustomerStoryIcon from "@mui/icons-material/LibraryBooks";
-import BlogPostIcon from "@mui/icons-material/Create";
+import { getEventStyleAndIcon } from "../../utils/eventStyles";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 
+// Extend dayjs with these plugins
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 dayjs.extend(minMax);
 
-// Define styles for each event type
-const eventTypeStyles = {
-  "Online Event": {
-    color: "#1E88E5",
-    icon: <OnlineEventIcon style={{ marginRight: "5px", color: "#1E88E5" }} />,
-    backgroundColor: "#E3F2FD",
-  },
-  "Physical Event": {
-    color: "#43A047",
-    icon: (
-      <PhysicalEventIcon style={{ marginRight: "5px", color: "#43A047" }} />
-    ),
-    backgroundColor: "#E8F5E9",
-  },
-  "Hybrid Event": {
-    color: "#FB8C00",
-    icon: <HybridEventIcon style={{ marginRight: "5px", color: "#FB8C00" }} />,
-    backgroundColor: "#FFF3E0",
-  },
-  "Customer Story": {
-    color: "#E53935",
-    icon: (
-      <CustomerStoryIcon style={{ marginRight: "5px", color: "#E53935" }} />
-    ),
-    backgroundColor: "#FFEBEE",
-  },
-  "Blog Post": {
-    color: "#8E24AA",
-    icon: <BlogPostIcon style={{ marginRight: "5px", color: "#8E24AA" }} />,
-    backgroundColor: "#F3E5F5",
-  },
-};
-
 export default function DayView() {
+  const eventSlotMapRef = useRef({});
   const {
     daySelected,
     setShowEventModal,
@@ -62,10 +31,10 @@ export default function DayView() {
     setShowInfoEventModal,
     filters,
     showEventInfoModal,
+    selectedEvent, // Ensure we can pass the event to the popup
   } = useContext(GlobalContext);
 
   const [events, setEvents] = useState([]);
-  const [eventGroups, setEventGroups] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [currentTimePosition, setCurrentTimePosition] = useState(0);
   const location = useLocation();
@@ -75,20 +44,7 @@ export default function DayView() {
   const hourHeight = 90;
   const startHour = 0;
   const endHour = 24;
-
-  // Fetch events and calculate overlap groups on location or daySelected change
-  useEffect(() => {
-    async function fetchEvents() {
-      try {
-        const eventData = await getEventData("eventDataQuery");
-        setEvents(eventData);
-        setEventGroups(calculateOverlapGroups(eventData));
-      } catch (error) {
-        console.error("Error fetching event data:", error);
-      }
-    }
-    fetchEvents();
-  }, [location, daySelected]);
+  const multiDayEventHeight = 30; // Fixed height for multi-day events
 
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
@@ -103,6 +59,20 @@ export default function DayView() {
           );
           return;
         }
+
+        const filteredByDay = eventData.filter((event) => {
+          const eventStart = dayjs(event.startDate);
+          const eventEnd = dayjs(event.endDate);
+          const selectedDayStart = daySelected.startOf("day");
+          const selectedDayEnd = daySelected.endOf("day");
+
+          return (
+            eventStart.isSame(daySelected, "day") ||
+            eventEnd.isSame(daySelected, "day") ||
+            (eventStart.isBefore(selectedDayEnd) && eventEnd.isAfter(selectedDayStart))
+          );
+        });
+
         const hasFiltersApplied =
           [
             ...filters.subRegions,
@@ -117,16 +87,14 @@ export default function DayView() {
           filters.draftStatus !== undefined;
 
         if (!hasFiltersApplied) {
-          const eventData = await getEventData("eventDataQuery");
-          setEvents(eventData);
-          setFilteredEvents(eventData);
+          setEvents(filteredByDay);
+          setFilteredEvents(filteredByDay);
           return;
         }
 
         const results = await Promise.all(
-          eventData.map(async (event) => {
+          filteredByDay.map(async (event) => {
             try {
-              // Sub-region filter match
               const subRegionMatch =
                 !filters.subRegions.some((subRegion) => subRegion.checked) ||
                 filters.subRegions.some((subRegion) => {
@@ -136,34 +104,22 @@ export default function DayView() {
                       event.subRegion?.includes(subRegion.label)
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking subRegion filter:",
-                      err,
-                      subRegion,
-                      event
-                    );
+                    console.error("Error checking subRegion filter:", err);
                     return false;
                   }
                 });
 
-              // GEP filter match
               const gepMatch =
                 !filters.gep.some((gep) => gep.checked) ||
                 filters.gep.some((gep) => {
                   try {
                     return gep.checked && event.gep?.includes(gep.label);
                   } catch (err) {
-                    console.error(
-                      "Error checking GEP filter:",
-                      err,
-                      gep,
-                      event
-                    );
+                    console.error("Error checking GEP filter:", err);
                     return false;
                   }
                 });
 
-              // Buyer Segment Rollup filter match
               const buyerSegmentRollupMatch =
                 !filters.buyerSegmentRollup.some(
                   (segment) => segment.checked
@@ -177,15 +133,12 @@ export default function DayView() {
                   } catch (err) {
                     console.error(
                       "Error checking buyerSegmentRollup filter:",
-                      err,
-                      segment,
-                      event
+                      err
                     );
                     return false;
                   }
                 });
 
-              // Account Sector filter match
               const accountSectorMatch =
                 !filters.accountSectors.some((sector) => sector.checked) ||
                 filters.accountSectors.some((sector) => {
@@ -194,17 +147,11 @@ export default function DayView() {
                       sector.checked && event.accountSectors?.[sector.label]
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking accountSectors filter:",
-                      err,
-                      sector,
-                      event
-                    );
+                    console.error("Error checking accountSectors filter:", err);
                     return false;
                   }
                 });
 
-              // Account Segment filter match
               const accountSegmentMatch =
                 !filters.accountSegments.some((segment) => segment.checked) ||
                 filters.accountSegments.some((segment) => {
@@ -214,17 +161,11 @@ export default function DayView() {
                       event.accountSegments?.[segment.label]?.selected
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking accountSegments filter:",
-                      err,
-                      segment,
-                      event
-                    );
+                    console.error("Error checking accountSegments filter:", err);
                     return false;
                   }
                 });
 
-              // Product Family filter match
               const productFamilyMatch =
                 !filters.productFamily.some((product) => product.checked) ||
                 filters.productFamily.some((product) => {
@@ -234,17 +175,11 @@ export default function DayView() {
                       event.productAlignment?.[product.label]?.selected
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking productFamily filter:",
-                      err,
-                      product,
-                      event
-                    );
+                    console.error("Error checking productFamily filter:", err);
                     return false;
                   }
                 });
 
-              // Industry filter match
               const industryMatch =
                 !filters.industry.some((industry) => industry.checked) ||
                 filters.industry.some((industry) => {
@@ -253,17 +188,11 @@ export default function DayView() {
                       industry.checked && event.industry === industry.label
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking industry filter:",
-                      err,
-                      industry,
-                      event
-                    );
+                    console.error("Error checking industry filter:", err);
                     return false;
                   }
                 });
 
-              // Boolean checks for isPartneredEvent and isDraft
               const selectedPartneredStatuses = Array.isArray(
                 filters.partnerEvent
               )
@@ -295,24 +224,24 @@ export default function DayView() {
                 isDraftMatch
               );
             } catch (filterError) {
-              console.error(
-                "Error applying filters to event:",
-                filterError,
-                event
-              );
+              console.error("Error applying filters to event:", filterError);
               return false;
             }
           })
         );
 
-        setFilteredEvents(eventData.filter((_, index) => results[index]));
+        const finalFilteredEvents = filteredByDay.filter(
+          (_, index) => results[index]
+        );
+
+        setFilteredEvents(finalFilteredEvents);
       } catch (error) {
         console.error("Error fetching event data:", error);
       }
     };
 
     fetchAndFilterEvents();
-  }, [location, filters]);
+  }, [location, filters, daySelected]);
 
   // Reset modals when location changes
   useEffect(() => {
@@ -320,75 +249,57 @@ export default function DayView() {
     setShowInfoEventModal(false);
   }, [location, setShowEventModal, setShowInfoEventModal]);
 
-  // Recalculate event groups whenever events change
-  useEffect(() => {
-    setEventGroups(calculateOverlapGroups(events));
-  }, [events]);
-
-  // Automatically scroll to the current hour and update current time position
-  useEffect(() => {
-    if (dayViewRef.current) {
-      const currentHourOffset = dayjs().hour() * hourHeight;
-      dayViewRef.current.scrollTo({
-        top: currentHourOffset - hourHeight / 2,
-        behavior: "smooth",
-      });
-    }
-
-    const updateCurrentTimePosition = () => {
-      const now = dayjs();
-      const minutesFromMidnight = now.diff(now.startOf("day"), "minutes"); // Calculate minutes from midnight accurately
-      const position = (minutesFromMidnight / 60) * hourHeight; // Convert minutes into the vertical position
-      setCurrentTimePosition(position);
-    };
-
-    updateCurrentTimePosition();
-    const interval = setInterval(updateCurrentTimePosition, 60000);
-
-    return () => clearInterval(interval);
-  }, [hourHeight]);
-
-  // Memoized function to calculate overlapping event groups
-  const calculateOverlapGroups = useCallback((events) => {
-    const eventGroups = [];
-
-    if (!Array.isArray(events)) {
-      console.error(
-        "calculateOverlapGroups was called with 'events' that is not an array:",
-        events
+  // Separate multi-day events and single-day events
+  const { multiDayEvents, singleDayEvents } = useMemo(() => {
+    const multiDayEvents = filteredEvents.filter((event) => {
+      const eventStart = dayjs(event.startDate);
+      const eventEnd = dayjs(event.endDate);
+      return (
+        !eventStart.isSame(daySelected, "day") ||
+        !eventEnd.isSame(daySelected, "day")
       );
-      return [];
-    }
+    });
 
+    const singleDayEvents = filteredEvents.filter((event) => {
+      const eventStart = dayjs(event.startDate);
+      const eventEnd = dayjs(event.endDate);
+      return (
+        eventStart.isSame(daySelected, "day") && eventEnd.isSame(daySelected, "day")
+      );
+    });
+
+    return { multiDayEvents, singleDayEvents };
+  }, [filteredEvents, daySelected]);
+
+  // Group overlapping single-day events
+  const groupOverlappingEvents = (events) => {
+    const groups = [];
     events.forEach((event) => {
-      let added = false;
-      for (const group of eventGroups) {
-        if (isOverlapping(event, group)) {
+      let addedToGroup = false;
+      for (const group of groups) {
+        const isOverlapping = group.some((groupEvent) => {
+          return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
+                 dayjs(event.endDate).isAfter(groupEvent.startDate);
+        });
+
+        if (isOverlapping) {
           group.push(event);
-          added = true;
+          addedToGroup = true;
           break;
         }
       }
-      if (!added) {
-        eventGroups.push([event]);
+      if (!addedToGroup) {
+        groups.push([event]);
       }
     });
-    return eventGroups;
-  }, []);
+    return groups;
+  };
 
-  // Helper function to determine if events overlap
-  const isOverlapping = useCallback((event, group) => {
-    return group.some((groupEvent) => {
-      return (
-        dayjs(event.startDate).isBefore(groupEvent.endDate) &&
-        dayjs(groupEvent.startDate).isBefore(event.endDate)
-      );
-    });
-  }, []);
+  const overlappingEventGroups = useMemo(() => groupOverlappingEvents(singleDayEvents), [singleDayEvents]);
 
-  // Memoized function to calculate styles for event blocks
+  // Helper function to calculate the event block styles
   const calculateEventBlockStyles = useCallback(
-    (event) => {
+    (event, overlappingEvents) => {
       const eventStart = dayjs(event.startDate);
       const eventEnd = dayjs(event.endDate);
       const startOfDay = daySelected.startOf("day");
@@ -403,14 +314,13 @@ export default function DayView() {
       const top = (minutesFromMidnight / 60) * hourHeight;
       const height = (durationInMinutes / 60) * hourHeight;
 
-      const group = eventGroups.find((g) => g.includes(event));
-      const width = group ? 100 / group.length : 100;
-      const index = group ? group.indexOf(event) : 0;
-      const left = width * index;
+      const overlapCount = overlappingEvents.length;
+      const width = 100 / overlapCount;
+      const left = overlappingEvents.indexOf(event) * width;
 
-      return { top, height, left, width };
+      return { top, height, width, left };
     },
-    [daySelected, eventGroups]
+    [daySelected, hourHeight]
   );
 
   // Memoized event handler for adding events
@@ -421,22 +331,35 @@ export default function DayView() {
   // Memoized event handler for clicking events
   const handleEventClick = useCallback(
     (event) => {
-      setSelectedEvent(event);
-      setShowInfoEventModal(true);
+      setSelectedEvent(event);  // Set the clicked event as the selected one
+      setShowInfoEventModal(true);  // Trigger the modal to show
     },
     [setSelectedEvent, setShowInfoEventModal]
   );
+  
 
-  // Memoized filtered day events
-  const dayEvents = useMemo(() => {
-    return filteredEvents.filter(
-      (evt) =>
-        dayjs(evt.startDate).isSame(daySelected, "day") ||
-        dayjs(evt.endDate).isSame(daySelected, "day") ||
-        (dayjs(evt.startDate).isBefore(daySelected, "day") &&
-          dayjs(evt.endDate).isAfter(daySelected, "day"))
-    );
-  }, [filteredEvents, daySelected]);
+  // Automatically scroll to the current hour and update current time position
+  useEffect(() => {
+    if (dayViewRef.current) {
+      const currentHourOffset = dayjs().hour() * hourHeight;
+      dayViewRef.current.scrollTo({
+        top: currentHourOffset - hourHeight / 2,
+        behavior: "smooth",
+      });
+    }
+
+    const updateCurrentTimePosition = () => {
+      const now = dayjs();
+      const minutesFromMidnight = now.diff(now.startOf("day"), "minutes");
+      const position = (minutesFromMidnight / 60) * hourHeight;
+      setCurrentTimePosition(position);
+    };
+
+    updateCurrentTimePosition();
+    const interval = setInterval(updateCurrentTimePosition, 60000);
+
+    return () => clearInterval(interval);
+  }, [hourHeight]);
 
   return (
     <Paper
@@ -476,13 +399,12 @@ export default function DayView() {
           position: "relative",
         }}
       >
-        {/* Event Grid Container */}
         <div
           style={{
             position: "relative",
             height: `${hourHeight * (endHour - startHour)}px`,
-            width: "calc(100% - 40px)",
-            marginLeft: "50px",
+            width: "100%",
+            marginLeft: "0px",
           }}
         >
           {/* Hour Labels */}
@@ -490,16 +412,14 @@ export default function DayView() {
             style={{
               position: "absolute",
               top: 0,
-              left: "-50px",
-              width: "40px",
+              left: 0,
+              right: 0, // Ensures the lines stretch across the full width of the grid
+              width: "100%", // Make sure the width spans the entire grid
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-start",
-              alignItems: "flex-end",
-              paddingRight: "10px",
-              color: "rgba(0, 0, 0, 0.6)",
-              borderRight: "1px solid #ddd",
-              boxSizing: "border-box",
+              zIndex: 100000, // Ensures the lines are on top
+              color: "#999", // Lighter grey color for the label
             }}
           >
             {Array.from(
@@ -510,10 +430,12 @@ export default function DayView() {
                 key={hour}
                 style={{
                   height: `${hourHeight}px`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  fontSize: "12px",
+                  position: "relative", // Ensures it's within the grid
+                  borderTop: "1px solid rgba(0, 0, 0, 0.1)", // Line style
+                  left: 0, // Start the line from the left
+                  right: 0, // Stretch the line to the right
+                  width: "100%", // Ensures the line spans the entire width of the container
+                  zIndex: 1, // Ensures it's behind the events
                 }}
               >
                 {dayjs().hour(hour).minute(0).format("HH:mm")}
@@ -521,55 +443,62 @@ export default function DayView() {
             ))}
           </div>
 
-          {/* Event Grid */}
-          <div style={{ position: "relative" }}>
-            {Array.from({ length: (endHour - startHour) * 2 }, (_, i) => i).map(
-              (quarter) => (
-                <div
-                  key={quarter}
-                  style={{
-                    height: `${hourHeight / 2}px`,
-                    borderTop: `1px solid rgba(0, 0, 0, 0.1)`,
-                    backgroundColor: "#f5f5f5",
-                    position: "relative",
-                    cursor: "pointer",
-                  }}
-                  onClick={handleAddEvent}
-                ></div>
-              )
-            )}
+          {/* Multi-Day Events */}
+          {multiDayEvents.map((event, index) => {
+            const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
+            return (
+              <div
+                key={event.eventId}
+                style={{
+                  position: "absolute",
+                  top: `${index * multiDayEventHeight}px`, // Stack multi-day events
+                  left: "0%",
+                  width: "100%",
+                  height: `${multiDayEventHeight}px`, // Fixed height
+                  backgroundColor,
+                  color,
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  zIndex: 2,
+                  borderLeft: `2px solid ${color}`,
+                  boxSizing: "border-box",
+                  marginLeft: '60px', // Adjust to avoid overlapping with labels
+                }}
+                onClick={() => handleEventClick(event)} // Event click handler
+              >
+                {icon}
+                <Typography noWrap>{event.title}</Typography>
+              </div>
+            );
+          })}
 
-            {/* Render Events */}
-            {dayEvents.map((event) => {
-              const { top, height, left, width } =
-                calculateEventBlockStyles(event);
-              const eventTypeStyle = eventTypeStyles[event.eventType] || {};
+          {/* Single-Day Events */}
+          {overlappingEventGroups.map((group) =>
+            group.map((event) => {
+              const { top, height, left, width } = calculateEventBlockStyles(event, group);
+              const eventTypeStyle = getEventStyleAndIcon(event.eventType);
               return (
                 <div
                   key={event.eventId}
                   style={{
                     position: "absolute",
-                    top: `${top}px`,
+                    top,
                     left: `${left}%`,
                     width: `${width}%`,
                     height: `${height}px`,
                     backgroundColor: eventTypeStyle.backgroundColor,
                     color: eventTypeStyle.color,
                     padding: "2px 4px",
-                    borderRadius: "8px",
+                    borderRadius: "4px",
                     display: "flex",
                     alignItems: "center",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
                     cursor: "pointer",
-                    zIndex: 10,
-                    boxSizing: "border-box",
-                    borderLeft: `4px solid ${eventTypeStyle.color}`,
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-                    transition: "background-color 0.2s, box-shadow 0.2s",
-                    fontSize: "0.875rem",
-                    fontWeight: "500",
+                    zIndex: 2,
+                    borderLeft: `2px solid ${eventTypeStyle.color}`,
+                    marginLeft: '60px', // Adjust to avoid overlapping with labels
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = eventTypeStyle.color
@@ -584,33 +513,36 @@ export default function DayView() {
                     e.currentTarget.style.boxShadow =
                       "0 2px 8px rgba(0, 0, 0, 0.15)";
                   }}
-                  onClick={() => handleEventClick(event)}
-                >
+                  onClick={() => handleEventClick(event)}                  >
                   {eventTypeStyle.icon}
-                  <Typography variant="body2" noWrap>
-                    {event.title}
-                  </Typography>
+                  <Typography noWrap>{event.title}</Typography>
                 </div>
               );
-            })}
+            })
+          )}
 
-            {/* Current Time Line */}
-            <Box
-              sx={{
-                position: "absolute",
-                top: `${currentTimePosition}px`,
-                left: "0",
-                right: "0",
-                height: "2px",
-                backgroundColor: "#d32f2f",
-                zIndex: 5,
-              }}
-            />
-          </div>
+          {/* Current Time Line */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: `${currentTimePosition}px`,
+              left: "0",
+              right: "0",
+              height: "2px",
+              backgroundColor: "#d32f2f",
+              zIndex: 1500,
+            }}
+          />
         </div>
       </div>
 
-      {showEventInfoModal && <EventInfoPopup />}
+      {/* Show Event Info Popup when an event is selected */}
+      {showEventInfoModal && selectedEvent && (
+        <EventInfoPopup
+          event={selectedEvent} // Pass the selected event to the popup
+          onClose={() => setShowInfoEventModal(false)} // Close modal handler
+        />
+      )}
     </Paper>
   );
 }

@@ -19,7 +19,6 @@
   --color-event-background: #303134;
   /* Shadows can remain the same */
 }
-
 .day-view-container {
   width: 100%;
   max-width: 700px;
@@ -30,9 +29,10 @@
   text-align: left;
   align-items: start;
   font-family: var(--font-family);
+  position: relative; /* Ensure parent container is relative for absolute positioning of events */
 }
 
-.hour-slot, .events, .event {
+.hour-slot, .events {
   display: flex;
   align-items: start;
 }
@@ -52,17 +52,23 @@
 
 .events {
   flex-grow: 1;
+  position: relative; /* Ensure the events container is relative */
 }
 
 .event {
   background-color: var(--color-event-background);
   padding: 10px;
   border-radius: var(--border-radius-event);
-  margin-top: 5px;
   box-shadow: var(--shadow-event);
   font-size: 0.9rem;
   transition: background-color 0.3s, box-shadow 0.3s;
-
+  
+  position: absolute; /* Ensure each event is absolutely positioned */
+  top: 0; /* Adjust this with JS */
+  left: 0; /* Adjust this with JS */
+  width: 100%; /* Default full width for single event */
+  z-index: 1; /* Ensure it displays correctly */
+  
   /* Interaction States */
   &:hover {
     background-color: darken(var(--color-event-background), 10%);

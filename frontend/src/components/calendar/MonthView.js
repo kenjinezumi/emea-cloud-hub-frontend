@@ -280,17 +280,17 @@ export default function MonthView({ month, isYearView = false }) {
       }
     >
       {month.map((row, i) => (
-        <React.Fragment key={i}>
-          {row.map((day, idx) => (
-            <Day
-              key={`day-${i}-${idx}`}
-              day={day}
-              events={filteredEvents}
-              setDaySelected={handleDayClick}
-              isYearView={isYearView}
-            />
-          ))}
-        </React.Fragment>
+       <React.Fragment key={i}>
+       {row.map((day, idx) => (
+         <Day
+           key={`day-${i}-${idx}`}
+           day={day}  // Pass the updated day object
+           events={filteredEvents}
+           isYearView={isYearView}
+           month={day.month}  // Access the month correctly from day.date
+         />
+       ))}
+     </React.Fragment>
       ))}
       <EventPopup /> {/* Render the EventPopup component */}
     </div>
