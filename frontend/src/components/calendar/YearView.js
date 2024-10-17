@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 import MonthView from "./MonthView";
 import { createYearData } from "../../util";
 import GlobalContext from "../../context/GlobalContext";
-import { Grid, Typography, Paper, Box, Chip, Tooltip } from "@mui/material";
+import { Grid, Typography, Paper, Box, Chip, Tooltip, Modal  } from "@mui/material";
 import "../styles/Yearview.css";
 import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
@@ -51,9 +51,12 @@ export const gepOptions = [
 ];
 
 export default function YearView() {
-  const { daySelected, setShowEventModal, filters } = useContext(GlobalContext);
+  const { daySelected, setDaySelected, setCurrentView, setShowEventModal, filters } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [selectedGepEvents, setSelectedGepEvents] = useState(null); // For showing filtered events
+  const [selectedMonth, setSelectedMonth] = useState(null); // For filtering events by month
+  const [selectedGep, setSelectedGep] = useState(null); //
   const location = useLocation();
 
   const year = daySelected.year();
@@ -314,29 +317,69 @@ export default function YearView() {
     setShowEventModal(false);
   }, [location]);
 
+  const handleEventClick = useCallback(
+    (event) => {
+      // Get the event's start date
+      const eventStartDate = dayjs(event.startDate);
+  
+      // Set the daySelected to the event's start date
+      setDaySelected(eventStartDate);
+  
+      // Switch the current view to "day"
+      setCurrentView("day");
+    },
+    [setDaySelected, setCurrentView]
+  );
+
+  
   // Helper function to render GEP chips for each month
-  const getGepChip = (gepLabel, count, index) => {
+  const getGepChip = (gepLabel, count, monthIndex) => {
     const gepOption = gepOptions.find((option) => option.label === gepLabel);
     if (!gepOption) return null;
 
     const IconComponent = gepOption.icon;
 
+    // Handle GEP chip click
+    const handleGepClick = () => {
+      const eventsForMonthAndGep = filteredEvents.filter((event) => {
+        const startDate = dayjs(event.startDate);
+        const endDate = dayjs(event.endDate);
+
+        return (
+          event.gep?.includes(gepLabel) &&
+          (startDate.month() === monthIndex || endDate.month() === monthIndex)
+        );
+      });
+
+      // Update state to show filtered events
+      setSelectedGepEvents(eventsForMonthAndGep);
+      setSelectedMonth(monthIndex);
+      setSelectedGep(gepLabel);
+    };
+
     return (
-      <Tooltip title={gepLabel} key={`${gepLabel}-${index}`}>
+      <Tooltip title={gepLabel} key={`${gepLabel}-${monthIndex}`}>
         <Chip
           icon={<IconComponent style={{ color: "#FFFFFF" }} />}
           label={count}
           size="small"
+          onClick={handleGepClick} // Handle GEP chip click
           style={{
             backgroundColor: gepOption.color,
             color: "#FFFFFF",
             margin: "4px",
             fontWeight: "bold",
             borderRadius: "4px",
+            cursor: "pointer",
           }}
         />
       </Tooltip>
     );
+  };
+  const handleCloseModal = () => {
+    setSelectedGepEvents(null);
+    setSelectedMonth(null);
+    setSelectedGep(null);
   };
 
   return (
@@ -393,6 +436,83 @@ export default function YearView() {
           </Grid>
         ))}
       </Grid>
+
+      {/* Modal for displaying the events filtered by GEP */}
+      <Modal open={!!selectedGepEvents} onClose={handleCloseModal}>
+  <Paper
+    style={{
+      padding: "16px",
+      width: "30%",
+      margin: "50px auto",
+      maxHeight: "80vh",
+      overflowY: "auto",
+      borderRadius: "12px", // Smooth rounded edges
+    }}
+  >
+    <Typography
+      variant="h6"
+      gutterBottom
+      style={{
+        fontWeight: 500,
+        fontSize: "18px",
+        paddingBottom: "10px",
+        borderBottom: "1px solid #ddd", // A subtle separator line for the header
+      }}
+    >
+      Events for {selectedGep} in {dayjs().month(selectedMonth).format("MMMM")}
+    </Typography>
+
+    {selectedGepEvents?.length ? (
+      selectedGepEvents.map((event) => (
+        <Box
+          key={event.eventId}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "16px",
+            padding: "12px",
+            borderRadius: "8px",
+            backgroundColor: "#ffffff", // White background for the event card
+            boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)", // Lighter shadow for a soft look
+            cursor: "pointer",
+            "&:hover": {
+              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+            },
+            border: "1px solid #e0e0e0", // Border around the card
+          }}
+          onClick={() => handleEventClick(event)} // Assuming you have a click handler
+        >
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: "bold", fontSize: "16px" }}
+            >
+              {event.title}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: "#666", marginTop: "4px" }}
+            >
+              Start date: {dayjs(event.startDate).format("dddd, MMMM D, YYYY")}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#666" }}>
+              Location: {event.location || "N/A"}
+            </Typography>
+          </Box>
+
+          <Box sx={{ marginLeft: "10px", color: "#1a73e8" }}>
+            {/* Arrow icon for navigation */}
+            <span style={{ fontSize: "20px" }}>→</span>
+          </Box>
+        </Box>
+      ))
+    ) : (
+      <Typography>No events found for this GEP in the selected month.</Typography>
+    )}
+  </Paper>
+</Modal>
+
     </div>
   );
 }
