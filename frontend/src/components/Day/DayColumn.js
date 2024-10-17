@@ -171,32 +171,53 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
             const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
             return (
               <div
-                key={event.eventId}
-                style={{
-                  position: 'absolute',
-                  top,               // Top position based on time
-                  left: `${left}%`,  // Left position based on overlapping events
-                  width: `${width}%`,// Width is divided among overlapping events
-                  height: `${height}px`,
-                  backgroundColor,
-                  color,
-                  padding: '2px 4px',
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  zIndex: 2,
-                  borderLeft: `2px solid ${color}`,
-                  boxSizing: 'border-box',
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();  // Prevent grid click from triggering
-                  onEventClick(event);
+              key={event.eventId}
+              style={{
+                position: 'absolute',
+                top,               // Top position based on time
+                left: `${left}%`,  // Left position based on overlapping events
+                width: `${width}%`,// Width is divided among overlapping events
+                height: `${height}px`,
+                backgroundColor,
+                color,
+                padding: '8px 12px', // More padding for better content spacing
+                borderRadius: '8px', // Rounded corners for a modern look
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+                zIndex: 2,
+                borderLeft: `4px solid ${color}`, // Thicker border for better visual distinction
+                boxSizing: 'border-box',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', // Soft shadow for better visibility
+                transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transition for hover effects
+              }}
+              onClick={(e) => {
+                e.stopPropagation();  // Prevent grid click from triggering
+                onEventClick(event);
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Slight background change on hover
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  // Enhance shadow on hover
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = backgroundColor;  // Reset background
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';  // Reset shadow
+              }}
+            >
+              {icon}
+              <Typography
+                noWrap
+                sx={{
+                  marginLeft: '8px',  // Space between icon and text
+                  color: '#333',      // Darker text color for better readability
+                  flex: 1,            // Make sure text takes up available space
+                  fontSize: '0.875rem', // Slightly smaller font size for a clean look
                 }}
               >
-                {icon}
-                <Typography noWrap>{event.title}</Typography>
-              </div>
+                {event.title}
+              </Typography>
+            </div>
+            
             );
           })
         )}

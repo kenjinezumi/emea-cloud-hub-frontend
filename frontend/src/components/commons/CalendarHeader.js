@@ -208,7 +208,6 @@ export default function CalendarHeader() {
           One Cloud
         </h1>
         <img src={beta} alt="beta" className="w-8 h-8" />
-        <span className="text-xs text-gray-500">V. {versionInfo.version}</span>
 
         <button onClick={handleReset} className="border rounded py-2 px-4 mr-2">
           Today

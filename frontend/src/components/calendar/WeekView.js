@@ -180,28 +180,31 @@ export default function WeekView() {
 
   const { multiDayEvents, singleDayEvents } = useMemo(() => {
     if (!currentWeek.length) return { multiDayEvents: [], singleDayEvents: [] };
-
+  
     const multiDayEvents = filteredEvents.filter(event => {
       const eventStart = dayjs(event.startDate);
       const eventEnd = dayjs(event.endDate);
-
-      // Check if eventStart and eventEnd are valid before calling 'endOf'
+  
+      // Ensure that the event spans more than one day
+      // Also ensure the event falls within the bounds of the current week
       return eventStart.isValid() &&
         eventEnd.isValid() &&
+        !eventStart.isSame(eventEnd, 'day') &&  // Exclude single-day events
         eventStart.isBefore(currentWeek[currentWeek.length - 1].endOf('day')) &&
         eventEnd.isAfter(currentWeek[0].startOf('day'));
     });
-
+  
     const singleDayEvents = filteredEvents.filter(event => {
       const eventStart = dayjs(event.startDate);
       const eventEnd = dayjs(event.endDate);
       
-      // Check if single-day event
+      // Include only events that start and end on the same day
       return eventStart.isSame(eventEnd, 'day') && eventStart.isValid() && eventEnd.isValid();
     });
-
+  
     return { multiDayEvents, singleDayEvents };
   }, [filteredEvents, currentWeek]);
+  
 
 
   // Helper function to check event overlap
@@ -327,89 +330,89 @@ const groupMultiDayEvents = useCallback((multiDayEvents) => {
       </Box>
 
       {/* Multi-day Events Section */}
-      <Box
-       sx={{
-        position: "relative",
-        height: "200px",  // Fixed height for multi-day events section
-        overflowY: "auto",  // Allow vertical scrolling
-        // backgroundColor: "#ddd",  // Light background color
-        padding: "15px 20px",  // More balanced padding
-        borderBottom: "1px solid #ddd", 
-        paddingTop: '10px', // Subtle bottom border
-        marginLeft: "60px",  // Maintain the margin to align with other content
-        marginTop: "20px",
-        marginBottom: "20px",
-        borderRadius: "8px",  // Add rounded corners for a modern look
-        // boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",  // Light shadow for a floating effect
-        transition: "box-shadow 0.3s ease-in-out",  // Smooth transition for shadow
-        '&:hover': {
-          boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",  // Increase shadow on hover
-        },
-        scrollbarWidth: "thin",  // Thin scrollbar for non-Chrome browsers
-        '&::-webkit-scrollbar': {
-          width: '8px',  // Set the width for the scrollbar in Chrome/Safari
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: "#b3b3b3",  // Scrollbar thumb color
-          borderRadius: '4px',  // Rounded scrollbar thumb
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: '#f1f1f1',  // Scrollbar track color
-        }
-      }}
-      >
-        {multiDayEventGroups.map((group, groupIndex) =>
-  group.map((event, eventIndex) => {
-    const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
-    const styles = calculateMultiDayEventStyles(event, groupIndex, eventIndex, currentWeek);
+{multiDayEventGroups.length > 0 && (
+  <Box
+    sx={{
+      position: "relative",
+      height: "200px",  // Fixed height for multi-day events section
+      overflowY: "auto",  // Allow vertical scrolling
+      padding: "15px 20px",  // More balanced padding
+      borderBottom: "1px solid #ddd", 
+      paddingTop: '10px', // Subtle bottom border
+      marginLeft: "60px",  // Maintain the margin to align with other content
+      marginTop: "20px",
+      marginBottom: "20px",
+      borderRadius: "8px",  // Add rounded corners for a modern look
+      transition: "box-shadow 0.3s ease-in-out",  // Smooth transition for shadow
+      '&:hover': {
+        boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",  // Increase shadow on hover
+      },
+      scrollbarWidth: "thin",  // Thin scrollbar for non-Chrome browsers
+      '&::-webkit-scrollbar': {
+        width: '8px',  // Set the width for the scrollbar in Chrome/Safari
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: "#b3b3b3",  // Scrollbar thumb color
+        borderRadius: '4px',  // Rounded scrollbar thumb
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: '#f1f1f1',  // Scrollbar track color
+      }
+    }}
+  >
+    {multiDayEventGroups.map((group, groupIndex) =>
+      group.map((event, eventIndex) => {
+        const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
+        const styles = calculateMultiDayEventStyles(event, groupIndex, eventIndex, currentWeek);
 
-    return (
-      <div
-        key={event.eventId}
-        style={{
-          position: 'absolute',
-          ...styles,  // Apply calculated styles for top, left, and width
-          backgroundColor,
-          color,
-          padding: '8px 12px',
-          borderRadius: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          cursor: 'pointer',
-          height: '30px',  // Fixed height for multi-day events
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', // Add shadow
-          transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transitions
-          borderLeft: `4px solid ${color}`,  // Border to indicate event type
-          marginBottom: '5px',  // Add spacing between events
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Change background on hover
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  // Increase shadow on hover
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = backgroundColor;  // Reset background
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';  // Reset shadow
-        }}
-        onClick={() => handleEventClick(event)}
-      >
-        {icon}
-        <Typography
-          noWrap
-          sx={{
-            marginLeft: '8px',  // Add space between icon and text
-            color: '#333',  // Text color
-            flex: 1,  // Allow text to take available space
-            fontSize: '0.875rem',  // Adjust font size
-          }}
-        >
-          {event.title}
-        </Typography>
-      </div>
-    );
-  })
+        return (
+          <div
+            key={event.eventId}
+            style={{
+              position: 'absolute',
+              ...styles,  // Apply calculated styles for top, left, and width
+              backgroundColor,
+              color,
+              padding: '8px 12px',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              height: '30px',  // Fixed height for multi-day events
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)', // Add shadow
+              transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transitions
+              borderLeft: `4px solid ${color}`,  // Border to indicate event type
+              marginBottom: '5px',  // Add spacing between events
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Change background on hover
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  // Increase shadow on hover
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = backgroundColor;  // Reset background
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';  // Reset shadow
+            }}
+            onClick={() => handleEventClick(event)}
+          >
+            {icon}
+            <Typography
+              noWrap
+              sx={{
+                marginLeft: '8px',  // Add space between icon and text
+                color: '#333',  // Text color
+                flex: 1,  // Allow text to take available space
+                fontSize: '0.875rem',  // Adjust font size
+              }}
+            >
+              {event.title}
+            </Typography>
+          </div>
+        );
+      })
+    )}
+  </Box>
 )}
 
-      </Box>
 
       {/* Scrollable Week View for Single-day Events */}
       <Box
