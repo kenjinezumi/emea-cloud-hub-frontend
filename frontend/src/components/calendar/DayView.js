@@ -13,26 +13,17 @@ import minMax from "dayjs/plugin/minMax";
 import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
 import EventInfoPopup from "../popup/EventInfoModal";
-import OnlineEventIcon from "@mui/icons-material/Computer";
-import PhysicalEventIcon from "@mui/icons-material/LocationOn";
-import HybridEventIcon from "@mui/icons-material/Autorenew";
-import CustomerStoryIcon from "@mui/icons-material/LibraryBooks";
-import BlogPostIcon from "@mui/icons-material/Create";
+import { getEventStyleAndIcon } from "../../utils/eventStyles";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import { getEventStyleAndIcon } from "../../utils/eventStyles"; // Adjust the relative path
 
 // Extend dayjs with these plugins
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 dayjs.extend(minMax);
 
-// Define styles for each event type
-
-
 export default function DayView() {
   const eventSlotMapRef = useRef({});
-
   const {
     daySelected,
     setShowEventModal,
@@ -40,12 +31,10 @@ export default function DayView() {
     setShowInfoEventModal,
     filters,
     showEventInfoModal,
+    selectedEvent, // Ensure we can pass the event to the popup
   } = useContext(GlobalContext);
 
   const [events, setEvents] = useState([]);
-  const [eventSlots, setEventSlots] = useState({}); // Track the slots for each day
-
-  const [eventGroups, setEventGroups] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [currentTimePosition, setCurrentTimePosition] = useState(0);
   const location = useLocation();
@@ -55,45 +44,12 @@ export default function DayView() {
   const hourHeight = 90;
   const startHour = 0;
   const endHour = 24;
-
-  // Fetch events and calculate overlap groups on location or daySelected change
-  // useEffect(() => {
-  //   async function fetchEvents() {
-  //     try {
-  //       const eventData = await getEventData("eventDataQuery");
-
-  //       // Filter the eventData to only include events on the selected day
-  //       const filteredEvents = eventData.filter((event) => {
-  //         const eventStart = dayjs(event.startDate);
-  //         const eventEnd = dayjs(event.endDate);
-  //         const selectedDayStart = daySelected.startOf("day");
-  //         const selectedDayEnd = daySelected.endOf("day");
-
-  //         // Event starts and ends on the selected day, or spans over the selected day
-  //         return (
-  //           eventStart.isSame(daySelected, "day") ||  // Starts on selected day
-  //           eventEnd.isSame(daySelected, "day") ||    // Ends on selected day
-  //           (eventStart.isBefore(selectedDayEnd) && eventEnd.isAfter(selectedDayStart)) // Spans across selected day
-  //         );
-  //       });
-
-  //       console.log("Filtered events for the selected day:", filteredEvents);  // Debugging log
-
-  //       setEvents(filteredEvents);  // Set only the filtered events
-  //       setEventGroups(calculateOverlapGroups(filteredEvents));  // Calculate overlap for the filtered events
-  //     } catch (error) {
-  //       console.error("Error fetching event data:", error);
-  //     }
-  //   }
-
-  //   fetchEvents();
-  // }, [location, daySelected]);  // Re-run when location or daySelected changes
+  const multiDayEventHeight = 30; // Fixed height for multi-day events
 
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
         const eventData = await getEventData("eventDataQuery");
-
         setEvents(eventData);
 
         if (!Array.isArray(eventData)) {
@@ -104,19 +60,16 @@ export default function DayView() {
           return;
         }
 
-        // Filter events by the selected day first
         const filteredByDay = eventData.filter((event) => {
           const eventStart = dayjs(event.startDate);
           const eventEnd = dayjs(event.endDate);
           const selectedDayStart = daySelected.startOf("day");
           const selectedDayEnd = daySelected.endOf("day");
 
-          // Event starts, ends, or spans across the selected day
           return (
-            eventStart.isSame(daySelected, "day") || // Event starts on selected day
-            eventEnd.isSame(daySelected, "day") || // Event ends on selected day
-            (eventStart.isBefore(selectedDayEnd) &&
-              eventEnd.isAfter(selectedDayStart)) // Event spans across selected day
+            eventStart.isSame(daySelected, "day") ||
+            eventEnd.isSame(daySelected, "day") ||
+            (eventStart.isBefore(selectedDayEnd) && eventEnd.isAfter(selectedDayStart))
           );
         });
 
@@ -135,14 +88,13 @@ export default function DayView() {
 
         if (!hasFiltersApplied) {
           setEvents(filteredByDay);
-          setFilteredEvents(filteredByDay); // No further filtering needed
+          setFilteredEvents(filteredByDay);
           return;
         }
 
         const results = await Promise.all(
           filteredByDay.map(async (event) => {
             try {
-              // Sub-region filter match
               const subRegionMatch =
                 !filters.subRegions.some((subRegion) => subRegion.checked) ||
                 filters.subRegions.some((subRegion) => {
@@ -152,34 +104,22 @@ export default function DayView() {
                       event.subRegion?.includes(subRegion.label)
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking subRegion filter:",
-                      err,
-                      subRegion,
-                      event
-                    );
+                    console.error("Error checking subRegion filter:", err);
                     return false;
                   }
                 });
 
-              // GEP filter match
               const gepMatch =
                 !filters.gep.some((gep) => gep.checked) ||
                 filters.gep.some((gep) => {
                   try {
                     return gep.checked && event.gep?.includes(gep.label);
                   } catch (err) {
-                    console.error(
-                      "Error checking GEP filter:",
-                      err,
-                      gep,
-                      event
-                    );
+                    console.error("Error checking GEP filter:", err);
                     return false;
                   }
                 });
 
-              // Buyer Segment Rollup filter match
               const buyerSegmentRollupMatch =
                 !filters.buyerSegmentRollup.some(
                   (segment) => segment.checked
@@ -193,15 +133,12 @@ export default function DayView() {
                   } catch (err) {
                     console.error(
                       "Error checking buyerSegmentRollup filter:",
-                      err,
-                      segment,
-                      event
+                      err
                     );
                     return false;
                   }
                 });
 
-              // Account Sector filter match
               const accountSectorMatch =
                 !filters.accountSectors.some((sector) => sector.checked) ||
                 filters.accountSectors.some((sector) => {
@@ -210,17 +147,11 @@ export default function DayView() {
                       sector.checked && event.accountSectors?.[sector.label]
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking accountSectors filter:",
-                      err,
-                      sector,
-                      event
-                    );
+                    console.error("Error checking accountSectors filter:", err);
                     return false;
                   }
                 });
 
-              // Account Segment filter match
               const accountSegmentMatch =
                 !filters.accountSegments.some((segment) => segment.checked) ||
                 filters.accountSegments.some((segment) => {
@@ -230,17 +161,11 @@ export default function DayView() {
                       event.accountSegments?.[segment.label]?.selected
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking accountSegments filter:",
-                      err,
-                      segment,
-                      event
-                    );
+                    console.error("Error checking accountSegments filter:", err);
                     return false;
                   }
                 });
 
-              // Product Family filter match
               const productFamilyMatch =
                 !filters.productFamily.some((product) => product.checked) ||
                 filters.productFamily.some((product) => {
@@ -250,17 +175,11 @@ export default function DayView() {
                       event.productAlignment?.[product.label]?.selected
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking productFamily filter:",
-                      err,
-                      product,
-                      event
-                    );
+                    console.error("Error checking productFamily filter:", err);
                     return false;
                   }
                 });
 
-              // Industry filter match
               const industryMatch =
                 !filters.industry.some((industry) => industry.checked) ||
                 filters.industry.some((industry) => {
@@ -269,17 +188,11 @@ export default function DayView() {
                       industry.checked && event.industry === industry.label
                     );
                   } catch (err) {
-                    console.error(
-                      "Error checking industry filter:",
-                      err,
-                      industry,
-                      event
-                    );
+                    console.error("Error checking industry filter:", err);
                     return false;
                   }
                 });
 
-              // Boolean checks for isPartneredEvent and isDraft
               const selectedPartneredStatuses = Array.isArray(
                 filters.partnerEvent
               )
@@ -311,11 +224,7 @@ export default function DayView() {
                 isDraftMatch
               );
             } catch (filterError) {
-              console.error(
-                "Error applying filters to event:",
-                filterError,
-                event
-              );
+              console.error("Error applying filters to event:", filterError);
               return false;
             }
           })
@@ -332,7 +241,7 @@ export default function DayView() {
     };
 
     fetchAndFilterEvents();
-  }, [location, filters, daySelected]); // Added daySelected as a dependency
+  }, [location, filters, daySelected]);
 
   // Reset modals when location changes
   useEffect(() => {
@@ -340,10 +249,94 @@ export default function DayView() {
     setShowInfoEventModal(false);
   }, [location, setShowEventModal, setShowInfoEventModal]);
 
-  // Recalculate event groups whenever events change
-  useEffect(() => {
-    setEventGroups(calculateOverlapGroups(events));
-  }, [events]);
+  // Separate multi-day events and single-day events
+  const { multiDayEvents, singleDayEvents } = useMemo(() => {
+    const multiDayEvents = filteredEvents.filter((event) => {
+      const eventStart = dayjs(event.startDate);
+      const eventEnd = dayjs(event.endDate);
+      return (
+        !eventStart.isSame(daySelected, "day") ||
+        !eventEnd.isSame(daySelected, "day")
+      );
+    });
+
+    const singleDayEvents = filteredEvents.filter((event) => {
+      const eventStart = dayjs(event.startDate);
+      const eventEnd = dayjs(event.endDate);
+      return (
+        eventStart.isSame(daySelected, "day") && eventEnd.isSame(daySelected, "day")
+      );
+    });
+
+    return { multiDayEvents, singleDayEvents };
+  }, [filteredEvents, daySelected]);
+
+  // Group overlapping single-day events
+  const groupOverlappingEvents = (events) => {
+    const groups = [];
+    events.forEach((event) => {
+      let addedToGroup = false;
+      for (const group of groups) {
+        const isOverlapping = group.some((groupEvent) => {
+          return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
+                 dayjs(event.endDate).isAfter(groupEvent.startDate);
+        });
+
+        if (isOverlapping) {
+          group.push(event);
+          addedToGroup = true;
+          break;
+        }
+      }
+      if (!addedToGroup) {
+        groups.push([event]);
+      }
+    });
+    return groups;
+  };
+
+  const overlappingEventGroups = useMemo(() => groupOverlappingEvents(singleDayEvents), [singleDayEvents]);
+
+  // Helper function to calculate the event block styles
+  const calculateEventBlockStyles = useCallback(
+    (event, overlappingEvents) => {
+      const eventStart = dayjs(event.startDate);
+      const eventEnd = dayjs(event.endDate);
+      const startOfDay = daySelected.startOf("day");
+      const endOfDay = daySelected.endOf("day");
+
+      const displayStart = dayjs.max(startOfDay, eventStart);
+      const displayEnd = dayjs.min(endOfDay, eventEnd);
+
+      const minutesFromMidnight = displayStart.diff(startOfDay, "minutes");
+      const durationInMinutes = displayEnd.diff(displayStart, "minutes");
+
+      const top = (minutesFromMidnight / 60) * hourHeight;
+      const height = (durationInMinutes / 60) * hourHeight;
+
+      const overlapCount = overlappingEvents.length;
+      const width = 100 / overlapCount;
+      const left = overlappingEvents.indexOf(event) * width;
+
+      return { top, height, width, left };
+    },
+    [daySelected, hourHeight]
+  );
+
+  // Memoized event handler for adding events
+  const handleAddEvent = useCallback(() => {
+    setShowEventModal(true);
+  }, [setShowEventModal]);
+
+  // Memoized event handler for clicking events
+  const handleEventClick = useCallback(
+    (event) => {
+      setSelectedEvent(event);  // Set the clicked event as the selected one
+      setShowInfoEventModal(true);  // Trigger the modal to show
+    },
+    [setSelectedEvent, setShowInfoEventModal]
+  );
+  
 
   // Automatically scroll to the current hour and update current time position
   useEffect(() => {
@@ -357,8 +350,8 @@ export default function DayView() {
 
     const updateCurrentTimePosition = () => {
       const now = dayjs();
-      const minutesFromMidnight = now.diff(now.startOf("day"), "minutes"); // Calculate minutes from midnight accurately
-      const position = (minutesFromMidnight / 60) * hourHeight; // Convert minutes into the vertical position
+      const minutesFromMidnight = now.diff(now.startOf("day"), "minutes");
+      const position = (minutesFromMidnight / 60) * hourHeight;
       setCurrentTimePosition(position);
     };
 
@@ -367,220 +360,6 @@ export default function DayView() {
 
     return () => clearInterval(interval);
   }, [hourHeight]);
-  useEffect(() => {
-    eventSlotMapRef.current = {}; // Reset the slot map on each render
-  }, [events, daySelected]);
-
-  // Memoized function to calculate overlapping event groups
-  const calculateOverlapGroups = useCallback((events) => {
-    const eventGroups = [];
-
-    if (!Array.isArray(events)) {
-      console.error(
-        "calculateOverlapGroups was called with 'events' that is not an array:",
-        events
-      );
-      return [];
-    }
-
-    // Sort events by start time to make grouping easier
-    const sortedEvents = [...events].sort((a, b) =>
-      dayjs(a.startDate).diff(dayjs(b.startDate))
-    );
-
-    sortedEvents.forEach((event) => {
-      let added = false;
-
-      // Iterate through existing groups to check for overlap
-      for (const group of eventGroups) {
-        const isOverlap = group.some((groupEvent) => {
-          const eventStart = dayjs(event.startDate);
-          const eventEnd = dayjs(event.endDate);
-          const groupEventStart = dayjs(groupEvent.startDate);
-          const groupEventEnd = dayjs(groupEvent.endDate);
-
-          // Check if events overlap
-          return (
-            eventStart.isBefore(groupEventEnd) &&
-            eventEnd.isAfter(groupEventStart)
-          );
-        });
-
-        // If an overlap is found, add the event to the group
-        if (isOverlap && !added) {
-          // Ensure event is only added once
-          group.push(event);
-          added = true;
-        }
-      }
-
-      // If no overlap was found, create a new group for this event
-      if (!added) {
-        eventGroups.push([event]);
-      }
-    });
-
-    // Calculate widths and positions for each event in each group
-    const styledEventGroups = eventGroups.map((group) => {
-      const numEvents = group.length;
-      const eventWidth = 100 / numEvents; // Divide the width equally among overlapping events
-
-      return group.map((event, index) => ({
-        ...event,
-        width: eventWidth, // Each event's width
-        left: eventWidth * index, // Position event based on its index in the group
-      }));
-    });
-
-    return styledEventGroups.flat(); // Flatten the array to get a list of styled events
-  }, []);
-
-  useEffect(() => {
-    eventSlotMapRef.current = {}; // Reset the slot map on each render
-  }, [events, daySelected]);
-
-  // Helper function to determine if events overlap
-  const isOverlapping = useCallback((event, group) => {
-    return group.some((groupEvent) => {
-      return (
-        dayjs(event.startDate).isBefore(groupEvent.endDate) &&
-        dayjs(groupEvent.startDate).isBefore(event.endDate)
-      );
-    });
-  }, []);
-
-  const slotData = useMemo(() => {
-    const slots = {}; // Store slots for overlapping events
-    events.forEach((event) => {
-      const eventStart = dayjs(event.startDate);
-      const eventEnd = dayjs(event.endDate);
-
-      // Calculate overlapping events
-      const overlappingEvents = events.filter((otherEvent) => {
-        const otherEventStart = dayjs(otherEvent.startDate);
-        const otherEventEnd = dayjs(otherEvent.endDate);
-        return (
-          event !== otherEvent &&
-          eventStart.isBefore(otherEventEnd) &&
-          eventEnd.isAfter(otherEventStart) &&
-          dayjs(otherEvent.startDate).isSame(event.startDate, "day")
-        );
-      });
-
-      // Calculate total overlapping events (including itself)
-      const totalOverlappingEvents = overlappingEvents.length + 1;
-      let availableSlot = 0;
-
-      // Track first available slot
-      for (let i = 0; i < totalOverlappingEvents; i++) {
-        if (!slots[i]) {
-          slots[i] = true;
-          availableSlot = i;
-          break;
-        }
-      }
-
-      // Return event position and width
-      const width = 100 / totalOverlappingEvents;
-      const left = width * availableSlot;
-      slots[event.id] = { width, left };
-    });
-    return slots;
-  }, [events]);
-
-  const calculateEventBlockStyles = useCallback(
-    (event, multiDayEventIndex = 0) => {
-      const eventStart = dayjs(event.startDate);
-      const eventEnd = dayjs(event.endDate);
-      const startOfDay = daySelected.startOf("day");
-      const endOfDay = daySelected.endOf("day");
-
-      const fixedMultiDayHeight = 30; // Fixed height for multi-day events
-      const multiDayEventTop = multiDayEventIndex * fixedMultiDayHeight;
-
-      // Check if the event spans multiple days
-      const isMultiDayEvent =
-        !eventStart.isSame(daySelected, "day") ||
-        !eventEnd.isSame(daySelected, "day");
-
-      if (isMultiDayEvent) {
-        return {
-          top: `${multiDayEventTop}px`, // Stack the event based on its index
-          height: `${fixedMultiDayHeight}px`, // Fixed height for multi-day events
-          left: "0%", // Always start at the left-most position
-          width: "100%", // Span the full width
-          isMultiDay: true, // Mark this as a multi-day event for special handling
-        };
-      }
-
-      // Handle single-day events (as previously calculated)
-      const displayStart = dayjs.max(startOfDay, eventStart);
-      const displayEnd = dayjs.min(endOfDay, eventEnd);
-
-      const minutesFromMidnight = displayStart.diff(startOfDay, "minutes");
-      const durationInMinutes = displayEnd.diff(displayStart, "minutes");
-
-      const top = (minutesFromMidnight / 60) * hourHeight;
-      const height = (durationInMinutes / 60) * hourHeight;
-
-      // Reset the slot map for the day on each render to avoid re-use of previous slot calculations
-      if (!eventSlotMapRef.current[daySelected]) {
-        eventSlotMapRef.current[daySelected] = [];
-      }
-
-      // Filter single-day overlapping events only
-      const overlappingEvents = events.filter((otherEvent) => {
-        const otherEventStart = dayjs(otherEvent.startDate); // Ensure this is a dayjs object
-        const otherEventEnd = dayjs(otherEvent.endDate); // Ensure this is a dayjs object
-
-        const otherIsMultiDayEvent =
-          !otherEventStart.isSame(daySelected, "day") ||
-          !otherEventEnd.isSame(daySelected, "day");
-
-        return (
-          event !== otherEvent &&
-          displayStart.isBefore(otherEventEnd) &&
-          displayEnd.isAfter(otherEventStart) &&
-          !otherIsMultiDayEvent // Only include single-day events in overlap calculation
-        );
-      });
-
-      const totalOverlappingEvents = overlappingEvents.length + 1;
-      const width = 100 / totalOverlappingEvents;
-
-      let leftPosition = 0;
-      for (let i = 0; i < totalOverlappingEvents; i++) {
-        if (!eventSlotMapRef.current[daySelected][i]) {
-          eventSlotMapRef.current[daySelected][i] = true;
-          leftPosition = width * i;
-          break;
-        }
-      }
-
-      return {
-        top: `${top}px`,
-        height: `${height}px`,
-        left: `${leftPosition}%`,
-        width: `${width}%`,
-        isMultiDay: false, // Mark as a single-day event
-      };
-    },
-    [daySelected, events, hourHeight]
-  );
-
-  // Memoized event handler for adding events
-  const handleAddEvent = useCallback(() => {
-    setShowEventModal(true);
-  }, [setShowEventModal]);
-
-  // Memoized event handler for clicking events
-  const handleEventClick = useCallback(
-    (event) => {
-      setSelectedEvent(event);
-      setShowInfoEventModal(true);
-    },
-    [setSelectedEvent, setShowInfoEventModal]
-  );
 
   return (
     <Paper
@@ -620,13 +399,12 @@ export default function DayView() {
           position: "relative",
         }}
       >
-        {/* Event Grid Container */}
         <div
           style={{
             position: "relative",
             height: `${hourHeight * (endHour - startHour)}px`,
-            width: "100%", // Ensure the container takes up the full width
-            marginLeft: "0px", // Ensure proper alignment,
+            width: "100%",
+            marginLeft: "0px",
           }}
         >
           {/* Hour Labels */}
@@ -634,17 +412,14 @@ export default function DayView() {
             style={{
               position: "absolute",
               top: 0,
-              left: 0, // Ensure it's correctly positioned to the left
-              width: "50px",
+              left: 0,
+              right: 0, // Ensures the lines stretch across the full width of the grid
+              width: "100%", // Make sure the width spans the entire grid
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-start",
-              alignItems: "flex-end",
-              paddingRight: "10px",
-              color: "rgba(0, 0, 0, 0.6)",
-              borderRight: "1px solid #ddd",
-              boxSizing: "border-box",
-              zIndex: 3500, // Ensure it appears above the grid
+              zIndex: 100000, // Ensures the lines are on top
+              color: "#999", // Lighter grey color for the label
             }}
           >
             {Array.from(
@@ -655,10 +430,12 @@ export default function DayView() {
                 key={hour}
                 style={{
                   height: `${hourHeight}px`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "flex-end",
-                  fontSize: "12px",
+                  position: "relative", // Ensures it's within the grid
+                  borderTop: "1px solid rgba(0, 0, 0, 0.1)", // Line style
+                  left: 0, // Start the line from the left
+                  right: 0, // Stretch the line to the right
+                  width: "100%", // Ensures the line spans the entire width of the container
+                  zIndex: 1, // Ensures it's behind the events
                 }}
               >
                 {dayjs().hour(hour).minute(0).format("HH:mm")}
@@ -666,55 +443,62 @@ export default function DayView() {
             ))}
           </div>
 
-          {/* Event Grid */}
-          <div style={{ position: "relative", height: "100%", width: "100%" }}>
-            {Array.from({ length: (endHour - startHour) * 2 }, (_, i) => i).map(
-              (quarter) => (
-                <div
-                  key={quarter}
-                  style={{
-                    height: `${hourHeight / 2}px`,
-                    borderTop: `1px solid rgba(0, 0, 0, 0.1)`,
-                    backgroundColor: "#ffffff",
-                    position: "relative",
-                    cursor: "pointer",
-                    width: "100%",
-                  }}
-                  onClick={handleAddEvent}
-                ></div>
-              )
-            )}
+          {/* Multi-Day Events */}
+          {multiDayEvents.map((event, index) => {
+            const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
+            return (
+              <div
+                key={event.eventId}
+                style={{
+                  position: "absolute",
+                  top: `${index * multiDayEventHeight}px`, // Stack multi-day events
+                  left: "0%",
+                  width: "100%",
+                  height: `${multiDayEventHeight}px`, // Fixed height
+                  backgroundColor,
+                  color,
+                  padding: "2px 4px",
+                  borderRadius: "4px",
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  zIndex: 2,
+                  borderLeft: `2px solid ${color}`,
+                  boxSizing: "border-box",
+                  marginLeft: '60px', // Adjust to avoid overlapping with labels
+                }}
+                onClick={() => handleEventClick(event)} // Event click handler
+              >
+                {icon}
+                <Typography noWrap>{event.title}</Typography>
+              </div>
+            );
+          })}
 
-            {/* Render Events */}
-            {filteredEvents.map((event, index) => {
-              const { top, height, left, width, isMultiDay } =
-                calculateEventBlockStyles(event, index);
-                const eventTypeStyle = getEventStyleAndIcon(event.eventType);
-
+          {/* Single-Day Events */}
+          {overlappingEventGroups.map((group) =>
+            group.map((event) => {
+              const { top, height, left, width } = calculateEventBlockStyles(event, group);
+              const eventTypeStyle = getEventStyleAndIcon(event.eventType);
               return (
                 <div
                   key={event.eventId}
                   style={{
                     position: "absolute",
                     top,
-                    left,
-                    width,
-                    height,
+                    left: `${left}%`,
+                    width: `${width}%`,
+                    height: `${height}px`,
                     backgroundColor: eventTypeStyle.backgroundColor,
                     color: eventTypeStyle.color,
-                    padding: "0px 4px",
-                    borderRadius: "8px",
+                    padding: "2px 4px",
+                    borderRadius: "4px",
                     display: "flex",
                     alignItems: "center",
-                    overflow: "hidden",
-                    marginLeft:"60px",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
                     cursor: "pointer",
-                    zIndex: isMultiDay ? 20 : 10, // Multi-day events should be above single-day ones
-                    boxSizing: "border-box",
-                    borderLeft: `4px solid ${eventTypeStyle.color}`,
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                    zIndex: 2,
+                    borderLeft: `2px solid ${eventTypeStyle.color}`,
+                    marginLeft: '60px', // Adjust to avoid overlapping with labels
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = eventTypeStyle.color
@@ -729,33 +513,36 @@ export default function DayView() {
                     e.currentTarget.style.boxShadow =
                       "0 2px 8px rgba(0, 0, 0, 0.15)";
                   }}
-                  onClick={() => handleEventClick(event)}
-                >
+                  onClick={() => handleEventClick(event)}                  >
                   {eventTypeStyle.icon}
-                  <Typography component="span" variant="body2" noWrap>
-                    {event.title}
-                  </Typography>
+                  <Typography noWrap>{event.title}</Typography>
                 </div>
               );
-            })}
+            })
+          )}
 
-            {/* Current Time Line */}
-            <Box
-              sx={{
-                position: "absolute",
-                top: `${currentTimePosition}px`,
-                left: "0",
-                right: "0",
-                height: "2px",
-                backgroundColor: "#d32f2f",
-                zIndex: 1500,
-              }}
-            />
-          </div>
+          {/* Current Time Line */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: `${currentTimePosition}px`,
+              left: "0",
+              right: "0",
+              height: "2px",
+              backgroundColor: "#d32f2f",
+              zIndex: 1500,
+            }}
+          />
         </div>
       </div>
 
-      {showEventInfoModal && <EventInfoPopup />}
+      {/* Show Event Info Popup when an event is selected */}
+      {showEventInfoModal && selectedEvent && (
+        <EventInfoPopup
+          event={selectedEvent} // Pass the selected event to the popup
+          onClose={() => setShowInfoEventModal(false)} // Close modal handler
+        />
+      )}
     </Paper>
   );
 }
