@@ -442,11 +442,11 @@ export const accountSegmentOptions = [
 ];
 
 export const buyerSegmentRollupOptions = [
-  { label: 'Practitioner', checked: true },
-  { label: 'Decision Maker', checked: true },
-  { label: 'Executive', checked: true },
-  { label: 'Line of Business Target Titles', checked: true },
-  { label: 'Partner', checked: true },
+  { label: 'Practitioner', checked: false },
+  { label: 'Decision Maker', checked: false },
+  { label: 'Executive', checked: false },
+  { label: 'Line of Business Target Titles', checked: false },
+  { label: 'Partner', checked: false },
 ];
 
 export const productFamilyOptions = [
