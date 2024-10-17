@@ -96,79 +96,81 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
   const overlappingEventGroups = useMemo(() => groupOverlappingEvents(singleDayEvents), [singleDayEvents]);
 
   return (
-    <Box
-      sx={{
-        position: 'relative',
-        height: `${hourHeight * (endHour - startHour)}px`, // Ensures it stretches fully
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
-        width: '100%',
-        flex: 1,
-        boxSizing: 'border-box',
-        borderLeft: '1px solid #ccc',
-        borderBottom: '1px solid #ccc',
-      }}
-      ref={dayColumnRef}
-      onClick={() => setShowEventModal(true)}  // Add this onClick to open add event modal
-
-    >
-      {Array.from({ length: endHour - startHour }, (_, hour) => (
-        <React.Fragment key={hour}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: `${hour * hourHeight}px`,
-              left: 0,
-              right: 0,
-              height: '1px',
-              backgroundColor: '#ddd',
-              zIndex: 1,
-            }}
-          />
-         
-        </React.Fragment>
-      ))}
-
-      {/* Render Multi-Day Events */}
-      {multiDayEvents.map((event, index) => {
-        const { top, height, left, width } = calculateEventBlockStyles(event, multiDayEvents); // Multi-day events
-        const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
-        return (
-          <div
-            key={event.eventId}
-            style={{
-              position: 'absolute',
-              top: `${index * 30}px`, // Stack multi-day events at the top
-              left: '0%',
-              width: '100%',
-              height: '30px', // Fixed height for multi-day events
-              backgroundColor,
-              color,
-              padding: '2px 4px',
-              borderRadius: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              cursor: 'pointer',
-              zIndex: 2,
-              borderLeft: `2px solid ${color}`,
-              boxSizing: 'border-box',
-            }}
-            onClick={(e) => {
-              e.stopPropagation();  // Prevent grid click from triggering
-              onEventClick(event);
-            }}          >
-            {icon}
-            <Typography noWrap>{event.title}</Typography>
-          </div>
-        );
-      })}
-
-      {/* Render Single-Day Events */}
-      {overlappingEventGroups.map((group, groupIndex) =>
-        group.map((event) => {
-          const { top, height, left, width } = calculateEventBlockStyles(event, group);
+    <>
+      {/* <Box
+        sx={{
+          height: '100px',  // Fixed height for the multi-day events section
+          overflowY: 'auto', // Allow scroll if there are too many events
+          backgroundColor: '#f9f9f9', 
+          borderBottom: '1px solid #ccc',
+          padding: '10px 20px',
+        }}
+      >
+        {multiDayEvents.map((event, index) => {
           const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
           return (
             <div
+              key={event.eventId}
+              style={{
+                backgroundColor,
+                color,
+                padding: '8px 10px',
+                marginBottom: '4px',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                cursor: 'pointer',
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEventClick(event);
+              }}
+            >
+              {icon}
+              <Typography noWrap>{event.title}</Typography>
+            </div>
+          );
+        })}
+      </Box>
+
+      {/* Scrollable Grid Below the Fixed Multi-Day Events */}
+      <Box
+        sx={{
+          position: 'relative',
+          height: `${hourHeight * (endHour - startHour)}px`, // Ensures it stretches fully
+          backgroundColor: "#ffffff",  // Light background color
+          width: '100%',
+          flex: 1,
+          boxSizing: 'border-box',
+          borderLeft: '1px solid #ccc',
+          borderBottom: '1px solid #ccc',
+        }}
+        ref={dayColumnRef}
+        onClick={() => setShowEventModal(true)}  // Add this onClick to open add event modal
+      > 
+        {Array.from({ length: endHour - startHour }, (_, hour) => (
+          <React.Fragment key={hour}>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: `${hour * hourHeight}px`,
+                left: 0,
+                right: 0,
+                height: '1px',
+                backgroundColor: '#ddd',
+                zIndex: 1,
+              }}
+            />
+          </React.Fragment>
+        ))}
+
+        {/* Render Single-Day Events */}
+        {overlappingEventGroups.map((group, groupIndex) =>
+          group.map((event) => {
+            const { top, height, left, width } = calculateEventBlockStyles(event, group);
+            const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
+            return (
+              <div
               key={event.eventId}
               style={{
                 position: 'absolute',
@@ -178,38 +180,61 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
                 height: `${height}px`,
                 backgroundColor,
                 color,
-                padding: '2px 4px',
-                borderRadius: '4px',
+                padding: '8px 12px', // More padding for better content spacing
+                borderRadius: '8px', // Rounded corners for a modern look
                 display: 'flex',
                 alignItems: 'center',
                 cursor: 'pointer',
                 zIndex: 2,
-                borderLeft: `2px solid ${color}`,
+                borderLeft: `4px solid ${color}`, // Thicker border for better visual distinction
                 boxSizing: 'border-box',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', // Soft shadow for better visibility
+                transition: 'background-color 0.2s, box-shadow 0.2s', // Smooth transition for hover effects
               }}
               onClick={(e) => {
                 e.stopPropagation();  // Prevent grid click from triggering
                 onEventClick(event);
-              }}            >
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Slight background change on hover
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  // Enhance shadow on hover
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = backgroundColor;  // Reset background
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';  // Reset shadow
+              }}
+            >
               {icon}
-              <Typography noWrap>{event.title}</Typography>
+              <Typography
+                noWrap
+                sx={{
+                  marginLeft: '8px',  // Space between icon and text
+                  color: '#333',      // Darker text color for better readability
+                  flex: 1,            // Make sure text takes up available space
+                  fontSize: '0.875rem', // Slightly smaller font size for a clean look
+                }}
+              >
+                {event.title}
+              </Typography>
             </div>
-          );
-        })
-      )}
+            
+            );
+          })
+        )}
 
-      {/* Current Time Line */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: `${currentTimePosition}px`,
-          left: '0',
-          right: '0',
-          height: '2px',
-          width: '100%',
-          backgroundColor: '#d32f2f',
-        }}
-      />
-    </Box>
+        {/* Current Time Line */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: `${currentTimePosition}px`,
+            left: '0',
+            right: '0',
+            height: '2px',
+            width: '100%',
+            backgroundColor: '#d32f2f',
+          }}
+        />
+      </Box>
+    </>
   );
 }

@@ -254,34 +254,29 @@ export default function DayView() {
     const multiDayEvents = filteredEvents.filter((event) => {
       const eventStart = dayjs(event.startDate);
       const eventEnd = dayjs(event.endDate);
-      return (
-        !eventStart.isSame(daySelected, "day") ||
-        !eventEnd.isSame(daySelected, "day")
-      );
+      return !eventStart.isSame(daySelected, "day") || !eventEnd.isSame(daySelected, "day");
     });
 
     const singleDayEvents = filteredEvents.filter((event) => {
       const eventStart = dayjs(event.startDate);
       const eventEnd = dayjs(event.endDate);
-      return (
-        eventStart.isSame(daySelected, "day") && eventEnd.isSame(daySelected, "day")
-      );
+      return eventStart.isSame(daySelected, "day") && eventEnd.isSame(daySelected, "day");
     });
 
     return { multiDayEvents, singleDayEvents };
   }, [filteredEvents, daySelected]);
 
+   
   // Group overlapping single-day events
+  
   const groupOverlappingEvents = (events) => {
     const groups = [];
     events.forEach((event) => {
       let addedToGroup = false;
       for (const group of groups) {
         const isOverlapping = group.some((groupEvent) => {
-          return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
-                 dayjs(event.endDate).isAfter(groupEvent.startDate);
+          return dayjs(event.startDate).isBefore(groupEvent.endDate) && dayjs(event.endDate).isAfter(groupEvent.startDate);
         });
-
         if (isOverlapping) {
           group.push(event);
           addedToGroup = true;
@@ -390,6 +385,81 @@ export default function DayView() {
         </Typography>
       </div>
 
+      {/* Multi-Day Events Section */}
+      {multiDayEvents.length > 0 && (
+        <Box
+          sx={{
+            position: "relative",
+            height: "200px",  // Fixed height for multi-day events section
+            overflowY: "auto",
+            padding: "10px 20px",
+            borderBottom: "1px solid #ccc",
+            marginTop: "20px",
+            marginBottom: "20px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+            '&:hover': {
+              boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",
+            },
+          }}
+        >
+          {multiDayEvents.map((event, index) => {
+            const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
+            return (
+              <div
+  key={event.eventId}
+  style={{
+    position: "absolute",
+    top: `${index * multiDayEventHeight}px`,
+    left: "0%",
+    width: "100%",
+    height: `${multiDayEventHeight}px`,
+    backgroundColor,
+    color,
+    padding: "8px 12px",
+    borderRadius: "8px", // Rounded corners
+    display: "flex",
+    alignItems: "center",
+    cursor: "pointer",
+    zIndex: 2,
+    borderLeft: `4px solid ${color}`, // Thicker border for visual hierarchy
+    marginLeft: "20px", // Slight adjustment to avoid overlapping with time labels
+    marginRight: "60px", // Additional margin for better layout
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)", // Subtle shadow for depth
+    transition: "background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out", // Smooth transitions for hover
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Lightened background on hover
+    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.2)"; // Enhanced shadow on hover
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.backgroundColor = backgroundColor; // Reset background
+    e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.15)"; // Reset shadow
+  }}
+  onClick={(e) => {
+    e.stopPropagation();  // Prevent event propagation
+    handleEventClick(event); // Trigger event click handler
+  }}
+>
+  {icon}
+  <Typography
+    noWrap
+    sx={{
+      marginLeft: "8px",  // Space between icon and text
+      color: "#333",       // Darker text for readability
+      flex: 1,             // Let the text take up remaining space
+      fontSize: "0.875rem", // Adjusted font size for consistency
+    }}
+  >
+    {event.title}
+  </Typography>
+</div>
+
+               
+            );
+          })}
+        </Box>
+      )}
+
       {/* Scrollable Calendar Grid */}
       <div
         ref={dayViewRef}
@@ -406,7 +476,6 @@ export default function DayView() {
             width: "100%",
             marginLeft: "0px",
           }}
-          onClick={handleAddEvent}
         >
           {/* Hour Labels */}
           <div
@@ -414,69 +483,32 @@ export default function DayView() {
               position: "absolute",
               top: 0,
               left: 0,
-              right: 0, // Ensures the lines stretch across the full width of the grid
-              width: "100%", // Make sure the width spans the entire grid
+              right: 0,
+              width: "100%",
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-start",
-              zIndex: 1, // Ensures the lines are on top
-              color: "#999", // Lighter grey color for the label
+              zIndex: 1,
+              color: "#999",
             }}
           >
-            {Array.from(
-              { length: endHour - startHour },
-              (_, i) => i + startHour
-            ).map((hour) => (
+            {Array.from({ length: endHour - startHour }, (_, i) => i + startHour).map((hour) => (
               <div
                 key={hour}
                 style={{
                   height: `${hourHeight}px`,
-                  position: "relative", // Ensures it's within the grid
-                  borderTop: "1px solid rgba(0, 0, 0, 0.1)", // Line style
-                  left: 0, // Start the line from the left
-                  right: 0, // Stretch the line to the right
-                  width: "100%", // Ensures the line spans the entire width of the container
-                  zIndex: 1, // Ensures it's behind the events
+                  position: "relative",
+                  borderTop: "1px solid rgba(0, 0, 0, 0.1)",
+                  left: 0,
+                  right: 0,
+                  width: "100%",
+                  zIndex: 1,
                 }}
               >
                 {dayjs().hour(hour).minute(0).format("HH:mm")}
               </div>
             ))}
           </div>
-
-          {/* Multi-Day Events */}
-          {multiDayEvents.map((event, index) => {
-            const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
-            return (
-              <div
-                key={event.eventId}
-                style={{
-                  position: "absolute",
-                  top: `${index * multiDayEventHeight}px`, // Stack multi-day events
-                  left: "0%",
-                  width: "100%",
-                  height: `${multiDayEventHeight}px`, // Fixed height
-                  backgroundColor,
-                  color,
-                  padding: "2px 4px",
-                  borderRadius: "4px",
-                  display: "flex",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  zIndex: 2,
-                  borderLeft: `2px solid ${color}`,
-                  boxSizing: "border-box",
-                  marginLeft: '60px', // Adjust to avoid overlapping with labels
-                }}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent triggering the parent grid click handler
-                  handleEventClick(event);
-                }}              >
-                {icon}
-                <Typography noWrap>{event.title}</Typography>
-              </div>
-            );
-          })}
 
           {/* Single-Day Events */}
           {overlappingEventGroups.map((group) =>
@@ -494,19 +526,21 @@ export default function DayView() {
                     height: `${height}px`,
                     backgroundColor: eventTypeStyle.backgroundColor,
                     color: eventTypeStyle.color,
-                    padding: "2px 4px",
-                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
                     display: "flex",
                     alignItems: "center",
                     cursor: "pointer",
                     zIndex: 2,
-                    borderLeft: `2px solid ${eventTypeStyle.color}`,
-                    marginLeft: '60px', // Adjust to avoid overlapping with labels
+                    borderLeft: `4px solid ${eventTypeStyle.color}`,
+                    marginLeft: "60px",
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                    transition: 'background-color 0.2s, box-shadow 0.2s',
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = eventTypeStyle.color
                       ? `${eventTypeStyle.color}33`
-                      : "#c5e1f9";
+                      : "#f0f0f0";
                     e.currentTarget.style.boxShadow =
                       "0 4px 12px rgba(0, 0, 0, 0.2)";
                   }}
@@ -516,7 +550,8 @@ export default function DayView() {
                     e.currentTarget.style.boxShadow =
                       "0 2px 8px rgba(0, 0, 0, 0.15)";
                   }}
-                  onClick={() => handleEventClick(event)}                  >
+                  onClick={() => handleEventClick(event)}
+                >
                   {eventTypeStyle.icon}
                   <Typography noWrap>{event.title}</Typography>
                 </div>
@@ -542,8 +577,8 @@ export default function DayView() {
       {/* Show Event Info Popup when an event is selected */}
       {showEventInfoModal && selectedEvent && (
         <EventInfoPopup
-          event={selectedEvent} // Pass the selected event to the popup
-          onClose={() => setShowInfoEventModal(false)} // Close modal handler
+          event={selectedEvent}
+          onClose={() => setShowInfoEventModal(false)}
         />
       )}
     </Paper>
