@@ -14,6 +14,7 @@ import {
   Avatar,
   Popover,
   Button,
+  Box
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
@@ -312,6 +313,38 @@ export default function CalendarHeader() {
                 <Typography variant="caption" color="textSecondary">
                   {user.emails[0].value}
                 </Typography>
+                {/* Feedback and TVC Access buttons */}
+                <Box style={{ marginTop: "10px" }}>
+                  <Button
+                    variant="text"
+                    color="primary"
+                    onClick={() =>
+                      window.open("https://feedback-link.com", "_blank")
+                    }
+                    sx={{
+                      justifyContent: "space-between",
+                      width: "100%",
+                    }}
+                  >
+                    Got Feedback?
+                    <span className="material-icons">chevron_right</span>
+                  </Button>
+
+                  <Button
+                    variant="text"
+                    color="primary"
+                    onClick={() =>
+                      window.open("https://tvcaccess-link.com", "_blank")
+                    }
+                    sx={{
+                      justifyContent: "space-between",
+                      width: "100%",
+                    }}
+                  >
+                    TVC Access
+                    <span className="material-icons">chevron_right</span>
+                  </Button>
+                </Box>
                 <div style={{ marginTop: "10px" }}>
                   <Button
                     variant="contained"
