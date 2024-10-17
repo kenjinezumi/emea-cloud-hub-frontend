@@ -69,7 +69,8 @@ export default function DayView() {
           return (
             eventStart.isSame(daySelected, "day") ||
             eventEnd.isSame(daySelected, "day") ||
-            (eventStart.isBefore(selectedDayEnd) && eventEnd.isAfter(selectedDayStart))
+            (eventStart.isBefore(selectedDayEnd) &&
+              eventEnd.isAfter(selectedDayStart))
           );
         });
 
@@ -161,7 +162,10 @@ export default function DayView() {
                       event.accountSegments?.[segment.label]?.selected
                     );
                   } catch (err) {
-                    console.error("Error checking accountSegments filter:", err);
+                    console.error(
+                      "Error checking accountSegments filter:",
+                      err
+                    );
                     return false;
                   }
                 });
@@ -254,28 +258,36 @@ export default function DayView() {
     const multiDayEvents = filteredEvents.filter((event) => {
       const eventStart = dayjs(event.startDate);
       const eventEnd = dayjs(event.endDate);
-      return !eventStart.isSame(daySelected, "day") || !eventEnd.isSame(daySelected, "day");
+      return (
+        !eventStart.isSame(daySelected, "day") ||
+        !eventEnd.isSame(daySelected, "day")
+      );
     });
 
     const singleDayEvents = filteredEvents.filter((event) => {
       const eventStart = dayjs(event.startDate);
       const eventEnd = dayjs(event.endDate);
-      return eventStart.isSame(daySelected, "day") && eventEnd.isSame(daySelected, "day");
+      return (
+        eventStart.isSame(daySelected, "day") &&
+        eventEnd.isSame(daySelected, "day")
+      );
     });
 
     return { multiDayEvents, singleDayEvents };
   }, [filteredEvents, daySelected]);
 
-   
   // Group overlapping single-day events
-  
+
   const groupOverlappingEvents = (events) => {
     const groups = [];
     events.forEach((event) => {
       let addedToGroup = false;
       for (const group of groups) {
         const isOverlapping = group.some((groupEvent) => {
-          return dayjs(event.startDate).isBefore(groupEvent.endDate) && dayjs(event.endDate).isAfter(groupEvent.startDate);
+          return (
+            dayjs(event.startDate).isBefore(groupEvent.endDate) &&
+            dayjs(event.endDate).isAfter(groupEvent.startDate)
+          );
         });
         if (isOverlapping) {
           group.push(event);
@@ -290,7 +302,10 @@ export default function DayView() {
     return groups;
   };
 
-  const overlappingEventGroups = useMemo(() => groupOverlappingEvents(singleDayEvents), [singleDayEvents]);
+  const overlappingEventGroups = useMemo(
+    () => groupOverlappingEvents(singleDayEvents),
+    [singleDayEvents]
+  );
 
   // Helper function to calculate the event block styles
   const calculateEventBlockStyles = useCallback(
@@ -326,12 +341,11 @@ export default function DayView() {
   // Memoized event handler for clicking events
   const handleEventClick = useCallback(
     (event) => {
-      setSelectedEvent(event);  // Set the clicked event as the selected one
-      setShowInfoEventModal(true);  // Trigger the modal to show
+      setSelectedEvent(event); // Set the clicked event as the selected one
+      setShowInfoEventModal(true); // Trigger the modal to show
     },
     [setSelectedEvent, setShowInfoEventModal]
   );
-  
 
   // Automatically scroll to the current hour and update current time position
   useEffect(() => {
@@ -390,71 +404,77 @@ export default function DayView() {
         <Box
           sx={{
             position: "relative",
-            height: "200px",  // Fixed height for multi-day events section
+            height: "200px", // Fixed height for multi-day events section
             overflowY: "auto",
+            overflowX: "hidden", // Hide horizontal scrolling
             padding: "10px 20px",
             borderBottom: "1px solid #ccc",
             marginTop: "20px",
             marginBottom: "20px",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            '&:hover': {
+            "&:hover": {
               boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",
             },
           }}
         >
           {multiDayEvents.map((event, index) => {
-            const { backgroundColor, color, icon } = getEventStyleAndIcon(event.eventType);
+            const { backgroundColor, color, icon } = getEventStyleAndIcon(
+              event.eventType
+            );
             return (
               <div
-  key={event.eventId}
-  style={{
-    position: "absolute",
-    top: `${index * multiDayEventHeight}px`,
-    left: "0%",
-    width: "100%",
-    height: `${multiDayEventHeight}px`,
-    backgroundColor,
-    color,
-    padding: "8px 12px",
-    borderRadius: "8px", // Rounded corners
-    display: "flex",
-    alignItems: "center",
-    cursor: "pointer",
-    zIndex: 2,
-    borderLeft: `4px solid ${color}`, // Thicker border for visual hierarchy
-    marginLeft: "20px", // Slight adjustment to avoid overlapping with time labels
-    marginRight: "60px", // Additional margin for better layout
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)", // Subtle shadow for depth
-    transition: "background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out", // Smooth transitions for hover
-  }}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Lightened background on hover
-    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.2)"; // Enhanced shadow on hover
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.backgroundColor = backgroundColor; // Reset background
-    e.currentTarget.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.15)"; // Reset shadow
-  }}
-  onClick={(e) => {
-    e.stopPropagation();  // Prevent event propagation
-    handleEventClick(event); // Trigger event click handler
-  }}
->
-  {icon}
-  <Typography
-    noWrap
-    sx={{
-      marginLeft: "8px",  // Space between icon and text
-      color: "#333",       // Darker text for readability
-      flex: 1,             // Let the text take up remaining space
-      fontSize: "0.875rem", // Adjusted font size for consistency
-    }}
-  >
-    {event.title}
-  </Typography>
-</div>
-
-               
+                key={event.eventId}
+                style={{
+                  position: "absolute",
+                  top: `${index * multiDayEventHeight}px`,
+                  left: "0%",
+                  width: "100%",
+                  height: `${multiDayEventHeight}px`,
+                  backgroundColor,
+                  color,
+                  padding: "8px 12px",
+                  borderRadius: "8px", // Rounded corners
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  zIndex: 2,
+                  borderLeft: `4px solid ${color}`, // Thicker border for visual hierarchy
+                  marginLeft: "20px", // Slight adjustment to avoid overlapping with time labels
+                  marginRight: "60px", // Additional margin for better layout
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)", // Subtle shadow for depth
+                  transition:
+                    "background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out", // Smooth transitions for hover
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = color
+                    ? `${color}33`
+                    : "#f0f0f0"; // Lightened background on hover
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(0, 0, 0, 0.2)"; // Enhanced shadow on hover
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = backgroundColor; // Reset background
+                  e.currentTarget.style.boxShadow =
+                    "0 2px 8px rgba(0, 0, 0, 0.15)"; // Reset shadow
+                }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent event propagation
+                  handleEventClick(event); // Trigger event click handler
+                }}
+              >
+                {icon}
+                <Typography
+                  noWrap
+                  sx={{
+                    marginLeft: "8px", // Space between icon and text
+                    color: "#333", // Darker text for readability
+                    flex: 1, // Let the text take up remaining space
+                    fontSize: "0.875rem", // Adjusted font size for consistency
+                  }}
+                >
+                  {event.title}
+                </Typography>
+              </div>
             );
           })}
         </Box>
@@ -492,7 +512,10 @@ export default function DayView() {
               color: "#999",
             }}
           >
-            {Array.from({ length: endHour - startHour }, (_, i) => i + startHour).map((hour) => (
+            {Array.from(
+              { length: endHour - startHour },
+              (_, i) => i + startHour
+            ).map((hour) => (
               <div
                 key={hour}
                 style={{
@@ -513,7 +536,10 @@ export default function DayView() {
           {/* Single-Day Events */}
           {overlappingEventGroups.map((group) =>
             group.map((event) => {
-              const { top, height, left, width } = calculateEventBlockStyles(event, group);
+              const { top, height, left, width } = calculateEventBlockStyles(
+                event,
+                group
+              );
               const eventTypeStyle = getEventStyleAndIcon(event.eventType);
               return (
                 <div
@@ -534,8 +560,8 @@ export default function DayView() {
                     zIndex: 2,
                     borderLeft: `4px solid ${eventTypeStyle.color}`,
                     marginLeft: "60px",
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                    transition: 'background-color 0.2s, box-shadow 0.2s',
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                    transition: "background-color 0.2s, box-shadow 0.2s",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = eventTypeStyle.color
