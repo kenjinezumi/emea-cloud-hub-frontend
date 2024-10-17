@@ -15793,12 +15793,12 @@ const dummyEventData = [{
 }, {
   "eventId": "69daab71-b18d-49cb-9566-c139faab145c",
   "tacticId": "MAND1206",
-  "title": "2024Q4 CISO Dinner Rome, Italy",
+  "title": "2024Q4 KENJI Dinner Rome, Italy",
   "description": "2024Q4 CISO Dinner Rome, Italy",
   "emoji": "",
   "organisedBy": ["saramotta"],
-  "startDate": "2024-11-14",
-  "endDate": "2024-11-14",
+"startDate": "2024-10-22T09:00",  // Start at 9:00 AM
+  "endDate": "2024-10-22T11:00" ,
   "marketingProgramInstanceId": "MAND1206",
   "eventType": "Physical Event",
   "region": "EMEA",
@@ -15880,15 +15880,16 @@ const dummyEventData = [{
   "locationVenue": "",
   "marketingActivityType": "",
   "userTimezone": "Europe/London"
-}, {
-  "eventId": "0851e61c-8a9b-4a08-a790-b0e7349cba5a",
+},  
+{
+  "eventId": "0859999c-8a9b-4a08-a790-b0e7349cba5a",
   "tacticId": "MAND1207",
-  "title": "2024Q4 ENISE CISO Dinner in Leon, Spain",
+  "title": "2024Q4 ENISE CISO Dinner in cabon, Spain",
   "description": "2024Q4 ENISE CISO Dinner in Leon, Spain",
   "emoji": "",
   "organisedBy": ["saramotta"],
-  "startDate": "2024-10-22",
-  "endDate": "2024-10-22",
+"startDate": "2024-10-22T09:00",  // Start at 9:00 AM
+  "endDate": "2024-10-22T11:00" ,
   "marketingProgramInstanceId": "MAND1207",
   "eventType": "Physical Event",
   "region": "EMEA",
@@ -15970,8 +15971,8 @@ const dummyEventData = [{
   "locationVenue": "",
   "marketingActivityType": "",
   "userTimezone": "Europe/London"
-}, {
-  "eventId": "73209ec9-d6dc-4f31-ab32-2f06b53fb0e4",
+},{
+  "eventId": "73209w9w9wc9-d6dc-4f31-ab32-2f06b53fb0e4",
   "tacticId": "MAND1215",
   "title": "2024Q4 IT-SA 2024",
   "description": "Google Cloud Security sponsoring IT-SA",

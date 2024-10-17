@@ -626,7 +626,7 @@ export default function DayView() {
             position: "relative",
             height: `${hourHeight * (endHour - startHour)}px`,
             width: "100%", // Ensure the container takes up the full width
-            marginLeft: "0px", // Ensure proper alignment
+            marginLeft: "0px", // Ensure proper alignment,
           }}
         >
           {/* Hour Labels */}
@@ -675,7 +675,7 @@ export default function DayView() {
                   style={{
                     height: `${hourHeight / 2}px`,
                     borderTop: `1px solid rgba(0, 0, 0, 0.1)`,
-                    backgroundColor: "#f5f5f5",
+                    backgroundColor: "#ffffff",
                     position: "relative",
                     cursor: "pointer",
                     width: "100%",

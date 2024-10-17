@@ -18,6 +18,9 @@ import { useLocation } from "react-router-dom";
 dayjs.extend(utc);
 
 export default function WeekView() {
+  const hourHeight = 90;  // Define the height for each hour block
+  const startHour = 0;    // Define the start hour (00:00 or 12:00 AM)
+  const endHour = 24; 
   const {
     daySelected,
     setSelectedEvent,
@@ -30,12 +33,10 @@ export default function WeekView() {
   const [currentWeek, setCurrentWeek] = useState([]);
   const [events, setEvents] = useState([]);
   const [setFilteredEvents] = useState([]);
-  const [currentTimePosition, setCurrentTimePosition] = useState(0); // State for auto-scroll
   const userTimezone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     []
   );
-  const hourHeight = 60;
   const weekViewRef = useRef(null);
   const location = useLocation();
 
@@ -52,17 +53,18 @@ export default function WeekView() {
       return [];
     }
     const hasFiltersApplied =
-    [
-      ...filters.subRegions,
-      ...filters.gep,
-      ...filters.buyerSegmentRollup,
-      ...filters.accountSectors,
-      ...filters.accountSegments,
-      ...filters.productFamily,
-      ...filters.industry,
-    ].some((filter) => filter.checked) ||
-    filters.partnerEvent !== undefined ||
-    filters.draftStatus !== undefined;
+      [
+        ...filters.subRegions,
+        ...filters.gep,
+        ...filters.buyerSegmentRollup,
+        ...filters.accountSectors,
+        ...filters.accountSegments,
+        ...filters.productFamily,
+        ...filters.industry,
+      ].some((filter) => filter.checked) ||
+      filters.partnerEvent !== undefined ||
+      filters.draftStatus !== undefined;
+
     // If no filters are applied, return all events
     if (!hasFiltersApplied) {
       return events;
@@ -115,17 +117,15 @@ export default function WeekView() {
           (industry) => industry.checked && event.industry === industry.label
         );
 
-        const selectedPartneredStatuses = Array.isArray(
-          filters.partnerEvent
-        )
-          ? filters.partnerEvent
-              .filter((option) => option.checked)
-              .map((option) => option.value)
-          : [];
+      const selectedPartneredStatuses = Array.isArray(filters.partnerEvent)
+        ? filters.partnerEvent
+            .filter((option) => option.checked)
+            .map((option) => option.value)
+        : [];
 
-        const isPartneredEventMatch =
-          selectedPartneredStatuses.length === 0 ||
-          selectedPartneredStatuses.includes(event.isPartneredEvent);
+      const isPartneredEventMatch =
+        selectedPartneredStatuses.length === 0 ||
+        selectedPartneredStatuses.includes(event.isPartneredEvent);
       const selectedDraftStatuses = Array.isArray(filters.draftStatus)
         ? filters.draftStatus
             .filter((option) => option.checked)
@@ -149,8 +149,6 @@ export default function WeekView() {
     });
   }, [filters, events]);
 
-  useEffect(() => {}, [filteredEvents]);
-
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
@@ -163,28 +161,6 @@ export default function WeekView() {
 
     fetchAndFilterEvents();
   }, [filters, location]);
-
-  useEffect(() => {
-    if (weekViewRef.current) {
-      const currentHourOffset = dayjs().hour() * hourHeight;
-      weekViewRef.current.scrollTo({
-        top: currentHourOffset - hourHeight / 2,
-        behavior: "smooth",
-      });
-    }
-
-    const updateCurrentTimePosition = () => {
-      const now = dayjs();
-      const position =
-        now.hour() * hourHeight + (now.minute() / 60) * hourHeight;
-      setCurrentTimePosition(position);
-    };
-
-    updateCurrentTimePosition();
-    const interval = setInterval(updateCurrentTimePosition, 60000);
-
-    return () => clearInterval(interval);
-  }, [hourHeight]);
 
   const handleEventClick = useCallback(
     (event) => {
@@ -199,42 +175,43 @@ export default function WeekView() {
     setSelectedEvent(null);
   }, [setShowInfoEventModal, setSelectedEvent]);
 
-  const timeSlotLabels = useMemo(
-    () =>
-      Array.from({ length: 24 }, (_, i) => (
-        <Typography
-          key={i}
-          align="right"
-          sx={{
-            height: `${hourHeight}px`,
-            lineHeight: `${hourHeight}px`,
-            paddingRight: "5px",
-            fontSize: "12px",
-            color: "grey.500",
-          }}
-        >
-          {dayjs().hour(i).minute(0).format("HH:mm")}
-        </Typography>
-      )),
-    [hourHeight]
-  );
-
   return (
     <Paper
       sx={{
-        width: "90%",
+        width: "100%",
         height: "100vh",
         overflow: "hidden",
-        padding: 2,
         display: "flex",
         flexDirection: "column",
-        border: "none",
       }}
     >
-      <Typography variant="h6" align="center" gutterBottom>
-        Week of {dayjs(daySelected).startOf("week").format("MMMM D, YYYY")} (
-        {userTimezone})
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          paddingBottom: "10px",
+          paddingTop: "10px",
+          backgroundColor: "white",
+          borderBottom: "1px solid ",
+        }}
+      >
+        {currentWeek.map((day) => (
+          <Typography
+            key={day.format("YYYY-MM-DD")}
+            align="center"
+            variant="h6"
+            sx={{
+              flex: 1,
+              textAlign: "center",
+              paddingLeft: "10px",
+              paddingRight: "10px",
+            }}
+          >
+            {day.format("ddd, D MMM")}
+          </Typography>
+        ))}
+      </Box>
+
       <Box
         ref={weekViewRef}
         sx={{
@@ -242,79 +219,64 @@ export default function WeekView() {
           flexDirection: "row",
           flex: 1,
           overflowY: "auto",
-          position: "relative",
-          width: "100%",
+          overflowX: "hidden",
         }}
       >
-        {/* Hour Labels */}
+        {/* Time labels column */}
         <Box
           sx={{
-            flex: "0 0 50px",
-            borderRight: "2px solid #bbb",
-            display: "flex",
-            flexDirection: "column",
+            flex: "0 0 60px",
+            borderRight: "1px solid #ddd",
+            position: "relative",
           }}
         >
-          {timeSlotLabels}
-        </Box>
-
-        {/* Horizontal Lines */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 50,
-            right: 0,
-            height: "100%",
-            zIndex: 1,
-            pointerEvents: "none", // Ensure lines do not intercept clicks
-          }}
-        >
-          {Array.from({ length: 24 }, (_, i) => (
-            <Box
-              key={i}
+          {Array.from({ length: endHour - startHour }, (_, hour) => (
+            <Typography
+              key={hour}
               sx={{
-                position: "absolute",
-                top: `${i * hourHeight}px`,
-                left: 0,
-                right: 0,
-                height: "1px",
-                borderTop: "1px solid #ddd",
+                position: 'absolute',
+                top: `${hour * hourHeight}px`,
+                width: '50px',
+                textAlign: 'right',
+                paddingRight: '10px',
+                fontSize: '12px',
+                color: '#666',
               }}
-            />
+            >
+              {dayjs().hour(hour).minute(0).format('HH:mm')}
+            </Typography>
           ))}
         </Box>
 
-        {currentWeek.map((day) => (
-          <Box
-            key={day.format("YYYY-MM-DD")}
-            sx={{ flex: 1, position: "relative" }}
-          >
-            <Typography
-              align="center"
-              variant="subtitle1"
+        {/* Actual day columns */}
+        {currentWeek.map((day, index) => {
+          // Filter events for each specific day
+          const filteredEventsForDay = filteredEvents.filter(event => {
+            const eventStart = dayjs(event.startDate);
+            return eventStart.isSame(day, 'day');
+          });
+
+          return (
+            <Box
+              key={day.format("YYYY-MM-DD")}
               sx={{
-                padding: "5px 0",
+                flex: 1,
+                position: "relative",
+                borderLeft: "1px solid #ddd",
                 borderBottom: "1px solid #ddd",
-                backgroundColor: "white",
-                position: "sticky",
-                top: 0,
-                zIndex: 10,
               }}
             >
-              {day.format("ddd, D MMM")}
-            </Typography>
-
-            <DayColumn
-              daySelected={day}
-              events={filteredEvents} // Pass all filtered events
-              onEventClick={handleEventClick}
-            />
-          </Box>
-        ))}
+              <DayColumn
+                daySelected={day}
+                events={filteredEventsForDay}
+                onEventClick={handleEventClick}
+                showTimeLabels={index === 0}  // Only show time labels for the first column
+              />
+            </Box>
+          );
+        })}
       </Box>
 
-      {/* Conditionally render EventInfoPopup */}
       {showEventInfoModal && selectedEvent && (
         <EventInfoPopup event={selectedEvent} close={closeEventModal} />
       )}
