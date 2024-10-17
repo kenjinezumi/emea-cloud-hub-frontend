@@ -406,6 +406,7 @@ export default function DayView() {
             width: "100%",
             marginLeft: "0px",
           }}
+          onClick={handleAddEvent}
         >
           {/* Hour Labels */}
           <div
@@ -418,7 +419,7 @@ export default function DayView() {
               display: "flex",
               flexDirection: "column",
               justifyContent: "flex-start",
-              zIndex: 100000, // Ensures the lines are on top
+              zIndex: 1, // Ensures the lines are on top
               color: "#999", // Lighter grey color for the label
             }}
           >
@@ -467,8 +468,10 @@ export default function DayView() {
                   boxSizing: "border-box",
                   marginLeft: '60px', // Adjust to avoid overlapping with labels
                 }}
-                onClick={() => handleEventClick(event)} // Event click handler
-              >
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent triggering the parent grid click handler
+                  handleEventClick(event);
+                }}              >
                 {icon}
                 <Typography noWrap>{event.title}</Typography>
               </div>

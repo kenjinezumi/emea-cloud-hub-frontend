@@ -878,7 +878,7 @@ export default function EventInfoPopup({ event, close }) {
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20"
-      style={{ zIndex: 5000 }}
+      style={{ zIndex: 15000 }}
     >
       <Draggable handle=".drag-handle" nodeRef={nodeRef}>
         <div ref={nodeRef}>
@@ -1222,7 +1222,7 @@ export default function EventInfoPopup({ event, close }) {
   onClose={handleLanguageDialogClose}
   maxWidth="xs"
   fullWidth
-  sx={{ zIndex: 10000 }}
+  sx={{ zIndex: 100000000 }}
 >
   <DialogTitle>Select Language</DialogTitle>
   <DialogContent>

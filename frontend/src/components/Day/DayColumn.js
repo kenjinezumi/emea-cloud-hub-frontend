@@ -108,6 +108,8 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
         borderBottom: '1px solid #ccc',
       }}
       ref={dayColumnRef}
+      onClick={() => setShowEventModal(true)}  // Add this onClick to open add event modal
+
     >
       {Array.from({ length: endHour - startHour }, (_, hour) => (
         <React.Fragment key={hour}>
@@ -122,22 +124,7 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
               zIndex: 1,
             }}
           />
-          {/* {showTimeLabels && (
-            <Typography
-              sx={{
-                position: 'absolute',
-                top: `${hour * hourHeight}px`,
-                width: '50px',
-                textAlign: 'right',
-                paddingRight: '10px',
-                fontSize: '12px',
-                color: '#666',
-                zIndex: 1200,
-              }}
-            >
-              {dayjs().hour(hour).minute(0).format('HH:mm')}
-            </Typography>
-          )} */}
+         
         </React.Fragment>
       ))}
 
@@ -165,8 +152,10 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
               borderLeft: `2px solid ${color}`,
               boxSizing: 'border-box',
             }}
-            onClick={() => onEventClick(event)}
-          >
+            onClick={(e) => {
+              e.stopPropagation();  // Prevent grid click from triggering
+              onEventClick(event);
+            }}          >
             {icon}
             <Typography noWrap>{event.title}</Typography>
           </div>
@@ -198,8 +187,10 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
                 borderLeft: `2px solid ${color}`,
                 boxSizing: 'border-box',
               }}
-              onClick={() => onEventClick(event)}
-            >
+              onClick={(e) => {
+                e.stopPropagation();  // Prevent grid click from triggering
+                onEventClick(event);
+              }}            >
               {icon}
               <Typography noWrap>{event.title}</Typography>
             </div>
