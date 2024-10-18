@@ -292,41 +292,44 @@ export default function DayView() {
   };
   
   const groupOverlappingEvents = (events) => {
-    const groups = [];
-  
-    events.forEach((event) => {
-      const eventStart = dayjs(fixMissingTimeStart(event.startDate));
-      const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
-  
-      let addedToGroup = false;
-  
-      for (const group of groups) {
-        const isOverlapping = group.some((groupEvent) => {
-          const groupEventStart = dayjs(fixMissingTimeStart(groupEvent.startDate));
-          const groupEventEnd = dayjs(fixMissingTimeEnd(groupEvent.endDate));
-  
-          // Check if there is any overlap between events
-          return (
-            (eventStart.isBefore(groupEventEnd) && eventEnd.isAfter(groupEventStart))
-          );
-        });
-  
-        if (isOverlapping) {
-          group.push(event);
-          addedToGroup = true;
-          break;
-        }
+  const groups = [];
+
+  events.forEach((event) => {
+    const eventStart = dayjs(fixMissingTimeStart(event.startDate));
+    const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
+
+    let addedToGroup = false;
+
+    for (const group of groups) {
+      const isOverlapping = group.some((groupEvent) => {
+        const groupEventStart = dayjs(fixMissingTimeStart(groupEvent.startDate));
+        const groupEventEnd = dayjs(fixMissingTimeEnd(groupEvent.endDate));
+
+        // Handle zero-minute events: If start and end are the same, treat them as overlapping
+        const isZeroMinuteEvent = eventStart.isSame(eventEnd);
+
+        // Check for overlap or if it is a zero-minute event at the same time
+        return (
+          (eventStart.isBefore(groupEventEnd) && eventEnd.isAfter(groupEventStart)) ||
+          (isZeroMinuteEvent && eventStart.isSame(groupEventStart))
+        );
+      });
+
+      if (isOverlapping) {
+        group.push(event);
+        addedToGroup = true;
+        break;
       }
-  
-      if (!addedToGroup) {
-        groups.push([event]);
-      }
-    });
-  
-    return groups;
-  };
-  
-  
+    }
+
+    if (!addedToGroup) {
+      groups.push([event]);
+    }
+  });
+
+  return groups;
+};
+
 
   const overlappingEventGroups = useMemo(
     () => groupOverlappingEvents(singleDayEvents),
