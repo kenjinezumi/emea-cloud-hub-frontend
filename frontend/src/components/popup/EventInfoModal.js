@@ -1160,7 +1160,7 @@ export default function EventInfoPopup({ event, close }) {
                 Gmail Invite
               </Button>
 
-              <Button
+              {/* <Button
                 variant="contained"
                 sx={{
                   backgroundColor: hasLanguagesAndTemplates
@@ -1193,7 +1193,7 @@ export default function EventInfoPopup({ event, close }) {
                 onClick={handleSalesLoftInvite}
               >
                 SalesLoft Invite
-              </Button>
+              </Button> */}
             </Stack>
           </Paper>
         </div>

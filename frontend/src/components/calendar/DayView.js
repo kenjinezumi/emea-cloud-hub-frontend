@@ -277,61 +277,130 @@ export default function DayView() {
   }, [filteredEvents, daySelected]);
 
   // Group overlapping single-day events
-
+  const fixMissingTimeStart = (dateString) => {
+    if (!dateString.includes('T')) {
+      return `${dateString}T00:00`; // Default to 12:00 AM if time is missing
+    }
+    return dateString;
+  };
+  
+  const fixMissingTimeEnd = (dateString) => {
+    if (!dateString.includes('T')) {
+      return `${dateString}T01:00`; // Default to 01:10 AM if time is missing
+    }
+    return dateString;
+  };
+  
   const groupOverlappingEvents = (events) => {
     const groups = [];
+  
     events.forEach((event) => {
+      const eventStart = dayjs(fixMissingTimeStart(event.startDate));
+      const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
+  
       let addedToGroup = false;
+  
       for (const group of groups) {
         const isOverlapping = group.some((groupEvent) => {
+          const groupEventStart = dayjs(fixMissingTimeStart(groupEvent.startDate));
+          const groupEventEnd = dayjs(fixMissingTimeEnd(groupEvent.endDate));
+  
+          // Check if there is any overlap between events
           return (
-            dayjs(event.startDate).isBefore(groupEvent.endDate) &&
-            dayjs(event.endDate).isAfter(groupEvent.startDate)
+            (eventStart.isBefore(groupEventEnd) && eventEnd.isAfter(groupEventStart))
           );
         });
+  
         if (isOverlapping) {
           group.push(event);
           addedToGroup = true;
           break;
         }
       }
+  
       if (!addedToGroup) {
         groups.push([event]);
       }
     });
+  
     return groups;
   };
+  
+  
 
   const overlappingEventGroups = useMemo(
     () => groupOverlappingEvents(singleDayEvents),
     [singleDayEvents]
   );
 
-  // Helper function to calculate the event block styles
+
+  
   const calculateEventBlockStyles = useCallback(
     (event, overlappingEvents) => {
-      const eventStart = dayjs(event.startDate);
-      const eventEnd = dayjs(event.endDate);
+      const eventStart = dayjs(fixMissingTimeStart(event.startDate));
+      const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
+  
+      // Check if the dates are valid
+      if (!eventStart.isValid() || !eventEnd.isValid()) {
+        console.error('Invalid event dates:', event.startDate, event.endDate);
+        return { top: 0, height: 0, width: 100, left: 0, zIndex: 1 }; // Skip invalid events
+      }
+  
       const startOfDay = daySelected.startOf("day");
       const endOfDay = daySelected.endOf("day");
-
+  
       const displayStart = dayjs.max(startOfDay, eventStart);
       const displayEnd = dayjs.min(endOfDay, eventEnd);
-
+  
       const minutesFromMidnight = displayStart.diff(startOfDay, "minutes");
       const durationInMinutes = displayEnd.diff(displayStart, "minutes");
-
+  
       const top = (minutesFromMidnight / 60) * hourHeight;
-      const height = (durationInMinutes / 60) * hourHeight;
-
-      const overlapCount = overlappingEvents.length;
-      const width = 100 / overlapCount;
-      const left = overlappingEvents.indexOf(event) * width;
-
-      return { top, height, width, left };
+      const height = (durationInMinutes / 60) * hourHeight || 0;
+  
+      let overlappingGroup = []; // Events that overlap with the current event
+  
+      // Find all events that overlap with this one
+      overlappingEvents.forEach((e) => {
+        const eStart = dayjs(fixMissingTimeStart(e.startDate));
+        const eEnd = dayjs(fixMissingTimeEnd(e.endDate));
+  
+        if (eventStart.isBefore(eEnd) && eventEnd.isAfter(eStart)) {
+          overlappingGroup.push(e);
+        }
+      });
+  
+      // Sort the overlapping events by start time for better column allocation
+      overlappingGroup = overlappingGroup.sort((a, b) => {
+        const aStart = dayjs(fixMissingTimeStart(a.startDate));
+        const bStart = dayjs(fixMissingTimeStart(b.startDate));
+        return aStart.diff(bStart);
+      });
+  
+      const columnCount = overlappingGroup.length;
+      let width = 100;
+      let left = 0;
+  
+      if (columnCount > 1) {
+        // If there are overlapping events, each event takes a fraction of the width
+        width = 100 / columnCount;
+  
+        // Find the index of the current event within the overlapping group
+        const columnIndex = overlappingGroup.indexOf(event);
+        left = columnIndex * width;
+      }
+  
+      // Use zIndex to handle visual stacking (higher for later events)
+      const zIndex = overlappingGroup.indexOf(event) + 1;
+  
+      return { top, height, width, left, zIndex };
     },
     [daySelected, hourHeight]
   );
+  
+  
+  
+  
 
   // Memoized event handler for adding events
   const handleAddEvent = useCallback(() => {
