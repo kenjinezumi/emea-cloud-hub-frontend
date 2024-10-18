@@ -358,23 +358,47 @@ export default function DayView() {
       const top = (minutesFromMidnight / 60) * hourHeight;
       const height = (durationInMinutes / 60) * hourHeight || 0;
   
-      const overlapCount = overlappingEvents.length;
+      let overlappingGroup = []; // Events that overlap with the current event
+  
+      // Find all events that overlap with this one
+      overlappingEvents.forEach((e) => {
+        const eStart = dayjs(fixMissingTimeStart(e.startDate));
+        const eEnd = dayjs(fixMissingTimeEnd(e.endDate));
+  
+        if (eventStart.isBefore(eEnd) && eventEnd.isAfter(eStart)) {
+          overlappingGroup.push(e);
+        }
+      });
+  
+      // Sort the overlapping events by start time for better column allocation
+      overlappingGroup = overlappingGroup.sort((a, b) => {
+        const aStart = dayjs(fixMissingTimeStart(a.startDate));
+        const bStart = dayjs(fixMissingTimeStart(b.startDate));
+        return aStart.diff(bStart);
+      });
+  
+      const columnCount = overlappingGroup.length;
       let width = 100;
       let left = 0;
   
-      // Ensure no event takes full width if others overlap
-      if (overlapCount > 1) {
-        width = 100 / overlapCount; // Share the width equally among overlapping events
-        left = overlappingEvents.indexOf(event) * width; // Position the event based on its index in the group
+      if (columnCount > 1) {
+        // If there are overlapping events, each event takes a fraction of the width
+        width = 100 / columnCount;
+  
+        // Find the index of the current event within the overlapping group
+        const columnIndex = overlappingGroup.indexOf(event);
+        left = columnIndex * width;
       }
   
-      // Adjust z-index: Use the event's index in the overlapping group to set a unique z-index
-      const zIndex = overlappingEvents.indexOf(event) + 1; // Incrementing zIndex for each event
+      // Use zIndex to handle visual stacking (higher for later events)
+      const zIndex = overlappingGroup.indexOf(event) + 1;
   
       return { top, height, width, left, zIndex };
     },
     [daySelected, hourHeight]
   );
+  
+  
   
   
 
