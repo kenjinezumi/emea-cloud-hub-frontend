@@ -41,57 +41,100 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
 
     return { multiDayEvents, singleDayEvents };
   }, [events, daySelected]);
-
-  // Calculate event block styles (top, height, width, and left)
-  const calculateEventBlockStyles = useCallback((event, overlappingEvents) => {
-    const eventStart = dayjs(event.startDate);
-    const eventEnd = dayjs(event.endDate);
-    const startOfDay = daySelected.startOf('day');
-    const endOfDay = daySelected.endOf('day');
-
-    const displayStart = dayjs.max(startOfDay, eventStart);
-    const displayEnd = dayjs.min(endOfDay, eventEnd);
-
-    const minutesFromMidnight = displayStart.diff(startOfDay, 'minutes');
-    const durationInMinutes = displayEnd.diff(displayStart, 'minutes');
-
-    const top = (minutesFromMidnight / 60) * hourHeight;
-    const height = (durationInMinutes / 60) * hourHeight;
-
-    // Calculate width based on number of overlapping events
-    const overlapCount = overlappingEvents.length;
-    const width = 100 / overlapCount;  // Divide the width by number of overlapping events
-    const left = overlappingEvents.indexOf(event) * width;
-
-    return { top, height, width, left };
-  }, [daySelected, hourHeight]);
+  const fixMissingTimeStart = (dateString) => {
+    if (!dateString.includes('T')) {
+      return `${dateString}T00:00`; // Default to 12:00 AM if time is missing
+    }
+    return dateString;
+  };
+  
+  const fixMissingTimeEnd = (dateString) => {
+    if (!dateString.includes('T')) {
+      return `${dateString}T01:00`; // Default to 01:00 AM if time is missing
+    }
+    return dateString;
+  };
+  
+  const calculateEventBlockStyles = useCallback(
+    (event, overlappingEvents) => {
+      const eventStart = dayjs(fixMissingTimeStart(event.startDate));
+      const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
+  
+      const startOfDay = daySelected.startOf("day");
+      const endOfDay = daySelected.endOf("day");
+  
+      const displayStart = dayjs.max(startOfDay, eventStart);
+      const displayEnd = dayjs.min(endOfDay, eventEnd);
+  
+      const minutesFromMidnight = displayStart.diff(startOfDay, "minutes");
+      const durationInMinutes = displayEnd.diff(displayStart, "minutes");
+  
+      const top = (minutesFromMidnight / 60) * hourHeight;
+      const height = (durationInMinutes / 60) * hourHeight || 0;
+  
+      let overlappingGroup = [];
+  
+      overlappingEvents.forEach((e) => {
+        const eStart = dayjs(fixMissingTimeStart(e.startDate));
+        const eEnd = dayjs(fixMissingTimeEnd(e.endDate));
+  
+        if (eventStart.isBefore(eEnd) && eventEnd.isAfter(eStart)) {
+          overlappingGroup.push(e);
+        }
+      });
+  
+      overlappingGroup = overlappingGroup.sort((a, b) => {
+        return dayjs(fixMissingTimeStart(a.startDate)).diff(dayjs(fixMissingTimeStart(b.startDate)));
+      });
+  
+      const columnCount = overlappingGroup.length;
+      const width = columnCount > 1 ? 100 / columnCount : 100;
+      const left = columnCount > 1 ? overlappingGroup.indexOf(event) * width : 0;
+  
+      const zIndex = overlappingGroup.indexOf(event) + 1;
+  
+      return { top, height, width, left, zIndex };
+    },
+    [daySelected, hourHeight]
+  );
+  
 
   // Group overlapping single-day events
   const groupOverlappingEvents = (events) => {
     const groups = [];
-
+  
     events.forEach((event) => {
+      const eventStart = dayjs(fixMissingTimeStart(event.startDate));
+      const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
+  
       let addedToGroup = false;
+  
       for (const group of groups) {
         const isOverlapping = group.some((groupEvent) => {
-          return dayjs(event.startDate).isBefore(groupEvent.endDate) &&
-                 dayjs(event.endDate).isAfter(groupEvent.startDate);
+          const groupEventStart = dayjs(fixMissingTimeStart(groupEvent.startDate));
+          const groupEventEnd = dayjs(fixMissingTimeEnd(groupEvent.endDate));
+  
+          return (
+            (eventStart.isBefore(groupEventEnd) && eventEnd.isAfter(groupEventStart)) ||
+            (eventStart.isSame(eventEnd) && eventStart.isSame(groupEventStart)) // Zero-minute events
+          );
         });
-
+  
         if (isOverlapping) {
           group.push(event);
           addedToGroup = true;
           break;
         }
       }
-
+  
       if (!addedToGroup) {
         groups.push([event]);
       }
     });
-
+  
     return groups;
   };
+  
 
   const overlappingEventGroups = useMemo(() => groupOverlappingEvents(singleDayEvents), [singleDayEvents]);
 

@@ -117,7 +117,7 @@ export default function Filters() {
 
   return (
     <div className="mt-4">
-      <div>
+      {/* <div>
         <IconButton
           aria-label="select all"
           onClick={selectAllFilters}
@@ -129,7 +129,7 @@ export default function Filters() {
         <button style={{ fontSize: '14px', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer' }} onClick={selectAllFilters}>
           Select all filters
         </button>
-      </div>
+      </div> */}
       <div>
         <IconButton
           aria-label="clear all"
