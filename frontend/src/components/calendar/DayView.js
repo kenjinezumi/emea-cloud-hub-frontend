@@ -16,6 +16,7 @@ import EventInfoPopup from "../popup/EventInfoModal";
 import { getEventStyleAndIcon } from "../../utils/eventStyles";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 // Extend dayjs with these plugins
 dayjs.extend(isSameOrBefore);
@@ -40,6 +41,8 @@ export default function DayView() {
   const location = useLocation();
   const dayViewRef = useRef(null);
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const [hoveredEvent, setHoveredEvent] = useState(null);  
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });  
 
   const hourHeight = 90;
   const startHour = 0;
@@ -390,7 +393,27 @@ export default function DayView() {
   
   
   
-  
+  const handleMouseEnter = (e, event) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredEvent(event);
+    setTooltipPosition({
+      x: e.clientX + 10,  // Position tooltip 10px to the right of the event
+      y: e.clientY + 10,  // Tooltip slightly below the mouse
+    });
+  };
+
+  // Update tooltip position on mouse move
+  const handleMouseMove = (e) => {
+    setTooltipPosition({
+      x: e.clientX + 10,  // Update X position based on mouse
+      y: e.clientY + 10,  // Update Y position based on mouse
+    });
+  };
+
+  // Handle mouse leave to hide tooltip
+  const handleMouseLeave = () => {
+    setHoveredEvent(null);
+  };
   
 
   // Memoized event handler for adding events
@@ -508,14 +531,19 @@ export default function DayView() {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = color
                     ? `${color}33`
-                    : "#f0f0f0"; // Lightened background on hover
+                    : "#f0f0f0"; 
                   e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(0, 0, 0, 0.2)"; // Enhanced shadow on hover
+                    "0 4px 12px rgba(0, 0, 0, 0.2)"; 
+                    handleMouseEnter(e, event); 
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = backgroundColor; // Reset background
+                  e.currentTarget.style.backgroundColor = backgroundColor; 
                   e.currentTarget.style.boxShadow =
-                    "0 2px 8px rgba(0, 0, 0, 0.15)"; // Reset shadow
+                    "0 2px 8px rgba(0, 0, 0, 0.15)"; 
+                    handleMouseLeave(); 
+                }}
+                onMouseMove={(e) => {
+                  handleMouseMove(e); 
                 }}
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent event propagation
@@ -537,6 +565,35 @@ export default function DayView() {
               </div>
             );
           })}
+        </Box>
+      )}{hoveredEvent && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: `${tooltipPosition.y}px`,
+            left: `${tooltipPosition.x}px`,
+            backgroundColor: "#fff",
+            padding: "8px 12px",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+            borderRadius: "8px",
+            zIndex: 1000,
+            pointerEvents: "none",
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+            {hoveredEvent.title}
+          </Typography>
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+            {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+            {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
+              `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+            ) : (
+              <>
+                <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
+                Missing or invalid date
+              </>
+            )}
+          </Typography>
         </Box>
       )}
 
@@ -629,12 +686,17 @@ export default function DayView() {
                       : "#f0f0f0";
                     e.currentTarget.style.boxShadow =
                       "0 4px 12px rgba(0, 0, 0, 0.2)";
+                      handleMouseEnter(e, event); 
+                  }}
+                  onMouseMove={(e) => {
+                    handleMouseMove(e);  
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor =
                       eventTypeStyle.backgroundColor;
                     e.currentTarget.style.boxShadow =
                       "0 2px 8px rgba(0, 0, 0, 0.15)";
+                      handleMouseLeave(); 
                   }}
                   onClick={() => handleEventClick(event)}
                 >
@@ -644,6 +706,36 @@ export default function DayView() {
               );
             })
           )}
+          {hoveredEvent && (
+  <Box
+    sx={{
+      position: "fixed",
+      top: `${tooltipPosition.y}px`,
+      left: `${tooltipPosition.x}px`,
+      backgroundColor: "#fff",
+      padding: "8px 12px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+      borderRadius: "8px",
+      zIndex: 1000,
+      pointerEvents: "none",
+    }}
+  >
+    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+      {hoveredEvent.title}
+    </Typography>
+    <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+      {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+      {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
+        `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+      ) : (
+        <>
+          <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
+          Missing or invalid date
+        </>
+      )}
+    </Typography>
+  </Box>
+)}
 
           {/* Current Time Line */}
           <Box

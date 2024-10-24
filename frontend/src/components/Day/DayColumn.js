@@ -3,11 +3,16 @@ import GlobalContext from '../../context/GlobalContext';
 import dayjs from 'dayjs';
 import { Box, Typography } from '@mui/material';
 import { getEventStyleAndIcon } from '../../utils/eventStyles';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+
 
 export default function DayColumn({ daySelected, events, onEventClick, showTimeLabels }) {
   const { setShowEventModal, setDaySelected } = useContext(GlobalContext);
   const [currentTimePosition, setCurrentTimePosition] = useState(0);
-  const hourHeight = 90; // Height for one hour
+  const [hoveredEvent, setHoveredEvent] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 }); 
+
+  const hourHeight = 90; 
   const startHour = 0;
   const endHour = 24;
   const dayColumnRef = useRef(null);
@@ -137,7 +142,23 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
   
 
   const overlappingEventGroups = useMemo(() => groupOverlappingEvents(singleDayEvents), [singleDayEvents]);
+  const handleMouseEnter = (e, event) => {
+    setHoveredEvent(event);
+    setTooltipPosition({
+      x: e.clientX + 10,  // Use the mouse position for tooltip X
+      y: e.clientY + 10,  // Use the mouse position for tooltip Y
+    });
+  };
+  const handleMouseMove = (e) => {
+    setTooltipPosition({
+      x: e.clientX + 10,  // Keep updating the X position as the mouse moves
+      y: e.clientY + 10,  // Keep updating the Y position as the mouse moves
+    });
+  };
 
+  const handleMouseLeave = () => {
+    setHoveredEvent(null);
+  };
   return (
     <>
       {/* <Box
@@ -240,11 +261,17 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Slight background change on hover
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  // Enhance shadow on hover
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  
+                handleMouseEnter(e, event);  // Show tooltip on hover
+
               }}
+              onMouseMove={handleMouseMove}  // Update tooltip position as mouse moves
+
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = backgroundColor;  // Reset background
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';  // Reset shadow
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';  
+                handleMouseLeave();  
+
               }}
             >
               {icon}
@@ -264,6 +291,37 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
             );
           })
         )}
+         {hoveredEvent && (
+  <Box
+    sx={{
+      position: "fixed",
+      top: `${tooltipPosition.y}px`,
+      left: `${tooltipPosition.x}px`,
+      backgroundColor: "#fff",
+      padding: "8px 12px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+      borderRadius: "8px",
+      zIndex: 1000,
+      pointerEvents: "none",
+    }}
+  >
+    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+      {hoveredEvent.title}
+    </Typography>
+    <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+      {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+      {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
+        `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+      ) : (
+        <>
+          <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
+          Missing or invalid date
+        </>
+      )}
+    </Typography>
+  </Box>
+)}
+
 
         {/* Current Time Line */}
         <Box

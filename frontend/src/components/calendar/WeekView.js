@@ -34,6 +34,8 @@ export default function WeekView() {
   const [currentWeek, setCurrentWeek] = useState([]);
   const [events, setEvents] = useState([]);
   const [setFilteredEvents] = useState([]);
+  const [hoveredEvent, setHoveredEvent] = useState(null);  
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const userTimezone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     []
@@ -120,12 +122,22 @@ export default function WeekView() {
         });
       
 
-      const productFamilyMatch =
+        const productFamilyMatch =
         !filters.productFamily.some((product) => product.checked) ||
-        filters.productFamily.some(
-          (product) =>
-            product.checked && event.productAlignment?.[product.label]?.selected
-        );
+        filters.productFamily.some((product) => {
+          try {
+            const productAlignment = event.productAlignment?.[product.label];
+            return (
+              product.checked &&
+              productAlignment?.selected === "true" && 
+              parseFloat(productAlignment?.percentage) > 0 
+            );
+          } catch (err) {
+            console.error("Error checking productFamily filter:", err);
+            return false;
+          }
+        });
+      
 
       const industryMatch =
         !filters.industry.some((industry) => industry.checked) ||
@@ -303,7 +315,18 @@ const groupMultiDayEvents = useCallback((multiDayEvents) => {
     };
   };
   
+  const handleMouseEnter = (e, event) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredEvent(event);
+    setTooltipPosition({
+      x: rect.left + 10,  // Tooltip 10px to the right of the event
+      y: rect.top + window.scrollY - 10,  // Tooltip slightly above the event
+    });
+  };
 
+  const handleMouseLeave = () => {
+    setHoveredEvent(null);  // Hide the tooltip
+  };
   
 
   return (
@@ -401,11 +424,14 @@ const groupMultiDayEvents = useCallback((multiDayEvents) => {
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Change background on hover
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  // Increase shadow on hover
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)'; 
+              handleMouseEnter(e, event); // Increase shadow on hover
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = backgroundColor;  // Reset background
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';  // Reset shadow
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';  
+              handleMouseLeave();
+
             }}
             onClick={() => handleEventClick(event)}
           >
@@ -425,6 +451,26 @@ const groupMultiDayEvents = useCallback((multiDayEvents) => {
         );
       })
     )}
+  </Box>
+)}{hoveredEvent && (
+  <Box
+    sx={{
+      position: 'absolute',
+      top: `${tooltipPosition.y}px`,  // Use tooltipPosition state for Y
+      left: `${tooltipPosition.x}px`,  // Use tooltipPosition state for X
+      backgroundColor: '#fff',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      zIndex: 1000,
+    }}
+  >
+    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+      {hoveredEvent.title}
+    </Typography>
+    <Typography variant="body2">
+      {dayjs(hoveredEvent.startDate).format('MMM D, h:mm A')} - {dayjs(hoveredEvent.endDate).format('MMM D, h:mm A')}
+    </Typography>
   </Box>
 )}
 

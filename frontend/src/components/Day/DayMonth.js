@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
-import { Link, Typography } from "@mui/material";
+import { Link, Typography, Box } from "@mui/material";
 import GlobalContext from "../../context/GlobalContext";
 import EventInfoPopup from "../popup/EventInfoModal";
 import EventListPopup from "../popup/EventListModal";
@@ -9,11 +9,13 @@ import EventIcon from "@mui/icons-material/Event";
 import LanguageIcon from "@mui/icons-material/Language";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ArticleIcon from "@mui/icons-material/Article";
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 export default function Day({ day, events, isYearView, month }) {
   const maxEventsToShow = 3;
+  const [hoveredEvent, setHoveredEvent] = useState(null);  
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 }); 
 
-  // Memoize dayEvents to avoid recalculations on every render
   const dayEvents = useMemo(() => {
     return events.filter((evt) => {
       // Conditional check based on year view
@@ -213,6 +215,28 @@ const isCurrentMonth = isYearView
     }
   }, [activePopup, selectedEvent, selectedEvents, setActivePopup]);
 
+  const handleMouseEnter = (e, event) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredEvent(event);
+    setTooltipPosition({
+      x: e.clientX + 10,  // Adjust tooltip position
+      y: e.clientY + 10,
+    });
+  };
+
+  // Tooltip mouse move handler
+  const handleMouseMove = (e) => {
+    setTooltipPosition({
+      x: e.clientX + 10,
+      y: e.clientY + 10,
+    });
+  };
+
+  // Tooltip mouse leave handler
+  const handleMouseLeave = () => {
+    setHoveredEvent(null);
+  };
+
   return (
     <div
       className="flex flex-col"
@@ -264,10 +288,15 @@ const isCurrentMonth = isYearView
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = "#c5e1f9";
                       e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.15)";
+                      handleMouseEnter(e, evt);
+                    }}
+                    onMouseMove={(e) => {
+                      handleMouseMove(e);  
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = backgroundColor;
                       e.currentTarget.style.boxShadow = "0 1px 2px rgba(0, 0, 0, 0.1)";
+                      handleMouseLeave();
                     }}
                   >
                     {icon}
@@ -275,6 +304,37 @@ const isCurrentMonth = isYearView
                   </div>
                 );
               })}
+              {hoveredEvent && (
+  <Box
+    sx={{
+      position: "fixed",
+      top: `${tooltipPosition.y}px`,
+      left: `${tooltipPosition.x}px`,
+      backgroundColor: "#fff",
+      padding: "8px 12px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+      borderRadius: "8px",
+      zIndex: 1000,
+      pointerEvents: "none",
+    }}
+  >
+    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+      {hoveredEvent.title}
+    </Typography>
+    <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+      {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+      {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
+        `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+      ) : (
+        <>
+          <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
+          Missing or invalid date
+        </>
+      )}
+    </Typography>
+  </Box>
+)}
+              
             </div>
           ) : (
             <div
