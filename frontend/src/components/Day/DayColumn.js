@@ -7,7 +7,10 @@ import { getEventStyleAndIcon } from '../../utils/eventStyles';
 export default function DayColumn({ daySelected, events, onEventClick, showTimeLabels }) {
   const { setShowEventModal, setDaySelected } = useContext(GlobalContext);
   const [currentTimePosition, setCurrentTimePosition] = useState(0);
-  const hourHeight = 90; // Height for one hour
+  const [hoveredEvent, setHoveredEvent] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 }); 
+
+  const hourHeight = 90; 
   const startHour = 0;
   const endHour = 24;
   const dayColumnRef = useRef(null);
@@ -137,7 +140,23 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
   
 
   const overlappingEventGroups = useMemo(() => groupOverlappingEvents(singleDayEvents), [singleDayEvents]);
+  const handleMouseEnter = (e, event) => {
+    setHoveredEvent(event);
+    setTooltipPosition({
+      x: e.clientX + 10,  // Use the mouse position for tooltip X
+      y: e.clientY + 10,  // Use the mouse position for tooltip Y
+    });
+  };
+  const handleMouseMove = (e) => {
+    setTooltipPosition({
+      x: e.clientX + 10,  // Keep updating the X position as the mouse moves
+      y: e.clientY + 10,  // Keep updating the Y position as the mouse moves
+    });
+  };
 
+  const handleMouseLeave = () => {
+    setHoveredEvent(null);
+  };
   return (
     <>
       {/* <Box
@@ -240,11 +259,17 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = color ? `${color}33` : "#f0f0f0";  // Slight background change on hover
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  // Enhance shadow on hover
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';  
+                handleMouseEnter(e, event);  // Show tooltip on hover
+
               }}
+              onMouseMove={handleMouseMove}  // Update tooltip position as mouse moves
+
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = backgroundColor;  // Reset background
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';  // Reset shadow
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)';  
+                handleMouseLeave();  
+
               }}
             >
               {icon}
@@ -264,6 +289,29 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
             );
           })
         )}
+         {hoveredEvent && (
+  <Box
+    sx={{
+      position: 'fixed',  // Use fixed positioning to make sure the tooltip appears relative to the viewport
+      top: `${tooltipPosition.y}px`,  // Use the Y position from the state
+      left: `${tooltipPosition.x}px`,  // Use the X position from the state
+      backgroundColor: '#fff',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+      padding: '8px 12px',
+      borderRadius: '8px',
+      zIndex: 1000,
+      pointerEvents: 'none',  // Ensure tooltip doesn't interfere with mouse events
+    }}
+  >
+    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+      {hoveredEvent.title}
+    </Typography>
+    <Typography variant="body2">
+      {dayjs(hoveredEvent.startDate).format('MMM D, h:mm A')} - {dayjs(hoveredEvent.endDate).format('MMM D, h:mm A')}
+    </Typography>
+  </Box>
+)}
+
 
         {/* Current Time Line */}
         <Box
