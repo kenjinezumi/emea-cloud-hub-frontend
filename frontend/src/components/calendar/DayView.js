@@ -16,6 +16,7 @@ import EventInfoPopup from "../popup/EventInfoModal";
 import { getEventStyleAndIcon } from "../../utils/eventStyles";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 // Extend dayjs with these plugins
 dayjs.extend(isSameOrBefore);
@@ -582,8 +583,16 @@ export default function DayView() {
           <Typography variant="body2" sx={{ fontWeight: "bold" }}>
             {hoveredEvent.title}
           </Typography>
-          <Typography variant="body2">
-            {dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - {dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+            {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+            {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
+              `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+            ) : (
+              <>
+                <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
+                Missing or invalid date
+              </>
+            )}
           </Typography>
         </Box>
       )}
@@ -698,27 +707,35 @@ export default function DayView() {
             })
           )}
           {hoveredEvent && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: `${tooltipPosition.y}px`,
-            left: `${tooltipPosition.x}px`,
-            backgroundColor: "#fff",
-            padding: "8px 12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-            borderRadius: "8px",
-            zIndex: 1000,
-            pointerEvents: "none",
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-            {hoveredEvent.title}
-          </Typography>
-          <Typography variant="body2">
-            {dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - {dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}
-          </Typography>
-        </Box>
+  <Box
+    sx={{
+      position: "fixed",
+      top: `${tooltipPosition.y}px`,
+      left: `${tooltipPosition.x}px`,
+      backgroundColor: "#fff",
+      padding: "8px 12px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+      borderRadius: "8px",
+      zIndex: 1000,
+      pointerEvents: "none",
+    }}
+  >
+    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+      {hoveredEvent.title}
+    </Typography>
+    <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+      {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+      {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
+        `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+      ) : (
+        <>
+          <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
+          Missing or invalid date
+        </>
       )}
+    </Typography>
+  </Box>
+)}
 
           {/* Current Time Line */}
           <Box
