@@ -140,9 +140,12 @@ export default function MonthView({ month, isYearView = false }) {
                 !filters.accountSegments.some((segment) => segment.checked) ||
                 filters.accountSegments.some((segment) => {
                   try {
+                    const accountSegment =
+                      event.accountSegments?.[segment.label];
                     return (
                       segment.checked &&
-                      event.accountSegments?.[segment.label]?.selected
+                      accountSegment?.selected === "true" && // Convert selected to a boolean
+                      parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
                     );
                   } catch (err) {
                     console.error(
@@ -157,23 +160,21 @@ export default function MonthView({ month, isYearView = false }) {
 
               // Product Family filter match
               const productFamilyMatch =
-                !filters.productFamily.some((product) => product.checked) ||
-                filters.productFamily.some((product) => {
-                  try {
-                    return (
-                      product.checked &&
-                      event.productAlignment?.[product.label]?.selected
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking productFamily filter:",
-                      err,
-                      product,
-                      event
-                    );
-                    return false;
-                  }
-                });
+              !filters.productFamily.some((product) => product.checked) ||
+              filters.productFamily.some((product) => {
+                try {
+                  const productAlignment = event.productAlignment?.[product.label];
+                  return (
+                    product.checked &&
+                    productAlignment?.selected === "true" && // Convert selected to a boolean
+                    parseFloat(productAlignment?.percentage) > 0 // Convert percentage to a number and ensure it's greater than 0
+                  );
+                } catch (err) {
+                  console.error("Error checking productFamily filter:", err);
+                  return false;
+                }
+              });
+            
 
               // Industry filter match
               const industryMatch =
@@ -280,17 +281,17 @@ export default function MonthView({ month, isYearView = false }) {
       }
     >
       {month.map((row, i) => (
-       <React.Fragment key={i}>
-       {row.map((day, idx) => (
-         <Day
-           key={`day-${i}-${idx}`}
-           day={day}  // Pass the updated day object
-           events={filteredEvents}
-           isYearView={isYearView}
-           month={day.month}  // Access the month correctly from day.date
-         />
-       ))}
-     </React.Fragment>
+        <React.Fragment key={i}>
+          {row.map((day, idx) => (
+            <Day
+              key={`day-${i}-${idx}`}
+              day={day} // Pass the updated day object
+              events={filteredEvents}
+              isYearView={isYearView}
+              month={day.month} // Access the month correctly from day.date
+            />
+          ))}
+        </React.Fragment>
       ))}
       <EventPopup /> {/* Render the EventPopup component */}
     </div>
