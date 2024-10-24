@@ -98,12 +98,27 @@ export default function WeekView() {
           (sector) => sector.checked && event.accountSectors?.[sector.label]
         );
 
-      const accountSegmentMatch =
+        const accountSegmentMatch =
         !filters.accountSegments.some((segment) => segment.checked) ||
-        filters.accountSegments.some(
-          (segment) =>
-            segment.checked && event.accountSegments?.[segment.label]?.selected
-        );
+        filters.accountSegments.some((segment) => {
+          try {
+            const accountSegment = event.accountSegments?.[segment.label];
+            return (
+              segment.checked &&
+              accountSegment?.selected === "true" && // Convert selected to a boolean
+              parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
+            );
+          } catch (err) {
+            console.error(
+              "Error checking accountSegments filter:",
+              err,
+              segment,
+              event
+            );
+            return false;
+          }
+        });
+      
 
       const productFamilyMatch =
         !filters.productFamily.some((product) => product.checked) ||

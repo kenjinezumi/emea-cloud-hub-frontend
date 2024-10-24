@@ -153,36 +153,43 @@ export default function DayView() {
                   }
                 });
 
-              const accountSegmentMatch =
+                const accountSegmentMatch =
                 !filters.accountSegments.some((segment) => segment.checked) ||
                 filters.accountSegments.some((segment) => {
                   try {
+                    const accountSegment = event.accountSegments?.[segment.label];
                     return (
                       segment.checked &&
-                      event.accountSegments?.[segment.label]?.selected
+                      accountSegment?.selected === "true" && // Convert selected to a boolean
+                      parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
                     );
                   } catch (err) {
                     console.error(
                       "Error checking accountSegments filter:",
-                      err
+                      err,
+                      segment,
+                      event
                     );
                     return false;
                   }
-                });
+                });              
 
-              const productFamilyMatch =
+                const productFamilyMatch =
                 !filters.productFamily.some((product) => product.checked) ||
                 filters.productFamily.some((product) => {
                   try {
+                    const productAlignment = event.productAlignment?.[product.label];
                     return (
                       product.checked &&
-                      event.productAlignment?.[product.label]?.selected
+                      productAlignment?.selected === "true" && 
+                      parseFloat(productAlignment?.percentage) > 0 
                     );
                   } catch (err) {
                     console.error("Error checking productFamily filter:", err);
                     return false;
                   }
                 });
+              
 
               const industryMatch =
                 !filters.industry.some((industry) => industry.checked) ||
@@ -343,12 +350,6 @@ export default function DayView() {
       const eventStart = dayjs(fixMissingTimeStart(event.startDate));
       const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
   
-      // Check if the dates are valid
-      if (!eventStart.isValid() || !eventEnd.isValid()) {
-        console.error('Invalid event dates:', event.startDate, event.endDate);
-        return { top: 0, height: 0, width: 100, left: 0, zIndex: 1 }; // Skip invalid events
-      }
-  
       const startOfDay = daySelected.startOf("day");
       const endOfDay = daySelected.endOf("day");
   
@@ -361,9 +362,8 @@ export default function DayView() {
       const top = (minutesFromMidnight / 60) * hourHeight;
       const height = (durationInMinutes / 60) * hourHeight || 0;
   
-      let overlappingGroup = []; // Events that overlap with the current event
+      let overlappingGroup = [];
   
-      // Find all events that overlap with this one
       overlappingEvents.forEach((e) => {
         const eStart = dayjs(fixMissingTimeStart(e.startDate));
         const eEnd = dayjs(fixMissingTimeEnd(e.endDate));
@@ -373,33 +373,21 @@ export default function DayView() {
         }
       });
   
-      // Sort the overlapping events by start time for better column allocation
       overlappingGroup = overlappingGroup.sort((a, b) => {
-        const aStart = dayjs(fixMissingTimeStart(a.startDate));
-        const bStart = dayjs(fixMissingTimeStart(b.startDate));
-        return aStart.diff(bStart);
+        return dayjs(fixMissingTimeStart(a.startDate)).diff(dayjs(fixMissingTimeStart(b.startDate)));
       });
   
       const columnCount = overlappingGroup.length;
-      let width = 100;
-      let left = 0;
+      const width = columnCount > 1 ? 100 / columnCount : 100;
+      const left = columnCount > 1 ? overlappingGroup.indexOf(event) * width : 0;
   
-      if (columnCount > 1) {
-        // If there are overlapping events, each event takes a fraction of the width
-        width = 100 / columnCount;
-  
-        // Find the index of the current event within the overlapping group
-        const columnIndex = overlappingGroup.indexOf(event);
-        left = columnIndex * width;
-      }
-  
-      // Use zIndex to handle visual stacking (higher for later events)
       const zIndex = overlappingGroup.indexOf(event) + 1;
   
       return { top, height, width, left, zIndex };
     },
     [daySelected, hourHeight]
   );
+  
   
   
   

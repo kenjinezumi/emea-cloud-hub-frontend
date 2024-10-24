@@ -9,7 +9,15 @@ import dayjs from "dayjs";
 import MonthView from "./MonthView";
 import { createYearData } from "../../util";
 import GlobalContext from "../../context/GlobalContext";
-import { Grid, Typography, Paper, Box, Chip, Tooltip, Modal  } from "@mui/material";
+import {
+  Grid,
+  Typography,
+  Paper,
+  Box,
+  Chip,
+  Tooltip,
+  Modal,
+} from "@mui/material";
 import "../styles/Yearview.css";
 import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
@@ -51,7 +59,13 @@ export const gepOptions = [
 ];
 
 export default function YearView() {
-  const { daySelected, setDaySelected, setCurrentView, setShowEventModal, filters } = useContext(GlobalContext);
+  const {
+    daySelected,
+    setDaySelected,
+    setCurrentView,
+    setShowEventModal,
+    filters,
+  } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [selectedGepEvents, setSelectedGepEvents] = useState(null); // For showing filtered events
@@ -95,17 +109,17 @@ export default function YearView() {
     }
 
     const hasFiltersApplied =
-    [
-      ...filters.subRegions,
-      ...filters.gep,
-      ...filters.buyerSegmentRollup,
-      ...filters.accountSectors,
-      ...filters.accountSegments,
-      ...filters.productFamily,
-      ...filters.industry,
-    ].some((filter) => filter.checked) ||
-    filters.partnerEvent !== undefined ||
-    filters.draftStatus !== undefined;
+      [
+        ...filters.subRegions,
+        ...filters.gep,
+        ...filters.buyerSegmentRollup,
+        ...filters.accountSectors,
+        ...filters.accountSegments,
+        ...filters.productFamily,
+        ...filters.industry,
+      ].some((filter) => filter.checked) ||
+      filters.partnerEvent !== undefined ||
+      filters.draftStatus !== undefined;
 
     // If no filters are applied, return all events
     if (!hasFiltersApplied) {
@@ -189,9 +203,11 @@ export default function YearView() {
             !filters.accountSegments.some((segment) => segment.checked) ||
             filters.accountSegments.some((segment) => {
               try {
+                const accountSegment = event.accountSegments?.[segment.label];
                 return (
                   segment.checked &&
-                  event.accountSegments?.[segment.label]?.selected
+                  accountSegment?.selected === "true" && // Convert selected to a boolean
+                  parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
                 );
               } catch (err) {
                 console.error(
@@ -206,23 +222,21 @@ export default function YearView() {
 
           // Product Family filter match
           const productFamilyMatch =
-            !filters.productFamily.some((product) => product.checked) ||
-            filters.productFamily.some((product) => {
-              try {
-                return (
-                  product.checked &&
-                  event.productAlignment?.[product.label]?.selected
-                );
-              } catch (err) {
-                console.error(
-                  "Error checking productFamily filter:",
-                  err,
-                  product,
-                  event
-                );
-                return false;
-              }
-            });
+          !filters.productFamily.some((product) => product.checked) ||
+          filters.productFamily.some((product) => {
+            try {
+              const productAlignment = event.productAlignment?.[product.label];
+              return (
+                product.checked &&
+                productAlignment?.selected === "true" && // Convert selected to a boolean
+                parseFloat(productAlignment?.percentage) > 0 // Convert percentage to a number and ensure it's greater than 0
+              );
+            } catch (err) {
+              console.error("Error checking productFamily filter:", err);
+              return false;
+            }
+          });
+        
 
           // Industry filter match
           const industryMatch =
@@ -242,14 +256,12 @@ export default function YearView() {
             });
 
           // Boolean checks for isPartneredEvent and isDraft
-          const selectedPartneredStatuses = Array.isArray(
-            filters.partnerEvent
-          )
+          const selectedPartneredStatuses = Array.isArray(filters.partnerEvent)
             ? filters.partnerEvent
                 .filter((option) => option.checked)
                 .map((option) => option.value)
             : [];
-  
+
           const isPartneredEventMatch =
             selectedPartneredStatuses.length === 0 ||
             selectedPartneredStatuses.includes(event.isPartneredEvent);
@@ -321,17 +333,16 @@ export default function YearView() {
     (event) => {
       // Get the event's start date
       const eventStartDate = dayjs(event.startDate);
-  
+
       // Set the daySelected to the event's start date
       setDaySelected(eventStartDate);
-  
+
       // Switch the current view to "day"
       setCurrentView("day");
     },
     [setDaySelected, setCurrentView]
   );
 
-  
   // Helper function to render GEP chips for each month
   const getGepChip = (gepLabel, count, monthIndex) => {
     const gepOption = gepOptions.find((option) => option.label === gepLabel);
@@ -439,80 +450,83 @@ export default function YearView() {
 
       {/* Modal for displaying the events filtered by GEP */}
       <Modal open={!!selectedGepEvents} onClose={handleCloseModal}>
-  <Paper
-    style={{
-      padding: "16px",
-      width: "30%",
-      margin: "50px auto",
-      maxHeight: "80vh",
-      overflowY: "auto",
-      borderRadius: "12px", // Smooth rounded edges
-    }}
-  >
-    <Typography
-      variant="h6"
-      gutterBottom
-      style={{
-        fontWeight: 500,
-        fontSize: "18px",
-        paddingBottom: "10px",
-        borderBottom: "1px solid #ddd", // A subtle separator line for the header
-      }}
-    >
-      Events for {selectedGep} in {dayjs().month(selectedMonth).format("MMMM")}
-    </Typography>
-
-    {selectedGepEvents?.length ? (
-      selectedGepEvents.map((event) => (
-        <Box
-          key={event.eventId}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: "16px",
-            padding: "12px",
-            borderRadius: "8px",
-            backgroundColor: "#ffffff", // White background for the event card
-            boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)", // Lighter shadow for a soft look
-            cursor: "pointer",
-            "&:hover": {
-              boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-            },
-            border: "1px solid #e0e0e0", // Border around the card
+        <Paper
+          style={{
+            padding: "16px",
+            width: "30%",
+            margin: "50px auto",
+            maxHeight: "80vh",
+            overflowY: "auto",
+            borderRadius: "12px", // Smooth rounded edges
           }}
-          onClick={() => handleEventClick(event)} // Assuming you have a click handler
         >
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography
-              variant="subtitle1"
-              sx={{ fontWeight: "bold", fontSize: "16px" }}
-            >
-              {event.title}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{ color: "#666", marginTop: "4px" }}
-            >
-              Start date: {dayjs(event.startDate).format("dddd, MMMM D, YYYY")}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#666" }}>
-              Location: {event.location || "N/A"}
-            </Typography>
-          </Box>
+          <Typography
+            variant="h6"
+            gutterBottom
+            style={{
+              fontWeight: 500,
+              fontSize: "18px",
+              paddingBottom: "10px",
+              borderBottom: "1px solid #ddd", // A subtle separator line for the header
+            }}
+          >
+            Events for {selectedGep} in{" "}
+            {dayjs().month(selectedMonth).format("MMMM")}
+          </Typography>
 
-          <Box sx={{ marginLeft: "10px", color: "#1a73e8" }}>
-            {/* Arrow icon for navigation */}
-            <span style={{ fontSize: "20px" }}>→</span>
-          </Box>
-        </Box>
-      ))
-    ) : (
-      <Typography>No events found for this GEP in the selected month.</Typography>
-    )}
-  </Paper>
-</Modal>
+          {selectedGepEvents?.length ? (
+            selectedGepEvents.map((event) => (
+              <Box
+                key={event.eventId}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "16px",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  backgroundColor: "#ffffff", // White background for the event card
+                  boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)", // Lighter shadow for a soft look
+                  cursor: "pointer",
+                  "&:hover": {
+                    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
+                  },
+                  border: "1px solid #e0e0e0", // Border around the card
+                }}
+                onClick={() => handleEventClick(event)} // Assuming you have a click handler
+              >
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: "bold", fontSize: "16px" }}
+                  >
+                    {event.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "#666", marginTop: "4px" }}
+                  >
+                    Start date:{" "}
+                    {dayjs(event.startDate).format("dddd, MMMM D, YYYY")}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "#666" }}>
+                    Location: {event.location || "N/A"}
+                  </Typography>
+                </Box>
 
+                <Box sx={{ marginLeft: "10px", color: "#1a73e8" }}>
+                  {/* Arrow icon for navigation */}
+                  <span style={{ fontSize: "20px" }}>→</span>
+                </Box>
+              </Box>
+            ))
+          ) : (
+            <Typography>
+              No events found for this GEP in the selected month.
+            </Typography>
+          )}
+        </Paper>
+      </Modal>
     </div>
   );
 }
