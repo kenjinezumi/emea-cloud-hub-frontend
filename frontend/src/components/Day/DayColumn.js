@@ -3,6 +3,8 @@ import GlobalContext from '../../context/GlobalContext';
 import dayjs from 'dayjs';
 import { Box, Typography } from '@mui/material';
 import { getEventStyleAndIcon } from '../../utils/eventStyles';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+
 
 export default function DayColumn({ daySelected, events, onEventClick, showTimeLabels }) {
   const { setShowEventModal, setDaySelected } = useContext(GlobalContext);
@@ -292,22 +294,30 @@ export default function DayColumn({ daySelected, events, onEventClick, showTimeL
          {hoveredEvent && (
   <Box
     sx={{
-      position: 'fixed',  // Use fixed positioning to make sure the tooltip appears relative to the viewport
-      top: `${tooltipPosition.y}px`,  // Use the Y position from the state
-      left: `${tooltipPosition.x}px`,  // Use the X position from the state
-      backgroundColor: '#fff',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-      padding: '8px 12px',
-      borderRadius: '8px',
+      position: "fixed",
+      top: `${tooltipPosition.y}px`,
+      left: `${tooltipPosition.x}px`,
+      backgroundColor: "#fff",
+      padding: "8px 12px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+      borderRadius: "8px",
       zIndex: 1000,
-      pointerEvents: 'none',  // Ensure tooltip doesn't interfere with mouse events
+      pointerEvents: "none",
     }}
   >
-    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
       {hoveredEvent.title}
     </Typography>
-    <Typography variant="body2">
-      {dayjs(hoveredEvent.startDate).format('MMM D, h:mm A')} - {dayjs(hoveredEvent.endDate).format('MMM D, h:mm A')}
+    <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+      {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+      {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
+        `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+      ) : (
+        <>
+          <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
+          Missing or invalid date
+        </>
+      )}
     </Typography>
   </Box>
 )}
