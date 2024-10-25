@@ -13,7 +13,9 @@ const {
     google
 } = require('googleapis');
 const gmail = google.gmail('v1');
-const { v4: uuidv4 } = require('uuid');
+const {
+    v4: uuidv4
+} = require('uuid');
 
 // New imports for login
 const passport = require('passport');
@@ -553,8 +555,9 @@ module.exports = (firestoreStore) => {
                 });
 
                 const deleteQuery = `
-        DELETE FROM \`google.com:cloudhub.data.master-event-data\`
-        WHERE eventId = @eventId
+        UPDATE  \`google.com:cloudhub.data.master-event-data\`
+        SET isDeleted = TRUE
+WHERE eventId = @eventId;
       `;
 
                 const options = {
@@ -652,14 +655,17 @@ module.exports = (firestoreStore) => {
                 });
 
                 const updateQuery = `
-        UPDATE \`${datasetId}.${tableId}\`
-        SET ${Object.keys(cleanedData).map(key => `${key} = @${key}`).join(', ')}
-        WHERE eventId = @eventId
-      `;
+                UPDATE \`${datasetId}.${tableId}\`
+                SET ${Object.keys(cleanedData).map(key => `${key} = @${key}`).join(', ')},
+                    dateUpdatedCloudHub = @dateUpdatedCloudHub
+                WHERE eventId = @eventId
+            `;
 
                 const updateParams = {
                     ...cleanedData,
-                    eventId
+                    eventId,
+                    dateUpdatedCloudHub: new Date().toISOString() 
+
                 };
 
                 await bigquery.query({
