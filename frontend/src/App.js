@@ -26,6 +26,7 @@ function App() {
   const [currentMonth, setCurrentMonth] = useState(getMonth());
   const { daySelected, setIsAuthenticated } = useContext(GlobalContext);  // Ensure you have access to setIsAuthenticated
   const [searchText, setSearchText] = useState('');
+  const [userLocation, setUserLocation] = useState(null);  // State to store user location
 
   const handleSearchSubmit = (text) => {
     setSearchText(text);
@@ -53,6 +54,22 @@ function App() {
     }
   }
 
+  // useEffect(() => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         setUserLocation({ latitude, longitude });
+  //         console.log(latitude, longitude)
+  //       },
+  //       (error) => {
+  //         console.error("Error getting location:", error);
+  //       }
+  //     );
+  //   } else {
+  //     console.error("Geolocation is not supported by this browser.");
+  //   }
+  // }, []);
 
   
 
