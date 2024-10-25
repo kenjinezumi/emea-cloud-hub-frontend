@@ -13,6 +13,7 @@ const {
     google
 } = require('googleapis');
 const gmail = google.gmail('v1');
+const { v4: uuidv4 } = require('uuid');
 
 // New imports for login
 const passport = require('passport');
@@ -83,35 +84,37 @@ module.exports = (firestoreStore) => {
 
     // Google OAuth callback route
     router.get('/auth/google/callback',
-      passport.authenticate('google', { failureRedirect: '/login' }),
-      async (req, res) => {
-        console.log('Authenticated user:', req.user);  // Check if tokens are present
-    
-        try {
-          if (req.user) {
-            console.log('User authenticated successfully:', req.user);
-    
-            // Trigger session save and log
-            req.session.save((err) => {
-              if (err) {
-                console.error('Error saving session:', err);
-              } else {
-                console.log('Session saved successfully.');
-              }
-            });
-    
-            res.redirect('https://cloudhub.googleplex.com/auth/success'); // Redirect to the frontend
-          } else {
-            console.warn('User authentication failed. No user found in the session.');
-            res.redirect('https://cloudhub.googleplex.com/login?error=AuthenticationFailed');
-          }
-        } catch (err) {
-          console.error('Error during Google OAuth callback:', err.message);
-          res.redirect(`https://cloudhub.googleplex.com/login?error=OAuthCallbackError&message=${encodeURIComponent(err.message)}`);
+        passport.authenticate('google', {
+            failureRedirect: '/login'
+        }),
+        async (req, res) => {
+            console.log('Authenticated user:', req.user); // Check if tokens are present
+
+            try {
+                if (req.user) {
+                    console.log('User authenticated successfully:', req.user);
+
+                    // Trigger session save and log
+                    req.session.save((err) => {
+                        if (err) {
+                            console.error('Error saving session:', err);
+                        } else {
+                            console.log('Session saved successfully.');
+                        }
+                    });
+
+                    res.redirect('https://cloudhub.googleplex.com/auth/success'); // Redirect to the frontend
+                } else {
+                    console.warn('User authentication failed. No user found in the session.');
+                    res.redirect('https://cloudhub.googleplex.com/login?error=AuthenticationFailed');
+                }
+            } catch (err) {
+                console.error('Error during Google OAuth callback:', err.message);
+                res.redirect(`https://cloudhub.googleplex.com/login?error=OAuthCallbackError&message=${encodeURIComponent(err.message)}`);
+            }
         }
-      }
     );
-    
+
 
     // Send Gmail invite
     const sendGmail = async (accessToken, emailDetails) => {
@@ -166,85 +169,97 @@ module.exports = (firestoreStore) => {
   </html>
 `;
 
-// Function to populate the base template with content
-function populateTemplate(template, bodyContent) {
-    // Replace newlines in the body content with <br> for proper HTML rendering
-    // const formattedContent = bodyContent.replace(/\n/g, '<br>');
-    
-    // Replace the placeholder in the base template with the formatted content
-    return template.replace('{{bodyContent}}', bodyContent);
-  }
-  
+    // Function to populate the base template with content
+    function populateTemplate(template, bodyContent) {
+        // Replace newlines in the body content with <br> for proper HTML rendering
+        // const formattedContent = bodyContent.replace(/\n/g, '<br>');
+
+        // Replace the placeholder in the base template with the formatted content
+        return template.replace('{{bodyContent}}', bodyContent);
+    }
+
 
     router.post('/send-gmail-invite', async (req, res) => {
-      const { to, subject, body, accessToken } = req.body;
-    
-      if (!accessToken) {
-        logger.error("Access token not found.");
-        return res.status(401).send('Access token not found');
-      }
-    
-      try {
-        logger.info("Proceeding to create Gmail draft.");
-    
-        // Use the provided access token
-        const oauth2Client = new google.auth.OAuth2();
-        oauth2Client.setCredentials({
-          access_token: accessToken,
-        });
-    
-        const gmail = google.gmail({
-          version: 'v1',
-          auth: oauth2Client,
-        });
-    
-        const emailBody = populateTemplate(baseTemplate, body);
+        const {
+            to,
+            subject,
+            body,
+            accessToken
+        } = req.body;
 
-        // Prepare the raw email format
-        const email = [
-          `To: ${to}`,
-          'Content-Type: text/html; charset=utf-8',
-          'MIME-Version: 1.0',
-          `Subject: ${subject}`,
-          '',
-          emailBody,
-        ].join('\n');
-    
-        const encodedMessage = Buffer.from(email)
-          .toString('base64')
-          .replace(/\+/g, '-')
-          .replace(/\//g, '_')
-          .replace(/=+$/, '');
-    
-        logger.info("Encoded email message prepared.", { encodedMessage });
-    
-        // Create Gmail draft
-        const response = await gmail.users.drafts.create({
-          userId: 'me',
-          requestBody: {
-            message: {
-              raw: encodedMessage,
-            },
-          },
-        });
-    
-        if (response && response.data) {
-          logger.info("Gmail draft created successfully.", { draftId: response.data.id });
-          res.status(200).json({
-            success: true,
-            draftId: response.data.id,
-            draftUrl: `https://mail.google.com/mail/u/me/#drafts`,
-          });
-        } else {
-          logger.error("Failed to create Gmail draft. No response data from Gmail API.");
-          res.status(500).send('Failed to create Gmail draft');
+        if (!accessToken) {
+            logger.error("Access token not found.");
+            return res.status(401).send('Access token not found');
         }
-      } catch (error) {
-        logger.error("Error while creating Gmail draft", { error: error.message, stack: error.stack });
-        res.status(500).send('Failed to create Gmail draft due to server error');
-      }
+
+        try {
+            logger.info("Proceeding to create Gmail draft.");
+
+            // Use the provided access token
+            const oauth2Client = new google.auth.OAuth2();
+            oauth2Client.setCredentials({
+                access_token: accessToken,
+            });
+
+            const gmail = google.gmail({
+                version: 'v1',
+                auth: oauth2Client,
+            });
+
+            const emailBody = populateTemplate(baseTemplate, body);
+
+            // Prepare the raw email format
+            const email = [
+                `To: ${to}`,
+                'Content-Type: text/html; charset=utf-8',
+                'MIME-Version: 1.0',
+                `Subject: ${subject}`,
+                '',
+                emailBody,
+            ].join('\n');
+
+            const encodedMessage = Buffer.from(email)
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+
+            logger.info("Encoded email message prepared.", {
+                encodedMessage
+            });
+
+            // Create Gmail draft
+            const response = await gmail.users.drafts.create({
+                userId: 'me',
+                requestBody: {
+                    message: {
+                        raw: encodedMessage,
+                    },
+                },
+            });
+
+            if (response && response.data) {
+                logger.info("Gmail draft created successfully.", {
+                    draftId: response.data.id
+                });
+                res.status(200).json({
+                    success: true,
+                    draftId: response.data.id,
+                    draftUrl: `https://mail.google.com/mail/u/me/#drafts`,
+                });
+            } else {
+                logger.error("Failed to create Gmail draft. No response data from Gmail API.");
+                res.status(500).send('Failed to create Gmail draft');
+            }
+        } catch (error) {
+            logger.error("Error while creating Gmail draft", {
+                error: error.message,
+                stack: error.stack
+            });
+            res.status(500).send('Failed to create Gmail draft due to server error');
+        }
     });
-    
+
 
 
 
@@ -413,10 +428,70 @@ function populateTemplate(template, bodyContent) {
                     message: 'Failed to execute query. Please try again later.'
                 });
             }
+        } else if (message === 'duplicate-event') {
+            try {
+                const queries = await loadQueriesAsync(); // Load all queries from JSON
+                const duplicateQuery = queries['duplicateEvent'];
+
+                if (!duplicateQuery) {
+                    logger.warn('POST /: Duplicate query not found.');
+                    return res.status(404).json({
+                        success: false,
+                        message: 'Duplicate query not found.'
+                    });
+                }
+
+                const {
+                    eventId,
+                    eventData
+                } = data;
+                if (!eventId || !eventData) {
+                    logger.warn('POST /: Insufficient data for duplicating event.');
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Event ID and event data are required for duplication.'
+                    });
+                }
+
+                // Generate a new UUID for the duplicated event
+                const newEventId = uuidv4();
+
+                // Set up the query options, including new and old event IDs
+                const options = {
+                    query: duplicateQuery,
+                    location: 'US',
+                    params: {
+                        newEventId: newEventId,
+                        eventId: eventId
+                    }
+                };
+
+                // Execute the duplication query
+                await bigquery.query(options);
+
+                logger.info('POST /: Event duplicated successfully.', {
+                    newEventId
+                });
+                res.status(200).json({
+                    success: true,
+                    message: 'Event duplicated successfully.',
+                    newEventId: newEventId
+                });
+            } catch (error) {
+                logger.error('POST /: Error duplicating event.', {
+                    error
+                });
+                res.status(500).json({
+                    success: false,
+                    message: 'Failed to duplicate event. Please try again later.'
+                });
+            }
         } else if (message === 'salesloft-cadence') {
             try {
-                logger.info('POST /: Sending data to SalesLoft.', { data });
-    
+                logger.info('POST /: Sending data to SalesLoft.', {
+                    data
+                });
+
                 // Send the data to SalesLoft
                 const salesLoftResponse = await fetch('https://api.salesloft.com/v2/email_templates', {
                     method: 'POST',
@@ -434,26 +509,31 @@ function populateTemplate(template, bodyContent) {
                         token=${encodeURIComponent(data.token)}
                     `.replace(/\s+/g, '') // Clean up extra spaces
                 });
-    
+
                 if (!salesLoftResponse.ok) {
                     throw new Error(`SalesLoft API error: Status ${salesLoftResponse.status}`);
                 }
-    
+
                 const responseData = await salesLoftResponse.text(); // Assuming SalesLoft responds with plain text
-                logger.info('POST /: SalesLoft response received successfully.', { responseData });
-    
+                logger.info('POST /: SalesLoft response received successfully.', {
+                    responseData
+                });
+
                 res.status(200).json({
                     success: true,
                     message: 'SalesLoft cadence created successfully.',
                     data: responseData
                 });
             } catch (error) {
-                logger.error('POST /: Error sending data to SalesLoft.', { error });
+                logger.error('POST /: Error sending data to SalesLoft.', {
+                    error
+                });
                 res.status(500).json({
                     success: false,
                     message: 'Failed to create SalesLoft cadence. Please try again later.'
-                });}
-            }else if (message === 'delete-data') {
+                });
+            }
+        } else if (message === 'delete-data') {
             // Handle delete event logic
             const {
                 eventId
@@ -503,8 +583,7 @@ function populateTemplate(template, bodyContent) {
                     message: 'Failed to delete event. Please try again later.'
                 });
             }
-        } 
-        else {
+        } else {
             try {
                 logger.info('POST /: Executing event data query.', {
                     queryName
