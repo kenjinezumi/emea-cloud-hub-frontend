@@ -102,6 +102,7 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `locationVenue` STRING,
   `marketingActivityType` STRING,
   `userTimezone` STRING
-
+  `dateUpdatedCloudHub` STRING
+  `isDeleted` BOOL
 
 );
