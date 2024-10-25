@@ -2,6 +2,9 @@ import React, { useEffect, useContext, useState, useRef } from "react";
 import dayjs from "dayjs";
 import GlobalContext from "../../context/GlobalContext";
 import { createSalesLoftEmailTemplate } from "../../api/salesloft";
+import { styled } from "@mui/system";
+import { tooltipClasses } from "@mui/material/Tooltip";
+import { duplicateEvent } from "../../api/duplicateData";
 
 import Draggable from "react-draggable";
 import {
@@ -29,8 +32,8 @@ import {
   Radio,
   FormControlLabel,
 } from "@mui/material";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
-import BusinessIcon from "@mui/icons-material/Business";
+
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
 import ShareIcon from "@mui/icons-material/Share";
@@ -44,7 +47,6 @@ import PublicIcon from "@mui/icons-material/Public";
 import DescriptionIcon from "@mui/icons-material/Description";
 import LinkIcon from "@mui/icons-material/Link";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
 import { useNavigate } from "react-router-dom";
 import { red, blue } from "@mui/material/colors";
 import salesloftLogo from "./logo/salesloft.png";
@@ -59,6 +61,8 @@ export default function EventInfoPopup({ event, close }) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
   const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(
     selectedEvent?.languagesAndTemplates?.length > 0
       ? selectedEvent.languagesAndTemplates[0].language
@@ -76,6 +80,16 @@ export default function EventInfoPopup({ event, close }) {
       setSelectedLanguage(languagesAndTemplates[0].language);
     }
   }, [languagesAndTemplates]);
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        handleClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -146,26 +160,32 @@ export default function EventInfoPopup({ event, close }) {
         (item) =>
           item.platform === "Salesloft" && item.language === selectedLanguage
       );
-  
+
       if (!salesLoftTemplate) {
         throw new Error("SalesLoft template not found.");
       }
-  
-      const result = await createSalesLoftEmailTemplate(accessToken, salesLoftTemplate);
+
+      const result = await createSalesLoftEmailTemplate(
+        accessToken,
+        salesLoftTemplate
+      );
       if (result.success) {
         setSnackbarMessage("SalesLoft email template created successfully!");
       } else {
-        setSnackbarMessage("Failed to create SalesLoft template. Please try again.");
+        setSnackbarMessage(
+          "Failed to create SalesLoft template. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error creating SalesLoft email template:", error);
-      setSnackbarMessage(`Failed to create SalesLoft template: ${error.message}`);
+      setSnackbarMessage(
+        `Failed to create SalesLoft template: ${error.message}`
+      );
     } finally {
       setDialogOpen(false);
       setSnackbarOpen(true);
     }
   };
-  
 
   const handleGmailInvite = async () => {
     try {
@@ -301,7 +321,53 @@ export default function EventInfoPopup({ event, close }) {
     const index = Math.floor(Math.random() * googleColors.length);
     return googleColors[index];
   };
+  const CustomTooltip = styled(({ className, ...props }) => (
+    <Tooltip
+      {...props}
+      classes={{ popper: className }}
+      PopperProps={{
+        disablePortal: true, // Disable portal to respect parent z-index
+      }}
+    />
+  ))({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: "#1a73e8",
+      color: "white",
+      fontSize: "14px",
+      borderRadius: "4px",
+      padding: "8px 12px",
+      zIndex: 20000,
+    },
+    [`& .${tooltipClasses.arrow}`]: {
+      color: "#1a73e8",
+    },
+    [`& .${tooltipClasses.popper}`]: {
+      zIndex: 20000,
+    },
+  });
+  const handleDuplicateEvent = () => {
+    setConfirmationDialogOpen(true);
+  };
 
+  const confirmDuplicateEvent = async () => {
+    if (selectedEvent) {
+      try {
+        await duplicateEvent(selectedEvent.eventId, selectedEvent);
+        setSnackbarMessage("Event duplicated successfully!");
+        setInfoDialogOpen(true);
+      } catch (error) {
+        console.error("Failed to duplicate event:", error);
+        setSnackbarMessage("Failed to duplicate event. Please try again.");
+      } finally {
+        setConfirmationDialogOpen(false); // Close confirmation dialog after approval
+        setSnackbarOpen(true); // Open snackbar to show the message
+      }
+    }
+  };
+
+  const handleConfirmationDialogClose = () => {
+    setConfirmationDialogOpen(false);
+  };
   const sections = {
     Overview: (
       <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
@@ -948,12 +1014,23 @@ export default function EventInfoPopup({ event, close }) {
                   sx={{ marginRight: 4 }}
                 />
               )}
-              <IconButton onClick={handleShareEvent} size="small">
-                <ShareIcon />
-              </IconButton>
-              <IconButton onClick={handleEditEvent} size="small">
-                <EditIcon />
-              </IconButton>
+              <CustomTooltip title="Share Event" arrow>
+                <IconButton onClick={handleShareEvent} size="small">
+                  <ShareIcon />
+                </IconButton>
+              </CustomTooltip>
+
+              <CustomTooltip title="Edit Event" arrow>
+                <IconButton onClick={handleEditEvent} size="small">
+                  <EditIcon />
+                </IconButton>
+              </CustomTooltip>
+
+              <CustomTooltip title="Duplicate Event" arrow>
+                <IconButton onClick={handleDuplicateEvent} size="small">
+                  <ContentCopyIcon />
+                </IconButton>
+              </CustomTooltip>
             </Stack>
 
             {/* Date Range with High Priority Indicator */}
@@ -1218,48 +1295,70 @@ export default function EventInfoPopup({ event, close }) {
       </Dialog>
       {/* Language Dialog */}
       <Dialog
-  open={languageDialogOpen}
-  onClose={handleLanguageDialogClose}
-  maxWidth="xs"
-  fullWidth
-  sx={{ zIndex: 100000000 }}
->
-  <DialogTitle>Select Language</DialogTitle>
-  <DialogContent>
-    <FormControl component="fieldset">
-      <RadioGroup
-        value={selectedLanguage}
-        onChange={(event) => setSelectedLanguage(event.target.value)} // Update the selectedLanguage state
+        open={languageDialogOpen}
+        onClose={handleLanguageDialogClose}
+        maxWidth="xs"
+        fullWidth
+        sx={{ zIndex: 100000000 }}
       >
-        {languagesAndTemplates.length > 0 ? (
-          languagesAndTemplates.map((item) => (
-            <FormControlLabel
-              key={`${item.platform}-${item.language}`} // Ensure unique keys
-              value={item.language} // Radio button's value
-              control={<Radio />} // Radio button component
-              label={`${item.platform} - ${item.language}`} // Label for each option
-            />
-          ))
-        ) : (
-          <Typography>No languages available</Typography>
-        )}
-      </RadioGroup>
-    </FormControl>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleLanguageDialogClose} color="secondary">
-      Cancel
-    </Button>
-    <Button
-      onClick={handleLanguageDialogClose}
-      color="primary"
-      variant="contained"
-    >
-      Confirm
-    </Button>
-  </DialogActions>
-</Dialog>
-
+        <DialogTitle>Select Language</DialogTitle>
+        <DialogContent>
+          <FormControl component="fieldset">
+            <RadioGroup
+              value={selectedLanguage}
+              onChange={(event) => setSelectedLanguage(event.target.value)} // Update the selectedLanguage state
+            >
+              {languagesAndTemplates.length > 0 ? (
+                languagesAndTemplates.map((item) => (
+                  <FormControlLabel
+                    key={`${item.platform}-${item.language}`} // Ensure unique keys
+                    value={item.language} // Radio button's value
+                    control={<Radio />} // Radio button component
+                    label={`${item.platform} - ${item.language}`} // Label for each option
+                  />
+                ))
+              ) : (
+                <Typography>No languages available</Typography>
+              )}
+            </RadioGroup>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleLanguageDialogClose} color="secondary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleLanguageDialogClose}
+            color="primary"
+            variant="contained"
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={confirmationDialogOpen}
+        onClose={handleConfirmationDialogClose}
+        maxWidth="xs"
+        fullWidth
+        sx={{ zIndex: 100000000 }}
+      >
+        <DialogTitle>Confirm Duplication</DialogTitle>
+        <DialogContent>
+          Are you sure you want to duplicate this event?
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setConfirmationDialogOpen(false)}
+            color="secondary"
+          >
+            No
+          </Button>
+          <Button onClick={confirmDuplicateEvent} color="primary">
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbarOpen}
