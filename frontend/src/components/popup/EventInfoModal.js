@@ -4,6 +4,7 @@ import GlobalContext from "../../context/GlobalContext";
 import { createSalesLoftEmailTemplate } from "../../api/salesloft";
 import { styled } from "@mui/system";
 import { tooltipClasses } from "@mui/material/Tooltip";
+import { duplicateEvent } from "../../api/duplicateData";
 
 import Draggable from "react-draggable";
 import {
@@ -130,7 +131,6 @@ export default function EventInfoPopup({ event, close }) {
   };
 
   const accessToken = process.env.REACT_APP_SALESLOFT_API_TOKEN;
-  
 
   //Salesloft!!
   const handleSalesLoftInvite = () => {
@@ -349,14 +349,20 @@ export default function EventInfoPopup({ event, close }) {
     setConfirmationDialogOpen(true);
   };
 
-  const confirmDuplicateEvent = () => {
+  const confirmDuplicateEvent = async () => {
     if (selectedEvent) {
-      const duplicatedEvent = { ...selectedEvent, eventId: undefined };
-      updateFormData(duplicatedEvent);
-      setSnackbarMessage("Event duplicated successfully!");
-      setInfoDialogOpen(true);
+      try {
+        await duplicateEvent(selectedEvent.eventId, selectedEvent);
+        setSnackbarMessage("Event duplicated successfully!");
+        setInfoDialogOpen(true);
+      } catch (error) {
+        console.error("Failed to duplicate event:", error);
+        setSnackbarMessage("Failed to duplicate event. Please try again.");
+      } finally {
+        setConfirmationDialogOpen(false); // Close confirmation dialog after approval
+        setSnackbarOpen(true); // Open snackbar to show the message
+      }
     }
-    setConfirmationDialogOpen(false); // Close confirmation dialog after approval
   };
 
   const handleConfirmationDialogClose = () => {
@@ -934,7 +940,6 @@ export default function EventInfoPopup({ event, close }) {
       </Stack>
     ),
   };
-  
 
   return (
     <div
@@ -1343,7 +1348,10 @@ export default function EventInfoPopup({ event, close }) {
           Are you sure you want to duplicate this event?
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConfirmationDialogClose} color="secondary">
+          <Button
+            onClick={() => setConfirmationDialogOpen(false)}
+            color="secondary"
+          >
             No
           </Button>
           <Button onClick={confirmDuplicateEvent} color="primary">
