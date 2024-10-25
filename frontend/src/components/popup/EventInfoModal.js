@@ -79,6 +79,16 @@ export default function EventInfoPopup({ event, close }) {
       setSelectedLanguage(languagesAndTemplates[0].language);
     }
   }, [languagesAndTemplates]);
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        handleClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -120,6 +130,7 @@ export default function EventInfoPopup({ event, close }) {
   };
 
   const accessToken = process.env.REACT_APP_SALESLOFT_API_TOKEN;
+  
 
   //Salesloft!!
   const handleSalesLoftInvite = () => {
@@ -923,6 +934,7 @@ export default function EventInfoPopup({ event, close }) {
       </Stack>
     ),
   };
+  
 
   return (
     <div
