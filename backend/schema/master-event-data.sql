@@ -104,5 +104,7 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `userTimezone` STRING
   `dateUpdatedCloudHub` STRING
   `isDeleted` BOOL
+  `source` STRING
+
 
 );
