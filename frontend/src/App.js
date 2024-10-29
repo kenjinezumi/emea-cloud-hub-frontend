@@ -77,11 +77,11 @@ function App() {
     <Router>
       <Routes>
         {/* Public Routes */}
-        {/* <Route path="/login" element={<Login />} />
-        <Route path="/auth/success" element={<AuthSuccess />} /> */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/auth/success" element={<AuthSuccess />} />
 
         {/* Protected Routes */}
-        {/* <Route element={<PrivateRoute />}> */}
+        <Route element={<PrivateRoute />}>
           <Route path="/" element={<RenderCalendarView />} />
           <Route path="/create-event" element={<EventForm />} />
           <Route path="/location" element={<EventFormLocation />} />
@@ -90,7 +90,7 @@ function App() {
           <Route path="/audience" element={<EventFormAudience />} />
           <Route path="/links" element={<EventFormLinks />} />
           <Route path="/event/:eventId" element={<EventSharePage />} />
-        {/* </Route> */}
+        </Route>
         {/* Fallback Route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
