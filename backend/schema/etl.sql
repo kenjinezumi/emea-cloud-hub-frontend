@@ -161,6 +161,54 @@ USING (
   FROM EventData
 ) AS NewData
 ON T.tacticId = NewData.tacticId
+WHEN MATCHED AND T.dateUpdatedCloudHub IS NULL THEN
+UPDATE SET
+  T.eventId = NewData.eventId,
+  T.tacticId = NewData.tacticId,
+  T.title = NewData.title,
+  T.description = NewData.description,
+  T.emoji = NewData.emoji,
+  T.organisedBy = NewData.organisedBy,
+  T.startDate = NewData.startDate,
+  T.endDate = NewData.endDate,
+  T.marketingProgramInstanceId = NewData.marketingProgramInstanceId,
+  T.eventType = NewData.eventType,
+  T.region = NewData.region,
+  T.subRegion = NewData.subRegion,
+  T.country = NewData.country,
+  T.activityOwner = NewData.activityOwner,
+  T.speakers = NewData.speakers,
+  T.isEventSeries = NewData.isEventSeries,
+  T.languagesAndTemplates = NewData.languagesAndTemplates,
+  T.okr = NewData.okr,
+  T.gep = NewData.gep,
+  T.audienceSeniority = NewData.audienceSeniority,
+  T.audiencePersona = NewData.audiencePersona,
+  T.accountSectors = NewData.accountSectors,
+  T.accountSegments = NewData.accountSegments,
+  T.maxEventCapacity = NewData.maxEventCapacity,
+  T.peopleMeetingCriteria = NewData.peopleMeetingCriteria,
+  T.landingPageLinks = NewData.landingPageLinks,
+  T.salesKitLinks = NewData.salesKitLinks,
+  T.hailoLinks = NewData.hailoLinks,
+  T.otherDocumentsLinks = NewData.otherDocumentsLinks,
+  T.isApprovedForCustomerUse = NewData.isApprovedForCustomerUse,
+  T.isDraft = NewData.isDraft,
+  T.isPublished = NewData.isPublished,
+  T.isHighPriority = NewData.isHighPriority,
+  T.isPartneredEvent = NewData.isPartneredEvent,
+  T.partnerRole = NewData.partnerRole,
+  T.accountCategory = NewData.accountCategory,
+  T.productAlignment = NewData.productAlignment,
+  T.aiVsCore = NewData.aiVsCore,
+  T.industry = NewData.industry,
+  T.city = NewData.city,
+  T.locationVenue = NewData.locationVenue,
+  T.marketingActivityType = NewData.marketingActivityType,
+  T.userTimezone = NewData.userTimezone,
+  T.dateUpdatedCloudHub = NULL,
+  T.isDeleted = FALSE
+
 WHEN NOT MATCHED THEN
 INSERT (
   eventId, tacticId, title, description, emoji, organisedBy, startDate, endDate,
@@ -169,7 +217,7 @@ INSERT (
   accountSectors, accountSegments, maxEventCapacity, peopleMeetingCriteria, landingPageLinks,
   salesKitLinks, hailoLinks, otherDocumentsLinks, isApprovedForCustomerUse, isDraft, isPublished,
   isHighPriority, isPartneredEvent, partnerRole, accountCategory, productAlignment, aiVsCore,
-  industry, city, locationVenue, marketingActivityType, userTimezone
+  industry, city, locationVenue, marketingActivityType, userTimezone, dateUpdatedCloudHub, isDeleted
 )
 VALUES (
   NewData.eventId, NewData.tacticId, NewData.title, NewData.description, NewData.emoji, NewData.organisedBy,
@@ -180,5 +228,6 @@ VALUES (
   NewData.landingPageLinks, NewData.salesKitLinks, NewData.hailoLinks, NewData.otherDocumentsLinks,
   NewData.isApprovedForCustomerUse, NewData.isDraft, NewData.isPublished, NewData.isHighPriority,
   NewData.isPartneredEvent, NewData.partnerRole, NewData.accountCategory, NewData.productAlignment, NewData.aiVsCore,
-  NewData.industry, NewData.city, NewData.locationVenue, NewData.marketingActivityType, NewData.userTimezone
+  NewData.industry, NewData.city, NewData.locationVenue, NewData.marketingActivityType, NewData.userTimezone,
+  NULL, FALSE
 );
