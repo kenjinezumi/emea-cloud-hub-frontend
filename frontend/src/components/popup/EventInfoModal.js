@@ -5,7 +5,8 @@ import { createSalesLoftEmailTemplate } from "../../api/salesloft";
 import { styled } from "@mui/system";
 import { tooltipClasses } from "@mui/material/Tooltip";
 import { duplicateEvent } from "../../api/duplicateData";
-
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import { shareToGoogleCalendar } from "../../api/shareCalendar";
 import Draggable from "react-draggable";
 import {
   IconButton,
@@ -62,6 +63,8 @@ export default function EventInfoPopup({ event, close }) {
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
   const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+  const [calendarConfirmationDialogOpen, setCalendarConfirmationDialogOpen] = useState(false); // State for confirmation dialog
+
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(
     selectedEvent?.languagesAndTemplates?.length > 0
@@ -69,6 +72,39 @@ export default function EventInfoPopup({ event, close }) {
       : ""
   );
   const hasLanguagesAndTemplates = languagesAndTemplates.length > 0;
+  
+  const handleCalendarConfirmation = async () => {
+    const accessToken = localStorage.getItem("accessToken"); // Ensure token is available
+    if (!accessToken) {
+      setSnackbarMessage("Please log in to connect with Google Calendar.");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    try {
+      const eventData = {
+        title: selectedEvent.title,
+        location: selectedEvent.locationVenue || "", // Provide fallback if no location
+        description: selectedEvent.description,
+        startDate: selectedEvent.startDate,
+        endDate: selectedEvent.endDate,
+      };
+
+      const response = await shareToGoogleCalendar(accessToken, eventData);
+
+      if (response.success) {
+        setSnackbarMessage("Event successfully added to Google Calendar!");
+      } else {
+        setSnackbarMessage("Failed to add event to Google Calendar. Try again.");
+      }
+    } catch (error) {
+      console.error("Error sharing event to Google Calendar:", error);
+      setSnackbarMessage("Error occurred. Please try again.");
+    } finally {
+      setCalendarConfirmationDialogOpen(false);
+      setSnackbarOpen(true);
+    }
+  };
   useEffect(() => {
     // Pre-select English by default if available
     const englishTemplate = languagesAndTemplates.find(
@@ -1031,6 +1067,14 @@ export default function EventInfoPopup({ event, close }) {
                   <ContentCopyIcon />
                 </IconButton>
               </CustomTooltip>
+              <CustomTooltip title="Add to Google Calendar" arrow>
+                <IconButton
+                  onClick={() => setCalendarConfirmationDialogOpen(true)}
+                  size="small"
+                >
+                  <EventIcon />
+                </IconButton>
+              </CustomTooltip>
             </Stack>
 
             {/* Date Range with High Priority Indicator */}
@@ -1275,6 +1319,27 @@ export default function EventInfoPopup({ event, close }) {
           </Paper>
         </div>
       </Draggable>
+      <Dialog
+  open={calendarConfirmationDialogOpen}
+  onClose={() => setCalendarConfirmationDialogOpen(false)}
+  maxWidth="xs"
+  fullWidth
+  sx={{ zIndex: 100000000 }}
+>
+  <DialogTitle>Confirm Google Calendar Event</DialogTitle>
+  <DialogContent>
+    Are you sure you want to add this event to your Google Calendar?
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setCalendarConfirmationDialogOpen(false)} color="secondary">
+      No
+    </Button>
+    <Button onClick={handleCalendarConfirmation} color="primary">
+      Yes
+    </Button>
+  </DialogActions>
+</Dialog>
+
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
