@@ -106,7 +106,8 @@ export default function ExtraDetailsForm() {
   useEffect(() => {
     const updatedFormData = {
       ...formData,
-      isApprovedForCustomerUse: customerUse === "yes" ? true : false,
+      // isApprovedForCustomerUse: customerUse === "yes" ? true : false,
+      isApprovedForCustomerUse: null, 
       okr: Object.keys(okrSelections).map((label) => ({
         type: label,
         percentage: okrSelections[label].percentage,
@@ -315,7 +316,7 @@ export default function ExtraDetailsForm() {
             </span>
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <FormControl component="fieldset" error={isCustomerUseError}>
                 <Typography variant="subtitle1">
                   Approved for customer use?
@@ -337,7 +338,7 @@ export default function ExtraDetailsForm() {
                   </Typography>
                 )}
               </FormControl>
-            </Grid>
+            </Grid> */}
 
             {/* OKR Selection as Expandable Accordion */}
             <Grid item xs={12}>
