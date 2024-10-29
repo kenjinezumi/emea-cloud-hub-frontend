@@ -24,6 +24,7 @@ try {
 } catch (err) {
     console.error('Error initializing Firestore:', err);
 }
+const bodyParser = require('body-parser');
 
 const loggingWinston = new LoggingWinston();
 const logger = winston.createLogger({
@@ -113,7 +114,10 @@ passport.use(new GoogleStrategy({
     clientID: CLIENT_ID,
     clientSecret: CLIENT_SECRET,
     callbackURL: CALLBACK_URL,
-    scope: ['profile', 'email', 'https://www.googleapis.com/auth/gmail.compose', 
+    scope: [
+        'profile', 
+        'email', 
+        'https://www.googleapis.com/auth/gmail.compose', 
         'https://www.googleapis.com/auth/calendar.events'
     ],
 }, (accessToken, refreshToken, profile, done) => {
@@ -134,6 +138,9 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((user, done) => {
     done(null, user);
 });
+
+app.use(bodyParser.text({ type: 'text/plain' }));
+
 
 app.use((err, req, res, next) => {
     logger.error(`[ERROR] ${err.message}`, {

@@ -624,8 +624,8 @@ WHERE eventId = @eventId;
 
     router.post('/share-to-calendar', async (req, res) => {
         try {
-            const textPayload = await req.text(); // Read the text/plain payload
-            const { data: eventDetails, accessToken } = JSON.parse(textPayload); // Parse JSON from text
+            // Parse JSON content from the text/plain body
+            const { data: eventDetails, accessToken } = JSON.parse(req.body);
     
             if (!accessToken) {
                 logger.error("Access token not found.");
@@ -672,6 +672,7 @@ WHERE eventId = @eventId;
             res.status(500).send('Failed to add event to Google Calendar due to server error');
         }
     });
+    
     
     
     
