@@ -622,6 +622,60 @@ WHERE eventId = @eventId;
         }
     });
 
+    router.post('/share-to-calendar', async (req, res) => {
+        const { accessToken, eventDetails } = req.body; // Event details from request body
+    
+        if (!accessToken) {
+            logger.error("Access token not found.");
+            return res.status(401).send('Access token not found');
+        }
+    
+        try {
+            const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
+            oauth2Client.setCredentials({ access_token: accessToken });
+    
+            const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    
+            // Define the event to be added to the user's Google Calendar
+            const event = {
+                summary: eventDetails.title,
+                location: eventDetails.location,
+                description: eventDetails.description,
+                start: {
+                    dateTime: eventDetails.startDate, // Ensure the date format matches ISO 8601 format
+                    timeZone: 'America/Los_Angeles'
+                },
+                end: {
+                    dateTime: eventDetails.endDate, // Ensure the date format matches ISO 8601 format
+                    timeZone: 'America/Los_Angeles'
+                },
+                attendees: eventDetails.attendees?.map(email => ({ email })) || [], // Optional attendees
+            };
+    
+            // Insert the event into the user's calendar
+            const response = await calendar.events.insert({
+                calendarId: 'primary',
+                requestBody: event
+            });
+    
+            if (response.status === 200) {
+                logger.info("Event successfully added to Google Calendar.", { eventId: response.data.id });
+                res.status(200).json({
+                    success: true,
+                    eventId: response.data.id,
+                    eventUrl: `https://calendar.google.com/calendar/event?eid=${response.data.id}`
+                });
+            } else {
+                logger.error("Failed to add event to Google Calendar.", { status: response.status });
+                res.status(500).send('Failed to add event to Google Calendar');
+            }
+        } catch (error) {
+            logger.error("Error while adding event to Google Calendar", { error: error.message });
+            res.status(500).send('Failed to add event to Google Calendar due to server error');
+        }
+    });
+    
+
     async function saveEventData(eventData) {
         const datasetId = 'data';
         const tableId = 'master-event-data';
