@@ -348,7 +348,7 @@ export default function ExtraDetailsForm() {
                   aria-controls="panel-content"
                   id="panel-header"
                 >
-                  <Typography>OKR Selection</Typography>
+                  <Typography>OKR Selection *</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   {Object.keys(okrSelections).map((label) => (
@@ -388,7 +388,7 @@ export default function ExtraDetailsForm() {
 
             <Grid item xs={12}>
               <FormControl fullWidth error={isGepError}>
-                <Typography variant="subtitle1">Solution</Typography>
+                <Typography variant="subtitle1">Solution *</Typography>
                 <Select
                   multiple
                   value={gep}
