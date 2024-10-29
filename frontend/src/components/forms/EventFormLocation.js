@@ -128,7 +128,6 @@ export default function LocationFormPage() {
       if (response.success) {
         setSnackbarMessage("Details saved and published successfully!");
         setSnackbarOpen(true);
-        saveAndNavigate(currentFormData, "/extra");
         setTimeout(() => {
           saveAndNavigate(currentFormData, "/extra");
         }, 1500);

@@ -223,7 +223,7 @@ export default function ExtraDetailsForm() {
         setSnackbarMessage("Draft saved successfully!");
         setSnackbarOpen(true);
         setTimeout(() => {
-          saveAndNavigate(updatedFormData, "/audience");
+          saveAndNavigate(updatedFormData, "/email-invitation");
         }, 1500);
 
       } else {
