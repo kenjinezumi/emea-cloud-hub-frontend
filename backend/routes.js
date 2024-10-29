@@ -623,11 +623,11 @@ WHERE eventId = @eventId;
     });
 
     router.post('/share-to-calendar', async (req, res) => {
-        const { accessToken, eventDetails } = req.body; // Event details from request body
-    
+        const { accessToken, eventDetails } = req.body;
+        
         if (!accessToken) {
-            logger.error("Access token not found.");
-            return res.status(401).send('Access token not found');
+            logger.error("Access token missing.");
+            return res.status(401).send('Access token is required');
         }
     
         try {
@@ -635,45 +635,43 @@ WHERE eventId = @eventId;
             oauth2Client.setCredentials({ access_token: accessToken });
     
             const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    
-            // Define the event to be added to the user's Google Calendar
+            
             const event = {
-                summary: eventDetails.title,
-                location: eventDetails.location,
-                description: eventDetails.description,
+                summary: eventDetails.title || "No Title Provided",
+                location: eventDetails.location || "Online Event",
+                description: eventDetails.description || "No Description Provided",
                 start: {
-                    dateTime: eventDetails.startDate, // Ensure the date format matches ISO 8601 format
-                    timeZone: 'America/Los_Angeles'
+                    dateTime: eventDetails.startDate,
+                    timeZone: 'America/Los_Angeles' // adjust based on client timezone preference
                 },
                 end: {
-                    dateTime: eventDetails.endDate, // Ensure the date format matches ISO 8601 format
+                    dateTime: eventDetails.endDate,
                     timeZone: 'America/Los_Angeles'
-                },
-                attendees: eventDetails.attendees?.map(email => ({ email })) || [], // Optional attendees
+                }
             };
     
-            // Insert the event into the user's calendar
             const response = await calendar.events.insert({
                 calendarId: 'primary',
                 requestBody: event
             });
     
             if (response.status === 200) {
-                logger.info("Event successfully added to Google Calendar.", { eventId: response.data.id });
+                logger.info("Google Calendar event created successfully.", { eventId: response.data.id });
                 res.status(200).json({
                     success: true,
                     eventId: response.data.id,
                     eventUrl: `https://calendar.google.com/calendar/event?eid=${response.data.id}`
                 });
             } else {
-                logger.error("Failed to add event to Google Calendar.", { status: response.status });
-                res.status(500).send('Failed to add event to Google Calendar');
+                logger.error("Google Calendar event creation failed.", { status: response.status });
+                res.status(response.status).send('Failed to add event to Google Calendar');
             }
         } catch (error) {
-            logger.error("Error while adding event to Google Calendar", { error: error.message });
+            logger.error("Error in Google Calendar event creation", { error: error.message });
             res.status(500).send('Failed to add event to Google Calendar due to server error');
         }
     });
+    
     
 
     async function saveEventData(eventData) {
