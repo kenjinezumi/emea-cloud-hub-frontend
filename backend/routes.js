@@ -457,6 +457,8 @@ module.exports = (firestoreStore) => {
 
                 // Generate a new UUID for the duplicated event
                 const newEventId = uuidv4();
+                const dateUpdatedCloudHub = new Date().toISOString();
+
 
                 // Set up the query options, including new and old event IDs
                 const options = {
@@ -464,7 +466,9 @@ module.exports = (firestoreStore) => {
                     location: 'US',
                     params: {
                         newEventId: newEventId,
-                        eventId: eventId
+                        eventId: eventId,
+                        dateUpdatedCloudHub: dateUpdatedCloudHub
+
                     }
                 };
 
