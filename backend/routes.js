@@ -623,26 +623,27 @@ WHERE eventId = @eventId;
     });
 
     router.post('/share-to-calendar', async (req, res) => {
-        const { accessToken, eventDetails } = req.body;
-        
-        if (!accessToken) {
-            logger.error("Access token missing.");
-            return res.status(401).send('Access token is required');
-        }
-    
         try {
+            const textPayload = await req.text(); // Read the text/plain payload
+            const { data: eventDetails, accessToken } = JSON.parse(textPayload); // Parse JSON from text
+    
+            if (!accessToken) {
+                logger.error("Access token not found.");
+                return res.status(401).send('Access token is required');
+            }
+    
             const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
             oauth2Client.setCredentials({ access_token: accessToken });
     
             const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-            
+    
             const event = {
                 summary: eventDetails.title || "No Title Provided",
                 location: eventDetails.location || "Online Event",
                 description: eventDetails.description || "No Description Provided",
                 start: {
                     dateTime: eventDetails.startDate,
-                    timeZone: 'America/Los_Angeles' // adjust based on client timezone preference
+                    timeZone: 'America/Los_Angeles'
                 },
                 end: {
                     dateTime: eventDetails.endDate,
@@ -663,7 +664,7 @@ WHERE eventId = @eventId;
                     eventUrl: `https://calendar.google.com/calendar/event?eid=${response.data.id}`
                 });
             } else {
-                logger.error("Google Calendar event creation failed.", { status: response.status });
+                logger.error("Failed to add event to Google Calendar.", { status: response.status });
                 res.status(response.status).send('Failed to add event to Google Calendar');
             }
         } catch (error) {
@@ -671,6 +672,7 @@ WHERE eventId = @eventId;
             res.status(500).send('Failed to add event to Google Calendar due to server error');
         }
     });
+    
     
     
 
