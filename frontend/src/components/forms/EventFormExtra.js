@@ -222,7 +222,9 @@ export default function ExtraDetailsForm() {
       if (response.success) {
         setSnackbarMessage("Draft saved successfully!");
         setSnackbarOpen(true);
-        saveAndNavigate(updatedFormData, "/audience");
+        setTimeout(() => {
+          saveAndNavigate(updatedFormData, "/audience");
+        }, 1500);
 
       } else {
         setSnackbarMessage("Failed to save draft.");
