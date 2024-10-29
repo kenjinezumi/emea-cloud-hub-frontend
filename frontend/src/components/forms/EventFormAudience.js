@@ -419,7 +419,10 @@ export default function AudiencePersonaForm() {
           if (response.success) {
             setSnackbarMessage("Draft saved successfully!");
             setSnackbarOpen(true);
-            saveAndNavigate(updatedFormData, "/links");
+            setTimeout(() => {
+              saveAndNavigate(updatedFormData, "/links");
+            }, 1500);
+            
 
           } else {
             setSnackbarMessage("Failed to save draft.");
