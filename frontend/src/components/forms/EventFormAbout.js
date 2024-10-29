@@ -454,7 +454,7 @@ const EventForm = () => {
                 <TextField
                   variant="standard"
                   fullWidth
-                  placeholder="Enter activity name"
+                  placeholder="Enter activity name *"
                   value={title}
                   error={isTitleError}
                   helperText={isTitleError ? "Title is required" : ""}
@@ -481,7 +481,7 @@ const EventForm = () => {
             {/* Organised By Section */}
             <Grid item xs={12} sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Organised by (Email addresses)
+                Organised by (Email addresses) *
               </Typography>
               <TextField
                 fullWidth
@@ -527,7 +527,7 @@ const EventForm = () => {
             <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                  Activity type
+                  Activity type *
                 </Typography>
                 <FormControl fullWidth error={isEventTypeError}>
                   <Select
@@ -611,7 +611,7 @@ const EventForm = () => {
                     />
                   ) : (
                     <DateTimePicker
-                      label={`Event start date (${userTimezone})`}
+                      label={`Event start date (${userTimezone}) *`}
                       inputFormat="MM/dd/yyyy hh:mm a"
                       value={new Date(startDate)}
                       onChange={handleStartDateChange}
@@ -634,7 +634,7 @@ const EventForm = () => {
                 <Grid item xs={12} md={6}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DateTimePicker
-                      label={`Event end date (${userTimezone})`}
+                      label={`Event end date (${userTimezone}) *`}
                       inputFormat="MM/dd/yyyy hh:mm a"
                       value={new Date(endDate)}
                       onChange={handleEndDateChange}
@@ -656,7 +656,7 @@ const EventForm = () => {
 
             <Grid item xs={12} sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Description
+                Description *
               </Typography>
               <TextField
                 label="Internal description (for internal use only)"

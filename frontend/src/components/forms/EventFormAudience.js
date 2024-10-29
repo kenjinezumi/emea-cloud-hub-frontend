@@ -630,7 +630,7 @@ export default function AudiencePersonaForm() {
 
  {/* Audience Seniority */}
  <Grid item xs={12}>
-            <Typography variant="subtitle1">Buyer Segment Rollup</Typography>
+            <Typography variant="subtitle1">Buyer Segment Rollup *</Typography>
             <FormControl fullWidth error={isAudienceSeniorityError}>
             <Select
                 multiple
@@ -663,7 +663,7 @@ export default function AudiencePersonaForm() {
           </Grid>
           {/* Audience Persona */}
           <Grid item xs={12}>
-            <Typography variant="subtitle1"> Buyer Segment</Typography>
+            <Typography variant="subtitle1"> Buyer Segment *</Typography>
             <FormControl fullWidth error={isAudiencePersonaError}>
             <Select
                 multiple
@@ -706,7 +706,7 @@ export default function AudiencePersonaForm() {
           
 {/* Industry Multi-Select */}
 <Grid item xs={12}>
-  <Typography variant="subtitle1">Industry</Typography>
+  <Typography variant="subtitle1">Industry *</Typography>
   <FormControl fullWidth error={isIndustryError}>
     <Select
       multiple
@@ -741,7 +741,7 @@ export default function AudiencePersonaForm() {
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.accountSectors} onChange={() => handleToggleSection('accountSectors')}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="account-sectors-content" id="account-sectors-header">
-      <Typography>Account Sectors</Typography>
+      <Typography>Account Sectors *</Typography>
     </AccordionSummary>
     <AccordionDetails>
       <Grid container alignItems="center">
@@ -782,7 +782,7 @@ export default function AudiencePersonaForm() {
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.accountSegments} onChange={() => handleToggleSection("accountSegments")}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="account-segments-content" id="account-segments-header">
-      <Typography>Account Segments</Typography>
+      <Typography>Account Segments * </Typography>
     </AccordionSummary>
     <AccordionDetails>
       {Object.keys(accountSegments).map((segment) => (
@@ -824,7 +824,7 @@ export default function AudiencePersonaForm() {
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.accountCategory} onChange={() => handleToggleSection("accountCategory")}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="account-category-content" id="account-category-header">
-      <Typography>Account Category</Typography>
+      <Typography>Account Category *</Typography>
     </AccordionSummary>
     <AccordionDetails>
       {Object.keys(accountCategory).map((category) => (
@@ -866,7 +866,7 @@ export default function AudiencePersonaForm() {
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.accountType} onChange={() => handleToggleSection("accountType")}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="account-type-content" id="account-type-header">
-      <Typography>Greenfield Status</Typography>
+      <Typography>Greenfield Status *</Typography>
     </AccordionSummary>
     <AccordionDetails>
       {Object.keys(accountType).map((type) => (
@@ -908,7 +908,7 @@ export default function AudiencePersonaForm() {
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.productAlignment} onChange={() => handleToggleSection("productAlignment")}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="product-alignment-content" id="product-alignment-header">
-      <Typography>Product Family</Typography>
+      <Typography>Product Family *</Typography>
     </AccordionSummary>
     <AccordionDetails>
       {Object.keys(productAlignment).map((alignment) => (
@@ -949,7 +949,7 @@ export default function AudiencePersonaForm() {
 <Grid item xs={12} sx={{ mb: 2 }}>
   <Accordion expanded={expanded.aiVsCore} onChange={() => handleToggleSection("aiVsCore")}>
     <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls="ai-vs-core-content" id="ai-vs-core-header">
-      <Typography>AI vs Core</Typography>
+      <Typography>AI vs Core *</Typography>
     </AccordionSummary>
     <AccordionDetails>
       <FormControl fullWidth error={isAiVsCoreError}>

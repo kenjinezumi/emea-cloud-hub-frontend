@@ -3,6 +3,7 @@ USING (
   WITH EventData AS (
     SELECT
       GENERATE_UUID() AS eventId,
+      'launchpoint' AS source,
       COALESCE(L.tactic_id, '') AS tacticId,
       COALESCE(L.tactic_title, '') AS title,
       COALESCE(L.tactic_detail, '') AS description,
@@ -161,7 +162,7 @@ USING (
   FROM EventData
 ) AS NewData
 ON T.tacticId = NewData.tacticId
-WHEN MATCHED AND T.dateUpdatedCloudHub IS NULL THEN
+WHEN MATCHED AND T.dateUpdatedCloudHub IS NULL AND T.source = 'launchpoint' THEN
 UPDATE SET
   T.eventId = NewData.eventId,
   T.tacticId = NewData.tacticId,
@@ -217,7 +218,7 @@ INSERT (
   accountSectors, accountSegments, maxEventCapacity, peopleMeetingCriteria, landingPageLinks,
   salesKitLinks, hailoLinks, otherDocumentsLinks, isApprovedForCustomerUse, isDraft, isPublished,
   isHighPriority, isPartneredEvent, partnerRole, accountCategory, productAlignment, aiVsCore,
-  industry, city, locationVenue, marketingActivityType, userTimezone, dateUpdatedCloudHub, isDeleted
+  industry, city, locationVenue, marketingActivityType, userTimezone, dateUpdatedCloudHub, isDeleted, source
 )
 VALUES (
   NewData.eventId, NewData.tacticId, NewData.title, NewData.description, NewData.emoji, NewData.organisedBy,
@@ -229,5 +230,5 @@ VALUES (
   NewData.isApprovedForCustomerUse, NewData.isDraft, NewData.isPublished, NewData.isHighPriority,
   NewData.isPartneredEvent, NewData.partnerRole, NewData.accountCategory, NewData.productAlignment, NewData.aiVsCore,
   NewData.industry, NewData.city, NewData.locationVenue, NewData.marketingActivityType, NewData.userTimezone,
-  NULL, FALSE
+  NULL, FALSE, 'launchpoint'
 );

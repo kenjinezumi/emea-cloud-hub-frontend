@@ -100,7 +100,7 @@ export default function LocationFormPage() {
     setIsRegionError(!isRegionValid);
     setIsSubRegionError(!isSubRegionValid);
     setIsCountryError(!isCountryValid);
-    setIsCityError(!isCityValid);
+    // setIsCityError(!isCityValid);
     const formIsValid =
       isRegionValid && isSubRegionValid && isCountryValid && isCityValid;
 
@@ -253,7 +253,7 @@ export default function LocationFormPage() {
             <Grid item xs={12}>
               <FormControl fullWidth error={isRegionError}>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Region
+                  Region *
                 </Typography>
                 <Select value={region || ''}  onChange={handleRegionChange}>
                   {regionOptions.map((region, idx) => (
@@ -274,7 +274,7 @@ export default function LocationFormPage() {
             <Grid item xs={12}>
               <FormControl fullWidth error={isSubRegionError}>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Sub-region
+                  Sub-region *
                 </Typography>
                 <Select
                   multiple
@@ -316,7 +316,7 @@ export default function LocationFormPage() {
             <Grid item xs={12}>
               <FormControl fullWidth error={isCountryError}>
                 <Typography variant="subtitle1" style={{ marginBottom: "4px" }}>
-                  Country
+                  Country *
                 </Typography>
                 <Select
                   multiple
