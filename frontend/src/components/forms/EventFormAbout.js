@@ -321,7 +321,9 @@ const EventForm = () => {
           if (response.success) {
             setSnackbarMessage("Draft saved successfully!");
             setSnackbarOpen(true);
-            saveAndNavigate(updatedFormData, "/location");
+            setTimeout(() => {
+              saveAndNavigate(updatedFormData, "/location");
+            }, 1500);
 
           } else {
             setSnackbarMessage("Failed to save draft.");
