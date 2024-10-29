@@ -415,7 +415,7 @@ export default function ExtraDetailsForm() {
                 </Select>
                 {isGepError && (
                   <Typography variant="body2" color="error">
-                    Please select at least one GEP option.
+                    Please select at least one Solution.
                   </Typography>
                 )}
               </FormControl>
