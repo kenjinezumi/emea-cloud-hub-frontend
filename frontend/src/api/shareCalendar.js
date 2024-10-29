@@ -6,8 +6,8 @@ const shareToGoogleCalendar = async (eventData, accessToken) => {
       method: 'POST',
       credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
-      },
+        'Content-Type': 'text/plain',
+    },
       body: JSON.stringify({
         data: eventData,
         message: 'share-to-calendar',
