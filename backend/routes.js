@@ -626,25 +626,37 @@ WHERE eventId = @eventId;
         try {
             let data = '';
     
+            logger.info("Starting request to /share-to-calendar.");
+    
             // Collect incoming data chunks for `text/plain`
             req.on('data', chunk => {
                 data += chunk;
+                logger.info("Received data chunk", { chunkSize: chunk.length });
             });
     
             req.on('end', async () => {
+                logger.info("All data chunks received.", { totalDataSize: data.length });
+    
                 try {
                     // Parse the text content as JSON
+                    logger.info("Parsing JSON data...");
                     const { data: eventDetails, accessToken } = JSON.parse(data);
+                    logger.info("JSON parsing completed.");
     
                     if (!accessToken) {
                         logger.error("Access token not found.");
                         return res.status(401).send('Access token is required');
                     }
     
+                    logger.info("Initializing OAuth2 client for Google API.");
                     const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
                     oauth2Client.setCredentials({ access_token: accessToken });
     
+                    logger.info("Setting up Google Calendar API client.");
                     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+    
+                    // Log event details for debugging
+                    logger.info("Preparing event details for Google Calendar.", { eventDetails });
     
                     const event = {
                         summary: eventDetails.title || "No Title Provided",
@@ -660,6 +672,7 @@ WHERE eventId = @eventId;
                         }
                     };
     
+                    logger.info("Inserting event into Google Calendar...");
                     const response = await calendar.events.insert({
                         calendarId: 'primary',
                         requestBody: event
@@ -686,7 +699,6 @@ WHERE eventId = @eventId;
             res.status(500).send('Server error');
         }
     });
-    
     
     
     
