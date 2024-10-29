@@ -18,6 +18,7 @@
     "@google-cloud/firestore": "^7.10.0",
     "@google-cloud/logging-winston": "^6.0.0",
     "axios": "^1.6.7",
+    "body-parser": "^1.20.3",
     "connect-firestore": "^0.1.9",
     "connect-redis": "^7.1.1",
     "connect-session-firebase": "^11.0.0",
