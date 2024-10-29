@@ -24,7 +24,6 @@ try {
 } catch (err) {
     console.error('Error initializing Firestore:', err);
 }
-const bodyParser = require('body-parser');
 
 const loggingWinston = new LoggingWinston();
 const logger = winston.createLogger({
@@ -139,7 +138,6 @@ passport.deserializeUser((user, done) => {
     done(null, user);
 });
 
-app.use(bodyParser.text({ type: 'text/plain' }));
 
 
 app.use((err, req, res, next) => {
