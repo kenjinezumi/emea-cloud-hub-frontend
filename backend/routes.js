@@ -625,8 +625,8 @@ WHERE eventId = @eventId;
 
 
     router.post('/share-to-calendar', async (req, res) => {
-        const { data: eventDetails, accessToken } = req.body;
-        logger.error("Event details are:", eventDetails); // Corrected to log the event details
+        const { data, accessToken } = req.body; 
+        logger.error("Event details are:", data); // Corrected to log the event details
         logger.error("Access token is:", accessToken); 
     
         if (!accessToken) {
@@ -645,15 +645,15 @@ WHERE eventId = @eventId;
     
             // Set up the event details
             const event = {
-                summary: eventDetails.title || "No Title Provided",
-                location: eventDetails.location || "Online Event",
-                description: eventDetails.description || "No Description Provided",
+                summary: data.title || "No Title Provided",
+                location: data.location || "Online Event",
+                description: data.description || "No Description Provided",
                 start: {
-                    dateTime: eventDetails.startDate,
+                    dateTime: data.startDate,
                     timeZone: 'America/Los_Angeles'
                 },
                 end: {
-                    dateTime: eventDetails.endDate,
+                    dateTime: data.endDate,
                     timeZone: 'America/Los_Angeles'
                 }
             };
