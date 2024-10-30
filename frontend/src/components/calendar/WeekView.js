@@ -180,9 +180,19 @@ export default function WeekView() {
             .filter((option) => option.checked)
             .map((option) => option.value)
         : [];
-      const isDraftMatch =
+        const isDraftMatch =
         selectedDraftStatuses.length === 0 ||
-        selectedDraftStatuses.includes(event.isDraft);
+        selectedDraftStatuses.includes(
+          event.isDraft && !event.languagesAndTemplates?.some(template =>
+            ["Gmail", "Salesloft"].includes(template.platform)
+          )
+            ? "Draft"
+            : event.languagesAndTemplates?.some(template =>
+                ["Gmail", "Salesloft"].includes(template.platform)
+              )
+            ? "Invite available"
+            : "Finalized"
+        );
 
       return (
         subRegionMatch &&

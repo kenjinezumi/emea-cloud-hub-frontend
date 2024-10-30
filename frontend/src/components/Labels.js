@@ -155,7 +155,7 @@ export default function Filters() {
 
       {renderFilterSection('Solution', localGepOptions, setLocalGepOptions, isGepExpanded, setIsGepExpanded)}
       {renderFilterSection('Is Partner Involved?', localPartnerEventOptions, setLocalPartnerEventOptions, isPartnerEventExpanded, setIsPartnerEventExpanded)}
-      {renderFilterSection('Draft Status', localDraftStatusOptions, setLocalDraftStatusOptions, isDraftStatusExpanded, setIsDraftStatusExpanded)}
+      {renderFilterSection('Is Draft?', localDraftStatusOptions, setLocalDraftStatusOptions, isDraftStatusExpanded, setIsDraftStatusExpanded)}
       </div>
   );
 }
