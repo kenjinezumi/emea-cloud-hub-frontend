@@ -625,28 +625,23 @@ WHERE eventId = @eventId;
 
 
     router.post('/share-to-calendar', async (req, res) => {
+        const { data: eventDetails, accessToken } = req.body;
+    
+        if (!accessToken) {
+            logger.error("Access token not found.");
+            return res.status(401).send('Access token is required');
+        }
+    
         try {
-            logger.info("Starting request to /share-to-calendar.");
-            
-            // Access parsed JSON data directly from req.body
-            const { data: eventDetails, accessToken } = req.body;
-            logger.info("Parsed JSON data from text body.");
+            logger.info("Proceeding to add event to Google Calendar.");
     
-            if (!accessToken) {
-                logger.error("Access token not found.");
-                return res.status(401).send('Access token is required');
-            }
-    
-            logger.info("Initializing OAuth2 client for Google API.");
-            const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
+            // Initialize OAuth2 client with the provided access token
+            const oauth2Client = new google.auth.OAuth2();
             oauth2Client.setCredentials({ access_token: accessToken });
     
-            logger.info("Setting up Google Calendar API client.");
             const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     
-            // Log event details for debugging
-            logger.info("Preparing event details for Google Calendar.", { eventDetails });
-    
+            // Set up the event details
             const event = {
                 summary: eventDetails.title || "No Title Provided",
                 location: eventDetails.location || "Online Event",
@@ -661,7 +656,7 @@ WHERE eventId = @eventId;
                 }
             };
     
-            logger.info("Inserting event into Google Calendar...");
+            // Insert event into Google Calendar
             const response = await calendar.events.insert({
                 calendarId: 'primary',
                 requestBody: event
@@ -683,6 +678,7 @@ WHERE eventId = @eventId;
             res.status(500).send('Failed to add event to Google Calendar due to server error');
         }
     });
+    
     
     
     
