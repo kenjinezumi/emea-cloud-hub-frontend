@@ -78,6 +78,7 @@ module.exports = (firestoreStore) => {
                 'email',
                 'https://www.googleapis.com/auth/gmail.send', // Add Gmail send scope
                 'https://www.googleapis.com/auth/gmail.compose',
+                'https://www.googleapis.com/auth/calendar.events'
             ],
             accessType: 'offline', // To receive a refresh token for long-term access
             prompt: 'consent', // Force prompt to ensure refresh token is provided
