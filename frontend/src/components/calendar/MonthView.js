@@ -34,6 +34,7 @@ export default function MonthView({ month, isYearView = false }) {
           );
           return;
         }
+        
         const hasFiltersApplied =
           [
             ...filters.subRegions,
@@ -224,8 +225,18 @@ export default function MonthView({ month, isYearView = false }) {
                 : [];
               const isDraftMatch =
                 selectedDraftStatuses.length === 0 ||
-                selectedDraftStatuses.includes(event.isDraft);
-
+                selectedDraftStatuses.includes(
+                  event.isDraft && !event.languagesAndTemplates?.some(template =>
+                    ["Gmail", "Salesloft"].includes(template.platform)
+                  )
+                    ? "Draft"
+                    : event.languagesAndTemplates?.some(template =>
+                        ["Gmail", "Salesloft"].includes(template.platform)
+                      )
+                    ? "Invite available"
+                    : "Finalized"
+                );
+              
               return (
                 subRegionMatch &&
                 gepMatch &&
