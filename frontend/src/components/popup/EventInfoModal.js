@@ -81,6 +81,15 @@ export default function EventInfoPopup({ event, close }) {
       return;
     }
 
+    const { startDate, endDate } = selectedEvent;
+  
+    // Check if start or end date is missing time
+    if (!startDate.includes("T") || !endDate.includes("T")) {
+      setSnackbarMessage("Please add a start and end time before proceeding.");
+      setSnackbarOpen(true);
+      return;
+    }
+
     try {
       const eventData = {
         title: selectedEvent.title,
