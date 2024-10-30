@@ -626,6 +626,8 @@ WHERE eventId = @eventId;
 
     router.post('/share-to-calendar', async (req, res) => {
         const { data: eventDetails, accessToken } = req.body;
+        logger.error("data is: ", data);
+
     
         if (!accessToken) {
             logger.error("Access token not found.");
