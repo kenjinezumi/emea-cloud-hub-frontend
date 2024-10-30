@@ -143,18 +143,23 @@ export default function ListView() {
   // }, [location, filters]);
 
   // Filter events based on search text
-  useEffect(() => {
-    if (searchText) {
-      const lowercasedSearchText = searchText.toLowerCase();
-      const filtered = events.filter(event =>
-        event.title.toLowerCase().includes(lowercasedSearchText) ||
-        event.description.toLowerCase().includes(lowercasedSearchText)
-      );
-      setFilteredEvents(filtered);
-    } else {
-      setFilteredEvents(events);
-    }
-  }, [searchText, events]);
+// Filter events based on search text and sort by date in descending order
+useEffect(() => {
+  if (searchText) {
+    const lowercasedSearchText = searchText.toLowerCase();
+    const filtered = events.filter(event =>
+      event.title.toLowerCase().includes(lowercasedSearchText) ||
+      event.description.toLowerCase().includes(lowercasedSearchText)
+    );
+    setFilteredEvents(
+      filtered.sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+    );
+  } else {
+    setFilteredEvents(
+      events.sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+    );
+  }
+}, [searchText, events]);
 
   // Memoized function to handle event click
   const handleEventClick = useCallback((eventData) => {
