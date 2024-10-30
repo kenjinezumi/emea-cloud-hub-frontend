@@ -16,7 +16,7 @@ import EventInfoPopup from "../popup/EventInfoModal";
 import { getEventStyleAndIcon } from "../../utils/eventStyles";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 // Extend dayjs with these plugins
 dayjs.extend(isSameOrBefore);
@@ -41,8 +41,8 @@ export default function DayView() {
   const location = useLocation();
   const dayViewRef = useRef(null);
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const [hoveredEvent, setHoveredEvent] = useState(null);  
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });  
+  const [hoveredEvent, setHoveredEvent] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   const hourHeight = 90;
   const startHour = 0;
@@ -148,22 +148,30 @@ export default function DayView() {
                 filters.accountSectors.some((sector) => {
                   try {
                     return (
-                      sector.checked && event.accountSectors?.[sector.label]
+                      sector.checked &&
+                      event.accountSectors?.[sector.label.toLowerCase()] ===
+                        true
                     );
                   } catch (err) {
-                    console.error("Error checking accountSectors filter:", err);
+                    console.error(
+                      "Error checking accountSectors filter:",
+                      err,
+                      sector,
+                      event
+                    );
                     return false;
                   }
                 });
 
-                const accountSegmentMatch =
+              const accountSegmentMatch =
                 !filters.accountSegments.some((segment) => segment.checked) ||
                 filters.accountSegments.some((segment) => {
                   try {
-                    const accountSegment = event.accountSegments?.[segment.label];
+                    const accountSegment =
+                      event.accountSegments?.[segment.label];
                     return (
                       segment.checked &&
-                      accountSegment?.selected === "true" && // Convert selected to a boolean
+                      accountSegment?.selected && // Convert selected to a boolean
                       parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
                     );
                   } catch (err) {
@@ -175,38 +183,43 @@ export default function DayView() {
                     );
                     return false;
                   }
-                });              
+                });
 
-                const productFamilyMatch =
+              const productFamilyMatch =
                 !filters.productFamily.some((product) => product.checked) ||
                 filters.productFamily.some((product) => {
                   try {
-                    const productAlignment = event.productAlignment?.[product.label];
+                    const productAlignment =
+                      event.productAlignment?.[product.label];
                     return (
                       product.checked &&
-                      productAlignment?.selected === "true" && 
-                      parseFloat(productAlignment?.percentage) > 0 
+                      productAlignment?.selected &&
+                      parseFloat(productAlignment?.percentage) > 0
                     );
                   } catch (err) {
                     console.error("Error checking productFamily filter:", err);
                     return false;
                   }
                 });
-              
 
               const industryMatch =
                 !filters.industry.some((industry) => industry.checked) ||
                 filters.industry.some((industry) => {
                   try {
                     return (
-                      industry.checked && event.industry === industry.label
+                      industry.checked &&
+                      event.industry?.includes(industry.label)
                     );
                   } catch (err) {
-                    console.error("Error checking industry filter:", err);
+                    console.error(
+                      "Error checking industry filter:",
+                      err,
+                      industry,
+                      event
+                    );
                     return false;
                   }
                 });
-
               const selectedPartneredStatuses = Array.isArray(
                 filters.partnerEvent
               )
@@ -288,125 +301,126 @@ export default function DayView() {
 
   // Group overlapping single-day events
   const fixMissingTimeStart = (dateString) => {
-    if (!dateString.includes('T')) {
+    if (!dateString.includes("T")) {
       return `${dateString}T00:00`; // Default to 12:00 AM if time is missing
     }
     return dateString;
   };
-  
+
   const fixMissingTimeEnd = (dateString) => {
-    if (!dateString.includes('T')) {
+    if (!dateString.includes("T")) {
       return `${dateString}T01:00`; // Default to 01:10 AM if time is missing
     }
     return dateString;
   };
-  
+
   const groupOverlappingEvents = (events) => {
-  const groups = [];
+    const groups = [];
 
-  events.forEach((event) => {
-    const eventStart = dayjs(fixMissingTimeStart(event.startDate));
-    const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
+    events.forEach((event) => {
+      const eventStart = dayjs(fixMissingTimeStart(event.startDate));
+      const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
 
-    let addedToGroup = false;
+      let addedToGroup = false;
 
-    for (const group of groups) {
-      const isOverlapping = group.some((groupEvent) => {
-        const groupEventStart = dayjs(fixMissingTimeStart(groupEvent.startDate));
-        const groupEventEnd = dayjs(fixMissingTimeEnd(groupEvent.endDate));
+      for (const group of groups) {
+        const isOverlapping = group.some((groupEvent) => {
+          const groupEventStart = dayjs(
+            fixMissingTimeStart(groupEvent.startDate)
+          );
+          const groupEventEnd = dayjs(fixMissingTimeEnd(groupEvent.endDate));
 
-        // Handle zero-minute events: If start and end are the same, treat them as overlapping
-        const isZeroMinuteEvent = eventStart.isSame(eventEnd);
+          // Handle zero-minute events: If start and end are the same, treat them as overlapping
+          const isZeroMinuteEvent = eventStart.isSame(eventEnd);
 
-        // Check for overlap or if it is a zero-minute event at the same time
-        return (
-          (eventStart.isBefore(groupEventEnd) && eventEnd.isAfter(groupEventStart)) ||
-          (isZeroMinuteEvent && eventStart.isSame(groupEventStart))
-        );
-      });
+          // Check for overlap or if it is a zero-minute event at the same time
+          return (
+            (eventStart.isBefore(groupEventEnd) &&
+              eventEnd.isAfter(groupEventStart)) ||
+            (isZeroMinuteEvent && eventStart.isSame(groupEventStart))
+          );
+        });
 
-      if (isOverlapping) {
-        group.push(event);
-        addedToGroup = true;
-        break;
+        if (isOverlapping) {
+          group.push(event);
+          addedToGroup = true;
+          break;
+        }
       }
-    }
 
-    if (!addedToGroup) {
-      groups.push([event]);
-    }
-  });
+      if (!addedToGroup) {
+        groups.push([event]);
+      }
+    });
 
-  return groups;
-};
-
+    return groups;
+  };
 
   const overlappingEventGroups = useMemo(
     () => groupOverlappingEvents(singleDayEvents),
     [singleDayEvents]
   );
 
-
-  
   const calculateEventBlockStyles = useCallback(
     (event, overlappingEvents) => {
       const eventStart = dayjs(fixMissingTimeStart(event.startDate));
       const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
-  
+
       const startOfDay = daySelected.startOf("day");
       const endOfDay = daySelected.endOf("day");
-  
+
       const displayStart = dayjs.max(startOfDay, eventStart);
       const displayEnd = dayjs.min(endOfDay, eventEnd);
-  
+
       const minutesFromMidnight = displayStart.diff(startOfDay, "minutes");
       const durationInMinutes = displayEnd.diff(displayStart, "minutes");
-  
+
       const top = (minutesFromMidnight / 60) * hourHeight;
       const height = (durationInMinutes / 60) * hourHeight || 0;
-  
+
       let overlappingGroup = [];
-  
+
       overlappingEvents.forEach((e) => {
         const eStart = dayjs(fixMissingTimeStart(e.startDate));
         const eEnd = dayjs(fixMissingTimeEnd(e.endDate));
-  
+
         if (eventStart.isBefore(eEnd) && eventEnd.isAfter(eStart)) {
           overlappingGroup.push(e);
         }
       });
-  
+
       overlappingGroup = overlappingGroup.sort((a, b) => {
-        return dayjs(fixMissingTimeStart(a.startDate)).diff(dayjs(fixMissingTimeStart(b.startDate)));
+        return dayjs(fixMissingTimeStart(a.startDate)).diff(
+          dayjs(fixMissingTimeStart(b.startDate))
+        );
       });
-  
+
       const columnCount = overlappingGroup.length;
       const width = columnCount > 1 ? 100 / columnCount : 100;
-      const left = columnCount > 1 ? overlappingGroup.indexOf(event) * width : 0;
-  
+      const left =
+        columnCount > 1 ? overlappingGroup.indexOf(event) * width : 0;
+
       const zIndex = overlappingGroup.indexOf(event) + 1;
-  
+
       return { top, height, width, left, zIndex };
     },
     [daySelected, hourHeight]
   );
-  
-  
-  
+
   const handleMouseEnter = (e, event) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setHoveredEvent(event);
     setTooltipPosition({
-      x: e.clientX + 10,  // Position tooltip 10px to the right of the event
-      y: e.clientY + 10,  // Tooltip slightly below the mouse
+      x: e.clientX + 10, // Position tooltip 10px to the right of the event
+      y: e.clientY + 10, // Tooltip slightly below the mouse
     });
   };
 
   // Update tooltip position on mouse move
   const handleMouseMove = (e) => {
     setTooltipPosition({
-      x: e.clientX + 10,  // Update X position based on mouse
-      y: e.clientY + 10,  // Update Y position based on mouse
+      x: e.clientX + 10, // Update X position based on mouse
+      y: e.clientY + 10, // Update Y position based on mouse
     });
   };
 
@@ -414,7 +428,6 @@ export default function DayView() {
   const handleMouseLeave = () => {
     setHoveredEvent(null);
   };
-  
 
   // Memoized event handler for adding events
   const handleAddEvent = useCallback(() => {
@@ -531,19 +544,19 @@ export default function DayView() {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = color
                     ? `${color}33`
-                    : "#f0f0f0"; 
+                    : "#f0f0f0";
                   e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(0, 0, 0, 0.2)"; 
-                    handleMouseEnter(e, event); 
+                    "0 4px 12px rgba(0, 0, 0, 0.2)";
+                  handleMouseEnter(e, event);
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = backgroundColor; 
+                  e.currentTarget.style.backgroundColor = backgroundColor;
                   e.currentTarget.style.boxShadow =
-                    "0 2px 8px rgba(0, 0, 0, 0.15)"; 
-                    handleMouseLeave(); 
+                    "0 2px 8px rgba(0, 0, 0, 0.15)";
+                  handleMouseLeave();
                 }}
                 onMouseMove={(e) => {
-                  handleMouseMove(e); 
+                  handleMouseMove(e);
                 }}
                 onClick={(e) => {
                   e.stopPropagation(); // Prevent event propagation
@@ -566,7 +579,8 @@ export default function DayView() {
             );
           })}
         </Box>
-      )}{hoveredEvent && (
+      )}
+      {hoveredEvent && (
         <Box
           sx={{
             position: "fixed",
@@ -583,13 +597,29 @@ export default function DayView() {
           <Typography variant="body2" sx={{ fontWeight: "bold" }}>
             {hoveredEvent.title}
           </Typography>
-          <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
+          <Typography
+            variant="body2"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
             {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
-            {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
-              `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+            {hoveredEvent.startDate &&
+            hoveredEvent.endDate &&
+            dayjs(hoveredEvent.startDate).diff(
+              dayjs(hoveredEvent.endDate),
+              "minutes"
+            ) !== 0 ? (
+              `${dayjs(hoveredEvent.startDate).format(
+                "MMM D, h:mm A"
+              )} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
             ) : (
               <>
-                <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
+                <ErrorOutlineIcon
+                  sx={{
+                    fontSize: "16px",
+                    color: "#d32f2f",
+                    marginRight: "4px",
+                  }}
+                />
                 Missing or invalid date
               </>
             )}
@@ -686,17 +716,17 @@ export default function DayView() {
                       : "#f0f0f0";
                     e.currentTarget.style.boxShadow =
                       "0 4px 12px rgba(0, 0, 0, 0.2)";
-                      handleMouseEnter(e, event); 
+                    handleMouseEnter(e, event);
                   }}
                   onMouseMove={(e) => {
-                    handleMouseMove(e);  
+                    handleMouseMove(e);
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor =
                       eventTypeStyle.backgroundColor;
                     e.currentTarget.style.boxShadow =
                       "0 2px 8px rgba(0, 0, 0, 0.15)";
-                      handleMouseLeave(); 
+                    handleMouseLeave();
                   }}
                   onClick={() => handleEventClick(event)}
                 >
@@ -707,35 +737,51 @@ export default function DayView() {
             })
           )}
           {hoveredEvent && (
-  <Box
-    sx={{
-      position: "fixed",
-      top: `${tooltipPosition.y}px`,
-      left: `${tooltipPosition.x}px`,
-      backgroundColor: "#fff",
-      padding: "8px 12px",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-      borderRadius: "8px",
-      zIndex: 1000,
-      pointerEvents: "none",
-    }}
-  >
-    <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-      {hoveredEvent.title}
-    </Typography>
-    <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-      {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
-      {hoveredEvent.startDate && hoveredEvent.endDate && dayjs(hoveredEvent.startDate).diff(dayjs(hoveredEvent.endDate), 'minutes') !== 0 ? (
-        `${dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
-      ) : (
-        <>
-          <ErrorOutlineIcon sx={{ fontSize: "16px", color: "#d32f2f", marginRight: "4px" }} />
-          Missing or invalid date
-        </>
-      )}
-    </Typography>
-  </Box>
-)}
+            <Box
+              sx={{
+                position: "fixed",
+                top: `${tooltipPosition.y}px`,
+                left: `${tooltipPosition.x}px`,
+                backgroundColor: "#fff",
+                padding: "8px 12px",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                borderRadius: "8px",
+                zIndex: 1000,
+                pointerEvents: "none",
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                {hoveredEvent.title}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+                {hoveredEvent.startDate &&
+                hoveredEvent.endDate &&
+                dayjs(hoveredEvent.startDate).diff(
+                  dayjs(hoveredEvent.endDate),
+                  "minutes"
+                ) !== 0 ? (
+                  `${dayjs(hoveredEvent.startDate).format(
+                    "MMM D, h:mm A"
+                  )} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
+                ) : (
+                  <>
+                    <ErrorOutlineIcon
+                      sx={{
+                        fontSize: "16px",
+                        color: "#d32f2f",
+                        marginRight: "4px",
+                      }}
+                    />
+                    Missing or invalid date
+                  </>
+                )}
+              </Typography>
+            </Box>
+          )}
 
           {/* Current Time Line */}
           <Box
