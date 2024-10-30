@@ -622,81 +622,65 @@ WHERE eventId = @eventId;
         }
     });
 
+    router.use(express.text());
+
     router.post('/share-to-calendar', async (req, res) => {
         try {
-            let data = '';
-    
             logger.info("Starting request to /share-to-calendar.");
     
-            // Collect incoming data chunks for `text/plain`
-            req.on('data', chunk => {
-                data += chunk;
-                logger.info("Received data chunk", { chunkSize: chunk.length });
-            });
+            // Parse the text body as JSON
+            const { data: eventDetails, accessToken } = JSON.parse(req.body);
+            logger.info("Parsed JSON data from text body.");
     
-            req.on('end', async () => {
-                logger.info("All data chunks received.", { totalDataSize: data.length });
+            if (!accessToken) {
+                logger.error("Access token not found.");
+                return res.status(401).send('Access token is required');
+            }
     
-                try {
-                    // Parse the text content as JSON
-                    logger.info("Parsing JSON data...");
-                    const { data: eventDetails, accessToken } = JSON.parse(data);
-                    logger.info("JSON parsing completed.");
+            logger.info("Initializing OAuth2 client for Google API.");
+            const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
+            oauth2Client.setCredentials({ access_token: accessToken });
     
-                    if (!accessToken) {
-                        logger.error("Access token not found.");
-                        return res.status(401).send('Access token is required');
-                    }
+            logger.info("Setting up Google Calendar API client.");
+            const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
     
-                    logger.info("Initializing OAuth2 client for Google API.");
-                    const oauth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
-                    oauth2Client.setCredentials({ access_token: accessToken });
+            // Log event details for debugging
+            logger.info("Preparing event details for Google Calendar.", { eventDetails });
     
-                    logger.info("Setting up Google Calendar API client.");
-                    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    
-                    // Log event details for debugging
-                    logger.info("Preparing event details for Google Calendar.", { eventDetails });
-    
-                    const event = {
-                        summary: eventDetails.title || "No Title Provided",
-                        location: eventDetails.location || "Online Event",
-                        description: eventDetails.description || "No Description Provided",
-                        start: {
-                            dateTime: eventDetails.startDate,
-                            timeZone: 'America/Los_Angeles'
-                        },
-                        end: {
-                            dateTime: eventDetails.endDate,
-                            timeZone: 'America/Los_Angeles'
-                        }
-                    };
-    
-                    logger.info("Inserting event into Google Calendar...");
-                    const response = await calendar.events.insert({
-                        calendarId: 'primary',
-                        requestBody: event
-                    });
-    
-                    if (response.status === 200) {
-                        logger.info("Google Calendar event created successfully.", { eventId: response.data.id });
-                        res.status(200).json({
-                            success: true,
-                            eventId: response.data.id,
-                            eventUrl: `https://calendar.google.com/calendar/event?eid=${response.data.id}`
-                        });
-                    } else {
-                        logger.error("Failed to add event to Google Calendar.", { status: response.status });
-                        res.status(response.status).send('Failed to add event to Google Calendar');
-                    }
-                } catch (error) {
-                    logger.error("Error in Google Calendar event creation", { error: error.message });
-                    res.status(500).send('Failed to add event to Google Calendar due to server error');
+            const event = {
+                summary: eventDetails.title || "No Title Provided",
+                location: eventDetails.location || "Online Event",
+                description: eventDetails.description || "No Description Provided",
+                start: {
+                    dateTime: eventDetails.startDate,
+                    timeZone: 'America/Los_Angeles'
+                },
+                end: {
+                    dateTime: eventDetails.endDate,
+                    timeZone: 'America/Los_Angeles'
                 }
+            };
+    
+            logger.info("Inserting event into Google Calendar...");
+            const response = await calendar.events.insert({
+                calendarId: 'primary',
+                requestBody: event
             });
+    
+            if (response.status === 200) {
+                logger.info("Google Calendar event created successfully.", { eventId: response.data.id });
+                res.status(200).json({
+                    success: true,
+                    eventId: response.data.id,
+                    eventUrl: `https://calendar.google.com/calendar/event?eid=${response.data.id}`
+                });
+            } else {
+                logger.error("Failed to add event to Google Calendar.", { status: response.status });
+                res.status(response.status).send('Failed to add event to Google Calendar');
+            }
         } catch (error) {
-            logger.error("Request handling error", { error: error.message });
-            res.status(500).send('Server error');
+            logger.error("Error in Google Calendar event creation", { error: error.message });
+            res.status(500).send('Failed to add event to Google Calendar due to server error');
         }
     });
     
