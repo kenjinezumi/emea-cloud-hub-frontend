@@ -115,6 +115,11 @@ export default function MonthView({ month, isYearView = false }) {
                     return false;
                   }
                 });
+              console.log(
+                "Checking account sectors:",
+                filters.accountSectors,
+                event.accountSectors
+              );
 
               // Account Sector filter match
               const accountSectorMatch =
@@ -122,7 +127,9 @@ export default function MonthView({ month, isYearView = false }) {
                 filters.accountSectors.some((sector) => {
                   try {
                     return (
-                      sector.checked && event.accountSectors?.[sector.label]
+                      sector.checked &&
+                      event.accountSectors?.[sector.label.toLowerCase()] ===
+                        true
                     );
                   } catch (err) {
                     console.error(
@@ -144,7 +151,7 @@ export default function MonthView({ month, isYearView = false }) {
                       event.accountSegments?.[segment.label];
                     return (
                       segment.checked &&
-                      accountSegment?.selected === "true" && // Convert selected to a boolean
+                      accountSegment?.selected && // Convert selected to a boolean
                       parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
                     );
                   } catch (err) {
@@ -160,21 +167,21 @@ export default function MonthView({ month, isYearView = false }) {
 
               // Product Family filter match
               const productFamilyMatch =
-              !filters.productFamily.some((product) => product.checked) ||
-              filters.productFamily.some((product) => {
-                try {
-                  const productAlignment = event.productAlignment?.[product.label];
-                  return (
-                    product.checked &&
-                    productAlignment?.selected === "true" && // Convert selected to a boolean
-                    parseFloat(productAlignment?.percentage) > 0 // Convert percentage to a number and ensure it's greater than 0
-                  );
-                } catch (err) {
-                  console.error("Error checking productFamily filter:", err);
-                  return false;
-                }
-              });
-            
+                !filters.productFamily.some((product) => product.checked) ||
+                filters.productFamily.some((product) => {
+                  try {
+                    const productAlignment =
+                      event.productAlignment?.[product.label];
+                    return (
+                      product.checked &&
+                      productAlignment?.selected && // Convert selected to a boolean
+                      parseFloat(productAlignment?.percentage) > 0 // Convert percentage to a number and ensure it's greater than 0
+                    );
+                  } catch (err) {
+                    console.error("Error checking productFamily filter:", err);
+                    return false;
+                  }
+                });
 
               // Industry filter match
               const industryMatch =
@@ -182,7 +189,8 @@ export default function MonthView({ month, isYearView = false }) {
                 filters.industry.some((industry) => {
                   try {
                     return (
-                      industry.checked && event.industry === industry.label
+                      industry.checked &&
+                      event.industry?.includes(industry.label)
                     );
                   } catch (err) {
                     console.error(
