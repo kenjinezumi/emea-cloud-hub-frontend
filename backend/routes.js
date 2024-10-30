@@ -644,18 +644,20 @@ WHERE eventId = @eventId;
             oauth2Client.setCredentials({ access_token: accessToken });
     
             const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    
+            const startDateTime = data.startDate.includes('T') ? data.startDate : `${data.startDate}T00:00:00`;
+            const endDateTime = data.endDate.includes('T') ? data.endDate : `${data.endDate}T00:00:00`;
+            
             // Set up the event details
             const event = {
                 summary: data.title || "No Title Provided",
                 location: data.location || "Online Event",
                 description: data.description || "No Description Provided",
                 start: {
-                    dateTime: data.startDate,
+                    dateTime: startDateTime,
                     timeZone: 'America/Los_Angeles'
                 },
                 end: {
-                    dateTime: data.endDate,
+                    dateTime:  endDateTime,
                     timeZone: 'America/Los_Angeles'
                 }
             };
