@@ -622,14 +622,13 @@ WHERE eventId = @eventId;
         }
     });
 
-    router.use(express.text());
 
     router.post('/share-to-calendar', async (req, res) => {
         try {
             logger.info("Starting request to /share-to-calendar.");
-    
-            // Parse the text body as JSON
-            const { data: eventDetails, accessToken } = JSON.parse(req.body);
+            
+            // Access parsed JSON data directly from req.body
+            const { data: eventDetails, accessToken } = req.body;
             logger.info("Parsed JSON data from text body.");
     
             if (!accessToken) {
