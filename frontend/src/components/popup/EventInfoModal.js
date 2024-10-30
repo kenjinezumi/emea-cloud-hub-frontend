@@ -63,7 +63,8 @@ export default function EventInfoPopup({ event, close }) {
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
   const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
-  const [calendarConfirmationDialogOpen, setCalendarConfirmationDialogOpen] = useState(false); // State for confirmation dialog
+  const [calendarConfirmationDialogOpen, setCalendarConfirmationDialogOpen] =
+    useState(false); // State for confirmation dialog
 
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(
@@ -72,7 +73,7 @@ export default function EventInfoPopup({ event, close }) {
       : ""
   );
   const hasLanguagesAndTemplates = languagesAndTemplates.length > 0;
-  
+
   const handleCalendarConfirmation = async () => {
     const accessToken = localStorage.getItem("accessToken"); // Ensure token is available
     if (!accessToken) {
@@ -81,14 +82,9 @@ export default function EventInfoPopup({ event, close }) {
       return;
     }
 
-    const { startDate, endDate } = selectedEvent;
-  
+
     // Check if start or end date is missing time
-    if (!startDate.includes("T") || !endDate.includes("T")) {
-      setSnackbarMessage("Please add a start and end time before proceeding.");
-      setSnackbarOpen(true);
-      return;
-    }
+   
 
     try {
       const eventData = {
@@ -104,7 +100,9 @@ export default function EventInfoPopup({ event, close }) {
       if (response.success) {
         setSnackbarMessage("Event successfully added to Google Calendar!");
       } else {
-        setSnackbarMessage("Failed to add event to Google Calendar. Try again.");
+        setSnackbarMessage(
+          "Failed to add event to Google Calendar. Try again."
+        );
       }
     } catch (error) {
       console.error("Error sharing event to Google Calendar:", error);
@@ -175,10 +173,8 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-
   //Salesloft!!
   const handleSalesLoftInvite = () => {
-
     const salesLoftTemplate = languagesAndTemplates.find(
       (item) =>
         item.platform === "Salesloft" && item.language === selectedLanguage
@@ -1080,7 +1076,19 @@ export default function EventInfoPopup({ event, close }) {
               </CustomTooltip>
               <CustomTooltip title="Add to Google Calendar" arrow>
                 <IconButton
-                  onClick={() => setCalendarConfirmationDialogOpen(true)}
+                  onClick={() => {
+                    const { startDate, endDate } = selectedEvent;
+
+                    // Check if start or end date is missing time
+                    if (!startDate.includes("T") || !endDate.includes("T")) {
+                      setSnackbarMessage(
+                        "Please add a start and end time before proceeding."
+                      );
+                      setSnackbarOpen(true);
+                    } else {
+                      setCalendarConfirmationDialogOpen(true);
+                    }
+                  }}
                   size="small"
                 >
                   <EventIcon />
@@ -1331,25 +1339,28 @@ export default function EventInfoPopup({ event, close }) {
         </div>
       </Draggable>
       <Dialog
-  open={calendarConfirmationDialogOpen}
-  onClose={() => setCalendarConfirmationDialogOpen(false)}
-  maxWidth="xs"
-  fullWidth
-  sx={{ zIndex: 100000000 }}
->
-  <DialogTitle>Confirm Google Calendar Event</DialogTitle>
-  <DialogContent>
-    Are you sure you want to add this event to your Google Calendar?
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setCalendarConfirmationDialogOpen(false)} color="secondary">
-      No
-    </Button>
-    <Button onClick={handleCalendarConfirmation} color="primary">
-      Yes
-    </Button>
-  </DialogActions>
-</Dialog>
+        open={calendarConfirmationDialogOpen}
+        onClose={() => setCalendarConfirmationDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        sx={{ zIndex: 100000000 }}
+      >
+        <DialogTitle>Confirm Google Calendar Event</DialogTitle>
+        <DialogContent>
+          Are you sure you want to add this event to your Google Calendar?
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setCalendarConfirmationDialogOpen(false)}
+            color="secondary"
+          >
+            No
+          </Button>
+          <Button onClick={handleCalendarConfirmation} color="primary">
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={dialogOpen}
