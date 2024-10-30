@@ -90,7 +90,7 @@ export default function EventInfoPopup({ event, close }) {
         endDate: selectedEvent.endDate,
       };
 
-      const response = await shareToGoogleCalendar(accessToken, eventData);
+      const response = await shareToGoogleCalendar(eventData, accessToken);
 
       if (response.success) {
         setSnackbarMessage("Event successfully added to Google Calendar!");
@@ -166,10 +166,10 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-  const accessToken = process.env.REACT_APP_SALESLOFT_API_TOKEN;
 
   //Salesloft!!
   const handleSalesLoftInvite = () => {
+
     const salesLoftTemplate = languagesAndTemplates.find(
       (item) =>
         item.platform === "Salesloft" && item.language === selectedLanguage
@@ -191,6 +191,8 @@ export default function EventInfoPopup({ event, close }) {
   };
 
   const handleSalesLoftConfirmation = async () => {
+    const accessTokenSalesloft = process.env.REACT_APP_SALESLOFT_API_TOKEN;
+
     try {
       const salesLoftTemplate = languagesAndTemplates.find(
         (item) =>
@@ -202,7 +204,7 @@ export default function EventInfoPopup({ event, close }) {
       }
 
       const result = await createSalesLoftEmailTemplate(
-        accessToken,
+        accessTokenSalesloft,
         salesLoftTemplate
       );
       if (result.success) {
