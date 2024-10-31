@@ -71,8 +71,10 @@ export default function ExtraDetailsForm() {
     }, {});
   });
   
-  const [gep, setGep] = useState(formData?.gep || selectedEvent?.gep || []);
-  
+  const [gep, setGep] = useState(
+    (Array.isArray(formData?.gep) ? formData.gep : selectedEvent?.gep || []).filter(Boolean)
+  );
+    
   const [isPartneredEvent, setIsPartneredEvent] = useState(
     formData?.isPartneredEvent || selectedEvent?.isPartneredEvent || false
   );

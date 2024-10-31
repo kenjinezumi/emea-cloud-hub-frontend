@@ -30,9 +30,9 @@ export default function AudiencePersonaForm() {
 
   const [audienceSeniority, setAudienceSeniority] = useState(
     Array.isArray(formData?.audienceSeniority) && formData.audienceSeniority.length > 0
-      ? formData.audienceSeniority
+      ? formData.audienceSeniority.filter((value) => value) // Filter out empty values
       : Array.isArray(selectedEvent?.audienceSeniority) && selectedEvent.audienceSeniority.length > 0
-      ? selectedEvent.audienceSeniority
+      ? selectedEvent.audienceSeniority.filter((value) => value) // Filter out empty values
       : []
   );
   
@@ -46,11 +46,12 @@ export default function AudiencePersonaForm() {
   
   const [industry, setIndustry] = useState(
     Array.isArray(formData?.industry) && formData.industry.length > 0
-      ? formData.industry
+      ? formData.industry.filter((value) => value) // Filter out empty values
       : Array.isArray(selectedEvent?.industry) && selectedEvent.industry.length > 0
-      ? selectedEvent.industry
+      ? selectedEvent.industry.filter((value) => value) // Filter out empty values
       : []
   );
+  
   
   const [accountSectors, setAccountSectors] = useState(
     (formData?.accountSectors && typeof formData.accountSectors === 'object') 
