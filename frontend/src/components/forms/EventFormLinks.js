@@ -46,29 +46,30 @@ export default function LinksForm() {
   const [links, setLinks] = useState({
     landingPageLinks:
       Array.isArray(formData?.landingPageLinks) && formData.landingPageLinks.length > 0
-        ? formData.landingPageLinks
+        ? formData.landingPageLinks.filter((link) => link) // Filter out empty links
         : Array.isArray(selectedEvent?.landingPageLinks) && selectedEvent.landingPageLinks.length > 0
-        ? selectedEvent.landingPageLinks
+        ? selectedEvent.landingPageLinks.filter((link) => link) // Filter out empty links
         : [],
     salesKitLinks:
       Array.isArray(formData?.salesKitLinks) && formData.salesKitLinks.length > 0
-        ? formData.salesKitLinks
+        ? formData.salesKitLinks.filter((link) => link)
         : Array.isArray(selectedEvent?.salesKitLinks) && selectedEvent.salesKitLinks.length > 0
-        ? selectedEvent.salesKitLinks
+        ? selectedEvent.salesKitLinks.filter((link) => link)
         : [],
     hailoLinks:
       Array.isArray(formData?.hailoLinks) && formData.hailoLinks.length > 0
-        ? formData.hailoLinks
+        ? formData.hailoLinks.filter((link) => link)
         : Array.isArray(selectedEvent?.hailoLinks) && selectedEvent.hailoLinks.length > 0
-        ? selectedEvent.hailoLinks
+        ? selectedEvent.hailoLinks.filter((link) => link)
         : [],
     otherDocumentsLinks:
       Array.isArray(formData?.otherDocumentsLinks) && formData.otherDocumentsLinks.length > 0
-        ? formData.otherDocumentsLinks
+        ? formData.otherDocumentsLinks.filter((link) => link)
         : Array.isArray(selectedEvent?.otherDocumentsLinks) && selectedEvent.otherDocumentsLinks.length > 0
-        ? selectedEvent.otherDocumentsLinks
+        ? selectedEvent.otherDocumentsLinks.filter((link) => link)
         : [],
   });
+  
   
 
   // Initialize `newLink` for inputs
