@@ -132,13 +132,13 @@ const EventFormEmailInvitation = () => {
         item.subjectLine.trim() !== ""
     );
 
-    setIsFormValid(formIsValid);
+    // setIsFormValid(formIsValid);
 
-    if (!formIsValid) {
-      setSnackbarMessage("Please fill in all required fields.");
-      setSnackbarOpen(true);
-      return;
-    }
+    // if (!formIsValid) {
+    //   setSnackbarMessage("Please fill in all required fields.");
+    //   setSnackbarOpen(true);
+    //   return;
+    // }
 
     const updatedFormData = {
       ...formData,
