@@ -17,6 +17,10 @@ import {
   InputLabel,
   Checkbox,
   InputAdornment,
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogTitle
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
@@ -126,6 +130,18 @@ const EventForm = () => {
   const handleEndDateChange = (newDate) => {
     setEndDate(newDate);
     setHasEndDateChanged(true); 
+  };
+  const [geminiDialogOpen, setGeminiDialogOpen] = useState(false);
+  const [geminiPrompt, setGeminiPrompt] = useState("");
+  const [geminiResponse, setGeminiResponse] = useState("");
+
+  const handleGeminiDialogOpen = () => setGeminiDialogOpen(true);
+  const handleGeminiDialogClose = () => setGeminiDialogOpen(false);
+
+  const handleGeminiSubmit = () => {
+    // Simulate a response from Gemini
+    setGeminiResponse("Suggested description for your event...");
+    handleGeminiDialogClose();
   };
   useEffect(() => {
     if (formData.eventType) setEventType(formData.eventType);
@@ -656,7 +672,11 @@ const EventForm = () => {
 
             <Grid item xs={12} sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
+              
                 Description *
+                <IconButton onClick={handleGeminiDialogOpen} size="small" sx={{ mr: 1 }}>
+      <AddCircleOutlineIcon fontSize="small" />
+    </IconButton>
               </Typography>
               <TextField
                 label="Internal description (for internal use only)"
@@ -672,6 +692,31 @@ const EventForm = () => {
                 inputProps={{ maxLength: 400 }}
               />
             </Grid>
+            {/* Gemini Prompt Dialog */}
+          <Dialog open={geminiDialogOpen} onClose={handleGeminiDialogClose}>
+            <DialogTitle>Generate Description with Gemini</DialogTitle>
+            <DialogContent>
+              <TextField
+                label="Enter your prompt for Gemini"
+                fullWidth
+                multiline
+                rows={3}
+                value={geminiPrompt}
+                onChange={(e) => setGeminiPrompt(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleGeminiDialogClose}>Cancel</Button>
+              <Button onClick={handleGeminiSubmit} color="primary">Generate</Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Display Gemini response, if available */}
+          {geminiResponse && (
+            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+              {geminiResponse}
+            </Typography>
+          )}
             {/* Speakers Section */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
