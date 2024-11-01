@@ -147,8 +147,8 @@ USING (
       L.is_event = 1.0
       AND L.event_start_date IS NOT NULL
       AND L.event_end_date IS NOT NULL
-      AND D.region = 'EMEA'
-      AND PARSE_DATE('%Y-%m-%d', CAST(L.event_start_date AS STRING)) > '2024-10-01'
+      AND D.region IN ('EMEA', 'GLOBAL')
+      AND PARSE_DATE('%Y-%m-%d', CAST(L.event_start_date AS STRING)) >= '2024-10-01'
   GROUP BY
     L.tactic_id, L.tactic_title, L.tactic_detail, L.owner, L.event_start_date,
     L.event_end_date, L.event_format, D.region,
