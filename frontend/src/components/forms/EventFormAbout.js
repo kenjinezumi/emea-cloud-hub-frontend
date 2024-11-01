@@ -144,14 +144,29 @@ const EventForm = () => {
   const [geminiDialogOpen, setGeminiDialogOpen] = useState(false);
   const [geminiPrompt, setGeminiPrompt] = useState("");
   const [geminiResponse, setGeminiResponse] = useState("");
+  const [chatLog, setChatLog] = useState([]);
 
   const handleGeminiDialogOpen = () => setGeminiDialogOpen(true);
-  const handleGeminiDialogClose = () => setGeminiDialogOpen(false);
+  const handleGeminiDialogClose = () => {
+    setGeminiDialogOpen(false);
+    setGeminiPrompt("");
+    setChatLog([]);
+  };
 
   const handleGeminiSubmit = () => {
-    // Simulate a response from Gemini
-    setGeminiResponse("Suggested description for your event...");
-    handleGeminiDialogClose();
+    if (geminiPrompt.trim()) {
+      // Add user prompt to chat log
+      const newChatLog = [
+        ...chatLog,
+        { sender: "user", text: geminiPrompt },
+        {
+          sender: "gemini",
+          text: "This is a suggested description based on your prompt.",
+        }, // Dummy Gemini response
+      ];
+      setChatLog(newChatLog);
+      setGeminiPrompt(""); // Clear the input field for a new prompt
+    }
   };
   useEffect(() => {
     if (formData.eventType) setEventType(formData.eventType);
@@ -734,16 +749,35 @@ const EventForm = () => {
                 {/* Top section: Gemini response display */}
                 <Box
                   sx={{
-                    flex: 1, // Takes up remaining space
+                    flex: 1,
                     mb: 2,
                     backgroundColor: "#e8f0fe",
                     p: 2,
                     borderRadius: "8px",
-                    overflowY: "auto", // Allows scrolling if response is long
+                    overflowY: "auto",
+                    maxHeight: "300px",
                   }}
                 >
-                  {geminiResponse ? (
-                    <Typography variant="body1">{geminiResponse}</Typography>
+                  {chatLog.length > 0 ? (
+                    chatLog.map((entry, index) => (
+                      <Box key={index} sx={{ mb: 1 }}>
+                        <Typography
+                          variant="body2"
+                          color={
+                            entry.sender === "user" ? "textPrimary" : "primary"
+                          }
+                          sx={{
+                            fontWeight:
+                              entry.sender === "user" ? "bold" : "normal",
+                          }}
+                        >
+                          {entry.sender === "user" ? "You: " : "Gemini: "}
+                        </Typography>
+                        <Typography variant="body1" sx={{ ml: 2 }}>
+                          {entry.text}
+                        </Typography>
+                      </Box>
+                    ))
                   ) : (
                     <Typography variant="body2" color="textSecondary">
                       Your AI-generated description will appear here.
