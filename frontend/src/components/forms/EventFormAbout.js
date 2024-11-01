@@ -42,7 +42,7 @@ import { eventTypeOptions } from "../filters/FiltersData";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
-
+import { fetchGeminiResponse } from "../../api/geminiApi";
 const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
 const EventForm = () => {
@@ -153,19 +153,25 @@ const EventForm = () => {
     setChatLog([]);
   };
 
-  const handleGeminiSubmit = () => {
+  const handleGeminiSubmit = async () => {
     if (geminiPrompt.trim()) {
       // Add user prompt to chat log
-      const newChatLog = [
-        ...chatLog,
+      setChatLog((prevChatLog) => [
+        ...prevChatLog,
         { sender: "user", text: geminiPrompt },
-        {
-          sender: "gemini",
-          text: "This is a suggested description based on your prompt.",
-        }, // Dummy Gemini response
-      ];
-      setChatLog(newChatLog);
-      setGeminiPrompt(""); // Clear the input field for a new prompt
+      ]);
+
+      // Fetch Gemini response
+      const geminiResponse = await fetchGeminiResponse(geminiPrompt);
+
+      // Add Gemini response to chat log
+      setChatLog((prevChatLog) => [
+        ...prevChatLog,
+        { sender: "gemini", text: geminiResponse },
+      ]);
+
+      // Clear the input field for a new prompt
+      setGeminiPrompt("");
     }
   };
   useEffect(() => {
