@@ -693,14 +693,17 @@ const EventForm = () => {
               />
             </Grid>
             {/* Gemini Prompt Dialog */}
-          <Dialog open={geminiDialogOpen} onClose={handleGeminiDialogClose}>
+          <Dialog open={geminiDialogOpen} 
+          onClose={handleGeminiDialogClose} 
+          maxWidth="md"
+          fullWidth   >
             <DialogTitle>Generate Description with Gemini</DialogTitle>
             <DialogContent>
               <TextField
                 label="Enter your prompt for Gemini"
                 fullWidth
                 multiline
-                rows={3}
+                rows={7}
                 value={geminiPrompt}
                 onChange={(e) => setGeminiPrompt(e.target.value)}
               />
