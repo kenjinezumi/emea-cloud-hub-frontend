@@ -17,11 +17,13 @@ import {
   InputLabel,
   Checkbox,
   InputAdornment,
-  Dialog, 
-  DialogActions, 
-  DialogContent, 
-  DialogTitle
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
+import { Box } from "@mui/system";
+
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
   LocalizationProvider,
@@ -53,62 +55,70 @@ const EventForm = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [eventType, setEventType] = useState(formData.eventType || "");
-  
 
   const [title, setTitle] = useState(
     formData?.title || selectedEvent?.title || ""
   );
-  
+
   const [description, setDescription] = useState(
     formData?.description || selectedEvent?.description || ""
   );
-  
+
   const [emoji, setEmoji] = useState(
     formData?.emoji || selectedEvent?.emoji || ""
   );
-  
+
   const [isClient, setIsClient] = useState(
     formData?.isClient || selectedEvent?.isClient || false
   );
-  
+
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-  
+
   const [organisedBy, setOrganisedBy] = useState(
     formData?.organisedBy || selectedEvent?.organisedBy || []
   );
-  
+
   const [marketingActivityType, setMarketingActivityType] = useState(
     formData?.marketingActivityType || ""
   );
-  
+
   const [isHighPriority, setIsHighPriority] = useState(
     formData?.isHighPriority || selectedEvent?.isHighPriority || false
   );
-  
+
   const [isEventSeries, setIsEventSeries] = useState(
     formData?.isEventSeries || selectedEvent?.isEventSeries || false
   );
-  
+
   const [speakers, setSpeakers] = useState(
     formData?.speakers || selectedEvent?.speakers || []
   );
-  
+
   const [newSpeaker, setNewSpeaker] = useState("");
-  
+
   const today = new Date();
-  
+
   const [startDate, setStartDate] = useState(
-    formData?.startDate ? new Date(formData.startDate) : selectedEvent?.startDate ? new Date(selectedEvent.startDate) : today
+    formData?.startDate
+      ? new Date(formData.startDate)
+      : selectedEvent?.startDate
+      ? new Date(selectedEvent.startDate)
+      : today
   );
-  
+
   const [endDate, setEndDate] = useState(
-    formData?.endDate ? new Date(formData.endDate) : selectedEvent?.endDate ? new Date(selectedEvent.endDate) : today
+    formData?.endDate
+      ? new Date(formData.endDate)
+      : selectedEvent?.endDate
+      ? new Date(selectedEvent.endDate)
+      : today
   );
-  
+
   const [marketingProgramInstanceId, setMarketingProgramInstanceId] = useState(
-    formData?.marketingProgramInstanceId || selectedEvent?.marketingProgramInstanceId || ""
+    formData?.marketingProgramInstanceId ||
+      selectedEvent?.marketingProgramInstanceId ||
+      ""
   );
-  
 
   const [isFormValid, setIsFormValid] = useState(true);
   const [userTimezone, setUserTimezone] = useState(
@@ -125,11 +135,11 @@ const EventForm = () => {
   const [hasEndDateChanged, setHasEndDateChanged] = useState(false);
   const handleStartDateChange = (newDate) => {
     setStartDate(newDate);
-    setHasStartDateChanged(true); 
-  };  
+    setHasStartDateChanged(true);
+  };
   const handleEndDateChange = (newDate) => {
     setEndDate(newDate);
-    setHasEndDateChanged(true); 
+    setHasEndDateChanged(true);
   };
   const [geminiDialogOpen, setGeminiDialogOpen] = useState(false);
   const [geminiPrompt, setGeminiPrompt] = useState("");
@@ -242,7 +252,7 @@ const EventForm = () => {
       userTimezone,
       speakers,
     };
-    
+
     updateFormData(newFormData); // This will update the global context on each change
   }, [
     title,
@@ -277,14 +287,13 @@ const EventForm = () => {
       : formData.eventId;
     const eventId = existingEventId || uuidv4();
 
-    const isTitleValid = title?.trim() !== "";  
+    const isTitleValid = title?.trim() !== "";
     const isDescriptionValid = description?.trim() !== "";
     const isStartDateValid = startDate && !isSameDate(startDate, today);
     const isEndDateValid = endDate && !isSameDate(endDate, today);
 
-    
     const isOrganisedByValid = organisedBy.length > 0;
-    const isEventTypeValid = eventType?.trim() !== ""; 
+    const isEventTypeValid = eventType?.trim() !== "";
     const isEventIdValid = !!eventId;
 
     setIsTitleError(!isTitleValid);
@@ -326,30 +335,27 @@ const EventForm = () => {
       userTimezone,
       speakers,
       isDraft: true,
-      isPublished: false
+      isPublished: false,
     };
 
     const updatedFormData = { ...formData, ...draftData };
 
-
     try {
-          const response = await sendDataToAPI(updatedFormData);
-          if (response.success) {
-            setSnackbarMessage("Draft saved successfully!");
-            setSnackbarOpen(true);
-            setTimeout(() => {
-              saveAndNavigate(updatedFormData, "/location");
-            }, 1500);
-
-          } else {
-            setSnackbarMessage("Failed to save draft.");
-            setSnackbarOpen(true);
-          }
-        } catch (error) {
-          setSnackbarMessage("An error occurred while saving the draft.");
-          setSnackbarOpen(true);
-        }
-
+      const response = await sendDataToAPI(updatedFormData);
+      if (response.success) {
+        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarOpen(true);
+        setTimeout(() => {
+          saveAndNavigate(updatedFormData, "/location");
+        }, 1500);
+      } else {
+        setSnackbarMessage("Failed to save draft.");
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarOpen(true);
+    }
   };
 
   const onEmojiClick = (emojiData, event) => {
@@ -669,19 +675,22 @@ const EventForm = () => {
                 </Grid>
               )}
             </Grid>
-
-            <Grid item xs={12} sx={{ mb: 3 }}>
+            {/* Gemini Section */}
+            <Grid item xs={12} sx={{ mb: 5 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              
                 Description *
-                <IconButton onClick={handleGeminiDialogOpen} size="small" sx={{ mr: 1 }}>
-      <AddCircleOutlineIcon fontSize="small" />
-    </IconButton>
+                <IconButton
+                  onClick={handleGeminiDialogOpen}
+                  size="small"
+                  sx={{ mr: 1 }}
+                >
+                  <AddCircleOutlineIcon fontSize="small" />
+                </IconButton>
               </Typography>
               <TextField
                 label="Internal description (for internal use only)"
                 multiline
-                rows={4}
+                rows={7}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 variant="outlined"
@@ -693,33 +702,108 @@ const EventForm = () => {
               />
             </Grid>
             {/* Gemini Prompt Dialog */}
-          <Dialog open={geminiDialogOpen} 
-          onClose={handleGeminiDialogClose} 
-          maxWidth="md"
-          fullWidth   >
-            <DialogTitle>Generate Description with Gemini</DialogTitle>
-            <DialogContent>
-              <TextField
-                label="Enter your prompt for Gemini"
-                fullWidth
-                multiline
-                rows={7}
-                value={geminiPrompt}
-                onChange={(e) => setGeminiPrompt(e.target.value)}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleGeminiDialogClose}>Cancel</Button>
-              <Button onClick={handleGeminiSubmit} color="primary">Generate</Button>
-            </DialogActions>
-          </Dialog>
 
-          {/* Display Gemini response, if available */}
-          {geminiResponse && (
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-              {geminiResponse}
-            </Typography>
-          )}
+            <Dialog
+              open={geminiDialogOpen}
+              onClose={handleGeminiDialogClose}
+              maxWidth="md"
+              fullWidth
+              PaperProps={{
+                style: {
+                  borderRadius: "12px",
+                  padding: "20px",
+                },
+              }}
+            >
+              <DialogTitle>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: "bold", textAlign: "center" }}
+                >
+                  Generate Description with Gemini
+                </Typography>
+              </DialogTitle>
+
+              <DialogContent
+                sx={{
+                  minHeight: "400px",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {/* Top section: Gemini response display */}
+                <Box
+                  sx={{
+                    flex: 1, // Takes up remaining space
+                    mb: 2,
+                    backgroundColor: "#e8f0fe",
+                    p: 2,
+                    borderRadius: "8px",
+                    overflowY: "auto", // Allows scrolling if response is long
+                  }}
+                >
+                  {geminiResponse ? (
+                    <Typography variant="body1">{geminiResponse}</Typography>
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      Your AI-generated description will appear here.
+                    </Typography>
+                  )}
+                </Box>
+
+                {/* Bottom section: User input field */}
+                <Box
+                  sx={{
+                    mt: 2,
+                    backgroundColor: "#f4f4f8",
+                    p: 2,
+                    borderRadius: "8px",
+                  }}
+                >
+                  <TextField
+                    label="Ask Gemini"
+                    fullWidth
+                    multiline
+                    placeholder="Describe what you need help with..."
+                    value={geminiPrompt}
+                    onChange={(e) => setGeminiPrompt(e.target.value)}
+                    variant="outlined"
+                    InputProps={{
+                      style: {
+                        backgroundColor: "#ffffff",
+                        borderRadius: "8px",
+                        boxShadow: "none", // Remove inner shadow if any
+                      },
+                    }}
+                    sx={{
+                      borderRadius: "8px", // Outer border radius
+                      "& .MuiOutlinedInput-root": {
+                        padding: "10px", // Adjust padding to avoid inner box effect
+                      },
+                    }}
+                  />
+                </Box>
+              </DialogContent>
+
+              <DialogActions sx={{ justifyContent: "center", mt: 1 }}>
+                <Button
+                  onClick={handleGeminiDialogClose}
+                  variant="outlined"
+                  sx={{ borderRadius: "20px" }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleGeminiSubmit}
+                  color="primary"
+                  variant="contained"
+                  sx={{ borderRadius: "20px" }}
+                >
+                  Generate
+                </Button>
+              </DialogActions>
+            </Dialog>
+
             {/* Speakers Section */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
