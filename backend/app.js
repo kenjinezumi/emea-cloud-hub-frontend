@@ -118,7 +118,9 @@ passport.use(new GoogleStrategy({
         'email', 
         'https://www.googleapis.com/auth/gmail.compose', 
         'https://www.googleapis.com/auth/calendar.events',
-        // 'https://www.googleapis.com/auth/cloud-platform'
+        'https://www.googleapis.com/auth/cloud-platform',
+        'https://www.googleapis.com/auth/generative-language'
+
     ],
 }, (accessToken, refreshToken, profile, done) => {
     profile.accessToken = accessToken;
