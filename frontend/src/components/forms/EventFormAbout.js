@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext, useState,useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   Button,
@@ -21,8 +21,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Tooltip
 } from "@mui/material";
 import { Box } from "@mui/system";
+import debounce from 'lodash.debounce';
 
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
@@ -95,7 +97,7 @@ const EventForm = () => {
   );
 
   const [newSpeaker, setNewSpeaker] = useState("");
-
+ 
   const today = new Date();
 
   const [startDate, setStartDate] = useState(
@@ -154,30 +156,27 @@ const EventForm = () => {
   };
 
   const handleGeminiSubmit = async () => {
-    if (geminiPrompt.trim()) {
-      // Add user prompt to chat log
-      setChatLog((prevChatLog) => [
-        ...prevChatLog,
-        { sender: "user", text: geminiPrompt },
-      ]);
-
-      // Fetch Gemini response
-      const geminiResponse = await fetchGeminiResponse(geminiPrompt);
-
-      // Add Gemini response to chat log
-      setChatLog((prevChatLog) => [
-        ...prevChatLog,
-        { sender: "gemini", text: geminiResponse },
-      ]);
-
-      // Clear the input field for a new prompt
-      setGeminiPrompt("");
-    }
+    if (!geminiPrompt.trim()) return; // Prevent empty submission
+  
+    setChatLog((prevChatLog) => [
+      ...prevChatLog,
+      { sender: "user", text: geminiPrompt },
+    ]);
+  
+    const geminiResponse = await fetchGeminiResponse(geminiPrompt);
+  
+    setChatLog((prevChatLog) => [
+      ...prevChatLog,
+      { sender: "gemini", text: geminiResponse },
+    ]);
+  
+    setGeminiPrompt(""); // Clear the prompt input to prevent re-trigger
   };
-  useEffect(() => {
-    if (formData.eventType) setEventType(formData.eventType);
-  }, [formData.eventType]);
-
+  
+  const handleGeminiSubmitDebounced = useCallback(
+    debounce(handleGeminiSubmit, 300),
+    [geminiPrompt]
+  );
   useEffect(() => setIsClient(true), []);
 
   useEffect(() => {
@@ -699,7 +698,9 @@ const EventForm = () => {
             {/* Gemini Section */}
             <Grid item xs={12} sx={{ mb: 5 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Description *
+                Description *    
+                <Tooltip title="Generate description with Gemini" arrow>
+
                 <IconButton
                   onClick={handleGeminiDialogOpen}
                   size="small"
@@ -707,6 +708,7 @@ const EventForm = () => {
                 >
                   <AddCircleOutlineIcon fontSize="small" />
                 </IconButton>
+                </Tooltip>
               </Typography>
               <TextField
                 label="Internal description (for internal use only)"
