@@ -1,21 +1,25 @@
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:predict';
-const API_KEY = process.env.GEMINI_API_KEY; // Fetch from environment variable
+// fetchGeminiResponse.js
 
-/**
- * Fetches a response from the Google Cloud Gemini API based on a prompt.
- * @param {string} prompt - The user's prompt to send to Gemini.
- * @returns {Promise<string>} - The response text from Gemini.
- */
+const API_URL = 'https://us-central1-aiplatform.googleapis.com/v1/projects/google.com:cloudhub/locations/{location}/publishers/google/models/gemini-1.0-pro-002:predict';
+
 const fetchGeminiResponse = async (prompt) => {
+  const accessToken = sessionStorage.getItem('accessToken') || localStorage.getItem('accessToken');
+
+  if (!accessToken) {
+    console.error("No access token found. Please authenticate.");
+    return 'Error: Access token not found';
+  }
+
   const data = {
     instances: [{ content: prompt }],
   };
 
   try {
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'text/plain', // Set content type to text/plain
+        'Authorization': `Bearer ${accessToken}`, // Use the token here
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     });
