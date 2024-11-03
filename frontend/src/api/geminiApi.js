@@ -15,7 +15,7 @@ const fetchGeminiResponse = async (prompt) => {
     const response = await fetch(`${API_URL}?key=${API_KEY}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain', // Set content type to text/plain
       },
       body: JSON.stringify(data),
     });
