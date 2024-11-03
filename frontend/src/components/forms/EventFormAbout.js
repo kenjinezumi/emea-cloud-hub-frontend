@@ -56,8 +56,11 @@ const EventForm = () => {
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [eventType, setEventType] = useState(formData.eventType || "");
-
+  const [eventType, setEventType] = useState(
+    eventTypeOptions.some(option => option.label === formData.eventType) 
+      ? formData.eventType 
+      : ""
+  );
   const [title, setTitle] = useState(
     formData?.title || selectedEvent?.title || ""
   );
