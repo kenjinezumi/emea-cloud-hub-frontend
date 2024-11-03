@@ -1,5 +1,5 @@
 const API_URL = 'https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:predict';
-const API_KEY = process.env.GEMINI_API_KEY; // Fetch from environment variable
+const API_KEY = process.env.REACT_APP_GEMINI_API_KEY; // Fetch from environment variable
 
 /**
  * Fetches a response from the Google Cloud Gemini API based on a prompt.
