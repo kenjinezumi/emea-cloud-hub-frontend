@@ -9,7 +9,11 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { shareToGoogleCalendar } from "../../api/shareCalendar";
 import Draggable from "react-draggable";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-
+import {
+  regionsData,
+  subregionsData,
+  countriesData,
+} from "../filters/FiltersData";
 import {
   IconButton,
   Typography,
@@ -231,6 +235,50 @@ export default function EventInfoPopup({ event, close }) {
       setDialogOpen(false);
       setSnackbarOpen(true);
     }
+  };
+
+  const getRegionLabel = (selectedEvent) => {
+    const { region, subRegion, country } = selectedEvent;
+
+    // Check if region and subRegion are both selected
+    if (!region || !subRegion) return null;
+
+    const selectedRegionData = regionsData.find((r) => r.region === region);
+
+    // Check if all subregions are selected within the region
+    if (
+      selectedRegionData &&
+      selectedRegionData.subregions.every((sub) => subRegion.includes(sub))
+    ) {
+      return `All ${region}`;
+    }
+
+    // Check if all countries are selected within each selected subregion
+    const selectedSubregions = subRegion
+      .map((sub) => subregionsData.find((s) => s.subregion === sub))
+      .filter(Boolean);
+
+    const allCountriesSelected = selectedSubregions.every((subregionData) =>
+      subregionData.countries.every((countryCode) =>
+        country.includes(countryCode)
+      )
+    );
+
+    if (
+      allCountriesSelected &&
+      selectedSubregions.length === selectedRegionData.subregions.length
+    ) {
+      return `All ${region}`;
+    }
+
+    // Default to listing subregions and countries if not all are selected
+    return [
+      formatListWithSpaces(region),
+      formatListWithSpaces(subRegion),
+      formatListWithSpaces(country),
+    ]
+      .filter(Boolean)
+      .join(", ");
   };
 
   const handleGmailInvite = async () => {
@@ -1144,15 +1192,16 @@ export default function EventInfoPopup({ event, close }) {
                 }}
               >
                 <PublicIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-                {[
-                  formatListWithSpaces(selectedEvent.region),
-                  formatListWithSpaces(selectedEvent.subRegion),
-                  formatListWithSpaces(selectedEvent.country),
-                  selectedEvent.city,
-                  selectedEvent.locationVenue,
-                ]
-                  .filter(Boolean)
-                  .join(", ")}
+                {getRegionLabel(selectedEvent) ||
+                  [
+                    formatListWithSpaces(selectedEvent.region),
+                    formatListWithSpaces(selectedEvent.subRegion),
+                    formatListWithSpaces(selectedEvent.country),
+                    selectedEvent.city,
+                    selectedEvent.locationVenue,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
               </Typography>
             )}
 
