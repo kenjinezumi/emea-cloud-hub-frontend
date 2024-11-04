@@ -212,9 +212,23 @@ const dummyEventData = [{
   "endDate": "2024-11-07T15:15:41.000Z",
   "marketingProgramInstanceId": "KTSUCHIYA229",
   "eventType": "Online Event",
-  "region": "GLOBAL",
-  "subRegion": ["Benelux", "Alps"],
-  "country": ["BE", "LU", "NL", "AT", "CH"],
+  region:  "EMEA",
+  subRegion: [
+    "Alps", "Benelux", "CEE", "France", "Germany", "Iberia", "Israel", "Italy", "MEA", "Nordics", "UK/IE"
+  ],
+  country: [
+    "AT", "CH", // Alps
+    "BE", "LU", "NL", // Benelux
+    "BG", "CY", "CZ", "EE", "GR", "HU", "LT", "LV", "PL", "RO", "RU", "SK", "UA", // CEE
+    "FR", // France
+    "DE", // Germany
+    "ES", "PT", // Iberia
+    "IL", // Israel
+    "IT", // Italy
+    "AE", "EG", "KE", "KW", "NG", "OM", "QA", "SA", "TR", "ZA", // MEA
+    "DK", "FI", "NO", "SE", // Nordics
+    "GB", "IE" // UK/IE
+  ],
   "activityOwner": [],
   "speakers": ["ktsuchiya@google.com"],
   "isEventSeries": true,
@@ -261,7 +275,7 @@ const dummyEventData = [{
   "peopleMeetingCriteria": null,
   "landingPageLinks": ["https://cloudhub.googleplex.com/audience", "https://cloudhub.googleplex.com/audience"],
   "salesKitLinks": ["https://cloudhub.googleplex.com/audience"],
-  "hailoLinks": ["https://cloudhub.googleplex.com/audience"],
+  "hailoLinks": ["https://cloudhub.googleplex.com/audience", "https://cloudhub.googleplex.com/audience", "https://cloudhub.googleplex.com/audience", "https://cloudhub.googleplex.com/audience", "https://cloudhub.googleplex.com/audience", "https://cloudhub.googleplex.com/audience", "https://cloudhub.googleplex.com/audience"],
   "otherDocumentsLinks": ["https://cloudhub.googleplex.com/audience"],
   "isApprovedForCustomerUse": false,
   "isDraft": false,

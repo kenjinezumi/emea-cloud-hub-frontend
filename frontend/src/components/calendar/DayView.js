@@ -236,19 +236,34 @@ export default function DayView() {
                     .filter((option) => option.checked)
                     .map((option) => option.value)
                 : [];
-              const isDraftMatch =
+                const isDraftMatch = 
                 selectedDraftStatuses.length === 0 ||
-                selectedDraftStatuses.includes(
-                  event.isDraft && !event.languagesAndTemplates?.some(template =>
-                    ["Gmail", "Salesloft"].includes(template.platform)
-                  )
-                    ? "Draft"
-                    : event.languagesAndTemplates?.some(template =>
+                (() => {
+                  // Initialize an array to hold applicable statuses
+                  const applicableStatuses = [];
+              
+                  // Add "Draft" if the event is in draft mode
+                  if (event.isDraft) {
+                    applicableStatuses.push("Draft");
+                  } else {
+                    // If not a draft, add "Finalized" as a base status
+                    applicableStatuses.push("Finalized");
+              
+                    // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
+                    if (
+                      !event.isDraft &&
+                      event.languagesAndTemplates?.some(template =>
                         ["Gmail", "Salesloft"].includes(template.platform)
                       )
-                    ? "Invite available"
-                    : "Finalized"
-                );
+                    ) {
+                      applicableStatuses.push("Invite available");
+                    }
+                  }
+              
+                  // Check if any selectedDraftStatuses match the applicable statuses
+                  return selectedDraftStatuses.some(status => applicableStatuses.includes(status));
+                })();
+              
               return (
                 subRegionMatch &&
                 gepMatch &&

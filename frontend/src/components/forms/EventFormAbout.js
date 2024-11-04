@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState,useCallback } from "react";
+import React, { useEffect, useContext, useState, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   Button,
@@ -21,10 +21,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Tooltip
+  Tooltip,
 } from "@mui/material";
 import { Box } from "@mui/system";
-import debounce from 'lodash.debounce';
+import debounce from "lodash.debounce";
+import geminiLogo from "../popup/logo/gemini.png";
 
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
@@ -57,8 +58,8 @@ const EventForm = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [eventType, setEventType] = useState(
-    eventTypeOptions.some(option => option.label === formData.eventType) 
-      ? formData.eventType 
+    eventTypeOptions.some((option) => option.label === formData.eventType)
+      ? formData.eventType
       : ""
   );
   const [title, setTitle] = useState(
@@ -100,7 +101,7 @@ const EventForm = () => {
   );
 
   const [newSpeaker, setNewSpeaker] = useState("");
- 
+
   const today = new Date();
 
   const [startDate, setStartDate] = useState(
@@ -160,22 +161,22 @@ const EventForm = () => {
 
   const handleGeminiSubmit = async () => {
     if (!geminiPrompt.trim()) return; // Prevent empty submission
-  
+
     setChatLog((prevChatLog) => [
       ...prevChatLog,
       { sender: "user", text: geminiPrompt },
     ]);
-  
+
     const geminiResponse = await fetchGeminiResponse(geminiPrompt);
-  
+
     setChatLog((prevChatLog) => [
       ...prevChatLog,
       { sender: "gemini", text: geminiResponse },
     ]);
-  
+
     setGeminiPrompt(""); // Clear the prompt input to prevent re-trigger
   };
-  
+
   const handleGeminiSubmitDebounced = useCallback(
     debounce(handleGeminiSubmit, 300),
     [geminiPrompt]
@@ -700,19 +701,35 @@ const EventForm = () => {
             </Grid>
             {/* Gemini Section */}
             <Grid item xs={12} sx={{ mb: 5 }}>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Description *    
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 1,
+                }}
+              >
+                <Typography variant="subtitle1">Description *</Typography>
                 <Tooltip title="Generate description with Gemini" arrow>
-
-                <IconButton
-                  onClick={handleGeminiDialogOpen}
-                  size="small"
-                  sx={{ mr: 1 }}
-                >
-                  <AddCircleOutlineIcon fontSize="small" />
-                </IconButton>
+                  <IconButton
+                    onClick={handleGeminiDialogOpen}
+                    size="small"
+                    sx={{ ml: 1 }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Typography sx={{ fontStyle: "italic", mr: 1 }}>
+                        Generate with Gemini
+                      </Typography>
+                      <img
+                        src={geminiLogo}
+                        alt="Gemini Logo"
+                        style={{ width: 24, height: 24 }}
+                      />
+                    </Box>
+                  </IconButton>
                 </Tooltip>
-              </Typography>
+              </Box>
+
               <TextField
                 label="Internal description (for internal use only)"
                 multiline
