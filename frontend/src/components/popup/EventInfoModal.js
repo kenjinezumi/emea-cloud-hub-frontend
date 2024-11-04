@@ -8,6 +8,8 @@ import { duplicateEvent } from "../../api/duplicateData";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { shareToGoogleCalendar } from "../../api/shareCalendar";
 import Draggable from "react-draggable";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+
 import {
   IconButton,
   Typography,
@@ -51,6 +53,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { useNavigate } from "react-router-dom";
 import { red, blue } from "@mui/material/colors";
 import salesloftLogo from "./logo/salesloft.png";
+import linkedInLogo from "./logo/linkedin.png";
 
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
@@ -63,6 +66,8 @@ export default function EventInfoPopup({ event, close }) {
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false);
   const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
+  const [linkedInDialogOpen, setLinkedInDialogOpen] = useState(false);
+
   const [calendarConfirmationDialogOpen, setCalendarConfirmationDialogOpen] =
     useState(false); // State for confirmation dialog
 
@@ -82,9 +87,7 @@ export default function EventInfoPopup({ event, close }) {
       return;
     }
 
-
     // Check if start or end date is missing time
-   
 
     try {
       const eventData = {
@@ -1193,114 +1196,167 @@ export default function EventInfoPopup({ event, close }) {
 
             {/* Add Buttons to Bottom */}
             <Divider sx={{ width: "100%", my: 1 }} />
-
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{ p: 2, justifyContent: "flex-end" }}
-              alignItems="center"
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingLeft: 2,
+              }}
             >
-              <div>
-                {hasLanguagesAndTemplates ? (
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        maxWidth: 200,
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      Language: {selectedLanguage}
-                    </Typography>
-
-                    <Tooltip title="Select Language">
-                      <IconButton onClick={handleLanguageClick}>
-                        <LanguageIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Stack>
-                ) : (
-                  <Typography variant="body2" color="textSecondary">
-                    No languages provided
-                  </Typography>
-                )}
-
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleCloseMenu}
-                  disablePortal
-                  transformOrigin={{
-                    vertical: "center",
-                    horizontal: "center",
-                  }}
-                  PaperProps={{
-                    sx: {
-                      zIndex: 10000,
-                      boxShadow: "0px 4px 10px rgba(0,0,0,0.5)",
-                      borderRadius: "8px",
-                      bgcolor: "background.paper",
-                      minWidth: 600,
-                      paddingBottom: "16px",
-                    },
-                  }}
-                  MenuListProps={{
-                    sx: {
-                      maxHeight: "100vh",
-                      overflowY: "auto",
-                    },
-                  }}
-                >
-                  {languagesAndTemplates.map((item) => (
-                    <MenuItem
-                      key={item.language}
-                      selected={item.language === selectedLanguage}
-                      onClick={() => handleLanguageSelect(item.language)}
-                    >
-                      {item.language}
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </div>
-
-              <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: hasLanguagesAndTemplates
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(200, 200, 200, 0.5)",
-                  color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
-                  boxShadow: hasLanguagesAndTemplates
-                    ? "0 1px 2px 0 rgba(60,64,67,0.302)"
-                    : "none",
-                  margin: "10px",
-                  "&:hover": {
-                    backgroundColor: hasLanguagesAndTemplates
-                      ? "rgba(66, 133, 244, 0.1)"
-                      : "rgba(200, 200, 200, 0.5)",
-                    borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
-                  },
-                }}
-                disabled={!hasLanguagesAndTemplates} // Disable button if no templates
-                startIcon={
-                  <img
-                    src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
-                    alt="Gmail Logo"
-                    style={{
-                      width: "24px",
-                      height: "24px",
-                      marginRight: "8px",
-                    }}
-                  />
+              <CustomTooltip
+                title={
+                  selectedEvent.hailoLinks &&
+                  selectedEvent.hailoLinks.length > 0
+                    ? "View Hailo Links on LinkedIn"
+                    : "No Hailo link provided"
                 }
-                onClick={handleGmailInvite}
+                arrow
+                sx={{
+                  zIndex: 120000,
+                }}
               >
-                Gmail Invite
-              </Button>
+                <span>
+                  {" "}
+                  {/* Wrap IconButton in a span to ensure tooltip shows on disabled buttons */}
+                  <IconButton
+                    onClick={() =>
+                      selectedEvent.hailoLinks &&
+                      selectedEvent.hailoLinks.length > 0
+                        ? setLinkedInDialogOpen(true)
+                        : null
+                    }
+                    size="small"
+                    disabled={
+                      !selectedEvent.hailoLinks ||
+                      selectedEvent.hailoLinks.length === 0
+                    }
+                    sx={{
+                      opacity:
+                        selectedEvent.hailoLinks &&
+                        selectedEvent.hailoLinks.length > 0
+                          ? 1
+                          : 0.5,
+                    }}
+                  >
+                    <img
+                      src={linkedInLogo}
+                      alt="LinkedIn Logo"
+                      style={{ width: "24px", height: "24px" }}
+                    />
+                  </IconButton>
+                </span>
+              </CustomTooltip>
 
-              {/* <Button
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ p: 2, justifyContent: "flex-end" }}
+                alignItems="center"
+              >
+                <div>
+                  {hasLanguagesAndTemplates ? (
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          maxWidth: 200,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        Language: {selectedLanguage}
+                      </Typography>
+
+                      <CustomTooltip title="Select Language">
+                        <IconButton onClick={handleLanguageClick}>
+                          <LanguageIcon />
+                        </IconButton>
+                      </CustomTooltip>
+                    </Stack>
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      No languages provided
+                    </Typography>
+                  )}
+
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleCloseMenu}
+                    disablePortal
+                    transformOrigin={{
+                      vertical: "center",
+                      horizontal: "center",
+                    }}
+                    PaperProps={{
+                      sx: {
+                        zIndex: 10000,
+                        boxShadow: "0px 4px 10px rgba(0,0,0,0.5)",
+                        borderRadius: "8px",
+                        bgcolor: "background.paper",
+                        minWidth: 600,
+                        paddingBottom: "16px",
+                      },
+                    }}
+                    MenuListProps={{
+                      sx: {
+                        maxHeight: "100vh",
+                        overflowY: "auto",
+                      },
+                    }}
+                  >
+                    {languagesAndTemplates.map((item) => (
+                      <MenuItem
+                        key={item.language}
+                        selected={item.language === selectedLanguage}
+                        onClick={() => handleLanguageSelect(item.language)}
+                      >
+                        {item.language}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </div>
+
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: hasLanguagesAndTemplates
+                      ? "rgba(255, 255, 255, 0.1)"
+                      : "rgba(200, 200, 200, 0.5)",
+                    color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
+                    boxShadow: hasLanguagesAndTemplates
+                      ? "0 1px 2px 0 rgba(60,64,67,0.302)"
+                      : "none",
+                    margin: "10px",
+                    "&:hover": {
+                      backgroundColor: hasLanguagesAndTemplates
+                        ? "rgba(66, 133, 244, 0.1)"
+                        : "rgba(200, 200, 200, 0.5)",
+                      borderColor: hasLanguagesAndTemplates
+                        ? blue[500]
+                        : "none",
+                    },
+                  }}
+                  disabled={!hasLanguagesAndTemplates} // Disable button if no templates
+                  startIcon={
+                    <img
+                      src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
+                      alt="Gmail Logo"
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        marginRight: "8px",
+                      }}
+                    />
+                  }
+                  onClick={handleGmailInvite}
+                >
+                  Gmail Invite
+                </Button>
+
+                {/* <Button
                 variant="contained"
                 sx={{
                   backgroundColor: hasLanguagesAndTemplates
@@ -1334,7 +1390,8 @@ export default function EventInfoPopup({ event, close }) {
               >
                 SalesLoft Invite
               </Button> */}
-            </Stack>
+              </Stack>
+            </Box>
           </Paper>
         </div>
       </Draggable>
@@ -1423,6 +1480,66 @@ export default function EventInfoPopup({ event, close }) {
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog
+        open={linkedInDialogOpen}
+        onClose={() => setLinkedInDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        sx={{ zIndex: 100000000 }}
+      >
+        <DialogTitle>Hailo Links</DialogTitle>
+        <DialogContent>
+          {selectedEvent.hailoLinks?.length > 0 ? (
+            selectedEvent.hailoLinks.map((link, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 1,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  component="a"
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    color: "#1a73e8", // Google blue
+                    textDecoration: "underline",
+                    maxWidth: "85%",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {link}
+                </Typography>
+                <IconButton
+                  onClick={() => window.open(link, "_blank")}
+                  size="small"
+                  sx={{ color: "#1a73e8" }} // Google blue
+                >
+                  <ArrowForwardIcon />
+                </IconButton>
+              </Box>
+            ))
+          ) : (
+            <Typography>No Hailo links available</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setLinkedInDialogOpen(false)}
+            color="secondary"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog
         open={confirmationDialogOpen}
         onClose={handleConfirmationDialogClose}
