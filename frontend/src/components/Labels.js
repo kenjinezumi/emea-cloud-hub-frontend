@@ -130,9 +130,33 @@ export default function Filters() {
 
   const handleSaveFilter = () => {
     if (customFilterName.trim()) {
-      setSavedFilters([...savedFilters, customFilterName.trim()]);
+      const currentFiltersConfig = {
+        subRegions: localSubRegionFilters,
+        gep: localGepOptions,
+        accountSectors: localAccountSectorOptions,
+        accountSegments: localAccountSegmentOptions,
+        buyerSegmentRollup: localBuyerSegmentRollupOptions,
+        productFamily: localProductFamilyOptions,
+        industry: localIndustryOptions,
+        partnerEvent: localPartnerEventOptions,
+        draftStatus: localDraftStatusOptions,
+      };
+
+      setSavedFilters([...savedFilters, { name: customFilterName.trim(), config: currentFiltersConfig }]);
       setCustomFilterName('');
     }
+  };
+
+  const applyFilterConfig = (config) => {
+    setLocalSubRegionFilters(config.subRegions);
+    setLocalGepOptions(config.gep);
+    setLocalAccountSectorOptions(config.accountSectors);
+    setLocalAccountSegmentOptions(config.accountSegments);
+    setLocalBuyerSegmentRollupOptions(config.buyerSegmentRollup);
+    setLocalProductFamilyOptions(config.productFamily);
+    setLocalIndustryOptions(config.industry);
+    setLocalPartnerEventOptions(config.partnerEvent);
+    setLocalDraftStatusOptions(config.draftStatus);
   };
 
   return (
@@ -151,100 +175,101 @@ export default function Filters() {
         </button>
       </div> */}
 <Accordion
-  expanded={isCustomFiltersExpanded}
-  onChange={() => setIsCustomFiltersExpanded(!isCustomFiltersExpanded)}
-  sx={{
-    borderRadius: '6px',
-    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)',
-    border: '1px solid #e0e0e0',
-    marginBottom: '4px',
-    minHeight: '24px', // Set a smaller minimum height for the accordion
-  }}
->
-  <AccordionSummary
-    expandIcon={<ExpandMoreIcon sx={{ color: blue[500], fontSize: '14px' }} />}
-    aria-controls="custom-filters-content"
-    id="custom-filters-header"
-    sx={{
-      backgroundColor: '#e8f0fe',
-      padding: '2px 8px', // Minimal padding
-      borderRadius: '6px',
-      minHeight: '24px', // Smaller height for the summary
-      maxHeight: '24px', // Restrict height for a compact look
-      '& .MuiAccordionSummary-content': {
-        margin: 0, // Remove additional margin
-        fontSize: '12px', // Smaller font size
-      },
-    }}
-  >
-    <Typography
-      variant="subtitle2"
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        color: blue[500],
-        fontWeight: '600',
-        fontSize: '12px', // Smaller font size for title
-      }}
-    >
-      Custom Filters
-    </Typography>
-  </AccordionSummary>
-  <AccordionDetails sx={{ padding: '4px 8px' }}> {/* Reduced padding for a compact look */}
-    {/* Custom Filter Input */}
-    <Box sx={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '4px' }}>
-      <TextField
-        fullWidth
-        label="Filter Name"
-        value={customFilterName}
-        onChange={(e) => setCustomFilterName(e.target.value)}
-        variant="outlined"
-        size="small"
-        sx={{ backgroundColor: '#ffffff', borderRadius: '4px', fontSize: '10px' }}
-        InputProps={{ style: { fontSize: '10px', padding: '4px 8px' } }} // Smaller padding for input field
-        InputLabelProps={{ style: { fontSize: '10px' } }}
-      />
-      <IconButton
-        aria-label="save filter"
-        onClick={handleSaveFilter}
-        sx={{ color: blue[500], fontSize: '14px' }}
+        expanded={isCustomFiltersExpanded}
+        onChange={() => setIsCustomFiltersExpanded(!isCustomFiltersExpanded)}
+        sx={{
+          borderRadius: '6px',
+          boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e0e0e0',
+          marginBottom: '4px',
+          minHeight: '24px',
+        }}
       >
-        <DoneAllIcon sx={{ fontSize: '14px' }} />
-      </IconButton>
-      <IconButton
-        aria-label="clear filter name"
-        onClick={() => setCustomFilterName('')}
-        sx={{ color: '#d32f2f', fontSize: '14px' }}
-      >
-        <ClearIcon sx={{ fontSize: '14px' }} />
-      </IconButton>
-    </Box>
-
-    {/* Saved Filters */}
-    <Divider sx={{ marginY: '4px' }} />
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-      {savedFilters.length > 0 ? (
-        savedFilters.map((filter, index) => (
-          <Chip
-            key={index}
-            label={filter}
-            onDelete={() => setSavedFilters(savedFilters.filter(f => f !== filter))}
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ color: blue[500], fontSize: '14px' }} />}
+          aria-controls="custom-filters-content"
+          id="custom-filters-header"
+          sx={{
+            backgroundColor: '#e8f0fe',
+            padding: '2px 8px',
+            borderRadius: '6px',
+            minHeight: '24px',
+            maxHeight: '24px',
+            '& .MuiAccordionSummary-content': {
+              margin: 0,
+              fontSize: '12px',
+            },
+          }}
+        >
+          <Typography
+            variant="subtitle2"
             sx={{
-              backgroundColor: '#e0f7fa',
-              color: '#00796b',
-              fontSize: '10px',
-              height: '20px', // Reduced height for compact chips
+              display: 'flex',
+              alignItems: 'center',
+              color: blue[500],
+              fontWeight: '600',
+              fontSize: '12px',
             }}
-          />
-        ))
-      ) : (
-        <Typography variant="body2" color="textSecondary" sx={{ fontSize: '10px' }}>
-          No saved filters
-        </Typography>
-      )}
-    </Box>
-  </AccordionDetails>
-</Accordion>
+          >
+            Custom Filters
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ padding: '4px 8px' }}>
+          {/* Custom Filter Input */}
+          <Box sx={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '4px' }}>
+            <TextField
+              fullWidth
+              label="Add filter"
+              value={customFilterName}
+              onChange={(e) => setCustomFilterName(e.target.value)}
+              variant="outlined"
+              size="small"
+              sx={{ backgroundColor: '#ffffff', borderRadius: '4px', fontSize: '10px' }}
+              InputProps={{ style: { fontSize: '10px', padding: '4px 8px' } }}
+              InputLabelProps={{ style: { fontSize: '10px' } }}
+            />
+            <IconButton
+              aria-label="save filter"
+              onClick={handleSaveFilter}
+              sx={{ color: blue[500], fontSize: '14px' }}
+            >
+              <DoneAllIcon sx={{ fontSize: '14px' }} />
+            </IconButton>
+            <IconButton
+              aria-label="clear filter name"
+              onClick={() => setCustomFilterName('')}
+              sx={{ color: '#d32f2f', fontSize: '14px' }}
+            >
+              <ClearIcon sx={{ fontSize: '14px' }} />
+            </IconButton>
+          </Box>
+
+          {/* Saved Filters */}
+          <Divider sx={{ marginY: '4px' }} />
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            {savedFilters.length > 0 ? (
+              savedFilters.map((filter, index) => (
+                <Chip
+                  key={index}
+                  label={filter.name}
+                  onClick={() => applyFilterConfig(filter.config)}
+                  onDelete={() => setSavedFilters(savedFilters.filter(f => f !== filter))}
+                  sx={{
+                    backgroundColor: '#e0f7fa',
+                    color: '#00796b',
+                    fontSize: '10px',
+                    height: '20px',
+                  }}
+                />
+              ))
+            ) : (
+              <Typography variant="body2" color="textSecondary" sx={{ fontSize: '10px' }}>
+                No saved filters
+              </Typography>
+            )}
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
       <div>
         <IconButton
