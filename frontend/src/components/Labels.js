@@ -13,8 +13,14 @@ import {
 } from './filters/FiltersData';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import { Typography, IconButton,  Chip, TextField  } from '@mui/material';
+import { Typography, IconButton,  Chip, TextField, Box, Divider,  Accordion,
+  AccordionSummary,
+  AccordionDetails, } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
+import { blue } from '@mui/material/colors';
+
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 
 export default function Filters() {
@@ -144,53 +150,102 @@ export default function Filters() {
           Select all filters
         </button>
       </div> */}
-      <div className="mb-4">
-        <div onClick={() => setIsCustomFiltersExpanded(!isCustomFiltersExpanded)} className="cursor-pointer flex items-center">
-          <Typography variant="subtitle2" className="mr-2">Custom Filters</Typography>
-          {isCustomFiltersExpanded ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
-        </div>
-        {isCustomFiltersExpanded && (
-          <div className="mt-2">
-            <div className="flex items-center mb-2">
-              <TextField
-                value={customFilterName}
-                onChange={(e) => setCustomFilterName(e.target.value)}
-                label="Filter Name"
-                variant="outlined"
-                size="small"
-              />
-              <IconButton
-                aria-label="save filter"
-                onClick={handleSaveFilter}
-                size="small"
-                style={{ color: '#1976d2' }} // Save button color
-              >
-                <DoneAllIcon />
-              </IconButton>
-              <IconButton
-                aria-label="clear filter name"
-                onClick={() => setCustomFilterName('')}
-                size="small"
-                style={{ color: '#d32f2f' }} // Clear button color
-              >
-                <ClearIcon />
-              </IconButton>
-            </div>
-            {/* Saved Filters as Chips */}
-            <div className="flex flex-wrap gap-2">
-              {savedFilters.map((filter, index) => (
-                <Chip
-                  key={index}
-                  label={filter}
-                  onDelete={() => setSavedFilters(savedFilters.filter(f => f !== filter))}
-                  size="small"
-                  style={{ backgroundColor: '#e0f7fa', color: '#00796b' }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+<Accordion
+  expanded={isCustomFiltersExpanded}
+  onChange={() => setIsCustomFiltersExpanded(!isCustomFiltersExpanded)}
+  sx={{
+    borderRadius: '6px',
+    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.1)',
+    border: '1px solid #e0e0e0',
+    marginBottom: '4px',
+    minHeight: '24px', // Set a smaller minimum height for the accordion
+  }}
+>
+  <AccordionSummary
+    expandIcon={<ExpandMoreIcon sx={{ color: blue[500], fontSize: '14px' }} />}
+    aria-controls="custom-filters-content"
+    id="custom-filters-header"
+    sx={{
+      backgroundColor: '#e8f0fe',
+      padding: '2px 8px', // Minimal padding
+      borderRadius: '6px',
+      minHeight: '24px', // Smaller height for the summary
+      maxHeight: '24px', // Restrict height for a compact look
+      '& .MuiAccordionSummary-content': {
+        margin: 0, // Remove additional margin
+        fontSize: '12px', // Smaller font size
+      },
+    }}
+  >
+    <Typography
+      variant="subtitle2"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        color: blue[500],
+        fontWeight: '600',
+        fontSize: '12px', // Smaller font size for title
+      }}
+    >
+      Custom Filters
+    </Typography>
+  </AccordionSummary>
+  <AccordionDetails sx={{ padding: '4px 8px' }}> {/* Reduced padding for a compact look */}
+    {/* Custom Filter Input */}
+    <Box sx={{ display: 'flex', gap: '4px', alignItems: 'center', marginBottom: '4px' }}>
+      <TextField
+        fullWidth
+        label="Filter Name"
+        value={customFilterName}
+        onChange={(e) => setCustomFilterName(e.target.value)}
+        variant="outlined"
+        size="small"
+        sx={{ backgroundColor: '#ffffff', borderRadius: '4px', fontSize: '10px' }}
+        InputProps={{ style: { fontSize: '10px', padding: '4px 8px' } }} // Smaller padding for input field
+        InputLabelProps={{ style: { fontSize: '10px' } }}
+      />
+      <IconButton
+        aria-label="save filter"
+        onClick={handleSaveFilter}
+        sx={{ color: blue[500], fontSize: '14px' }}
+      >
+        <DoneAllIcon sx={{ fontSize: '14px' }} />
+      </IconButton>
+      <IconButton
+        aria-label="clear filter name"
+        onClick={() => setCustomFilterName('')}
+        sx={{ color: '#d32f2f', fontSize: '14px' }}
+      >
+        <ClearIcon sx={{ fontSize: '14px' }} />
+      </IconButton>
+    </Box>
+
+    {/* Saved Filters */}
+    <Divider sx={{ marginY: '4px' }} />
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+      {savedFilters.length > 0 ? (
+        savedFilters.map((filter, index) => (
+          <Chip
+            key={index}
+            label={filter}
+            onDelete={() => setSavedFilters(savedFilters.filter(f => f !== filter))}
+            sx={{
+              backgroundColor: '#e0f7fa',
+              color: '#00796b',
+              fontSize: '10px',
+              height: '20px', // Reduced height for compact chips
+            }}
+          />
+        ))
+      ) : (
+        <Typography variant="body2" color="textSecondary" sx={{ fontSize: '10px' }}>
+          No saved filters
+        </Typography>
+      )}
+    </Box>
+  </AccordionDetails>
+</Accordion>
+
       <div>
         <IconButton
           aria-label="clear all"
