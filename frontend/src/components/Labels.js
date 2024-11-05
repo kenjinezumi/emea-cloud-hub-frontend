@@ -13,7 +13,7 @@ import {
 } from './filters/FiltersData';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
-import { Typography, IconButton } from '@mui/material';
+import { Typography, IconButton,  Chip, TextField  } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 
@@ -28,7 +28,10 @@ export default function Filters() {
   const [localPartnerEventOptions, setLocalPartnerEventOptions] = useState(partnerEventOptions);
   const [localDraftStatusOptions, setLocalDraftStatusOptions] = useState(draftStatusOptions);
 
+  //Accordions
   const [isSubRegionExpanded, setIsSubRegionExpanded] = useState(false);
+  const [isCustomFiltersExpanded, setIsCustomFiltersExpanded] = useState(false);
+
   const [isGepExpanded, setIsGepExpanded] = useState(false);
   const [isAccountSectorExpanded, setIsAccountSectorExpanded] = useState(false);
   const [isAccountSegmentExpanded, setIsAccountSegmentExpanded] = useState(false);
@@ -37,6 +40,10 @@ export default function Filters() {
   const [isIndustryExpanded, setIsIndustryExpanded] = useState(false);
   const [isPartnerEventExpanded, setIsPartnerEventExpanded] = useState(false);
   const [isDraftStatusExpanded, setIsDraftStatusExpanded] = useState(false);
+
+  //Custom filters state
+  const [customFilterName, setCustomFilterName] = useState('');
+  const [savedFilters, setSavedFilters] = useState([]);
 
   const { updateFilters } = useContext(GlobalContext);
 
@@ -115,6 +122,13 @@ export default function Filters() {
     </div>
   );
 
+  const handleSaveFilter = () => {
+    if (customFilterName.trim()) {
+      setSavedFilters([...savedFilters, customFilterName.trim()]);
+      setCustomFilterName('');
+    }
+  };
+
   return (
     <div className="mt-4">
       {/* <div>
@@ -130,6 +144,53 @@ export default function Filters() {
           Select all filters
         </button>
       </div> */}
+      <div className="mb-4">
+        <div onClick={() => setIsCustomFiltersExpanded(!isCustomFiltersExpanded)} className="cursor-pointer flex items-center">
+          <Typography variant="subtitle2" className="mr-2">Custom Filters</Typography>
+          {isCustomFiltersExpanded ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+        </div>
+        {isCustomFiltersExpanded && (
+          <div className="mt-2">
+            <div className="flex items-center mb-2">
+              <TextField
+                value={customFilterName}
+                onChange={(e) => setCustomFilterName(e.target.value)}
+                label="Filter Name"
+                variant="outlined"
+                size="small"
+              />
+              <IconButton
+                aria-label="save filter"
+                onClick={handleSaveFilter}
+                size="small"
+                style={{ color: '#1976d2' }} // Save button color
+              >
+                <DoneAllIcon />
+              </IconButton>
+              <IconButton
+                aria-label="clear filter name"
+                onClick={() => setCustomFilterName('')}
+                size="small"
+                style={{ color: '#d32f2f' }} // Clear button color
+              >
+                <ClearIcon />
+              </IconButton>
+            </div>
+            {/* Saved Filters as Chips */}
+            <div className="flex flex-wrap gap-2">
+              {savedFilters.map((filter, index) => (
+                <Chip
+                  key={index}
+                  label={filter}
+                  onDelete={() => setSavedFilters(savedFilters.filter(f => f !== filter))}
+                  size="small"
+                  style={{ backgroundColor: '#e0f7fa', color: '#00796b' }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
       <div>
         <IconButton
           aria-label="clear all"
