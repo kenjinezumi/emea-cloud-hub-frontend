@@ -351,11 +351,14 @@ export default function Filters() {
               }}
               // InputProps={{ style: { fontSize: "10px", padding: "4px 8px" } }}
               InputLabelProps={{
+                shrink: false, // Disable label shrink on input
                 style: {
                   fontSize: '10px',
                   top: '-6px',
+                  visibility: customFilterName ? 'hidden' : 'visible', // Hide label when input is not empty
                 },
-              }}            />
+              }}        
+               />
             <IconButton
               aria-label="save filter"
               onClick={handleSaveFilter}
