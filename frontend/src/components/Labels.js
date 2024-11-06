@@ -26,11 +26,11 @@ import {
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
 import { blue } from "@mui/material/colors";
-
+import { sendFilterDataToAPI } from "../api/pushFiltersConfig";
+import { getFilterDataFromAPI } from "../api/getFilterData";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
-
+import { deleteFilterDataFromAPI} from "../api/deleteFilterData";
 export default function Filters() {
   const [localSubRegionFilters, setLocalSubRegionFilters] = useState(
     subRegionOptions.map((option) => ({ label: option, checked: false }))
@@ -214,27 +214,83 @@ export default function Filters() {
     </div>
   );
 
-  const handleSaveFilter = () => {
-    if (customFilterName.trim()) {
-      const currentFiltersConfig = {
-        subRegions: localSubRegionFilters,
-        gep: localGepOptions,
-        accountSectors: localAccountSectorOptions,
-        accountSegments: localAccountSegmentOptions,
-        buyerSegmentRollup: localBuyerSegmentRollupOptions,
-        productFamily: localProductFamilyOptions,
-        industry: localIndustryOptions,
-        partnerEvent: localPartnerEventOptions,
-        draftStatus: localDraftStatusOptions,
-      };
+  const handleDeleteFilter = async (filterName) => {
+    // Call delete API
+    await deleteFilterDataFromAPI(filterName);
 
-      setSavedFilters([
-        ...savedFilters,
-        { name: customFilterName.trim(), config: currentFiltersConfig },
-      ]);
-      setCustomFilterName("");
+    // Remove filter from the local savedFilters state
+    const updatedFilters = savedFilters.filter(filter => filter.name !== filterName);
+    setSavedFilters(updatedFilters);
+  };
+
+  const getUserLdap = () => {
+    const userData = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
+    
+    if (userData && userData.emails && userData.emails[0].value) {
+      const email = userData.emails[0].value;
+      return email.split('@')[0];
+    }
+      throw new Error('No user data found in local storage or session storage');
+  };
+  
+  useEffect(() => {
+    // Function to fetch and set saved filters
+    const fetchSavedFilters = async () => {
+      try {
+        const ldap = getUserLdap();
+        const filters = await getFilterDataFromAPI(ldap);
+        if (filters) {
+          setSavedFilters(filters);
+        }
+      } catch (error) {
+        console.error("Error fetching saved filters:", error);
+      }
+    };
+
+    fetchSavedFilters();
+  }, []);
+
+  
+  const handleSaveFilter = () => {
+    const ldap = getUserLdap();
+
+  // Check if LDAP retrieval was successful
+  if (ldap.startsWith('Error:')) {
+    console.error(ldap); // Log or display the error message
+    return; // Exit the function if there's an error
+  }
+    if (customFilterName.trim()) {
+      const filterData = {
+        ldap: ldap,  // Replace with actual LDAP or user identifier if available
+        filters_config: [
+          {
+            name: customFilterName.trim(),
+            config: [
+              {
+                subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
+                gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
+                accountSectors: localAccountSectorOptions.map(({ label, checked }) => ({ label, checked })),
+                accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
+                buyerSegmentRollup: localBuyerSegmentRollupOptions.map(({ label, checked }) => ({ label, checked })),
+                productFamily: localProductFamilyOptions.map(({ label, checked }) => ({ label, checked })),
+                industry: localIndustryOptions.map(({ label, checked }) => ({ label, checked })),
+                partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({ label, checked })),
+                draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({ label, checked })),
+              },
+            ],
+          },
+        ],
+      };
+  
+      // Send the formatted filter data to the backend
+      sendFilterDataToAPI(filterData);
+  
+      // Add the filter to the local savedFilters state
+      setSavedFilters([...savedFilters, { name: customFilterName.trim(), config: filterData.filters_config }]);
+      setCustomFilterName(''); // Clear input after saving
     }
   };
+  
 
   const applyFilterConfig = (config) => {
     setLocalSubRegionFilters(config.subRegions);
@@ -384,9 +440,7 @@ export default function Filters() {
                   key={index}
                   label={filter.name}
                   onClick={() => applyFilterConfig(filter.config)}
-                  onDelete={() =>
-                    setSavedFilters(savedFilters.filter((f) => f !== filter))
-                  }
+                  onDelete={() => handleDeleteFilter(filter.name)}
                   sx={{
                     backgroundColor: "#e0f7fa",
                     color: "#00796b",
