@@ -344,6 +344,21 @@ export default function CalendarHeader() {
                     TVC Access
                     <span className="material-icons">chevron_right</span>
                   </Button>
+
+                  <Button
+                    variant="text"
+                    color="primary"
+                    onClick={() =>
+                      window.open("http://go/playbook", "_blank")
+                    }
+                    sx={{
+                      justifyContent: "space-between",
+                      width: "100%",
+                    }}
+                  >
+                    Playboook & Enablement
+                    <span className="material-icons">chevron_right</span>
+                  </Button>
                 </Box>
                 <div style={{ marginTop: "10px" }}>
                   <Button
