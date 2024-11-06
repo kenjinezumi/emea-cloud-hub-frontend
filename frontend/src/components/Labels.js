@@ -292,16 +292,22 @@ export default function Filters() {
   
 
   const applyFilterConfig = (config) => {
-  setLocalSubRegionFilters(config.subRegions || []);  
-  setLocalGepOptions(config.gep || []);
-  setLocalAccountSectorOptions(config.accountSectors || []);
-  setLocalAccountSegmentOptions(config.accountSegments || []);
-  setLocalBuyerSegmentRollupOptions(config.buyerSegmentRollup || []);
-  setLocalProductFamilyOptions(config.productFamily || []);
-  setLocalIndustryOptions(config.industry || []);
-  setLocalPartnerEventOptions(config.partnerEvent || []);
-  setLocalDraftStatusOptions(config.draftStatus || []);
-};
+    if (!config) {
+      console.error("applyFilterConfig: Received undefined or invalid config.");
+      return;
+    }
+  
+    setLocalSubRegionFilters(config.subRegions || []);  
+    setLocalGepOptions(config.gep || []);
+    setLocalAccountSectorOptions(config.accountSectors || []);
+    setLocalAccountSegmentOptions(config.accountSegments || []);
+    setLocalBuyerSegmentRollupOptions(config.buyerSegmentRollup || []);
+    setLocalProductFamilyOptions(config.productFamily || []);
+    setLocalIndustryOptions(config.industry || []);
+    setLocalPartnerEventOptions(config.partnerEvent || []);
+    setLocalDraftStatusOptions(config.draftStatus || []);
+  };
+  
 
   return (
     <div className="mt-4">
@@ -437,7 +443,8 @@ export default function Filters() {
               savedFilters.map((filter, index) => (
                 <Chip
                   key={index}
-                  label={filter.filterName}
+                  label={filter.filterName || "Unnamed Filter"} // Display a fallback if filterName is missing
+
                   onClick={() => applyFilterConfig(filter.config)}
                   onDelete={() => handleDeleteFilter(filter.name)}
                   sx={{
