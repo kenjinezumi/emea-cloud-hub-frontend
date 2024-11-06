@@ -13,7 +13,7 @@ const deleteFilterDataFromAPI = async (filterName) => {
       },
       body: JSON.stringify({
         data: { name: filterName }, 
-        message: 'delete-config', 
+        message: 'delete-filter', 
         queryName: 'deleteConfig', 
       }),
     });
