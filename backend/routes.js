@@ -601,24 +601,25 @@ WHERE eventId = @eventId;
             SELECT 
                 @ldap AS ldap, 
                 ARRAY(
-                    SELECT AS STRUCT name, config
-                    FROM UNNEST(ARRAY(
-                        SELECT DISTINCT AS STRUCT name, config
-                        FROM UNNEST(target.filters_config)
-                        UNION ALL
-                        SELECT DISTINCT AS STRUCT name, config
-                        FROM UNNEST(@filters_config)
-                    ))
-                ) AS filters_config
+                    SELECT DISTINCT AS STRUCT name, config
+                    FROM UNNEST(@filters_config)
+                ) AS new_filters_config
         ) AS source
         ON target.ldap = source.ldap
         WHEN MATCHED THEN
             UPDATE SET 
-                target.filters_config = source.filters_config
+                target.filters_config = ARRAY(
+                    SELECT DISTINCT AS STRUCT name, config
+                    FROM UNNEST(target.filters_config)
+                    UNION ALL
+                    SELECT DISTINCT AS STRUCT name, config
+                    FROM UNNEST(source.new_filters_config)
+                )
         WHEN NOT MATCHED THEN
             INSERT (ldap, filters_config)
-            VALUES (source.ldap, source.filters_config);
+            VALUES (source.ldap, source.new_filters_config);
     `;
+    
     
 
         const options = {
