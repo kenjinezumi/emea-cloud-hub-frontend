@@ -686,7 +686,8 @@ WHERE eventId = @eventId;
         }
     } else if (message === "delete-filter") {
       // Delete filter logic
-      const { ldap, filterName } = data;
+      const { filterName, ldap } = data;
+      console.log('Deleting the filtername: ', filterName, ' LDAP: ', ldap);
 
       if (!ldap || !filterName) {
         logger.warn("POST /: LDAP and filter name are required for deletion.");
