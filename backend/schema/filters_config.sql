@@ -1,5 +1,5 @@
 CREATE TABLE `google.com:cloudhub.data.filters_config` (
-  `eventId` STRING NOT NULL,
+  `id` STRING NOT NULL,
   `ldap` STRING NOT NULL,
   `filterName` STRING NOT NULL,  -- New column for the filter name
   `config` ARRAY<STRUCT<
