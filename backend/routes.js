@@ -70,7 +70,6 @@ module.exports = (firestoreStore) => {
         "https://www.googleapis.com/auth/gmail.compose",
         "https://www.googleapis.com/auth/calendar.events",
         "https://www.googleapis.com/auth/cloud-platform",
-        "https://www.googleapis.com/auth/generative-language",
       ],
       accessType: "offline", // To receive a refresh token for long-term access
       prompt: "consent", // Force prompt to ensure refresh token is provided
@@ -597,21 +596,30 @@ WHERE eventId = @eventId;
         logger.info("POST /: Saving filter configuration.", { ldap });
 
         const upsertQuery = `
-                    MERGE \`google.com:cloudhub.data.filters_config\` AS target
-                    USING (
-                        SELECT @ldap AS ldap, @filters_config AS filters_config
-                    ) AS source
-                    ON target.ldap = source.ldap
-                    WHEN MATCHED THEN 
-                        UPDATE SET target.filters_config = ARRAY(
-                            SELECT AS STRUCT * FROM UNNEST(target.filters_config)
-                            UNION DISTINCT
-                            SELECT AS STRUCT * FROM UNNEST(source.filters_config)
-                        )
-                    WHEN NOT MATCHED THEN
-                        INSERT (ldap, filters_config)
-                        VALUES (source.ldap, source.filters_config);
-                `;
+    MERGE \`google.com:cloudhub.data.filters_config\` AS target
+    USING (
+        SELECT @ldap AS ldap, @filters_config AS filters_config
+    ) AS source
+    ON target.ldap = source.ldap
+    WHEN MATCHED THEN 
+        UPDATE SET target.filters_config = ARRAY(
+            SELECT AS STRUCT name, config
+            FROM UNNEST(
+                ARRAY(
+                    SELECT DISTINCT AS STRUCT name, config
+                    FROM (
+                        SELECT * FROM UNNEST(target.filters_config)
+                        UNION ALL
+                        SELECT * FROM UNNEST(source.filters_config)
+                    )
+                )
+            )
+        )
+    WHEN NOT MATCHED THEN
+        INSERT (ldap, filters_config)
+        VALUES (source.ldap, source.filters_config);
+`;
+
 
         const options = {
           query: upsertQuery,
