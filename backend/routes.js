@@ -675,7 +675,7 @@ WHERE eventId = @eventId;
             res.status(200).json({
                 success: true,
                 message: 'Filter configurations retrieved successfully.',
-                data: rows[0].config  // Return only the filters_config array
+                data: rows  // Return only the filters_config array
             });
         } catch (error) {
             logger.error('POST /: Error retrieving filter configurations.', { error });

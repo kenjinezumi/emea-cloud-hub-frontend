@@ -116,11 +116,7 @@ export default function MonthView({ month, isYearView = false }) {
                     return false;
                   }
                 });
-              console.log(
-                "Checking account sectors:",
-                filters.accountSectors,
-                event.accountSectors
-              );
+              
 
               // Account Sector filter match
               const accountSectorMatch =
