@@ -250,7 +250,7 @@ export default function Filters() {
     fetchSavedFilters();
   }, []);
 
-  
+
   const handleSaveFilter = () => {
     const ldap = getUserLdap();
 
@@ -293,16 +293,16 @@ export default function Filters() {
   
 
   const applyFilterConfig = (config) => {
-    setLocalSubRegionFilters(config.subRegions);
-    setLocalGepOptions(config.gep);
-    setLocalAccountSectorOptions(config.accountSectors);
-    setLocalAccountSegmentOptions(config.accountSegments);
-    setLocalBuyerSegmentRollupOptions(config.buyerSegmentRollup);
-    setLocalProductFamilyOptions(config.productFamily);
-    setLocalIndustryOptions(config.industry);
-    setLocalPartnerEventOptions(config.partnerEvent);
-    setLocalDraftStatusOptions(config.draftStatus);
-  };
+  setLocalSubRegionFilters(config.subRegions || []);  
+  setLocalGepOptions(config.gep || []);
+  setLocalAccountSectorOptions(config.accountSectors || []);
+  setLocalAccountSegmentOptions(config.accountSegments || []);
+  setLocalBuyerSegmentRollupOptions(config.buyerSegmentRollup || []);
+  setLocalProductFamilyOptions(config.productFamily || []);
+  setLocalIndustryOptions(config.industry || []);
+  setLocalPartnerEventOptions(config.partnerEvent || []);
+  setLocalDraftStatusOptions(config.draftStatus || []);
+};
 
   return (
     <div className="mt-4">

@@ -13,7 +13,7 @@ const sendFilterDataToAPI = async (data) => {
       },
       body: JSON.stringify({
         data: data, 
-        message: 'save-config', 
+        message: 'save-filter', 
         queryName: 'saveConfig', 
       }),
     });
