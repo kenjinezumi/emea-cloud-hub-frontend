@@ -581,9 +581,9 @@ WHERE eventId = @eventId;
       }
     } else if (message === "save-filter") {
       // Save filter logic
-      const { ldap, filters_config } = data;
+      const { ldap, filterName, config } = data;
 
-      if (!ldap || !filters_config || filters_config.length === 0) {
+    if (!ldap || !filterName || !config || config.length === 0) {
         logger.warn("POST /: Incomplete data for saving filter.");
         return res.status(400).json({
           success: false,
@@ -596,23 +596,25 @@ WHERE eventId = @eventId;
         logger.info("POST /: Saving filter configuration.", { ldap });
 
         const insertQuery = `
-    INSERT INTO \`google.com:cloudhub.data.filters_config\` (id, ldap, filters_config)
-    VALUES (GENERATE_UUID(), @ldap, @filters_config);
-`;
+        INSERT INTO \`google.com:cloudhub.data.filters_config\` (id, ldap, filterName, config)
+        VALUES (GENERATE_UUID(), @ldap, @filterName, @config);
+    `;
     
     
+    
 
-        const options = {
-          query: insertQuery,
-          location: "US",
-          params: {
-            ldap: ldap,
-            filters_config: filters_config,
-          },
-        };
-
-        await bigquery.query(options);
-
+    const options = {
+        query: insertQuery,
+        location: "US",
+        params: {
+          ldap: ldap,
+          filterName: filterName,
+          config: config,
+        },
+      };
+  
+      await bigquery.query(options);
+  
         logger.info("POST /: Filter configuration saved successfully.", {
           ldap,
         });
@@ -644,7 +646,7 @@ WHERE eventId = @eventId;
             logger.info('POST /: Retrieving filter configurations.', { ldap });
 
             const getFiltersQuery = `
-            SELECT filterName, filters_config
+            SELECT filterName, config
             FROM \`google.com:cloudhub.data.filters_config\`
             WHERE ldap = @ldap;
         `;
@@ -673,7 +675,7 @@ WHERE eventId = @eventId;
             res.status(200).json({
                 success: true,
                 message: 'Filter configurations retrieved successfully.',
-                data: rows[0].filters_config  // Return only the filters_config array
+                data: rows[0].config  // Return only the filters_config array
             });
         } catch (error) {
             logger.error('POST /: Error retrieving filter configurations.', { error });
