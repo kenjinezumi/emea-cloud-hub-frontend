@@ -2,8 +2,8 @@
 const API_URL = 'https://backend-dot-cloudhub.googleplex.com/';
 
 // Function to send delete request to the backend
-const deleteFilterDataFromAPI = async (filterName) => {
-  console.log(`Deleting filter: ${filterName}`); // Log the filter name being deleted
+const deleteFilterDataFromAPI = async (filterName, ldap) => {
+    console.log(`Deleting filter: ${filterName}`); // Log the filter name being deleted
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -12,7 +12,7 @@ const deleteFilterDataFromAPI = async (filterName) => {
         'Content-Type': 'text/plain',
       },
       body: JSON.stringify({
-        data: { name: filterName }, 
+        data: { filterName, ldap }, 
         message: 'delete-filter', 
         queryName: 'deleteConfig', 
       }),

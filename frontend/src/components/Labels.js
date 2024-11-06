@@ -215,13 +215,21 @@ export default function Filters() {
   );
 
   const handleDeleteFilter = async (filterName) => {
-    // Call delete API
-    await deleteFilterDataFromAPI(filterName);
+    try {
+      // Get the ldap value (you can adjust this if ldap is stored elsewhere)
+      const ldap = getUserLdap(); // Ensure `getUserLdap` is defined and returns the LDAP
   
-    // Remove filter from the local savedFilters state
-    const updatedFilters = savedFilters.filter(filter => filter.filterName !== filterName);
-    setSavedFilters(updatedFilters);
+      // Call delete API with both filterName and ldap
+      await deleteFilterDataFromAPI(filterName, ldap);
+  
+      // Remove filter from the local savedFilters state
+      const updatedFilters = savedFilters.filter(filter => filter.filterName !== filterName);
+      setSavedFilters(updatedFilters);
+    } catch (error) {
+      console.error("Error deleting filter:", error);
+    }
   };
+  
   
 
   const getUserLdap = () => {
@@ -292,21 +300,68 @@ export default function Filters() {
   
 
   const applyFilterConfig = (config) => {
-    if (!config) {
+    if (!config || !Array.isArray(config)) {
       console.error("applyFilterConfig: Received undefined or invalid config.");
       return;
     }
+    
+    const updatedSubRegionFilters = localSubRegionFilters.map((filter) => {
+      const match = config.subRegions?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
   
-    setLocalSubRegionFilters(config.subRegions || []);  
-    setLocalGepOptions(config.gep || []);
-    setLocalAccountSectorOptions(config.accountSectors || []);
-    setLocalAccountSegmentOptions(config.accountSegments || []);
-    setLocalBuyerSegmentRollupOptions(config.buyerSegmentRollup || []);
-    setLocalProductFamilyOptions(config.productFamily || []);
-    setLocalIndustryOptions(config.industry || []);
-    setLocalPartnerEventOptions(config.partnerEvent || []);
-    setLocalDraftStatusOptions(config.draftStatus || []);
+    const updatedGepOptions = localGepOptions.map((filter) => {
+      const match = config.gep?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedAccountSectorOptions = localAccountSectorOptions.map((filter) => {
+      const match = config.accountSectors?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedAccountSegmentOptions = localAccountSegmentOptions.map((filter) => {
+      const match = config.accountSegments?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedBuyerSegmentRollupOptions = localBuyerSegmentRollupOptions.map((filter) => {
+      const match = config.buyerSegmentRollup?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedProductFamilyOptions = localProductFamilyOptions.map((filter) => {
+      const match = config.productFamily?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedIndustryOptions = localIndustryOptions.map((filter) => {
+      const match = config.industry?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedPartnerEventOptions = localPartnerEventOptions.map((filter) => {
+      const match = config.partnerEvent?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedDraftStatusOptions = localDraftStatusOptions.map((filter) => {
+      const match = config.draftStatus?.find((item) => item.label === filter.label);
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    // Update local states
+    setLocalSubRegionFilters(updatedSubRegionFilters);
+    setLocalGepOptions(updatedGepOptions);
+    setLocalAccountSectorOptions(updatedAccountSectorOptions);
+    setLocalAccountSegmentOptions(updatedAccountSegmentOptions);
+    setLocalBuyerSegmentRollupOptions(updatedBuyerSegmentRollupOptions);
+    setLocalProductFamilyOptions(updatedProductFamilyOptions);
+    setLocalIndustryOptions(updatedIndustryOptions);
+    setLocalPartnerEventOptions(updatedPartnerEventOptions);
+    setLocalDraftStatusOptions(updatedDraftStatusOptions);
   };
+  
   
 
   return (
