@@ -596,30 +596,27 @@ WHERE eventId = @eventId;
         logger.info("POST /: Saving filter configuration.", { ldap });
 
         const upsertQuery = `
-        MERGE \`google.com:cloudhub.data.filters_config\` AS target
-        USING (
-            SELECT 
-                @ldap AS ldap, 
-                ARRAY(
-                    SELECT DISTINCT AS STRUCT name, config
-                    FROM UNNEST(@filters_config)
-                ) AS new_filters_config
-        ) AS source
-        ON target.ldap = source.ldap
-        WHEN MATCHED THEN
-            UPDATE SET 
-                target.filters_config = ARRAY(
-                    SELECT DISTINCT AS STRUCT name, config
-                    FROM UNNEST(target.filters_config)
-                    UNION ALL
-                    SELECT DISTINCT AS STRUCT name, config
-                    FROM UNNEST(source.new_filters_config)
+    MERGE \`google.com:cloudhub.data.filters_config\` AS target
+    USING (
+        SELECT 
+            @ldap AS ldap, 
+            @filters_config AS new_filters_config
+    ) AS source
+    ON target.ldap = source.ldap
+    WHEN MATCHED THEN
+        UPDATE SET 
+            target.filters_config = ARRAY(
+                SELECT AS STRUCT name, config
+                FROM (
+                    SELECT DISTINCT name, config FROM UNNEST(target.filters_config)
+                    UNION DISTINCT
+                    SELECT DISTINCT name, config FROM UNNEST(source.new_filters_config)
                 )
-        WHEN NOT MATCHED THEN
-            INSERT (ldap, filters_config)
-            VALUES (source.ldap, source.new_filters_config);
-    `;
-    
+            )
+    WHEN NOT MATCHED THEN
+        INSERT (ldap, filters_config)
+        VALUES (source.ldap, source.new_filters_config);
+`;
     
 
         const options = {
