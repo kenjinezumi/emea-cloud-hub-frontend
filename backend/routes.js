@@ -595,37 +595,15 @@ WHERE eventId = @eventId;
       try {
         logger.info("POST /: Saving filter configuration.", { ldap });
 
-        const upsertQuery = `
-        MERGE \`google.com:cloudhub.data.filters_config\` AS target
-        USING (
-            SELECT 
-                @ldap AS ldap, 
-                @filters_config AS new_filters_config
-        ) AS source
-        ON target.ldap = source.ldap
-        WHEN MATCHED THEN
-            UPDATE SET 
-                target.filters_config = ARRAY(
-                    SELECT AS STRUCT name, config
-                    FROM UNNEST(target.filters_config)
-                    UNION ALL
-                    SELECT AS STRUCT name, config
-                    FROM UNNEST(source.new_filters_config)
-                    WHERE NOT EXISTS (
-                        SELECT 1 
-                        FROM UNNEST(target.filters_config) AS existing
-                        WHERE existing.name = name
-                    )
-                )
-        WHEN NOT MATCHED THEN
-            INSERT (ldap, filters_config)
-            VALUES (source.ldap, source.new_filters_config);
-    `;
+        const insertQuery = `
+    INSERT INTO \`google.com:cloudhub.data.filters_config\` (id, ldap, filters_config)
+    VALUES (GENERATE_UUID(), @ldap, @filters_config);
+`;
     
     
 
         const options = {
-          query: upsertQuery,
+          query: insertQuery,
           location: "US",
           params: {
             ldap: ldap,
@@ -666,10 +644,11 @@ WHERE eventId = @eventId;
             logger.info('POST /: Retrieving filter configurations.', { ldap });
 
             const getFiltersQuery = `
-                SELECT filters_config
-                FROM \`google.com:cloudhub.data.filters_config\`
-                WHERE ldap = @ldap;
-            `;
+            SELECT filterName, filters_config
+            FROM \`google.com:cloudhub.data.filters_config\`
+            WHERE ldap = @ldap;
+        `;
+        
 
             const options = {
                 query: getFiltersQuery,
@@ -722,13 +701,10 @@ WHERE eventId = @eventId;
         });
 
         const deleteQuery = `
-                    UPDATE \`google.com:cloudhub.data.filters_config\`
-                    SET filters_config = ARRAY(
-                        SELECT AS STRUCT * FROM UNNEST(filters_config)
-                        WHERE name != @filterName
-                    )
-                    WHERE ldap = @ldap;
-                `;
+        DELETE FROM \`google.com:cloudhub.data.filters_config\`
+        WHERE ldap = @ldap AND filterName = @filterName;
+    `;
+    
 
         const options = {
           query: deleteQuery,

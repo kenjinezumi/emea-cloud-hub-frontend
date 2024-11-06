@@ -217,11 +217,12 @@ export default function Filters() {
   const handleDeleteFilter = async (filterName) => {
     // Call delete API
     await deleteFilterDataFromAPI(filterName);
-
+  
     // Remove filter from the local savedFilters state
-    const updatedFilters = savedFilters.filter(filter => filter.name !== filterName);
+    const updatedFilters = savedFilters.filter(filter => filter.filterName !== filterName);
     setSavedFilters(updatedFilters);
   };
+  
 
   const getUserLdap = () => {
     const userData = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
@@ -253,31 +254,28 @@ export default function Filters() {
 
   const handleSaveFilter = () => {
     const ldap = getUserLdap();
-
-  // Check if LDAP retrieval was successful
-  if (ldap.startsWith('Error:')) {
-    console.error(ldap); // Log or display the error message
-    return; // Exit the function if there's an error
-  }
+  
+    // Check if LDAP retrieval was successful
+    if (ldap.startsWith('Error:')) {
+      console.error(ldap);
+      return;
+    }
+  
     if (customFilterName.trim()) {
       const filterData = {
-        ldap: ldap,  // Replace with actual LDAP or user identifier if available
-        filters_config: [
+        ldap: ldap, // Replace with actual LDAP or user identifier if available
+        filterName: customFilterName.trim(), // Top-level filterName field
+        config: [
           {
-            name: customFilterName.trim(),
-            config: [
-              {
-                subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
-                gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
-                accountSectors: localAccountSectorOptions.map(({ label, checked }) => ({ label, checked })),
-                accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
-                buyerSegmentRollup: localBuyerSegmentRollupOptions.map(({ label, checked }) => ({ label, checked })),
-                productFamily: localProductFamilyOptions.map(({ label, checked }) => ({ label, checked })),
-                industry: localIndustryOptions.map(({ label, checked }) => ({ label, checked })),
-                partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({ label, checked })),
-                draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({ label, checked })),
-              },
-            ],
+            subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
+            gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
+            accountSectors: localAccountSectorOptions.map(({ label, checked }) => ({ label, checked })),
+            accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
+            buyerSegmentRollup: localBuyerSegmentRollupOptions.map(({ label, checked }) => ({ label, checked })),
+            productFamily: localProductFamilyOptions.map(({ label, checked }) => ({ label, checked })),
+            industry: localIndustryOptions.map(({ label, checked }) => ({ label, checked })),
+            partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({ label, checked })),
+            draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({ label, checked })),
           },
         ],
       };
@@ -286,10 +284,11 @@ export default function Filters() {
       sendFilterDataToAPI(filterData);
   
       // Add the filter to the local savedFilters state
-      setSavedFilters([...savedFilters, { name: customFilterName.trim(), config: filterData.filters_config }]);
+      setSavedFilters([...savedFilters, { filterName: customFilterName.trim(), config: filterData.config }]);
       setCustomFilterName(''); // Clear input after saving
     }
   };
+  
   
 
   const applyFilterConfig = (config) => {
@@ -438,7 +437,7 @@ export default function Filters() {
               savedFilters.map((filter, index) => (
                 <Chip
                   key={index}
-                  label={filter.name}
+                  label={filter.filterName}
                   onClick={() => applyFilterConfig(filter.config)}
                   onDelete={() => handleDeleteFilter(filter.name)}
                   sx={{
