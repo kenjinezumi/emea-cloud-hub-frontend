@@ -50,7 +50,7 @@ const EventFormEmailInvitation = () => {
       : [
           {
             platform: "Gmail",
-            language: "English",
+            language: "",
             template: "",
             subjectLine: "",
           },
@@ -276,45 +276,34 @@ const EventFormEmailInvitation = () => {
                         </FormControl>
                       </Grid>
                       <Grid item xs={12}>
-                        <FormControl fullWidth>
-                          <Typography variant="subtitle1">
-                            Email Language
-                          </Typography>
-                          {index === 0 ? (
-                            <TextField
-                              value={item.language || "Select Language"}
-                              fullWidth
-                              InputProps={{ readOnly: true }}
-                              variant="outlined"
-                              style={{ backgroundColor: "#e0e0e0" }}
-                            />
-                          ) : (
-                            <Autocomplete
-                              value={item.language}
-                              onChange={(event, newValue) => {
-                                handleLanguageChange(newValue, index);
-                              }}
-                              freeSolo
-                              options={languageOptions.filter(
-                                (language) =>
-                                  !languagesAndTemplates.some(
-                                    (templateItem, idx) =>
-                                      templateItem.language === language &&
-                                      templateItem.platform === item.platform &&
-                                      idx !== index // Ignore the current index to avoid self-filtering
-                                  )
-                              )}
-                              renderInput={(params) => (
-                                <TextField
-                                  {...params}
-                                  label=""
-                                  variant="outlined"
-                                />
-                              )}
-                            />
-                          )}
-                        </FormControl>
-                      </Grid>
+  <FormControl fullWidth>
+    <Typography variant="subtitle1">Email Language</Typography>
+    <Autocomplete
+      value={item.language || ""}
+      onChange={(event, newValue) => {
+        handleLanguageChange(newValue, index);
+      }}
+      freeSolo
+      options={languageOptions.filter(
+        (language) =>
+          !languagesAndTemplates.some(
+            (templateItem, idx) =>
+              templateItem.language === language &&
+              templateItem.platform === item.platform &&
+              idx !== index // Ensure the current item is not filtered out
+          )
+      )}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Select Language"
+          variant="outlined"
+        />
+      )}
+    />
+  </FormControl>
+</Grid>
+
                       <Grid item xs={12}>
                         <Typography variant="subtitle1">
                           Email Subject Line
