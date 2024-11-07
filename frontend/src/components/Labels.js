@@ -501,7 +501,7 @@ export default function Filters() {
                   label={filter.filterName || "Unnamed Filter"} // Display a fallback if filterName is missing
 
                   onClick={() => applyFilterConfig(filter.config)}
-                  onDelete={() => handleDeleteFilter(filter.name)}
+                  onDelete={() => handleDeleteFilter(filter.filterName)}
                   sx={{
                     backgroundColor: "#e0f7fa",
                     color: "#00796b",
