@@ -55,6 +55,9 @@ export default function Filters() {
   const [localDraftStatusOptions, setLocalDraftStatusOptions] =
     useState(draftStatusOptions);
 
+    const [refresh, setRefresh] = useState(false);
+
+
   //Accordions
   const [isSubRegionExpanded, setIsSubRegionExpanded] = useState(false);
   const [isCustomFiltersExpanded, setIsCustomFiltersExpanded] = useState(false);
@@ -153,6 +156,12 @@ export default function Filters() {
           : filter
       )
     );
+    forceRefresh();
+
+  };
+
+  const forceRefresh = () => {
+    setRefresh(!refresh);
   };
 
   useEffect(() => {
@@ -304,7 +313,8 @@ export default function Filters() {
       console.error("applyFilterConfig: Received undefined or invalid config.");
       return;
     }
-    
+  
+    // Update each state based on the selected configuration
     const updatedSubRegionFilters = localSubRegionFilters.map((filter) => {
       const match = config.subRegions?.find((item) => item.label === filter.label);
       return match ? { ...filter, checked: match.checked } : filter;
@@ -350,7 +360,7 @@ export default function Filters() {
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
-    // Update local states
+    // Update states to trigger re-render
     setLocalSubRegionFilters(updatedSubRegionFilters);
     setLocalGepOptions(updatedGepOptions);
     setLocalAccountSectorOptions(updatedAccountSectorOptions);
@@ -360,7 +370,10 @@ export default function Filters() {
     setLocalIndustryOptions(updatedIndustryOptions);
     setLocalPartnerEventOptions(updatedPartnerEventOptions);
     setLocalDraftStatusOptions(updatedDraftStatusOptions);
+    forceRefresh();
+
   };
+  
   
   
 
