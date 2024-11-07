@@ -41,7 +41,7 @@ import CategoryIcon from "@mui/icons-material/Category";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PeopleOutlineIcon from "@mui/icons-material/PeopleOutline";
 import MemoryIcon from "@mui/icons-material/Memory";
-import EmailIcon from '@mui/icons-material/Email';
+import EmailIcon from "@mui/icons-material/Email";
 
 function ShareEventPage() {
   const { eventId } = useParams();
@@ -60,7 +60,7 @@ function ShareEventPage() {
       getEventData(eventId)
         .then((data) => {
           if (data.length > 0) {
-            setEventDetails(data[0]);  // Assuming `data[0]` contains the event details
+            setEventDetails(data[0]); // Assuming `data[0]` contains the event details
           } else {
             setError("Event not found.");
           }
@@ -72,8 +72,7 @@ function ShareEventPage() {
           setLoading(false);
         });
     }
-  }, [eventId]);  // Make sure this useEffect depends on `eventId`
-  
+  }, [eventId]); // Make sure this useEffect depends on `eventId`
 
   if (loading) return <Typography>Loading...</Typography>;
   if (error) return <Typography color="error">{error}</Typography>;
@@ -353,62 +352,74 @@ function ShareEventPage() {
                 </div>
               </Grid>
 
+              {/* Sub Regions */}
               <Grid item xs={12}>
                 <Typography variant="subtitle1">
-                  {" "}
                   <TerrainIcon style={{ color: blue[500], marginRight: 8 }} />
                   Sub Regions:
                 </Typography>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "8px",
-                    marginTop: "8px",
-                    marginLeft: "32px",
-                  }}
-                >
-                  {Array.isArray(eventDetails.subRegion) ? (
-                    eventDetails.subRegion.map((subRegion, index) => (
+                {Array.isArray(eventDetails.subRegion) &&
+                eventDetails.subRegion.length > 0 ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                      marginTop: "8px",
+                      marginLeft: "32px",
+                    }}
+                  >
+                    {eventDetails.subRegion.map((subRegion, index) => (
                       <Chip
                         key={index}
                         label={subRegion}
                         style={{ margin: 2 }}
                       />
-                    ))
-                  ) : (
-                    <Typography variant="body1" gutterBottom>
-                      N/A
-                    </Typography>
-                  )}{" "}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Typography
+                    variant="body1"
+                    gutterBottom
+                    sx={{ marginLeft: "32px" }}
+                  >
+                    N/A
+                  </Typography>
+                )}
               </Grid>
+
+              {/* Countries */}
               <Grid item xs={12}>
                 <Typography variant="subtitle1">
-                  {" "}
                   <PublicIcon style={{ color: blue[500], marginRight: 8 }} />
                   Countries:
                 </Typography>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "8px",
-                    marginTop: "8px",
-                    marginLeft: "32px",
-                  }}
-                >
-                  {Array.isArray(eventDetails.country) ? (
-                    eventDetails.country.map((country, index) => (
+                {Array.isArray(eventDetails.country) &&
+                eventDetails.country.length > 0 ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                      marginTop: "8px",
+                      marginLeft: "32px",
+                    }}
+                  >
+                    {eventDetails.country.map((country, index) => (
                       <Chip key={index} label={country} style={{ margin: 2 }} />
-                    ))
-                  ) : (
-                    <Typography variant="body1" gutterBottom>
-                      N/A
-                    </Typography>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Typography
+                    variant="body1"
+                    gutterBottom
+                    sx={{ marginLeft: "32px" }}
+                  >
+                    N/A
+                  </Typography>
+                )}
               </Grid>
+
               {/* City (Inline) */}
               <Grid item xs={12}>
                 <Typography
@@ -442,7 +453,9 @@ function ShareEventPage() {
               {/* Extra Details */}
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
-                  <InfoIcon style={{ color: blue[500], marginRight: 8 }}  id="extra-details-section"
+                  <InfoIcon
+                    style={{ color: blue[500], marginRight: 8 }}
+                    id="extra-details-section"
                   />
                   Extra details
                 </Typography>
@@ -450,7 +463,7 @@ function ShareEventPage() {
               </Grid>
 
               {/* Approved for Customer Use */}
-              <Grid item xs={12}>
+              {/* <Grid item xs={12}>
                 <Typography
                   variant="subtitle1"
                   sx={{ display: "flex", alignItems: "center" }}
@@ -463,7 +476,7 @@ function ShareEventPage() {
                     {eventDetails.customerUseApproved ? "Yes" : "No"}
                   </Typography>
                 </Typography>
-              </Grid>
+              </Grid> */}
 
               {/* OKR Selection (Expandable Accordion) */}
               {/* OKR Selection */}
@@ -482,30 +495,35 @@ function ShareEventPage() {
                     </Typography>
                   </AccordionSummary>
                   <AccordionDetails>
-                    {eventDetails.okr?.map((okr, index) => (
-                      <Grid
-                        container
-                        alignItems="center"
-                        key={index}
-                        sx={{ marginBottom: "8px" }}
-                      >
-                        <Grid item xs={1}>
-                          <Checkbox checked disabled />
+                    {Array.isArray(eventDetails.okr) &&
+                    eventDetails.okr.filter(Boolean).length > 0 ? (
+                      eventDetails.okr.filter(Boolean).map((okr, index) => (
+                        <Grid
+                          container
+                          alignItems="center"
+                          key={index}
+                          sx={{ marginBottom: "8px" }}
+                        >
+                          <Grid item xs={1}>
+                            <Checkbox checked disabled />
+                          </Grid>
+                          <Grid item xs={7}>
+                            <Typography variant="body2">{okr.type}</Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Input
+                              type="number"
+                              value={okr.percentage}
+                              endAdornment="%"
+                              disabled
+                              sx={{ width: "80%" }}
+                            />
+                          </Grid>
                         </Grid>
-                        <Grid item xs={7}>
-                          <Typography variant="body2">{okr.type}</Typography>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <Input
-                            type="number"
-                            value={okr.percentage}
-                            endAdornment="%"
-                            disabled
-                            sx={{ width: "80%" }}
-                          />
-                        </Grid>
-                      </Grid>
-                    )) || <Typography>No OKR selections available</Typography>}
+                      ))
+                    ) : (
+                      <Typography>No OKR selections available</Typography>
+                    )}
                   </AccordionDetails>
                 </Accordion>
               </Grid>
@@ -517,21 +535,32 @@ function ShareEventPage() {
                   sx={{ display: "flex", alignItems: "center" }}
                 >
                   <PublicIcon style={{ color: blue[500], marginRight: 8 }} />
-                  GEP:
+                  Solution
                 </Typography>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "8px",
-                    marginLeft: "32px",
-                    marginTop: "8px",
-                  }}
-                >
-                  {eventDetails.gep?.map((gep, index) => (
-                    <Chip key={index} label={gep} />
-                  )) || <Typography>No GEP selections available</Typography>}
-                </div>
+                {Array.isArray(eventDetails.gep) &&
+                eventDetails.gep.filter(Boolean).length > 0 ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                      marginLeft: "32px",
+                      marginTop: "8px",
+                    }}
+                  >
+                    {eventDetails.gep.filter(Boolean).map((gep, index) => (
+                      <Chip key={index} label={gep} />
+                    ))}
+                  </div>
+                ) : (
+                  <Typography
+                    variant="body1"
+                    gutterBottom
+                    sx={{ marginLeft: "32px" }}
+                  >
+                    N/A
+                  </Typography>
+                )}
               </Grid>
 
               {/* Partner Involvement */}
@@ -551,7 +580,7 @@ function ShareEventPage() {
                   </Typography>
                 </Typography>
               </Grid>
-              Email Invitation Section
+              {/* Email Invitation Section */}
               <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
                   <EmailIcon
@@ -560,7 +589,9 @@ function ShareEventPage() {
                       color: blue[500],
                       marginRight: 8,
                     }}
-                    id="email-invitation-section"/>Email Invitation
+                    id="email-invitation-section"
+                  />
+                  Email Invitation
                 </Typography>
                 <hr />
               </Grid>
@@ -581,7 +612,7 @@ function ShareEventPage() {
                       </AccordionSummary>
                       <AccordionDetails>
                         {/* Platform */}
-                        {/* <Grid item xs={12} sx={{ mb: 2 }}>
+              {/* <Grid item xs={12} sx={{ mb: 2 }}>
                           <Typography
                             variant="body2"
                             sx={{ color: "#757575", mb: 1 }}
@@ -599,8 +630,8 @@ function ShareEventPage() {
                           />
                         </Grid> */}
 
-                        {/* Subject Line */}
-                        {/* <Grid item xs={12} sx={{ mb: 2 }}>
+              {/* Subject Line */}
+              {/* <Grid item xs={12} sx={{ mb: 2 }}>
                           <Typography
                             variant="body2"
                             sx={{ color: "#757575", mb: 1 }}
@@ -618,8 +649,8 @@ function ShareEventPage() {
                           />
                         </Grid> */}
 
-                        {/* Template Body */}
-                        {/* <Grid item xs={12}>
+              {/* Template Body */}
+              {/* <Grid item xs={12}>
                           <Typography
                             variant="body2"
                             sx={{ color: "#757575", mb: 1 }}
@@ -641,10 +672,10 @@ function ShareEventPage() {
                       </AccordionDetails>
                     </Accordion>
                   ) */}
-                {/* )}  */}
+              {/* )}  */}
               {/* </Grid> */}
-                {/* Audience Section */}
-                <Grid item xs={12}>
+              {/* Audience Section */}
+              <Grid item xs={12}>
                 <Typography variant="h5" gutterBottom component="div">
                   <PeopleIcon
                     style={{
@@ -659,7 +690,7 @@ function ShareEventPage() {
                 <hr />
               </Grid>
 
-              {/* Audience Seniority */}
+              {/* Buyer Segment Rollup */}
               <Grid item xs={12}>
                 <Typography
                   variant="subtitle1"
@@ -670,19 +701,32 @@ function ShareEventPage() {
                   />
                   Buyer Segment Rollup:
                 </Typography>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "8px",
-                    marginLeft: "32px",
-                    marginTop: "8px",
-                  }}
-                >
-                  {eventDetails.audienceSeniority?.map((seniority, index) => (
-                    <Chip key={index} label={seniority} />
-                  ))}
-                </div>
+                {Array.isArray(eventDetails.audienceSeniority) &&
+                eventDetails.audienceSeniority.filter(Boolean).length > 0 ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                      marginLeft: "32px",
+                      marginTop: "8px",
+                    }}
+                  >
+                    {eventDetails.audienceSeniority
+                      .filter(Boolean)
+                      .map((seniority, index) => (
+                        <Chip key={index} label={seniority} />
+                      ))}
+                  </div>
+                ) : (
+                  <Typography
+                    variant="body1"
+                    gutterBottom
+                    sx={{ marginLeft: "32px" }}
+                  >
+                    N/A
+                  </Typography>
+                )}
               </Grid>
 
               {/* Audience Persona */}
@@ -691,9 +735,7 @@ function ShareEventPage() {
                   variant="subtitle1"
                   sx={{ display: "flex", alignItems: "center" }}
                 >
-                  <PersonIcon
-                    style={{ color: blue[500], marginRight: 8 }}
-                  />
+                  <PersonIcon style={{ color: blue[500], marginRight: 8 }} />
                   Buyer Segment:
                 </Typography>
                 <div
