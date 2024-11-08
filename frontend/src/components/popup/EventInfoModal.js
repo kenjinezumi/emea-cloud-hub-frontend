@@ -58,6 +58,7 @@ import { useNavigate } from "react-router-dom";
 import { red, blue } from "@mui/material/colors";
 import salesloftLogo from "./logo/salesloft.png";
 import linkedInLogo from "./logo/linkedin.png";
+import { refreshAccessToken } from "../../api/refreshToken";
 
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
@@ -284,10 +285,11 @@ export default function EventInfoPopup({ event, close }) {
   const handleGmailInvite = async () => {
     try {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
-
-      const accessToken = localStorage.getItem("accessToken");
+  
+      let accessToken = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
       const dateAccessToken = localStorage.getItem("dateAccessToken");
-
+  
       // Check if access token or its date is missing
       if (!accessToken || !dateAccessToken) {
         sessionStorage.clear();
@@ -299,63 +301,89 @@ export default function EventInfoPopup({ event, close }) {
         }, 2000);
         return;
       }
-
+  
       const tokenDate = new Date(dateAccessToken);
       const now = new Date();
       const minutesPassed = (now - tokenDate) / (1000 * 60);
       if (minutesPassed > 50) {
-        sessionStorage.clear();
-        localStorage.clear();
-        setSnackbarMessage("Gmail token expired. Redirecting to login...");
-        setSnackbarOpen(true);
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 2000);
-        return;
+        if (refreshToken) {
+          console.warn("Access token expired. Attempting to refresh...");
+  
+          // Attempt to refresh the token
+          const tokenData = await refreshAccessToken(refreshToken);
+  
+          if (tokenData.accessToken) {
+            // Store the new access token
+            accessToken = tokenData.accessToken;
+            sessionStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("accessToken", accessToken);
+  
+            const currentDate = new Date().toISOString();
+            sessionStorage.setItem("dateAccessToken", currentDate);
+            localStorage.setItem("dateAccessToken", currentDate);
+  
+            console.log("Token refreshed successfully.");
+          } else {
+            console.error("Failed to refresh token. Redirecting to login...");
+            sessionStorage.clear();
+            localStorage.clear();
+            setSnackbarMessage("Gmail token expired and could not be refreshed. Redirecting to login...");
+            setSnackbarOpen(true);
+            setTimeout(() => {
+              window.location.href = "/login";
+            }, 2000);
+            return;
+          }
+        } else {
+          console.error("No refresh token available. Redirecting to login...");
+          sessionStorage.clear();
+          localStorage.clear();
+          setSnackbarMessage("Gmail token expired. Redirecting to login...");
+          setSnackbarOpen(true);
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 2000);
+          return;
+        }
       }
-
+  
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.emails?.[0]?.value;
-
+  
       if (!email || !selectedLanguage) {
-        console.error(
-          "No email or selected language found. Aborting draft creation."
-        );
+        console.error("No email or selected language found. Aborting draft creation.");
         alert("No email or template selected.");
         return;
       }
-
+  
       const template = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.template;
-
+  
       const subjectLine = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.subjectLine;
-
+  
       if (!template) {
         console.error("No template found for the selected language.");
         alert("No template found for the selected language.");
         return;
       }
       if (!subjectLine) {
-        console.error("No subject linefound for the selected language.");
+        console.error("No subject line found for the selected language.");
         alert("No subject line found for the selected language.");
         return;
       }
-
+  
       const emailDetails = {
         to: email,
         subject: subjectLine,
         body: template,
         accessToken: accessToken,
       };
-
-      console.log(
-        "Sending request to create Gmail draft with email details:",
-        emailDetails
-      );
-
+  
+      console.log("Sending request to create Gmail draft with email details:", emailDetails);
+  
       const response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
         credentials: "include",
@@ -364,20 +392,17 @@ export default function EventInfoPopup({ event, close }) {
         },
         body: JSON.stringify(emailDetails),
       });
-
+  
       console.log("Response from server:", response);
-
+  
       if (!response.ok) {
-        console.error(
-          "Failed to create draft. Response status:",
-          response.status
-        );
+        console.error("Failed to create draft. Response status:", response.status);
         throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
       }
-
+  
       const data = await response.json();
       console.log("Draft created successfully. Server response:", data);
-
+  
       if (data.success) {
         console.log("Redirecting to Gmail drafts at:", data.draftUrl);
         window.open(data.draftUrl, "_blank");
@@ -390,6 +415,7 @@ export default function EventInfoPopup({ event, close }) {
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
+  
 
   const formatListWithSpaces = (list) => {
     if (!list) return "";

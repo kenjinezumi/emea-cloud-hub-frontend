@@ -4,6 +4,7 @@ const API_URL = 'https://us-central1-aiplatform.googleapis.com/v1/projects/googl
 
 const fetchGeminiResponse = async (prompt, chatLog = []) => {
   let accessToken = sessionStorage.getItem('accessToken') || localStorage.getItem('accessToken');
+  const refreshToken = sessionStorage.getItem('refreshToken') || localStorage.getItem('refreshToken');
 
   if (!accessToken) {
     console.error("No access token found. Please authenticate.");
@@ -48,7 +49,7 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
 
       // Attempt to refresh the token
       // const storedRefreshToken = localStorage.getItem('accessToken'); // Replace with how you store the refresh token
-      const tokenData = await refreshAccessToken(accessToken);
+      const tokenData = await refreshAccessToken(refreshToken);
 
       if (tokenData.accessToken) {
         // Store the new access token
