@@ -164,7 +164,6 @@ const EventForm = () => {
   const handleGeminiSubmit = async () => {
     if (!geminiPrompt.trim()) return; // Prevent empty submission
   
-    // Append the user's input to the chat log
     setChatLog((prevChatLog) => [
       ...prevChatLog,
       { sender: "user", text: geminiPrompt },
@@ -173,17 +172,32 @@ const EventForm = () => {
     setIsStreaming(true);
   
     try {
-      // Pass the current chat log including the new prompt for context
-      const response = await fetchGeminiResponse(geminiPrompt, chatLog);
-  
-      // Process the response in real-time
+      // Fetch streaming response with prompt and previous chat log
+      const reader = await fetchGeminiResponse(geminiPrompt, chatLog);
       let accumulatedResponse = "";
-      for await (const chunk of response) {
-        accumulatedResponse += chunk;
-        setChatLog((prevChatLog) => [
-          ...prevChatLog.slice(0, -1), // Replace the last response with the updated one
-          { sender: "gemini", text: accumulatedResponse },
-        ]);
+  
+      for await (const chunk of reader) {
+        try {
+          // Parse the incoming chunk as JSON
+          const parsedChunk = JSON.parse(chunk);
+  
+          // Extract and concatenate text from nested structure
+          parsedChunk.forEach((responsePart) => {
+            responsePart.candidates.forEach((candidate) => {
+              candidate.content.parts.forEach((part) => {
+                accumulatedResponse += part.text; // Append text to response
+              });
+            });
+          });
+  
+          // Update chatLog in real-time
+          setChatLog((prevChatLog) => [
+            ...prevChatLog.slice(0, -1), // Replace last entry with updated response
+            { sender: "gemini", text: accumulatedResponse },
+          ]);
+        } catch (parseError) {
+          console.error("Error parsing chunk:", parseError);
+        }
       }
   
       setIsStreaming(false);
@@ -196,9 +210,9 @@ const EventForm = () => {
       console.error("Error handling streaming response:", error);
     }
   
-    // Clear the input after submission
-    setGeminiPrompt("");
+    setGeminiPrompt(""); // Clear input after submission
   };
+  
   
 
   const handleGeminiSubmitDebounced = useCallback(
