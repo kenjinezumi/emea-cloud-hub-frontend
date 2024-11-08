@@ -150,6 +150,8 @@ const EventForm = () => {
   const [geminiDialogOpen, setGeminiDialogOpen] = useState(false);
   const [geminiPrompt, setGeminiPrompt] = useState("");
   const [geminiResponse, setGeminiResponse] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+
   const [chatLog, setChatLog] = useState([]);
 
   const handleGeminiDialogOpen = () => setGeminiDialogOpen(true);
@@ -167,12 +169,30 @@ const EventForm = () => {
       { sender: "user", text: geminiPrompt },
     ]);
 
-    const geminiResponse = await fetchGeminiResponse(geminiPrompt);
+    setIsStreaming(true);
 
-    setChatLog((prevChatLog) => [
-      ...prevChatLog,
-      { sender: "gemini", text: geminiResponse },
-    ]);
+    // Fetch streaming response and update chat log in real-time
+    try {
+      const reader = await fetchGeminiResponse(geminiPrompt);
+
+      let accumulatedResponse = "";
+      for await (const chunk of reader) {
+        accumulatedResponse += chunk;
+        setChatLog((prevChatLog) => [
+          ...prevChatLog.slice(0, -1), // Remove the last incomplete entry if any
+          { sender: "gemini", text: accumulatedResponse },
+        ]);
+      }
+
+      setIsStreaming(false);
+    } catch (error) {
+      setIsStreaming(false);
+      setChatLog((prevChatLog) => [
+        ...prevChatLog,
+        { sender: "gemini", text: "Error: Unable to fetch response" },
+      ]);
+      console.error("Error handling streaming response:", error);
+    }
 
     setGeminiPrompt(""); // Clear the prompt input to prevent re-trigger
   };
@@ -774,7 +794,7 @@ const EventForm = () => {
                   flexDirection: "column",
                 }}
               >
-                {/* Top section: Gemini response display */}
+                {/* Display streaming Gemini response */}
                 <Box
                   sx={{
                     flex: 1,
@@ -801,9 +821,26 @@ const EventForm = () => {
                         >
                           {entry.sender === "user" ? "You: " : "Gemini: "}
                         </Typography>
-                        <Typography variant="body1" sx={{ ml: 2 }}>
-                          {entry.text}
-                        </Typography>
+                        <Box sx={{ ml: 2 }}>
+                          {entry.text.split("\n").map((line, lineIndex) => (
+                            <Typography
+                              key={lineIndex}
+                              variant="body1"
+                              sx={{ mb: 0.5 }}
+                            >
+                              {line.startsWith("-") ? (
+                                <Box
+                                  component="li"
+                                  sx={{ display: "list-item", ml: 2 }}
+                                >
+                                  {line.substring(1).trim()}
+                                </Box>
+                              ) : (
+                                line
+                              )}
+                            </Typography>
+                          ))}
+                        </Box>
                       </Box>
                     ))
                   ) : (
@@ -813,7 +850,7 @@ const EventForm = () => {
                   )}
                 </Box>
 
-                {/* Bottom section: User input field */}
+                {/* Input field for prompt */}
                 <Box
                   sx={{
                     mt: 2,
@@ -860,8 +897,9 @@ const EventForm = () => {
                   color="primary"
                   variant="contained"
                   sx={{ borderRadius: "20px" }}
+                  disabled={isStreaming} // Disable button while streaming
                 >
-                  Generate
+                  {isStreaming ? "Generating..." : "Generate"}
                 </Button>
               </DialogActions>
             </Dialog>
