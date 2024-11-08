@@ -1,4 +1,5 @@
-import { refreshAccessToken} from "./refreshToken";
+import { refreshAccessToken } from "./refreshToken";
+
 const API_URL = 'https://us-central1-aiplatform.googleapis.com/v1/projects/google.com:cloudhub/locations/us-central1/publishers/google/models/gemini-1.5-pro-002:streamGenerateContent';
 
 const fetchGeminiResponse = async (prompt, chatLog = []) => {
@@ -36,52 +37,57 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
       body: JSON.stringify(data),
     });
 
-    // Check if the response indicates an expired token (e.g., 401 Unauthorized)
-    if (response.status === 401) {
-      console.warn('Access token expired. Attempting to refresh...');
-
-      // Attempt to refresh the token
-      const refreshToken = localStorage.getItem('refreshToken'); // Replace with how you store the refresh token
-      const tokenData = await refreshAccessToken(refreshToken);
-
-      if (tokenData.accessToken) {
-        accessToken = tokenData.accessToken;
-        console.log('Token refreshed. Retrying request...');
-
-        // Retry the request with the new access token
-        const retryResponse = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-
-        if (!retryResponse.ok) {
-          const errorText = await retryResponse.text();
-          console.error('Retry failed to fetch Gemini response:', retryResponse.statusText, errorText);
-          return `Error: Unable to fetch response after retry - ${errorText}`;
-        }
-
-        return await handleStreamResponse(retryResponse);
-      } else {
-        console.error('Failed to refresh token.');
-        return 'Error: Token refresh failed. Please re-authenticate.';
-      }
-    }
-
-    // If the first request was successful or the retry was successful
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to fetch Gemini response:', response.statusText, errorText);
-      return `Error: Unable to fetch response - ${errorText}`;
+    if (!response.ok && response.status === 401) {
+      throw new Error('TokenExpired');
     }
 
     return await handleStreamResponse(response);
   } catch (error) {
-    console.error('Error fetching Gemini response:', error);
-    return 'Error: Unable to connect to Gemini API';
+    if (error.message === 'TokenExpired') {
+      console.warn('Access token expired. Attempting to refresh...');
+
+      // Attempt to refresh the token
+      const storedRefreshToken = localStorage.getItem('accessToken'); // Replace with how you store the refresh token
+      const tokenData = await refreshAccessToken(storedRefreshToken);
+
+      if (tokenData.accessToken) {
+        // Store the new access token
+        accessToken = tokenData.accessToken;
+        sessionStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('accessToken', accessToken);
+        
+        console.log('Token refreshed. Retrying request...');
+
+        // Retry the request with the new access token
+        try {
+          const retryResponse = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (!retryResponse.ok) {
+            const errorText = await retryResponse.text();
+            console.error('Retry failed to fetch Gemini response:', retryResponse.statusText, errorText);
+            return `Error: Unable to fetch response after retry - ${errorText}`;
+          }
+
+          return await handleStreamResponse(retryResponse);
+        } catch (retryError) {
+          console.error('Error during retry:', retryError);
+          return 'Error: Unable to connect to Gemini API after token refresh';
+        }
+      } else {
+        console.error('Failed to refresh token.');
+        return 'Error: Token refresh failed. Please re-authenticate.';
+      }
+    } else {
+      console.error('Error fetching Gemini response:', error);
+      return 'Error: Unable to connect to Gemini API';
+    }
   }
 };
 
