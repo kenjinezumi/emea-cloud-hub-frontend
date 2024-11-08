@@ -23,6 +23,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -32,6 +34,9 @@ import { getFilterDataFromAPI } from "../api/getFilterData";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { deleteFilterDataFromAPI} from "../api/deleteFilterData";
 export default function Filters() {
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const [localSubRegionFilters, setLocalSubRegionFilters] = useState(
     subRegionOptions.map((option) => ({ label: option, checked: false }))
   );
@@ -163,6 +168,15 @@ export default function Filters() {
   const forceRefresh = () => {
     setRefresh(!refresh);
   };
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+  
+  const showSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+  
 
   useEffect(() => {
     updateFilters({
@@ -234,6 +248,8 @@ export default function Filters() {
       // Remove filter from the local savedFilters state
       const updatedFilters = savedFilters.filter(filter => filter.filterName !== filterName);
       setSavedFilters(updatedFilters);
+      showSnackbar("Filter deleted successfully!");
+
     } catch (error) {
       console.error("Error deleting filter:", error);
     }
@@ -304,7 +320,9 @@ export default function Filters() {
   
       // Add the filter to the local savedFilters state
       setSavedFilters([...savedFilters, { filterName: customFilterName.trim(), config: filterData.config }]);
-      setCustomFilterName(''); // Clear input after saving
+      setCustomFilterName(''); 
+      showSnackbar("Filter saved successfully!");
+
     }
   };
   
@@ -679,6 +697,17 @@ export default function Filters() {
         isDraftStatusExpanded,
         setIsDraftStatusExpanded
       )}
+      <Snackbar
+  open={snackbarOpen}
+  autoHideDuration={3000}
+  onClose={handleSnackbarClose}
+  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+>
+  <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+    {snackbarMessage}
+  </Alert>
+</Snackbar>
     </div>
+    
   );
 }
