@@ -187,6 +187,7 @@ const EventForm = () => {
       try {
         const parsedResponse = JSON.parse(responseString);
   
+        // Extract and accumulate response text
         let accumulatedResponse = "";
         parsedResponse.forEach((item) => {
           item.candidates.forEach((candidate) => {
@@ -198,9 +199,10 @@ const EventForm = () => {
   
         // Update the chat log with the accumulated response
         setChatLog((prevChatLog) => [
-          ...prevChatLog.slice(0, -1), // Replace the last response with the updated one
+          ...prevChatLog,
           { sender: "gemini", text: accumulatedResponse },
         ]);
+  
       } catch (jsonError) {
         console.error("Error parsing JSON response:", jsonError);
         setChatLog((prevChatLog) => [
