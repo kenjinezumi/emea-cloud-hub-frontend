@@ -251,6 +251,8 @@ export default function Filters() {
       throw new Error('No user data found in local storage or session storage');
   };
   
+
+
   useEffect(() => {
     // Function to fetch and set saved filters
     const fetchSavedFilters = async () => {
@@ -306,7 +308,10 @@ export default function Filters() {
     }
   };
   
-  
+  const handleChipClick = (config) => {
+    console.log("Applying filter config:", config);
+    applyFilterConfig(config);
+  };
 
   const applyFilterConfig = (config) => {
     if (!config || !Array.isArray(config)) {
@@ -314,53 +319,98 @@ export default function Filters() {
       return;
     }
   
-    // Update each state based on the selected configuration
+    // Apply the filter configuration to update the checked states with detailed logging
     const updatedSubRegionFilters = localSubRegionFilters.map((filter) => {
-      const match = config.subRegions?.find((item) => item.label === filter.label);
+      const match = config[0]?.subRegions?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
     const updatedGepOptions = localGepOptions.map((filter) => {
-      const match = config.gep?.find((item) => item.label === filter.label);
+      const match = config[0]?.gep?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
     const updatedAccountSectorOptions = localAccountSectorOptions.map((filter) => {
-      const match = config.accountSectors?.find((item) => item.label === filter.label);
+      const match = config[0]?.accountSectors?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
     const updatedAccountSegmentOptions = localAccountSegmentOptions.map((filter) => {
-      const match = config.accountSegments?.find((item) => item.label === filter.label);
+      const match = config[0]?.accountSegments?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
     const updatedBuyerSegmentRollupOptions = localBuyerSegmentRollupOptions.map((filter) => {
-      const match = config.buyerSegmentRollup?.find((item) => item.label === filter.label);
+      const match = config[0]?.buyerSegmentRollup?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
     const updatedProductFamilyOptions = localProductFamilyOptions.map((filter) => {
-      const match = config.productFamily?.find((item) => item.label === filter.label);
+      const match = config[0]?.productFamily?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
     const updatedIndustryOptions = localIndustryOptions.map((filter) => {
-      const match = config.industry?.find((item) => item.label === filter.label);
+      const match = config[0]?.industry?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
     const updatedPartnerEventOptions = localPartnerEventOptions.map((filter) => {
-      const match = config.partnerEvent?.find((item) => item.label === filter.label);
+      const match = config[0]?.partnerEvent?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
     const updatedDraftStatusOptions = localDraftStatusOptions.map((filter) => {
-      const match = config.draftStatus?.find((item) => item.label === filter.label);
+      const match = config[0]?.draftStatus?.find((item) => {
+        if (!item) {
+          return false;
+        }
+        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+      });
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
-    // Update states to trigger re-render
+    // Update states to trigger re-render with checked options
     setLocalSubRegionFilters(updatedSubRegionFilters);
     setLocalGepOptions(updatedGepOptions);
     setLocalAccountSectorOptions(updatedAccountSectorOptions);
@@ -370,9 +420,12 @@ export default function Filters() {
     setLocalIndustryOptions(updatedIndustryOptions);
     setLocalPartnerEventOptions(updatedPartnerEventOptions);
     setLocalDraftStatusOptions(updatedDraftStatusOptions);
+  
+    // Trigger a UI refresh to reflect changes
     forceRefresh();
-
   };
+  
+  
   
   
   
@@ -439,7 +492,7 @@ export default function Filters() {
               fontSize: "12px",
             }}
           >
-            Custom Filters (WIP! DO NOT USE)
+            Custom Filters
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: "4px 8px" }}>
@@ -513,7 +566,7 @@ export default function Filters() {
                   key={index}
                   label={filter.filterName || "Unnamed Filter"} // Display a fallback if filterName is missing
 
-                  onClick={() => applyFilterConfig(filter.config)}
+                  onClick={() => handleChipClick(filter.config)}
                   onDelete={() => handleDeleteFilter(filter.filterName)}
                   sx={{
                     backgroundColor: "#e0f7fa",
