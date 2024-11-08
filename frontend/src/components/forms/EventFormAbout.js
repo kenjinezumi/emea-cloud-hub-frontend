@@ -176,11 +176,19 @@ const EventForm = () => {
       // Pass the current chat log including the new prompt for context
       const response = await fetchGeminiResponse(geminiPrompt, chatLog);
   
-      // Extract and accumulate only the 'text' field from the response
-      let accumulatedResponse = "";
+      // Collect the chunks before parsing
+      let responseString = "";
+  
       for await (const chunk of response) {
-        const parsedChunk = JSON.parse(chunk); // Parse chunk to JSON if needed
-        parsedChunk.forEach((item) => {
+        responseString += chunk;
+      }
+  
+      // Parse the full response string into JSON
+      try {
+        const parsedResponse = JSON.parse(responseString);
+  
+        let accumulatedResponse = "";
+        parsedResponse.forEach((item) => {
           item.candidates.forEach((candidate) => {
             candidate.content.parts.forEach((part) => {
               accumulatedResponse += part.text;
@@ -192,6 +200,12 @@ const EventForm = () => {
         setChatLog((prevChatLog) => [
           ...prevChatLog.slice(0, -1), // Replace the last response with the updated one
           { sender: "gemini", text: accumulatedResponse },
+        ]);
+      } catch (jsonError) {
+        console.error("Error parsing JSON response:", jsonError);
+        setChatLog((prevChatLog) => [
+          ...prevChatLog,
+          { sender: "gemini", text: "Error: Unable to parse response" },
         ]);
       }
   
@@ -208,6 +222,7 @@ const EventForm = () => {
     // Clear the input after submission
     setGeminiPrompt("");
   };
+  
   
   
 
