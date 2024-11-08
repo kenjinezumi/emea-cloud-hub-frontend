@@ -5,9 +5,9 @@ const loadQueriesAsync = require("./utils/queriesLoaders");
 const { LoggingWinston } = require("@google-cloud/logging-winston");
 const winston = require("winston");
 const cors = require("cors");
+const { google } = require("googleapis");
 const gmail = google.gmail("v1");
 const { v4: uuidv4 } = require("uuid");
-const { google } = require("googleapis");
 const OAuth2 = google.auth.OAuth2;
 
 // New imports for login
