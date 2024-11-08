@@ -321,7 +321,8 @@ module.exports = (firestoreStore) => {
       res.json({
         isAuthenticated: true, // Indicating the user is authenticated
         user: req.user,
-        accessToken: req.user.accessToken, // Sending the user object from the session
+        accessToken: req.user.accessToken,
+        refreshToken: req.user.refreshToken // Sending the user object from the session
       });
     } else {
       res.status(401).json({

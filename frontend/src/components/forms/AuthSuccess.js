@@ -48,6 +48,12 @@ function AuthSuccess() {
           } else {
             console.log('Access token not found.');
           }
+          if (data.refreshToken) {
+            sessionStorage.setItem('refreshToken', data.refreshToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
+          } else {
+            console.log('Refresh token not found.');
+          }
 
           navigate('/');
         } else {
