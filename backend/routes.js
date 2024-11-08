@@ -77,41 +77,58 @@ module.exports = (firestoreStore) => {
     })
   );
 
-  const oauth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, CALLBACK_URL);
 
-  router.post("/refresh-token", express.text(), async (req, res) => {
-    const refreshToken = req.body; // The refresh token will be read as plain text
+  router.post("/refresh-token", async (req, res) => {
+    const { refreshToken } = req.body;
   
     if (!refreshToken) {
       logger.error("Refresh token is required.");
-      return res.status(400).json({ success: false, message: "Refresh token is required." });
+      return res.status(400).json({ success: false, message: "Refresh token is required" });
     }
+  
+    // Log to confirm environment variables are correctly loaded
+    logger.info("CLIENT_ID:", process.env.CLIENT_ID);
+    logger.info("CLIENT_SECRET:", process.env.CLIENT_SECRET);
+  
+    const params = new URLSearchParams();
+    params.append('client_id', process.env.CLIENT_ID);
+    params.append('client_secret', process.env.CLIENT_SECRET);
+    params.append('refresh_token', refreshToken);
+    params.append('grant_type', 'refresh_token');
   
     try {
-      // Set the refresh token to the OAuth2 client
-      oauth2Client.setCredentials({ refresh_token: refreshToken });
-  
-      // Refresh the access token
-      const { credentials } = await oauth2Client.refreshAccessToken();
-      const { access_token, expiry_date } = credentials;
-  
-      logger.info("Access token refreshed successfully.");
-  
-      // Send the new access token and expiry time back to the frontend
-      res.status(200).json({
-        success: true,
-        accessToken: access_token,
-        expiryDate: expiry_date,
+      const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString(),
       });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        logger.info("Access token refreshed successfully.", data);
+        res.status(200).json({
+          accessToken: data.access_token,
+          expiryDate: Date.now() + data.expires_in * 1000,
+        });
+      } else {
+        logger.error("Error response from token endpoint:", {
+          status: response.status,
+          message: data.error_description || 'Unknown error',
+        });
+        res.status(response.status).json({ error: data.error, message: data.error_description });
+      }
     } catch (error) {
-      logger.error("Error refreshing access token.", { error });
-      res.status(500).json({
-        success: false,
-        message: "Failed to refresh access token.",
+      logger.error("Internal server error during token refresh:", {
         error: error.message,
+        stack: error.stack,
       });
+      res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   });
+  
 
   
   // Google OAuth callback route
