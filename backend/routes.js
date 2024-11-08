@@ -86,48 +86,34 @@ module.exports = (firestoreStore) => {
       return res.status(400).json({ success: false, message: "Refresh token is required" });
     }
   
-    // Log to confirm environment variables are correctly loaded
-    logger.info("CLIENT_ID:", process.env.CLIENT_ID);
-    logger.info("CLIENT_SECRET:", process.env.CLIENT_SECRET);
+    // Initialize the OAuth2 client
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_CALLBACK_URL
+    );
   
-    const params = new URLSearchParams();
-    params.append('client_id', process.env.CLIENT_ID);
-    params.append('client_secret', process.env.CLIENT_SECRET);
-    params.append('refresh_token', refreshToken);
-    params.append('grant_type', 'refresh_token');
+    // Set the refresh token in the credentials
+    oauth2Client.setCredentials({ refresh_token: refreshToken });
   
     try {
-      const response = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString(),
+      // Refresh the access token
+      const { credentials } = await oauth2Client.refreshAccessToken();
+      logger.info("Access token refreshed successfully.");
+  
+      res.status(200).json({
+        accessToken: credentials.access_token,
+        expiryDate: credentials.expiry_date,
       });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        logger.info("Access token refreshed successfully.", data);
-        res.status(200).json({
-          accessToken: data.access_token,
-          expiryDate: Date.now() + data.expires_in * 1000,
-        });
-      } else {
-        logger.error("Error response from token endpoint:", {
-          status: response.status,
-          message: data.error_description || 'Unknown error',
-        });
-        res.status(response.status).json({ error: data.error, message: data.error_description });
-      }
     } catch (error) {
-      logger.error("Internal server error during token refresh:", {
+      logger.error("Error during token refresh:", {
         error: error.message,
         stack: error.stack,
       });
       res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   });
+  
   
 
   
