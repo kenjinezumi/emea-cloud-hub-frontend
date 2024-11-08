@@ -312,42 +312,6 @@ module.exports = (firestoreStore) => {
       res.status(500).send("Failed to create Gmail draft due to server error");
     }
   });
-
-  // In your backend
-router.post("/refresh-token", async (req, res) => {
-    const { refreshToken } = req.body;
-  
-    if (!refreshToken) {
-      return res.status(400).json({ success: false, message: "Refresh token is required" });
-    }
-  
-    const params = new URLSearchParams();
-    params.append('client_id', process.env.CLIENT_ID);
-    params.append('client_secret', process.env.CLIENT_SECRET);
-    params.append('refresh_token', refreshToken);
-    params.append('grant_type', 'refresh_token');
-  
-    try {
-      const response = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params.toString(),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        res.status(200).json({ accessToken: data.access_token, expiryDate: Date.now() + data.expires_in * 1000 });
-      } else {
-        res.status(response.status).json({ error: data.error, message: data.error_description });
-      }
-    } catch (error) {
-      res.status(500).json({ error: 'Internal server error', details: error.message });
-    }
-  });
-
   
   // Route to log out the user
   router.get("/logout", (req, res, next) => {

@@ -18,7 +18,7 @@ export const refreshAccessToken = async (refreshToken) => {
       headers: {
         'Content-Type': 'text/plain', // Sending the refresh token as plain text
       },
-      body: refreshToken,
+      body: JSON.stringify({ refreshToken }), // Sending as JSON object
     });
 
     if (!response.ok) {
