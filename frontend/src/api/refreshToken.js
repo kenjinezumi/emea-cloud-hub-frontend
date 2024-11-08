@@ -14,6 +14,7 @@ export const refreshAccessToken = async (refreshToken) => {
   try {
     const response = await fetch(REFRESH_TOKEN_URL, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'text/plain', // Sending the refresh token as plain text
       },
