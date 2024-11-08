@@ -1,6 +1,6 @@
 const API_URL = 'https://us-central1-aiplatform.googleapis.com/v1/projects/google.com:cloudhub/locations/us-central1/publishers/google/models/gemini-1.5-pro-002:streamGenerateContent';
 
-const fetchGeminiResponse = async (prompt) => {
+const fetchGeminiResponse = async (prompt, chatLog = []) => {
   const accessToken = sessionStorage.getItem('accessToken') || localStorage.getItem('accessToken');
 
   if (!accessToken) {
@@ -8,15 +8,20 @@ const fetchGeminiResponse = async (prompt) => {
     return 'Error: Access token not found';
   }
 
+  // Construct chat history including the new prompt
+  const conversationHistory = chatLog.map((entry) => ({
+    role: entry.sender === 'user' ? 'user' : 'assistant',
+    parts: [{ text: entry.text }],
+  }));
+
+  // Add the new user input as the last entry
+  conversationHistory.push({
+    role: 'user',
+    parts: [{ text: prompt }],
+  });
+
   const data = {
-    contents: [
-      {
-        role: "user",
-        parts: [
-          { text: prompt }
-        ]
-      }
-    ]
+    contents: conversationHistory,
   };
 
   try {

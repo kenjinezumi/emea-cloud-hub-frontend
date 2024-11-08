@@ -163,27 +163,29 @@ const EventForm = () => {
 
   const handleGeminiSubmit = async () => {
     if (!geminiPrompt.trim()) return; // Prevent empty submission
-
+  
+    // Append the user's input to the chat log
     setChatLog((prevChatLog) => [
       ...prevChatLog,
       { sender: "user", text: geminiPrompt },
     ]);
-
+  
     setIsStreaming(true);
-
-    // Fetch streaming response and update chat log in real-time
+  
     try {
-      const reader = await fetchGeminiResponse(geminiPrompt);
-
+      // Pass the current chat log including the new prompt for context
+      const response = await fetchGeminiResponse(geminiPrompt, chatLog);
+  
+      // Process the response in real-time
       let accumulatedResponse = "";
-      for await (const chunk of reader) {
+      for await (const chunk of response) {
         accumulatedResponse += chunk;
         setChatLog((prevChatLog) => [
-          ...prevChatLog.slice(0, -1), // Remove the last incomplete entry if any
+          ...prevChatLog.slice(0, -1), // Replace the last response with the updated one
           { sender: "gemini", text: accumulatedResponse },
         ]);
       }
-
+  
       setIsStreaming(false);
     } catch (error) {
       setIsStreaming(false);
@@ -193,9 +195,11 @@ const EventForm = () => {
       ]);
       console.error("Error handling streaming response:", error);
     }
-
-    setGeminiPrompt(""); // Clear the prompt input to prevent re-trigger
+  
+    // Clear the input after submission
+    setGeminiPrompt("");
   };
+  
 
   const handleGeminiSubmitDebounced = useCallback(
     debounce(handleGeminiSubmit, 300),
@@ -795,60 +799,42 @@ const EventForm = () => {
                 }}
               >
                 {/* Display streaming Gemini response */}
-                <Box
-                  sx={{
-                    flex: 1,
-                    mb: 2,
-                    backgroundColor: "#e8f0fe",
-                    p: 2,
-                    borderRadius: "8px",
-                    overflowY: "auto",
-                    maxHeight: "300px",
-                  }}
-                >
-                  {chatLog.length > 0 ? (
-                    chatLog.map((entry, index) => (
-                      <Box key={index} sx={{ mb: 1 }}>
-                        <Typography
-                          variant="body2"
-                          color={
-                            entry.sender === "user" ? "textPrimary" : "primary"
-                          }
-                          sx={{
-                            fontWeight:
-                              entry.sender === "user" ? "bold" : "normal",
-                          }}
-                        >
-                          {entry.sender === "user" ? "You: " : "Gemini: "}
-                        </Typography>
-                        <Box sx={{ ml: 2 }}>
-                          {entry.text.split("\n").map((line, lineIndex) => (
-                            <Typography
-                              key={lineIndex}
-                              variant="body1"
-                              sx={{ mb: 0.5 }}
-                            >
-                              {line.startsWith("-") ? (
-                                <Box
-                                  component="li"
-                                  sx={{ display: "list-item", ml: 2 }}
-                                >
-                                  {line.substring(1).trim()}
-                                </Box>
-                              ) : (
-                                line
-                              )}
-                            </Typography>
-                          ))}
-                        </Box>
-                      </Box>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="textSecondary">
-                      Your AI-generated description will appear here.
-                    </Typography>
-                  )}
+                <Box sx={{ flex: 1, mb: 2, backgroundColor: "#e8f0fe", p: 2, borderRadius: "8px", overflowY: "auto", maxHeight: "300px" }}>
+  {chatLog.length > 0 ? (
+    chatLog.map((entry, index) => (
+      <Box key={index} sx={{ mb: 1 }}>
+        <Typography
+          variant="body2"
+          color={entry.sender === "user" ? "textPrimary" : "primary"}
+          sx={{
+            fontWeight: entry.sender === "user" ? "bold" : "normal",
+          }}
+        >
+          {entry.sender === "user" ? "You: " : "Gemini: "}
+        </Typography>
+        <Box sx={{ ml: 2 }}>
+          {entry.text.split("\n").map((line, lineIndex) => (
+            <Typography key={lineIndex} variant="body1" sx={{ mb: 0.5 }}>
+              {/* Render bullet points */}
+              {line.startsWith("-") ? (
+                <Box component="li" sx={{ display: "list-item", ml: 2 }}>
+                  {line.substring(1).trim()}
                 </Box>
+              ) : (
+                <>{line}</> // Handle other lines as plain text
+              )}
+            </Typography>
+          ))}
+        </Box>
+      </Box>
+    ))
+  ) : (
+    <Typography variant="body2" color="textSecondary">
+      Your AI-generated description will appear here.
+    </Typography>
+  )}
+</Box>
+
 
                 {/* Input field for prompt */}
                 <Box
