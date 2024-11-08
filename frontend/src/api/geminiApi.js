@@ -47,8 +47,8 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
       console.warn('Access token expired. Attempting to refresh...');
 
       // Attempt to refresh the token
-      const storedRefreshToken = localStorage.getItem('accessToken'); // Replace with how you store the refresh token
-      const tokenData = await refreshAccessToken(storedRefreshToken);
+      // const storedRefreshToken = localStorage.getItem('accessToken'); // Replace with how you store the refresh token
+      const tokenData = await refreshAccessToken(accessToken);
 
       if (tokenData.accessToken) {
         // Store the new access token
