@@ -26,14 +26,17 @@ const shareToGoogleCalendar = async (eventData) => {
       }),
     });
 
-    if (!response.ok && response.status === 401) {
-      throw new Error('TokenExpired');
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 500) {
+        throw new Error('TokenExpiredOrInvalid');
+      }
+      throw new Error(`Request failed: ${response.statusText}`);
     }
 
     return await response.json();
   } catch (error) {
-    if (error.message === 'TokenExpired' && refreshToken) {
-      console.warn('Access token expired. Attempting to refresh...');
+    if (error.message === 'TokenExpiredOrInvalid' && refreshToken) {
+      console.warn('Access token expired or invalid. Attempting to refresh...');
 
       // Attempt to refresh the token
       const tokenData = await refreshAccessToken(refreshToken);
@@ -78,7 +81,7 @@ const shareToGoogleCalendar = async (eventData) => {
       }
     } else {
       console.error('Error sharing to Google Calendar:', error);
-      return 'Error: Unable to share event to Google Calendar';
+      return `Error: ${error.message}`;
     }
   }
 };

@@ -285,13 +285,11 @@ export default function EventInfoPopup({ event, close }) {
   const handleGmailInvite = async () => {
     try {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
-  
       let accessToken = localStorage.getItem("accessToken");
       const refreshToken = localStorage.getItem("refreshToken");
-      const dateAccessToken = localStorage.getItem("dateAccessToken");
   
-      // Check if access token or its date is missing
-      if (!accessToken || !dateAccessToken) {
+      // Check if access token is missing
+      if (!accessToken) {
         sessionStorage.clear();
         localStorage.clear();
         setSnackbarMessage("Gmail token missing. Redirecting to login...");
@@ -300,51 +298,6 @@ export default function EventInfoPopup({ event, close }) {
           window.location.href = "/login";
         }, 2000);
         return;
-      }
-  
-      const tokenDate = new Date(dateAccessToken);
-      const now = new Date();
-      const minutesPassed = (now - tokenDate) / (1000 * 60);
-      if (minutesPassed > 50) {
-        if (refreshToken) {
-          console.warn("Access token expired. Attempting to refresh...");
-  
-          // Attempt to refresh the token
-          const tokenData = await refreshAccessToken(refreshToken);
-  
-          if (tokenData.accessToken) {
-            // Store the new access token
-            accessToken = tokenData.accessToken;
-            sessionStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("accessToken", accessToken);
-  
-            const currentDate = new Date().toISOString();
-            sessionStorage.setItem("dateAccessToken", currentDate);
-            localStorage.setItem("dateAccessToken", currentDate);
-  
-            console.log("Token refreshed successfully.");
-          } else {
-            console.error("Failed to refresh token. Redirecting to login...");
-            sessionStorage.clear();
-            localStorage.clear();
-            setSnackbarMessage("Gmail token expired and could not be refreshed. Redirecting to login...");
-            setSnackbarOpen(true);
-            setTimeout(() => {
-              window.location.href = "/login";
-            }, 2000);
-            return;
-          }
-        } else {
-          console.error("No refresh token available. Redirecting to login...");
-          sessionStorage.clear();
-          localStorage.clear();
-          setSnackbarMessage("Gmail token expired. Redirecting to login...");
-          setSnackbarOpen(true);
-          setTimeout(() => {
-            window.location.href = "/login";
-          }, 2000);
-          return;
-        }
       }
   
       const user = JSON.parse(localStorage.getItem("user"));
@@ -384,7 +337,7 @@ export default function EventInfoPopup({ event, close }) {
   
       console.log("Sending request to create Gmail draft with email details:", emailDetails);
   
-      const response = await fetch(`${apiUrl}send-gmail-invite`, {
+      let response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -396,8 +349,63 @@ export default function EventInfoPopup({ event, close }) {
       console.log("Response from server:", response);
   
       if (!response.ok) {
-        console.error("Failed to create draft. Response status:", response.status);
-        throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
+        // Check if the error indicates an expired token or credential issue
+        const responseText = await response.text();
+        if (response.status === 401 || response.status === 500 ||responseText.includes('Invalid Credentials') || responseText.includes('TokenExpired')) {
+          console.warn("Access token expired or invalid. Attempting to refresh...");
+  
+          if (refreshToken) {
+            const tokenData = await refreshAccessToken(refreshToken);
+  
+            if (tokenData.accessToken) {
+              // Store the new access token
+              accessToken = tokenData.accessToken;
+              sessionStorage.setItem("accessToken", accessToken);
+              localStorage.setItem("accessToken", accessToken);
+  
+              console.log("Token refreshed successfully. Retrying request...");
+  
+              // Retry the request with the new access token
+              emailDetails.accessToken = accessToken;
+              response = await fetch(`${apiUrl}send-gmail-invite`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                  "Content-Type": "text/plain",
+                },
+                body: JSON.stringify(emailDetails),
+              });
+  
+              if (!response.ok) {
+                console.error("Retry failed to create draft. Response status:", response.status);
+                throw new Error(`Failed to create Gmail draft after token refresh: ${response.statusText}`);
+              }
+            } else {
+              console.error("Failed to refresh token. Redirecting to login...");
+              sessionStorage.clear();
+              localStorage.clear();
+              setSnackbarMessage("Gmail token could not be refreshed. Redirecting to login...");
+              setSnackbarOpen(true);
+              setTimeout(() => {
+                window.location.href = "/login";
+              }, 2000);
+              return;
+            }
+          } else {
+            console.error("No refresh token available. Redirecting to login...");
+            sessionStorage.clear();
+            localStorage.clear();
+            setSnackbarMessage("Gmail token expired. Redirecting to login...");
+            setSnackbarOpen(true);
+            setTimeout(() => {
+              window.location.href = "/login";
+            }, 2000);
+            return;
+          }
+        } else {
+          console.error("Failed to create draft. Response status:", response.status);
+          throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
+        }
       }
   
       const data = await response.json();
@@ -415,6 +423,7 @@ export default function EventInfoPopup({ event, close }) {
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
+  
   
 
   const formatListWithSpaces = (list) => {
