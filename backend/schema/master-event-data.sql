@@ -105,6 +105,6 @@ CREATE TABLE `google.com:cloudhub.data.master-event-data` (
   `dateUpdatedCloudHub` STRING
   `isDeleted` BOOL
   `source` STRING
-
+  `programName` STRING
 
 );

@@ -963,7 +963,7 @@ const EventForm = () => {
 
             <Grid item xs={12} sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Marketing program instance ID
+                Tactic ID
               </Typography>
               <TextField
                 value={marketingProgramInstanceId}

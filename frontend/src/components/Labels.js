@@ -510,7 +510,7 @@ export default function Filters() {
               fontSize: "12px",
             }}
           >
-            Custom Filters
+            Save your Filter View
           </Typography>
         </AccordionSummary>
         <AccordionDetails sx={{ padding: "4px 8px" }}>
@@ -525,7 +525,7 @@ export default function Filters() {
           >
             <TextField
               fullWidth
-              label="Add filter"
+              label="Name of your Filter View"
               value={customFilterName}
               onChange={(e) => setCustomFilterName(e.target.value)}
               variant="outlined"
