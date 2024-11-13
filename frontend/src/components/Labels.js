@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect } from "react";
 import GlobalContext from "../context/GlobalContext";
 import {
   subRegionOptions,
+  regionOptions,
+  countryOptions,
   gepOptions,
   accountSectorOptions,
   accountSegmentOptions,
@@ -59,13 +61,26 @@ export default function Filters() {
     useState(partnerEventOptions);
   const [localDraftStatusOptions, setLocalDraftStatusOptions] =
     useState(draftStatusOptions);
+  const [localRegionOptions, setLocalRegionOptions] = useState(
+      regionOptions.map((option) => ({ label: option, checked: false }))
+    );
+    
+    const [localCountryOptions, setLocalCountryOptions] = useState(
+      countryOptions
+        .map((option) => ({ label: option, checked: false }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // Sort alphabetically by label
+    );
+    
+    
 
-    const [refresh, setRefresh] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
 
   //Accordions
   const [isSubRegionExpanded, setIsSubRegionExpanded] = useState(false);
   const [isCustomFiltersExpanded, setIsCustomFiltersExpanded] = useState(false);
+  const [isRegionExpanded, setIsRegionExpanded] = useState(false);
+  const [isCountryExpanded, setIsCountryExpanded] = useState(false);
 
   const [isGepExpanded, setIsGepExpanded] = useState(false);
   const [isAccountSectorExpanded, setIsAccountSectorExpanded] = useState(false);
@@ -85,8 +100,14 @@ export default function Filters() {
   const { updateFilters } = useContext(GlobalContext);
 
   const clearAllFilters = () => {
+    setLocalRegionOptions(
+      localRegionOptions.map((filter) => ({ ...filter, checked: false }))
+    );
     setLocalSubRegionFilters(
       localSubRegionFilters.map((filter) => ({ ...filter, checked: false }))
+    );
+    setLocalCountryOptions(
+      localCountryOptions.map((filter) => ({ ...filter, checked: false }))
     );
     setLocalGepOptions(
       localGepOptions.map((option) => ({ ...option, checked: false }))
@@ -121,8 +142,14 @@ export default function Filters() {
   };
 
   const selectAllFilters = () => {
+    setLocalRegionOptions(
+      localRegionOptions.map((filter) => ({ ...filter, checked: true }))
+    );
     setLocalSubRegionFilters(
       localSubRegionFilters.map((filter) => ({ ...filter, checked: true }))
+    );
+    setLocalCountryOptions(
+      localCountryOptions.map((filter) => ({ ...filter, checked: true }))
     );
     setLocalGepOptions(
       localGepOptions.map((option) => ({ ...option, checked: true }))
@@ -180,7 +207,9 @@ export default function Filters() {
 
   useEffect(() => {
     updateFilters({
+      regions: localRegionOptions,
       subRegions: localSubRegionFilters,
+      countries: localCountryOptions,
       gep: localGepOptions,
       accountSectors: localAccountSectorOptions,
       accountSegments: localAccountSegmentOptions,
@@ -191,7 +220,9 @@ export default function Filters() {
       draftStatus: localDraftStatusOptions,
     });
   }, [
+    localRegionOptions,
     localSubRegionFilters,
+    localCountryOptions,
     localGepOptions,
     localAccountSectorOptions,
     localAccountSegmentOptions,
@@ -302,7 +333,9 @@ export default function Filters() {
         filterName: customFilterName.trim(), // Top-level filterName field
         config: [
           {
+            regions: localRegionOptions.map(({ label, checked }) => ({ label, checked })),
             subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
+            countries: localCountryOptions.map(({ label, checked }) => ({ label, checked })),
             gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
             accountSectors: localAccountSectorOptions.map(({ label, checked }) => ({ label, checked })),
             accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
@@ -367,6 +400,16 @@ export default function Filters() {
       });
       return match ? { ...filter, checked: match.checked } : filter;
     });
+
+    const updatedRegionOptions = localRegionOptions.map((filter) => {
+      const match = config[0]?.regions?.find((item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase());
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedCountryOptions = localCountryOptions.map((filter) => {
+      const match = config[0]?.countries?.find((item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase());
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
   
     const updatedAccountSegmentOptions = localAccountSegmentOptions.map((filter) => {
       const match = config[0]?.accountSegments?.find((item) => {
@@ -429,6 +472,8 @@ export default function Filters() {
     });
   
     // Update states to trigger re-render with checked options
+    setLocalRegionOptions(updatedRegionOptions);
+    setLocalCountryOptions(updatedCountryOptions);
     setLocalSubRegionFilters(updatedSubRegionFilters);
     setLocalGepOptions(updatedGepOptions);
     setLocalAccountSectorOptions(updatedAccountSectorOptions);
@@ -633,12 +678,30 @@ export default function Filters() {
       <hr style={{ margin: "8px 0", border: 0 }} />
 
       {renderFilterSection(
+      "Region",
+      localRegionOptions,
+      setLocalRegionOptions,
+      isRegionExpanded,
+      setIsRegionExpanded
+    )}
+
+      {renderFilterSection(
         "Sub-Region",
         localSubRegionFilters,
         setLocalSubRegionFilters,
         isSubRegionExpanded,
         setIsSubRegionExpanded
       )}
+
+      {/* Render the "Country" filter section */}
+    {renderFilterSection(
+      "Country",
+      localCountryOptions,
+      setLocalCountryOptions,
+      isCountryExpanded,
+      setIsCountryExpanded
+    )}
+
       {renderFilterSection(
         "Account Sector",
         localAccountSectorOptions,

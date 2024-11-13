@@ -47,7 +47,9 @@ export default function ContextWrapper(props) {
 
   const [labels, setLabels] = useState([]);
   const [filters, setFilters] = useState({
+    regions: [],
     subRegions: [],
+    countries: [],
     eventType: [],
     gep: [],
     buyerSegmentRollup: [],
