@@ -302,6 +302,66 @@ export const countryOptions = [
   'MX'
 ];
 
+export const regionsFilterData = [
+  {
+    region: 'GLOBAL',
+    subregions: [
+      { label: 'Alps', countries: ['AT', 'CH'] },
+      { label: 'Benelux', countries: ['BE', 'LU', 'NL'] },
+      { label: 'CEE', countries: ['BG', 'CY', 'CZ', 'EE', 'GR', 'HU', 'LT', 'LV', 'PL', 'RO', 'RU', 'SK', 'UA'] },
+      { label: 'France', countries: ['FR'] },
+      { label: 'Germany', countries: ['DE'] },
+      { label: 'Iberia', countries: ['ES', 'PT'] },
+      { label: 'Israel', countries: ['IL'] },
+      { label: 'Italy', countries: ['IT'] },
+      { label: 'MEA', countries: ['AE', 'EG', 'KE', 'KW', 'NG', 'OM', 'QA', 'SA', 'TR', 'ZA'] },
+      { label: 'Nordics', countries: ['DK', 'FI', 'NO', 'SE'] },
+      { label: 'UK/IE', countries: ['GB', 'IE'] },
+    ],
+  },
+  {
+    region: 'EMEA',
+    subregions: [
+      { label: 'Alps', countries: ['AT', 'CH'] },
+      { label: 'Benelux', countries: ['BE', 'LU', 'NL'] },
+      { label: 'CEE', countries: ['BG', 'CY', 'CZ', 'EE', 'GR', 'HU', 'LT', 'LV', 'PL', 'RO', 'RU', 'SK', 'UA'] },
+      { label: 'France', countries: ['FR'] },
+      { label: 'Germany', countries: ['DE'] },
+      { label: 'Iberia', countries: ['ES', 'PT'] },
+      { label: 'Israel', countries: ['IL'] },
+      { label: 'Italy', countries: ['IT'] },
+      { label: 'MEA', countries: ['AE', 'EG', 'KE', 'KW', 'NG', 'OM', 'QA', 'SA', 'TR', 'ZA'] },
+      { label: 'Nordics', countries: ['DK', 'FI', 'NO', 'SE'] },
+      { label: 'UK/IE', countries: ['GB', 'IE'] },
+    ],
+  },
+  {
+    region: 'JAPAC',
+    subregions: [
+      { label: 'AuNZ', countries: ['AU', 'NZ'] },
+      { label: 'Greater China', countries: ['CN', 'HK', 'MO'] },
+      { label: 'India', countries: ['IN', 'MH', 'PK', 'LK'] },
+      { label: 'Japan', countries: ['JP'] },
+      { label: 'Korea', countries: ['KP', 'KR'] },
+      { label: 'SEA', countries: ['BD', 'BT', 'BN', 'KH', 'ID', 'LA', 'MY', 'MV', 'FM', 'MM', 'NP', 'PW', 'PG', 'PH', 'SG', 'TH', 'TL', 'VN'] },
+    ],
+  },
+  {
+    region: 'LATAM',
+    subregions: [
+      { label: 'Brazil', countries: ['BR'] },
+      { label: 'MCO', countries: [
+        'AR', 'AI', 'AG', 'AW', 'BS', 'BB', 'BZ', 'BM', 'BO', 'BQ', 'KY', 'CR', 
+        'CW', 'DM', 'DO', 'EC', 'SV', 'GD', 'GP', 'GT', 'GY', 'HT', 'HN', 'JM', 
+        'MQ', 'NI', 'PA', 'KN', 'LC', 'MF', 'PM', 'VC', 'SR', 'TT', 'TC', 'VE', 
+        'VG', 'VI', 'CU', 'FK', 'GF', 'MS', 'SX', 'GS', 'UM', 'PE', 'PY', 'UY', 
+        'CL', 'CO'
+      ] },
+      { label: 'Mexico', countries: ['MX'] },
+    ],
+  },
+];
+
 
 export const languageOptions = [
   'Cantonese',

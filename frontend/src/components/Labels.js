@@ -65,9 +65,12 @@ export default function Filters() {
       regionOptions.map((option) => ({ label: option, checked: false }))
     );
     
-  const [localCountryOptions, setLocalCountryOptions] = useState(
-      countryOptions.map((option) => ({ label: option, checked: false }))
+    const [localCountryOptions, setLocalCountryOptions] = useState(
+      countryOptions
+        .map((option) => ({ label: option, checked: false }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // Sort alphabetically by label
     );
+    
     
 
   const [refresh, setRefresh] = useState(false);
@@ -330,7 +333,9 @@ export default function Filters() {
         filterName: customFilterName.trim(), // Top-level filterName field
         config: [
           {
+            regions: localRegionOptions.map(({ label, checked }) => ({ label, checked })),
             subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
+            countries: localCountryOptions.map(({ label, checked }) => ({ label, checked })),
             gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
             accountSectors: localAccountSectorOptions.map(({ label, checked }) => ({ label, checked })),
             accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
@@ -395,6 +400,16 @@ export default function Filters() {
       });
       return match ? { ...filter, checked: match.checked } : filter;
     });
+
+    const updatedRegionOptions = localRegionOptions.map((filter) => {
+      const match = config[0]?.regions?.find((item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase());
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+  
+    const updatedCountryOptions = localCountryOptions.map((filter) => {
+      const match = config[0]?.countries?.find((item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase());
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
   
     const updatedAccountSegmentOptions = localAccountSegmentOptions.map((filter) => {
       const match = config[0]?.accountSegments?.find((item) => {
@@ -457,6 +472,8 @@ export default function Filters() {
     });
   
     // Update states to trigger re-render with checked options
+    setLocalRegionOptions(updatedRegionOptions);
+    setLocalCountryOptions(updatedCountryOptions);
     setLocalSubRegionFilters(updatedSubRegionFilters);
     setLocalGepOptions(updatedGepOptions);
     setLocalAccountSectorOptions(updatedAccountSectorOptions);

@@ -64,6 +64,8 @@ export default function WeekView() {
         ...filters.accountSegments,
         ...filters.productFamily,
         ...filters.industry,
+        ...filters.regions,
+        ...filters.countries,
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
       filters.draftStatus !== undefined;
@@ -112,6 +114,42 @@ export default function WeekView() {
             return false;
           }
         });
+        const regionMatch =
+                !filters.regions.some((region) => region.checked) ||
+                filters.regions.some((region) => {
+                  try {
+                    return (
+                      region.checked && event.region?.includes(region.label)
+                    );
+                  } catch (err) {
+                    console.error(
+                      "Error checking region filter:",
+                      err,
+                      region,
+                      event
+                    );
+                    return false;
+                  }
+                });
+
+              const countryMatch =
+                !filters.countries.some((country) => country.checked) ||
+                filters.countries.some((country) => {
+                  try {
+                    return (
+                      country.checked && event.country?.includes(country.label)
+                    );
+                  } catch (err) {
+                    console.error(
+                      "Error checking country filter:",
+                      err,
+                      country,
+                      event
+                    );
+                    return false;
+                  }
+                });
+
 
       const accountSegmentMatch =
         !filters.accountSegments.some((segment) => segment.checked) ||
@@ -218,7 +256,9 @@ export default function WeekView() {
         productFamilyMatch &&
         industryMatch &&
         isPartneredEventMatch &&
-        isDraftMatch
+        isDraftMatch &&
+        regionMatch &&
+        countryMatch
       );
     });
   }, [filters, events]);

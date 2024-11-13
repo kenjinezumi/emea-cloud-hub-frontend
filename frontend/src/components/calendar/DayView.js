@@ -86,6 +86,8 @@ export default function DayView() {
             ...filters.accountSegments,
             ...filters.productFamily,
             ...filters.industry,
+            ...filters.regions,
+            ...filters.countries,
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
           filters.draftStatus !== undefined;
@@ -123,6 +125,42 @@ export default function DayView() {
                     return false;
                   }
                 });
+                const regionMatch =
+                !filters.regions.some((region) => region.checked) ||
+                filters.regions.some((region) => {
+                  try {
+                    return (
+                      region.checked && event.region?.includes(region.label)
+                    );
+                  } catch (err) {
+                    console.error(
+                      "Error checking region filter:",
+                      err,
+                      region,
+                      event
+                    );
+                    return false;
+                  }
+                });
+
+              const countryMatch =
+                !filters.countries.some((country) => country.checked) ||
+                filters.countries.some((country) => {
+                  try {
+                    return (
+                      country.checked && event.country?.includes(country.label)
+                    );
+                  } catch (err) {
+                    console.error(
+                      "Error checking country filter:",
+                      err,
+                      country,
+                      event
+                    );
+                    return false;
+                  }
+                });
+
 
               const buyerSegmentRollupMatch =
                 !filters.buyerSegmentRollup.some(

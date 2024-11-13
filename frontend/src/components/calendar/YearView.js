@@ -117,6 +117,8 @@ export default function YearView() {
         ...filters.accountSegments,
         ...filters.productFamily,
         ...filters.industry,
+        ...filters.regions,
+        ...filters.countries,
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
       filters.draftStatus !== undefined;
@@ -223,6 +225,43 @@ export default function YearView() {
               }
             });
 
+            const regionMatch =
+            !filters.regions.some((region) => region.checked) ||
+            filters.regions.some((region) => {
+              try {
+                return (
+                  region.checked && event.region?.includes(region.label)
+                );
+              } catch (err) {
+                console.error(
+                  "Error checking region filter:",
+                  err,
+                  region,
+                  event
+                );
+                return false;
+              }
+            });
+
+          const countryMatch =
+            !filters.countries.some((country) => country.checked) ||
+            filters.countries.some((country) => {
+              try {
+                return (
+                  country.checked && event.country?.includes(country.label)
+                );
+              } catch (err) {
+                console.error(
+                  "Error checking country filter:",
+                  err,
+                  country,
+                  event
+                );
+                return false;
+              }
+            });
+
+
           // Product Family filter match
           const productFamilyMatch =
             !filters.productFamily.some((product) => product.checked) ||
@@ -312,7 +351,9 @@ export default function YearView() {
             productFamilyMatch &&
             industryMatch &&
             isPartneredEventMatch &&
-            isDraftMatch
+            isDraftMatch &&
+            regionMatch &&
+            countryMatch
           );
         } catch (filterError) {
           console.error("Error applying filters to event:", filterError, event);

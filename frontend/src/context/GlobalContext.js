@@ -69,7 +69,9 @@ export const GlobalProvider = ({ children }) => {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [filters, setFilters] = useState({
+    regions: [],
     subRegions: [],
+    countries: [],
     eventType: [],
     gep: [],
     buyerSegmentRollup: [],

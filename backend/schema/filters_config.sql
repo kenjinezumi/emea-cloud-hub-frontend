@@ -3,7 +3,9 @@ CREATE TABLE `google.com:cloudhub.data.filters_config` (
   `ldap` STRING NOT NULL,
   `filterName` STRING NOT NULL,  -- New column for the filter name
   `config` ARRAY<STRUCT<
+    `regions` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>
     `subRegions` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,
+    `countries` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,
     `gep` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,
     `accountSectors` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,
     `accountSegments` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,

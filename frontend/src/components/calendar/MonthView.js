@@ -34,7 +34,7 @@ export default function MonthView({ month, isYearView = false }) {
           );
           return;
         }
-        
+
         const hasFiltersApplied =
           [
             ...filters.subRegions,
@@ -44,6 +44,8 @@ export default function MonthView({ month, isYearView = false }) {
             ...filters.accountSegments,
             ...filters.productFamily,
             ...filters.industry,
+            ...filters.regions,
+            ...filters.countries,
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
           filters.draftStatus !== undefined;
@@ -116,7 +118,6 @@ export default function MonthView({ month, isYearView = false }) {
                     return false;
                   }
                 });
-              
 
               // Account Sector filter match
               const accountSectorMatch =
@@ -210,6 +211,42 @@ export default function MonthView({ month, isYearView = false }) {
                     .map((option) => option.value)
                 : [];
 
+              const regionMatch =
+                !filters.regions.some((region) => region.checked) ||
+                filters.regions.some((region) => {
+                  try {
+                    return (
+                      region.checked && event.region?.includes(region.label)
+                    );
+                  } catch (err) {
+                    console.error(
+                      "Error checking region filter:",
+                      err,
+                      region,
+                      event
+                    );
+                    return false;
+                  }
+                });
+
+              const countryMatch =
+                !filters.countries.some((country) => country.checked) ||
+                filters.countries.some((country) => {
+                  try {
+                    return (
+                      country.checked && event.country?.includes(country.label)
+                    );
+                  } catch (err) {
+                    console.error(
+                      "Error checking country filter:",
+                      err,
+                      country,
+                      event
+                    );
+                    return false;
+                  }
+                });
+
               const isPartneredEventMatch =
                 selectedPartneredStatuses.length === 0 ||
                 selectedPartneredStatuses.includes(event.isPartneredEvent);
@@ -219,36 +256,36 @@ export default function MonthView({ month, isYearView = false }) {
                     .filter((option) => option.checked)
                     .map((option) => option.value)
                 : [];
-                const isDraftMatch = 
+              const isDraftMatch =
                 selectedDraftStatuses.length === 0 ||
                 (() => {
                   // Initialize an array to hold applicable statuses
                   const applicableStatuses = [];
-              
+
                   // Add "Draft" if the event is in draft mode
                   if (event.isDraft) {
                     applicableStatuses.push("Draft");
                   } else {
                     // If not a draft, add "Finalized" as a base status
                     applicableStatuses.push("Finalized");
-              
+
                     // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
                     if (
                       !event.isDraft &&
-                      event.languagesAndTemplates?.some(template =>
+                      event.languagesAndTemplates?.some((template) =>
                         ["Gmail", "Salesloft"].includes(template.platform)
                       )
                     ) {
                       applicableStatuses.push("Invite available");
                     }
                   }
-              
+
                   // Check if any selectedDraftStatuses match the applicable statuses
-                  return selectedDraftStatuses.some(status => applicableStatuses.includes(status));
+                  return selectedDraftStatuses.some((status) =>
+                    applicableStatuses.includes(status)
+                  );
                 })();
-              
-              
-              
+
               return (
                 subRegionMatch &&
                 gepMatch &&
@@ -258,7 +295,9 @@ export default function MonthView({ month, isYearView = false }) {
                 productFamilyMatch &&
                 industryMatch &&
                 isPartneredEventMatch &&
-                isDraftMatch
+                isDraftMatch &&
+                regionMatch &&
+                countryMatch
               );
             } catch (filterError) {
               console.error(
