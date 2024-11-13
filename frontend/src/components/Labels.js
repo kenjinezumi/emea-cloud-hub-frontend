@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect } from "react";
 import GlobalContext from "../context/GlobalContext";
 import {
   subRegionOptions,
+  regionOptions,
+  countryOptions,
   gepOptions,
   accountSectorOptions,
   accountSegmentOptions,
@@ -59,13 +61,23 @@ export default function Filters() {
     useState(partnerEventOptions);
   const [localDraftStatusOptions, setLocalDraftStatusOptions] =
     useState(draftStatusOptions);
+  const [localRegionOptions, setLocalRegionOptions] = useState(
+      regionOptions.map((option) => ({ label: option, checked: false }))
+    );
+    
+  const [localCountryOptions, setLocalCountryOptions] = useState(
+      countryOptions.map((option) => ({ label: option, checked: false }))
+    );
+    
 
-    const [refresh, setRefresh] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
 
   //Accordions
   const [isSubRegionExpanded, setIsSubRegionExpanded] = useState(false);
   const [isCustomFiltersExpanded, setIsCustomFiltersExpanded] = useState(false);
+  const [isRegionExpanded, setIsRegionExpanded] = useState(false);
+  const [isCountryExpanded, setIsCountryExpanded] = useState(false);
 
   const [isGepExpanded, setIsGepExpanded] = useState(false);
   const [isAccountSectorExpanded, setIsAccountSectorExpanded] = useState(false);
@@ -85,8 +97,14 @@ export default function Filters() {
   const { updateFilters } = useContext(GlobalContext);
 
   const clearAllFilters = () => {
+    setLocalRegionOptions(
+      localRegionOptions.map((filter) => ({ ...filter, checked: false }))
+    );
     setLocalSubRegionFilters(
       localSubRegionFilters.map((filter) => ({ ...filter, checked: false }))
+    );
+    setLocalCountryOptions(
+      localCountryOptions.map((filter) => ({ ...filter, checked: false }))
     );
     setLocalGepOptions(
       localGepOptions.map((option) => ({ ...option, checked: false }))
@@ -121,8 +139,14 @@ export default function Filters() {
   };
 
   const selectAllFilters = () => {
+    setLocalRegionOptions(
+      localRegionOptions.map((filter) => ({ ...filter, checked: true }))
+    );
     setLocalSubRegionFilters(
       localSubRegionFilters.map((filter) => ({ ...filter, checked: true }))
+    );
+    setLocalCountryOptions(
+      localCountryOptions.map((filter) => ({ ...filter, checked: true }))
     );
     setLocalGepOptions(
       localGepOptions.map((option) => ({ ...option, checked: true }))
@@ -180,7 +204,9 @@ export default function Filters() {
 
   useEffect(() => {
     updateFilters({
+      regions: localRegionOptions,
       subRegions: localSubRegionFilters,
+      countries: localCountryOptions,
       gep: localGepOptions,
       accountSectors: localAccountSectorOptions,
       accountSegments: localAccountSegmentOptions,
@@ -191,7 +217,9 @@ export default function Filters() {
       draftStatus: localDraftStatusOptions,
     });
   }, [
+    localRegionOptions,
     localSubRegionFilters,
+    localCountryOptions,
     localGepOptions,
     localAccountSectorOptions,
     localAccountSegmentOptions,
@@ -633,12 +661,30 @@ export default function Filters() {
       <hr style={{ margin: "8px 0", border: 0 }} />
 
       {renderFilterSection(
+      "Region",
+      localRegionOptions,
+      setLocalRegionOptions,
+      isRegionExpanded,
+      setIsRegionExpanded
+    )}
+
+      {renderFilterSection(
         "Sub-Region",
         localSubRegionFilters,
         setLocalSubRegionFilters,
         isSubRegionExpanded,
         setIsSubRegionExpanded
       )}
+
+      {/* Render the "Country" filter section */}
+    {renderFilterSection(
+      "Country",
+      localCountryOptions,
+      setLocalCountryOptions,
+      isCountryExpanded,
+      setIsCountryExpanded
+    )}
+
       {renderFilterSection(
         "Account Sector",
         localAccountSectorOptions,
