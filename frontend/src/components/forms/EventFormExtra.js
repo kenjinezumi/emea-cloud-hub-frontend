@@ -61,10 +61,11 @@ export default function ExtraDetailsForm() {
       : ""
   );
   const [program, setProgram] = useState(
-    Array.isArray(formData?.program)
-      ? formData.program
-      : selectedEvent?.program || []
+    Array.isArray(formData?.programName)
+      ? formData.programName
+      : selectedEvent?.programName || []
   );
+  
   const [isProgramError, setIsProgramError] = useState(false);
 
   const [okrSelections, setOkrSelections] = useState(() => {
@@ -452,40 +453,39 @@ export default function ExtraDetailsForm() {
 
             {/* New Program Field */}
             <Grid item xs={12}>
-              <FormControl fullWidth error={isProgramError}>
-                <Typography variant="subtitle1">Program *</Typography>
-                <Select
-                  multiple
-                  value={program}
-                  onChange={handleProgramChange}
-                  renderValue={(selected) => (
-                    <div
-                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
-                    >
-                      {selected.map((programItem) => (
-                        <Chip
-                          key={programItem}
-                          label={programItem}
-                          onDelete={handleProgramDelete(programItem)}
-                          onMouseDown={(event) => event.stopPropagation()}
-                        />
-                      ))}
-                    </div>
-                  )}
-                >
-                  {programNameOptions.map((option, idx) => (
-                    <MenuItem key={idx} value={option}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {isProgramError && (
-                  <Typography variant="body2" color="error">
-                    Please select at least one Program.
-                  </Typography>
-                )}
-              </FormControl>
-            </Grid>
+  <FormControl fullWidth error={isProgramError}>
+    <Typography variant="subtitle1">Program *</Typography>
+    <Select
+      multiple
+      value={program}
+      onChange={handleProgramChange}
+      renderValue={(selected) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+          {selected.map((programItem) => (
+            <Chip
+              key={programItem}
+              label={programItem}
+              onDelete={handleProgramDelete(programItem)}
+              onMouseDown={(event) => event.stopPropagation()}
+            />
+          ))}
+        </div>
+      )}
+    >
+      {programNameOptions.map((option, idx) => (
+        <MenuItem key={idx} value={option}>
+          {option}
+        </MenuItem>
+      ))}
+    </Select>
+    {isProgramError && (
+      <Typography variant="body2" color="error">
+        Please select at least one Program.
+      </Typography>
+    )}
+  </FormControl>
+</Grid>
+
 
             <Grid item xs={12}>
               <Typography

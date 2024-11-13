@@ -122,6 +122,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": ["Build Modern Apps"],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": ["Industry LOB - Gaming", "Industry LOB - Gov"],
   "audienceSeniority": ["Practitioner"],
   "accountSectors": {
@@ -243,6 +253,14 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": ["Build Modern Apps"],
+  "programName" : [
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": ["Industry LOB - Gaming", "Industry LOB - Gov"],
   "audienceSeniority": ["Practitioner"],
   "accountSectors": {
@@ -342,6 +360,16 @@ const dummyEventData = [{
   "languagesAndTemplates": [],
   "okr": [],
   "gep": [],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": [],
   "accountSectors": {
@@ -440,8 +468,16 @@ const dummyEventData = [{
   "isEventSeries": true,
   "languagesAndTemplates": [],
   "okr": [],
-  "gep": [],
-  "audiencePersona": [],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],  "audiencePersona": [],
   "audienceSeniority": [],
   "accountSectors": {
     "commercial": false,
@@ -27925,6 +27961,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": ["Build Modern Apps"],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": ["Industry LOB - Gaming", "Industry LOB - Gov"],
   "audienceSeniority": ["Practitioner"],
   "accountSectors": {
