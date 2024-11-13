@@ -303,14 +303,21 @@ export const countryOptions = [
 ];
 
 
-
 export const languageOptions = [
+  'Cantonese',
   'English',
   'French',
   'German',
+  'Indonesian',
   'Italian',
+  'Japanese',
+  'Korean',
+  'Mandarin',
+  'Portuguese',
+  'Russian',
   'Spanish',
 ];
+
 
 export const okrOptions = [
   { label: 'Acquire Revenue', checked: true },
