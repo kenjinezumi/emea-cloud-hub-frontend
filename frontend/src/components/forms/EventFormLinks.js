@@ -199,6 +199,7 @@ export default function LinksForm() {
       aiVsCore: formData.aiVsCore,
       industry: formData.industry,
       accountSectors: formData.accountSectors,
+      program: formData.program
     };
     const missingFields = Object.keys(requiredFields).filter(
       (key) => !requiredFields[key] || requiredFields[key].length === 0

@@ -1,6 +1,10 @@
 import React, { useContext, useState, useEffect } from "react";
 import GlobalContext from "../../context/GlobalContext";
-import { okrOptions, gepOptions } from "../filters/FiltersData";
+import {
+  okrOptions,
+  gepOptions,
+  programNameOptions,
+} from "../filters/FiltersData";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import Snackbar from "@mui/material/Snackbar";
 import {
@@ -56,13 +60,20 @@ export default function ExtraDetailsForm() {
         : "no"
       : ""
   );
+  const [program, setProgram] = useState(
+    Array.isArray(formData?.programName)
+      ? formData.programName
+      : selectedEvent?.programName || []
+  );
   
-  
-  
+  const [isProgramError, setIsProgramError] = useState(false);
+
   const [okrSelections, setOkrSelections] = useState(() => {
     const dataSource = formData || selectedEvent;
     return okrOptions.reduce((acc, option) => {
-      const okrItem = dataSource?.okr?.find((item) => item.type === option.label);
+      const okrItem = dataSource?.okr?.find(
+        (item) => item.type === option.label
+      );
       acc[option.label] = {
         selected: !!okrItem && okrItem.percentage !== "",
         percentage: okrItem ? okrItem.percentage : "",
@@ -70,19 +81,22 @@ export default function ExtraDetailsForm() {
       return acc;
     }, {});
   });
-  
+
   const [gep, setGep] = useState(
-    (Array.isArray(formData?.gep) ? formData.gep : selectedEvent?.gep || []).filter(Boolean)
+    (Array.isArray(formData?.gep)
+      ? formData.gep
+      : selectedEvent?.gep || []
+    ).filter(Boolean)
   );
-    
+
   const [isPartneredEvent, setIsPartneredEvent] = useState(
     formData?.isPartneredEvent || selectedEvent?.isPartneredEvent || false
   );
-  
+
   const [partnerRole, setPartnerRole] = useState(
     formData?.partnerRole || selectedEvent?.partnerRole || ""
   );
-  
+
   const [isCustomerUseError, setIsCustomerUseError] = useState(false);
   const [isGepError, setIsGepError] = useState(false);
 
@@ -94,6 +108,10 @@ export default function ExtraDetailsForm() {
         selected: !prev[label].selected,
       },
     }));
+  };
+  const handleProgramChange = (event) => {
+    setProgram(event.target.value);
+    setIsProgramError(false);
   };
 
   const handlePercentageChange = (label, value) => {
@@ -109,7 +127,8 @@ export default function ExtraDetailsForm() {
     const updatedFormData = {
       ...formData,
       // isApprovedForCustomerUse: customerUse === "yes" ? true : false,
-      isApprovedForCustomerUse: null, 
+      program,
+      isApprovedForCustomerUse: null,
       okr: Object.keys(okrSelections).map((label) => ({
         type: label,
         percentage: okrSelections[label].percentage,
@@ -124,6 +143,7 @@ export default function ExtraDetailsForm() {
       updateFormData(updatedFormData);
     }
   }, [
+    program,
     customerUse,
     okrSelections,
     gep,
@@ -147,6 +167,7 @@ export default function ExtraDetailsForm() {
       {
         okr: selectedOkrs,
         gep,
+        program,
         isPartneredEvent: isPartneredEvent === true,
         isApprovedForCustomerUse: customerUse === "yes",
         partnerRole,
@@ -160,14 +181,23 @@ export default function ExtraDetailsForm() {
     setGep((currentGep) => currentGep.filter((gep) => gep !== gepToDelete));
   };
 
-  const handleNext =  async () => {
-    const isCustomerUseValid = customerUse !== "";
+  const handleProgramDelete = (programToDelete) => (event) => {
+    event.stopPropagation();
+    setProgram((currentProgram) =>
+      currentProgram.filter((item) => item !== programToDelete)
+    );
+  };
+
+  const handleNext = async () => {
+    // const isCustomerUseValid = customerUse !== "";
     const isGepValid = gep.length > 0;
+    const isProgramValid = program !== "";
 
-    setIsCustomerUseError(!isCustomerUseValid);
+    // setIsCustomerUseError(!isCustomerUseValid);
     setIsGepError(!isGepValid);
+    setIsProgramError(!isProgramValid);
 
-    if (!isCustomerUseValid || !isGepValid) {
+    if (!isGepValid || !isProgramValid) {
       setIsFormValid(false);
       setSnackbarMessage("Please fill in all required fields.");
       setSnackbarOpen(true);
@@ -218,7 +248,6 @@ export default function ExtraDetailsForm() {
       partnerRole,
       isDraft: true,
       isPublished: false,
-      
     };
     try {
       const response = await sendDataToAPI(updatedFormData, "draft");
@@ -228,7 +257,6 @@ export default function ExtraDetailsForm() {
         setTimeout(() => {
           saveAndNavigate(updatedFormData, "/email-invitation");
         }, 1500);
-
       } else {
         setSnackbarMessage("Failed to save draft.");
         setSnackbarOpen(true);
@@ -237,7 +265,6 @@ export default function ExtraDetailsForm() {
       setSnackbarMessage("An error occurred while saving the draft.");
       setSnackbarOpen(true);
     }
-
   };
 
   const handleSaveAsDraft = async () => {
@@ -423,6 +450,42 @@ export default function ExtraDetailsForm() {
                 )}
               </FormControl>
             </Grid>
+
+            {/* New Program Field */}
+            <Grid item xs={12}>
+  <FormControl fullWidth error={isProgramError}>
+    <Typography variant="subtitle1">Program *</Typography>
+    <Select
+      multiple
+      value={program}
+      onChange={handleProgramChange}
+      renderValue={(selected) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
+          {selected.map((programItem) => (
+            <Chip
+              key={programItem}
+              label={programItem}
+              onDelete={handleProgramDelete(programItem)}
+              onMouseDown={(event) => event.stopPropagation()}
+            />
+          ))}
+        </div>
+      )}
+    >
+      {programNameOptions.map((option, idx) => (
+        <MenuItem key={idx} value={option}>
+          {option}
+        </MenuItem>
+      ))}
+    </Select>
+    {isProgramError && (
+      <Typography variant="body2" color="error">
+        Please select at least one Program.
+      </Typography>
+    )}
+  </FormControl>
+</Grid>
+
 
             <Grid item xs={12}>
               <Typography

@@ -562,6 +562,40 @@ function ShareEventPage() {
                   </Typography>
                 )}
               </Grid>
+              {/* Program */}
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <PublicIcon style={{ color: blue[500], marginRight: 8 }} />
+                  Program
+                </Typography>
+                {eventDetails.programName &&
+                eventDetails.programName.length > 0 ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "8px",
+                      marginLeft: "32px",
+                      marginTop: "8px",
+                    }}
+                  >
+                    {eventDetails.programName.map((program, index) => (
+                      <Chip key={index} label={program} />
+                    ))}
+                  </div>
+                ) : (
+                  <Typography
+                    variant="body1"
+                    gutterBottom
+                    sx={{ marginLeft: "32px" }}
+                  >
+                    N/A
+                  </Typography>
+                )}
+              </Grid>
 
               {/* Partner Involvement */}
               <Grid item xs={12}>

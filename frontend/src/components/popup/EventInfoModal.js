@@ -882,6 +882,33 @@ export default function EventInfoPopup({ event, close }) {
           </Typography>
         )}
 
+        {/* Program Name Section */}
+    {selectedEvent.programName?.length > 0 && (
+      <Typography
+        variant="body2"
+        display="flex"
+        alignItems="center"
+        sx={{
+          wordBreak: "break-word",
+          whiteSpace: "normal",
+          flexWrap: "wrap",
+        }}      >
+        <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+        Program:
+        <Typography
+          variant="body2"
+          sx={{
+            marginLeft: "5px",
+            wordBreak: "break-word",
+            whiteSpace: "normal",
+            display: "inline",
+          }}
+        >
+          {selectedEvent.programName.join(", ")}
+        </Typography>
+      </Typography>
+    )}
+
         {selectedEvent.okr?.length > 0 &&
           selectedEvent.okr.some((okr) => okr.percentage !== "") && (
             <Typography
