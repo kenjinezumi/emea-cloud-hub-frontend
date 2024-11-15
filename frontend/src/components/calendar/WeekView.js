@@ -42,7 +42,44 @@ export default function WeekView() {
   );
   const weekViewRef = useRef(null);
   const location = useLocation();
-
+  const sortEventsByPriority = (events) => {
+    return events.sort((a, b) => {
+      // 1. Prioritize Finalized or Invite-ready statuses
+      const getStatusPriority = (event) => {
+        const applicableStatuses = [];
+        if (event.isDraft) {
+          applicableStatuses.push("Draft");
+        } else {
+          applicableStatuses.push("Finalized");
+          if (
+            event.languagesAndTemplates?.some((template) =>
+              ["Gmail", "Salesloft"].includes(template.platform)
+            )
+          ) {
+            applicableStatuses.push("Invite available");
+          }
+        }
+        if (applicableStatuses.includes("Invite available")) return 2; // Highest
+        if (applicableStatuses.includes("Finalized")) return 1; // Medium
+        return 0; // Lowest (Draft)
+      };
+  
+      const statusPriorityA = getStatusPriority(a);
+      const statusPriorityB = getStatusPriority(b);
+  
+      if (statusPriorityA !== statusPriorityB) {
+        return statusPriorityB - statusPriorityA; // Descending order
+      }
+  
+      // 2. High Priority flag
+      if (a.isHighPriority !== b.isHighPriority) {
+        return b.isHighPriority - a.isHighPriority; // High Priority comes first
+      }
+  
+      // 3. Descending by expected attendees
+      return b.expectedAttendees - a.expectedAttendees;
+    });
+  };
   useEffect(() => {
     const startOfWeek = dayjs(daySelected).startOf("week");
     const daysOfWeek = Array.from({ length: 7 }, (_, i) =>
@@ -304,32 +341,33 @@ export default function WeekView() {
   const { multiDayEvents, singleDayEvents } = useMemo(() => {
     if (!currentWeek.length) return { multiDayEvents: [], singleDayEvents: [] };
 
-    const multiDayEvents = filteredEvents.filter((event) => {
-      const eventStart = dayjs(event.startDate);
-      const eventEnd = dayjs(event.endDate);
-
-      // Ensure that the event spans more than one day
-      // Also ensure the event falls within the bounds of the current week
-      return (
-        eventStart.isValid() &&
-        eventEnd.isValid() &&
-        !eventStart.isSame(eventEnd, "day") && // Exclude single-day events
-        eventStart.isBefore(currentWeek[currentWeek.length - 1].endOf("day")) &&
-        eventEnd.isAfter(currentWeek[0].startOf("day"))
-      );
-    });
-
-    const singleDayEvents = filteredEvents.filter((event) => {
-      const eventStart = dayjs(event.startDate);
-      const eventEnd = dayjs(event.endDate);
-
-      // Include only events that start and end on the same day
-      return (
-        eventStart.isSame(eventEnd, "day") &&
-        eventStart.isValid() &&
-        eventEnd.isValid()
-      );
-    });
+    const multiDayEvents = sortEventsByPriority(
+      filteredEvents.filter((event) => {
+        const eventStart = dayjs(event.startDate);
+        const eventEnd = dayjs(event.endDate);
+  
+        return (
+          eventStart.isValid() &&
+          eventEnd.isValid() &&
+          !eventStart.isSame(eventEnd, "day") &&
+          eventStart.isBefore(currentWeek[currentWeek.length - 1].endOf("day")) &&
+          eventEnd.isAfter(currentWeek[0].startOf("day"))
+        );
+      })
+    );
+  
+    const singleDayEvents = sortEventsByPriority(
+      filteredEvents.filter((event) => {
+        const eventStart = dayjs(event.startDate);
+        const eventEnd = dayjs(event.endDate);
+  
+        return (
+          eventStart.isSame(eventEnd, "day") &&
+          eventStart.isValid() &&
+          eventEnd.isValid()
+        );
+      })
+    );
 
     return { multiDayEvents, singleDayEvents };
   }, [filteredEvents, currentWeek]);
@@ -523,6 +561,9 @@ export default function WeekView() {
                 eventIndex,
                 currentWeek
               );
+
+
+              
 
               return (
                 <div
