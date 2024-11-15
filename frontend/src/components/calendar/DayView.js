@@ -88,6 +88,8 @@ export default function DayView() {
             ...filters.industry,
             ...filters.regions,
             ...filters.countries,
+            ...filters.programName,
+
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
           filters.draftStatus !== undefined;
@@ -301,6 +303,16 @@ export default function DayView() {
                   // Check if any selectedDraftStatuses match the applicable statuses
                   return selectedDraftStatuses.some(status => applicableStatuses.includes(status));
                 })();
+                const programNameMatch =
+                filters.programName.every((filter) => !filter.checked) ||
+                filters.programName.some((filter) => {
+                  const isChecked = filter.checked;
+                  const matches = event.programName?.some((name) =>
+                    name.toLowerCase().includes(filter.label.toLowerCase())
+                  );
+              
+                  return isChecked && matches;
+                });
               
               return (
                 subRegionMatch &&
@@ -311,7 +323,10 @@ export default function DayView() {
                 productFamilyMatch &&
                 industryMatch &&
                 isPartneredEventMatch &&
-                isDraftMatch
+                isDraftMatch &&
+                regionMatch &&
+                countryMatch && 
+                programNameMatch
               );
             } catch (filterError) {
               console.error("Error applying filters to event:", filterError);
