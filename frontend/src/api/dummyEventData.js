@@ -576,6 +576,16 @@ const dummyEventData = [{
   "languagesAndTemplates": [],
   "okr": [],
   "gep": [],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": [],
   "accountSectors": {
@@ -690,6 +700,16 @@ const dummyEventData = [{
     "percentage": ""
   }],
   "gep": ["Born Digital (Legacy)"],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": ["Industry LOB - FinServ"],
   "audienceSeniority": ["Practitioner"],
   "accountSectors": {
@@ -792,6 +812,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": ["Modern Infrastructure and Apps"],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": ["Decision Maker", "Practitioner"],
   "accountSectors": {
@@ -885,6 +915,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": [""],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": [""],
   "accountSectors": {
@@ -978,6 +1018,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": ["Not tied to any Global Campaign"],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": ["Executive"],
   "accountSectors": {
@@ -1071,6 +1121,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": ["Not tied to any Global Campaign"],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": ["Executive"],
   "accountSectors": {
@@ -1164,6 +1224,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": ["Not tied to any Global Campaign"],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": ["Executive"],
   "accountSectors": {
@@ -1257,6 +1327,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": ["Not tied to any Global Campaign"],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": ["Executive"],
   "accountSectors": {
@@ -1350,6 +1430,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": [""],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": [""],
   "accountSectors": {
@@ -1443,6 +1533,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": [""],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": [""],
   "accountSectors": {
@@ -1536,6 +1636,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": [""],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": ["Executive"],
   "accountSectors": {
@@ -21896,6 +22006,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": [""],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": [""],
   "accountSectors": {
@@ -21989,6 +22109,16 @@ const dummyEventData = [{
     "percentage": "100"
   }],
   "gep": [""],
+  "programName" : [
+    "Accomplish more with Gemini",
+    "AI & Analytics Platform (BigQuery, Gemini, Vertex)",
+    "API Solutions",
+    "Build Modern Apps",
+    "Cloud Security",
+    "Dev Productivity with Gemini",
+    "Fraud Protection Solutions",
+    "Sustainability"
+  ],
   "audiencePersona": [],
   "audienceSeniority": [""],
   "accountSectors": {

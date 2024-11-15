@@ -12,6 +12,7 @@ import {
   industryOptions,
   partnerEventOptions,
   draftStatusOptions,
+  programNameOptions
 } from "./filters/FiltersData";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
@@ -38,7 +39,10 @@ import { deleteFilterDataFromAPI} from "../api/deleteFilterData";
 export default function Filters() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-
+  const [localProgramNameOptions, setLocalProgramNameOptions] = useState(
+    programNameOptions.map((option) => ({ label: option, checked: false }))
+  );
+  
   const [localSubRegionFilters, setLocalSubRegionFilters] = useState(
     subRegionOptions.map((option) => ({ label: option, checked: false }))
   );
@@ -92,6 +96,7 @@ export default function Filters() {
   const [isIndustryExpanded, setIsIndustryExpanded] = useState(false);
   const [isPartnerEventExpanded, setIsPartnerEventExpanded] = useState(false);
   const [isDraftStatusExpanded, setIsDraftStatusExpanded] = useState(false);
+  const [isProgramNameExpanded, setIsProgramNameExpanded] = useState(false);
 
   //Custom filters state
   const [customFilterName, setCustomFilterName] = useState("");
@@ -112,6 +117,9 @@ export default function Filters() {
     setLocalGepOptions(
       localGepOptions.map((option) => ({ ...option, checked: false }))
     );
+    setLocalProgramNameOptions(
+      localProgramNameOptions.map((option) => ({ ...option, checked: false }))
+    );
     setLocalAccountSectorOptions(
       localAccountSectorOptions.map((option) => ({ ...option, checked: false }))
     );
@@ -130,6 +138,7 @@ export default function Filters() {
     setLocalProductFamilyOptions(
       localProductFamilyOptions.map((option) => ({ ...option, checked: false }))
     );
+    
     setLocalIndustryOptions(
       localIndustryOptions.map((option) => ({ ...option, checked: false }))
     );
@@ -153,6 +162,9 @@ export default function Filters() {
     );
     setLocalGepOptions(
       localGepOptions.map((option) => ({ ...option, checked: true }))
+    );
+    setLocalProgramNameOptions(
+      localProgramNameOptions.map((option) => ({ ...option, checked: true }))
     );
     setLocalAccountSectorOptions(
       localAccountSectorOptions.map((option) => ({ ...option, checked: true }))
@@ -188,6 +200,7 @@ export default function Filters() {
           : filter
       )
     );
+    console.log(`Checkbox toggled for label: ${label}`);
     forceRefresh();
 
   };
@@ -211,6 +224,7 @@ export default function Filters() {
       subRegions: localSubRegionFilters,
       countries: localCountryOptions,
       gep: localGepOptions,
+      programName: localProgramNameOptions,
       accountSectors: localAccountSectorOptions,
       accountSegments: localAccountSegmentOptions,
       buyerSegmentRollup: localBuyerSegmentRollupOptions,
@@ -224,6 +238,7 @@ export default function Filters() {
     localSubRegionFilters,
     localCountryOptions,
     localGepOptions,
+    localProgramNameOptions,
     localAccountSectorOptions,
     localAccountSegmentOptions,
     localBuyerSegmentRollupOptions,
@@ -337,6 +352,7 @@ export default function Filters() {
             subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
             countries: localCountryOptions.map(({ label, checked }) => ({ label, checked })),
             gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
+            programName: localProgramNameOptions.map(({ label, checked }) => ({ label, checked })),
             accountSectors: localAccountSectorOptions.map(({ label, checked }) => ({ label, checked })),
             accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
             buyerSegmentRollup: localBuyerSegmentRollupOptions.map(({ label, checked }) => ({ label, checked })),
@@ -388,6 +404,13 @@ export default function Filters() {
         }
         return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
       });
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+
+    const updatedProgramNameOptions = localProgramNameOptions.map((filter) => {
+      const match = config[0]?.programName?.find(
+        (item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+      );
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
@@ -476,6 +499,7 @@ export default function Filters() {
     setLocalCountryOptions(updatedCountryOptions);
     setLocalSubRegionFilters(updatedSubRegionFilters);
     setLocalGepOptions(updatedGepOptions);
+    setLocalProgramNameOptions(updatedProgramNameOptions);
     setLocalAccountSectorOptions(updatedAccountSectorOptions);
     setLocalAccountSegmentOptions(updatedAccountSegmentOptions);
     setLocalBuyerSegmentRollupOptions(updatedBuyerSegmentRollupOptions);
@@ -746,6 +770,16 @@ export default function Filters() {
         isGepExpanded,
         setIsGepExpanded
       )}
+
+      {renderFilterSection(
+        "Program",
+        localProgramNameOptions,
+        setLocalProgramNameOptions,
+        isProgramNameExpanded,
+        setIsProgramNameExpanded
+      )}
+
+
       {renderFilterSection(
         "Is Partner Involved?",
         localPartnerEventOptions,

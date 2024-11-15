@@ -66,6 +66,7 @@ export default function WeekView() {
         ...filters.industry,
         ...filters.regions,
         ...filters.countries,
+        ...filters.programName,
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
       filters.draftStatus !== undefined;
@@ -245,6 +246,16 @@ export default function WeekView() {
     // Check if any selectedDraftStatuses match the applicable statuses
     return selectedDraftStatuses.some(status => applicableStatuses.includes(status));
   })();
+  const programNameMatch =
+  filters.programName.every((filter) => !filter.checked) ||
+  filters.programName.some((filter) => {
+    const isChecked = filter.checked;
+    const matches = event.programName?.some((name) =>
+      name.toLowerCase().includes(filter.label.toLowerCase())
+    );
+
+    return isChecked && matches;
+  });
 
 
       return (
@@ -258,7 +269,8 @@ export default function WeekView() {
         isPartneredEventMatch &&
         isDraftMatch &&
         regionMatch &&
-        countryMatch
+        countryMatch && 
+        programNameMatch
       );
     });
   }, [filters, events]);
