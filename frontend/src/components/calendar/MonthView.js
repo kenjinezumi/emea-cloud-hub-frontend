@@ -4,9 +4,10 @@ import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
 import EventPopup from "../popup/EventInfoModal";
 import Day from "../Day/DayMonth";
-
+import dayjs from "dayjs";
 export default function MonthView({ month, isYearView = false }) {
   const {
+    daySelected,
     setDaySelected,
     setShowEventModal,
     setShowInfoEventModal,
@@ -24,16 +25,41 @@ export default function MonthView({ month, isYearView = false }) {
       try {
         // Only log filters once when they change
 
-        const eventData = await getEventData("eventDataQuery");
-        setEvents(eventData);
+        const eventDataRaw = await getEventData("eventDataQuery");
+        setEvents(eventDataRaw);
 
-        if (!Array.isArray(eventData)) {
+        if (!Array.isArray(eventDataRaw)) {
           console.error(
             "fetchAndFilterEvents was called with 'eventData' that is not an array:",
-            eventData
+            eventDataRaw
           );
           return;
         }
+
+        const selectedMonthStart = daySelected.startOf("month");
+const selectedMonthEnd = daySelected.endOf("month");
+
+
+// Filter events for the selected month and year
+const filteredByMonth = eventDataRaw.filter((event) => {
+  const eventStart = dayjs(event.startDate);
+  const eventEnd = dayjs(event.endDate);
+
+  return (
+    (eventStart.isSame(selectedMonthStart, "month") &&
+      eventStart.isSame(selectedMonthStart, "year")) ||
+    (eventEnd.isSame(selectedMonthStart, "month") &&
+      eventEnd.isSame(selectedMonthStart, "year")) ||
+    (eventStart.isBefore(selectedMonthEnd) &&
+      eventEnd.isAfter(selectedMonthStart) &&
+      eventStart.isSame(selectedMonthStart, "year"))
+  );
+});
+
+
+const eventData = filteredByMonth; // Assign filtered data back to eventData
+console.log('Eevent data is ', eventData)
+        
 
         const hasFiltersApplied =
           [
@@ -332,7 +358,7 @@ export default function MonthView({ month, isYearView = false }) {
     };
 
     fetchAndFilterEvents();
-  }, [location, filters]); // Add the necessary dependencies here
+  }, [location, filters,  daySelected]); // Add the necessary dependencies here
   useEffect(() => {
     console.log("Filters:", filters.isDraft);
   }, [filters.isDraft]);
@@ -356,6 +382,8 @@ export default function MonthView({ month, isYearView = false }) {
     },
     [setDaySelected, setSelectedEvents, setSelectedEvent]
   );
+
+  
 
   return (
     <div
