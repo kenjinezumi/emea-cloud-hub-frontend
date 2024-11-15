@@ -52,6 +52,7 @@ export default function ContextWrapper(props) {
     countries: [],
     eventType: [],
     gep: [],
+    programName: [],
     buyerSegmentRollup: [],
     accountSectors: [],
     accountSegments: [],
