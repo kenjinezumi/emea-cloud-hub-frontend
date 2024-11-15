@@ -393,9 +393,49 @@ export default function DayView() {
   };
 
   const groupOverlappingEvents = (events) => {
+    const sortedEvents = events.sort((a, b) => {
+      // 1. Check event status (Finalized or Invite-ready)
+      const getEventStatusPriority = (event) => {
+        const applicableStatuses = [];
+        
+        if (event.isDraft) {
+          applicableStatuses.push("Draft");
+        } else {
+          applicableStatuses.push("Finalized");
+          if (
+            event.languagesAndTemplates?.some((template) =>
+              ["Gmail", "Salesloft"].includes(template.platform)
+            )
+          ) {
+            applicableStatuses.push("Invite available");
+          }
+        }
+  
+        if (applicableStatuses.includes("Invite available")) return 2; // Highest priority
+        if (applicableStatuses.includes("Finalized")) return 1; // Second priority
+        return 0; // Default priority for drafts
+      };
+  
+      const statusPriorityA = getEventStatusPriority(a);
+      const statusPriorityB = getEventStatusPriority(b);
+  
+      if (statusPriorityA !== statusPriorityB) {
+        return statusPriorityB - statusPriorityA; // Higher status priority first
+      }
+  
+      // 2. Check High Priority tag
+      if (a.isHighPriority !== b.isHighPriority) {
+        return b.isHighPriority - a.isHighPriority; // `true` comes first
+      }
+  
+      // 3. Descending by expected attendees
+      return b.expectedAttendees - a.expectedAttendees;
+    });
+
+    
     const groups = [];
 
-    events.forEach((event) => {
+    sortedEvents.forEach((event) => {
       const eventStart = dayjs(fixMissingTimeStart(event.startDate));
       const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
 
