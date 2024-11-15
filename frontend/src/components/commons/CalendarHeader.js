@@ -102,22 +102,23 @@ export default function CalendarHeader() {
         if (monthIndex === 0) {
           const newDate = daySelected.subtract(1, "year").month(11); // December of the previous year
           setDaySelected(newDate);
-          setMonthIndex(11);
+          setMonthIndex(newDate.month()); // Correctly set to 11 for December
         } else {
           const newDate = daySelected.subtract(1, "month");
           setDaySelected(newDate);
-          setMonthIndex(monthIndex - 1);
+          setMonthIndex(newDate.month());
         }
         break;
       case "year":
         newDaySelected = daySelected.subtract(1, "year");
         setDaySelected(newDaySelected);
-        setMonthIndex(newDaySelected.month());
+        setMonthIndex(newDaySelected.month()); // Retain the same month in the previous year
         break;
       default:
         break;
     }
   }
+  
 
   function handleNext() {
     let newDaySelected;
@@ -136,22 +137,23 @@ export default function CalendarHeader() {
         if (monthIndex === 11) {
           const newDate = daySelected.add(1, "year").month(0); // January of the next year
           setDaySelected(newDate);
-          setMonthIndex(0);
+          setMonthIndex(newDate.month()); // Correctly set to 0 for January
         } else {
           const newDate = daySelected.add(1, "month");
           setDaySelected(newDate);
-          setMonthIndex(monthIndex + 1);
+          setMonthIndex(newDate.month());
         }
         break;
       case "year":
         newDaySelected = daySelected.add(1, "year");
         setDaySelected(newDaySelected);
-        setMonthIndex(newDaySelected.month());
+        setMonthIndex(newDaySelected.month()); // Retain the same month in the new year
         break;
       default:
         break;
     }
   }
+  
 
   function handleReset() {
     const today = dayjs();

@@ -15,7 +15,7 @@ export default function Day({ day, events, isYearView, month }) {
   const maxEventsToShow = 3;
   const [hoveredEvent, setHoveredEvent] = useState(null);  
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 }); 
-
+  console.log('events are', events)
   const dayEvents = useMemo(() => {
     return events.filter((evt) => {
       // Conditional check based on year view
@@ -27,14 +27,15 @@ export default function Day({ day, events, isYearView, month }) {
         );
       } else {
         // Not in year view, `day` is a `dayjs` object directly
+       
         return (
-          dayjs(evt.startDate).isBefore(day.endOf("day")) &&
-          dayjs(evt.endDate).isAfter(day.startOf("day"))
+          dayjs(evt.startDate) &&
+          dayjs(evt.endDate)
         );
       }
     });
   }, [events, day, isYearView]);
-  
+
 
   const hasEvents = dayEvents.length > 0;
 
