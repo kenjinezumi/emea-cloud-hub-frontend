@@ -12,7 +12,8 @@ import {
   industryOptions,
   partnerEventOptions,
   draftStatusOptions,
-  programNameOptions
+  programNameOptions,
+  eventTypeOptions
 } from "./filters/FiltersData";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
@@ -87,6 +88,8 @@ export default function Filters() {
   const [isCountryExpanded, setIsCountryExpanded] = useState(false);
 
   const [isGepExpanded, setIsGepExpanded] = useState(false);
+  const [isActivityTypeExpanded, setIsActivityTypeExpanded] = useState(false);
+
   const [isAccountSectorExpanded, setIsAccountSectorExpanded] = useState(false);
   const [isAccountSegmentExpanded, setIsAccountSegmentExpanded] =
     useState(false);
@@ -97,7 +100,10 @@ export default function Filters() {
   const [isPartnerEventExpanded, setIsPartnerEventExpanded] = useState(false);
   const [isDraftStatusExpanded, setIsDraftStatusExpanded] = useState(false);
   const [isProgramNameExpanded, setIsProgramNameExpanded] = useState(false);
-
+  const [localActivityTypeOptions, setLocalActivityTypeOptions] = useState(
+   eventTypeOptions.map((option) => ({ label: option.label, checked: option.checked }))
+  );
+  
   //Custom filters state
   const [customFilterName, setCustomFilterName] = useState("");
   const [savedFilters, setSavedFilters] = useState([]);
@@ -122,6 +128,9 @@ export default function Filters() {
     );
     setLocalAccountSectorOptions(
       localAccountSectorOptions.map((option) => ({ ...option, checked: false }))
+    );
+    setLocalActivityTypeOptions(
+      localActivityTypeOptions.map((option) => ({ ...option, checked: false }))
     );
     setLocalAccountSegmentOptions(
       localAccountSegmentOptions.map((option) => ({
@@ -165,6 +174,9 @@ export default function Filters() {
     );
     setLocalProgramNameOptions(
       localProgramNameOptions.map((option) => ({ ...option, checked: true }))
+    );
+    setLocalActivityTypeOptions(
+      localActivityTypeOptions.map((option) => ({ ...option, checked: true }))
     );
     setLocalAccountSectorOptions(
       localAccountSectorOptions.map((option) => ({ ...option, checked: true }))
@@ -225,6 +237,8 @@ export default function Filters() {
       countries: localCountryOptions,
       gep: localGepOptions,
       programName: localProgramNameOptions,
+      activityType: localActivityTypeOptions, 
+
       accountSectors: localAccountSectorOptions,
       accountSegments: localAccountSegmentOptions,
       buyerSegmentRollup: localBuyerSegmentRollupOptions,
@@ -239,6 +253,7 @@ export default function Filters() {
     localCountryOptions,
     localGepOptions,
     localProgramNameOptions,
+    localActivityTypeOptions,
     localAccountSectorOptions,
     localAccountSegmentOptions,
     localBuyerSegmentRollupOptions,
@@ -360,6 +375,10 @@ export default function Filters() {
             industry: localIndustryOptions.map(({ label, checked }) => ({ label, checked })),
             partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({ label, checked })),
             draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({ label, checked })),
+            activityType: localActivityTypeOptions.map(({ label, checked }) => ({
+              label,
+              checked,
+            })),
           },
         ],
       };
@@ -414,6 +433,14 @@ export default function Filters() {
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
+    const updatedActivityTypeOptions = localActivityTypeOptions.map((filter) => {
+      const match = config[0]?.activityType?.find(
+        (item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+      );
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+    setLocalActivityTypeOptions(updatedActivityTypeOptions);
+    
     const updatedAccountSectorOptions = localAccountSectorOptions.map((filter) => {
       const match = config[0]?.accountSectors?.find((item) => {
         if (!item) {
@@ -778,6 +805,15 @@ export default function Filters() {
         isProgramNameExpanded,
         setIsProgramNameExpanded
       )}
+
+    {renderFilterSection(
+      "Activity Type",
+      localActivityTypeOptions,
+      setLocalActivityTypeOptions,
+      isActivityTypeExpanded, // You'll define this state below
+      setIsActivityTypeExpanded
+    )}
+
 
 
       {renderFilterSection(
