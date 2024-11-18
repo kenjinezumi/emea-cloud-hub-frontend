@@ -89,6 +89,8 @@ export default function DayView() {
             ...filters.regions,
             ...filters.countries,
             ...filters.programName,
+            ...filters.activityType,
+
 
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
@@ -313,6 +315,21 @@ export default function DayView() {
               
                   return isChecked && matches;
                 });
+
+                const activityTypeMatch =
+                !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
+                filters.activityType.some((activity) => {
+                  try {
+                    // Check if the event type matches the checked activity types
+                    return (
+                      activity.checked &&
+                      event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
+                    );
+                  } catch (err) {
+                    console.error("Error checking activityType filter:", err, activity, event);
+                    return false; // Handle errors gracefully
+                  }
+                });
               
               return (
                 subRegionMatch &&
@@ -326,7 +343,7 @@ export default function DayView() {
                 isDraftMatch &&
                 regionMatch &&
                 countryMatch && 
-                programNameMatch
+                programNameMatch && activityTypeMatch
               );
             } catch (filterError) {
               console.error("Error applying filters to event:", filterError);

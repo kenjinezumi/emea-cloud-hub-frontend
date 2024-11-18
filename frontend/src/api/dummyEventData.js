@@ -22661,7 +22661,7 @@ const dummyEventData = [{
   "description": "Ping Identity delivered a webinar on their Chrome integration.",
   "emoji": "",
   "organisedBy": ["humphriesa"],
-  "startDate": "2024-10-24",
+  "startDate": "2025-01-24",
   "endDate": "2025-05-30",
   "marketingProgramInstanceId": "PAR27624",
   "eventType": "Digital Event",

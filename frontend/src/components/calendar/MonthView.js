@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from "react";
+import React, { useMemo, useContext, useEffect, useState, useCallback } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
@@ -20,6 +20,33 @@ export default function MonthView({ month, isYearView = false }) {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const location = useLocation();
 
+  function generateMonthView(month, year) {
+    const startOfMonth = dayjs(`${year}-${month + 1}-01`).startOf("month");
+    const startOfCalendar = startOfMonth.startOf("week");
+    const endOfCalendar = startOfMonth.endOf("month").endOf("week");
+  
+    const days = [];
+    let currentDay = startOfCalendar;
+  
+    while (currentDay.isBefore(endOfCalendar, "day")) {
+      const week = [];
+      for (let i = 0; i < 7; i++) {
+        week.push(currentDay.clone()); // Clone to avoid mutation
+        currentDay = currentDay.add(1, "day");
+      }
+      days.push(week);
+    }
+  
+    return days;
+  }
+
+  
+  const monthDays = useMemo(() => {
+    const year = daySelected.year(); // Extract year from the selected day
+    const month = daySelected.month(); // Extract month (0-based) from the selected day
+    return generateMonthView(month, year);
+  }, [daySelected]);
+  
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
@@ -45,16 +72,15 @@ const filteredByMonth = eventDataRaw.filter((event) => {
   const eventStart = dayjs(event.startDate);
   const eventEnd = dayjs(event.endDate);
 
-  return (
-    (eventStart.isSame(selectedMonthStart, "month") &&
-      eventStart.isSame(selectedMonthStart, "year")) ||
-    (eventEnd.isSame(selectedMonthStart, "month") &&
-      eventEnd.isSame(selectedMonthStart, "year")) ||
-    (eventStart.isBefore(selectedMonthEnd) &&
-      eventEnd.isAfter(selectedMonthStart) &&
-      eventStart.isSame(selectedMonthStart, "year"))
-  );
+  // Ensure events are within the selected month and year
+  const isWithinMonthAndYear =
+    eventStart.isSame(selectedMonthStart, "month") ||
+    eventEnd.isSame(selectedMonthStart, "month") ||
+    (eventStart.isBefore(selectedMonthEnd) && eventEnd.isAfter(selectedMonthStart));
+
+  return isWithinMonthAndYear;
 });
+
 
 
 const eventData = filteredByMonth; // Assign filtered data back to eventData
@@ -73,6 +99,7 @@ console.log('Eevent data is ', eventData)
             ...filters.regions,
             ...filters.countries,
             ...filters.programName,
+            ...filters.activityType,
 
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
@@ -326,6 +353,21 @@ console.log('Eevent data is ', eventData)
                   return isChecked && matches;
                 });
 
+                const activityTypeMatch =
+  !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
+  filters.activityType.some((activity) => {
+    try {
+      // Check if the event type matches the checked activity types
+      return (
+        activity.checked &&
+        event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
+      );
+    } catch (err) {
+      console.error("Error checking activityType filter:", err, activity, event);
+      return false; // Handle errors gracefully
+    }
+  });
+
 
               return (
                 subRegionMatch &&
@@ -338,7 +380,7 @@ console.log('Eevent data is ', eventData)
                 isPartneredEventMatch &&
                 isDraftMatch &&
                 regionMatch &&
-                countryMatch && programNameMatch
+                countryMatch && activityTypeMatch && programNameMatch
               );
             } catch (filterError) {
               console.error(
@@ -393,19 +435,20 @@ console.log('Eevent data is ', eventData)
           : "flex-1 grid grid-cols-7 grid-rows-5 overflow"
       }
     >
-      {month.map((row, i) => (
-        <React.Fragment key={i}>
-          {row.map((day, idx) => (
-            <Day
-              key={`day-${i}-${idx}`}
-              day={day} // Pass the updated day object
-              events={filteredEvents}
-              isYearView={isYearView}
-              month={day.month} // Access the month correctly from day.date
-            />
-          ))}
-        </React.Fragment>
-      ))}
+     {monthDays.map((row, i) => (
+      <React.Fragment key={i}>
+        {row.map((day, idx) => (
+          <Day
+            key={`day-${i}-${idx}`}
+            day={day} // Ensure `day` includes the correct year
+            events={filteredEvents}
+            isYearView={isYearView}
+            month={day.month()} // Pass the month explicitly
+          />
+        ))}
+      </React.Fragment>
+    ))}
+
       <EventPopup /> {/* Render the EventPopup component */}
     </div>
   );

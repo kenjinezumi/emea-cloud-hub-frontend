@@ -58,6 +58,7 @@ export default function ContextWrapper(props) {
     accountSegments: [],
     productFamily: [],
     industry: [],
+    activityType: [],
     isPartneredEvent: [
       { label: 'Yes', value: true, checked: false },
       { label: 'No', value: false, checked: false },
