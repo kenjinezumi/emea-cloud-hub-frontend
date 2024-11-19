@@ -833,7 +833,7 @@ function ShareEventPage() {
                     <Chip label="Commercial" />
                   )}
                   {eventDetails.accountSectors?.public && (
-                    <Chip label="Public" />
+                    <Chip label="Public Sector" />
                   )}
                 </div>
               </Grid>

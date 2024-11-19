@@ -757,7 +757,7 @@ export default function EventInfoPopup({ event, close }) {
               >
                 {`Commercial: ${
                   selectedEvent.accountSectors.commercial ? "Yes" : "No"
-                }, Public: ${
+                }, Public Sector: ${
                   selectedEvent.accountSectors.public ? "Yes" : "No"
                 }`}
               </Typography>
