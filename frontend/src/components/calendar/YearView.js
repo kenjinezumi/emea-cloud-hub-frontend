@@ -120,10 +120,10 @@ export default function YearView() {
         ...filters.regions,
         ...filters.countries,
         ...filters.programName,
-        ...filters.newlyCreated,
 
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
+      filters.isNewlyCreated !== undefined ||
       filters.draftStatus !== undefined;
 
     // If no filters are applied, return all events
@@ -354,25 +354,38 @@ export default function YearView() {
 
     return isChecked && matches;
   });
-  const isNewlyCreatedMatch =
-  !filters.newlyCreated.some((option) => option.checked) || // If no "Newly Created" filter is checked, include all events
-  filters.newlyCreated.some((option) => {
-    const entryCreatedDate = event.entryCreatedDate
-      ? dayjs(event.entryCreatedDate)
-      : null; // Check if entryCreatedDate exists and is not null
-    const isWithinTwoWeeks =
-      entryCreatedDate &&
-      dayjs().diff(entryCreatedDate, "day") <= 14; // Check if it's within two weeks
+  const activityTypeMatch =
+                !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
+                filters.activityType.some((activity) => {
+                  try {
+                    // Check if the event type matches the checked activity types
+                    return (
+                      activity.checked &&
+                      event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
+                    );
+                  } catch (err) {
+                    console.error("Error checking activityType filter:", err, activity, event);
+                    return false; // Handle errors gracefully
+                  }
+                });
+              
+                const isNewlyCreatedMatch =
+  !filters.newlyCreated?.some((option) => option.checked) ||
+  filters.newlyCreated?.some((option) => {
+    if (option.checked) {
+      const entryCreatedDate = event.entryCreatedDate
+        ? dayjs(event.entryCreatedDate)
+        : null;
 
-    // Return false if entryCreatedDate is null or undefined
-    if (!entryCreatedDate) return false;
+      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+        console.warn("Invalid or missing entryCreatedDate for event:", event);
+        return option.value === false; // Consider missing dates as "old"
+      }
 
-    // Return true if the option matches the criteria
-    return (
-      option.checked &&
-      ((option.value && isWithinTwoWeeks) ||
-        (!option.value && !isWithinTwoWeeks))
-    );
+      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
+      return option.value === isWithinTwoWeeks;
+    }
+    return false;
   });
           return (
             subRegionMatch &&

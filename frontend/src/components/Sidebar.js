@@ -9,10 +9,10 @@ export default function Sidebar() {
   const {isSidebarOpen, currentView} = useContext(GlobalContext);
 
   if (!isSidebarOpen) {
-    return null; // or return some minimized version of the sidebar
+    return null; 
   }
   return (
-    <aside className="p-3 bg-white" style={{width: '15%', maxWidth:'40vh',  maxHeight: '100vh', // or another fixed value like '500px'
+    <aside className="p-3 bg-white" style={{width: '15%', maxWidth:'40vh',  maxHeight: '100vh', 
     overflowY: 'auto'}}>
       <CreateEventButton />
       <SmallCalendar />

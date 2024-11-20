@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useCallback } from "react";
+import React, { useContext, useEffect, useState, useCallback, useMemo } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
@@ -19,7 +19,32 @@ export default function MonthView({ month, isYearView = false }) {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const location = useLocation();
-
+  function generateMonthView(month, year) {
+    const startOfMonth = dayjs(`${year}-${month + 1}-01`).startOf("month");
+    const startOfCalendar = startOfMonth.startOf("week");
+    const endOfCalendar = startOfMonth.endOf("month").endOf("week");
+  
+    const days = [];
+    let currentDay = startOfCalendar;
+  
+    while (currentDay.isBefore(endOfCalendar, "day")) {
+      const week = [];
+      for (let i = 0; i < 7; i++) {
+        week.push(currentDay.clone()); // Clone to avoid mutation
+        currentDay = currentDay.add(1, "day");
+      }
+      days.push(week);
+    }
+  
+    return days;
+  }
+  
+  
+  const monthDays = useMemo(() => {
+    const year = daySelected.year(); // Extract year from the selected day
+    const month = daySelected.month(); // Extract month (0-based) from the selected day
+    return generateMonthView(month, year);
+  }, [daySelected]);
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
@@ -61,11 +86,12 @@ export default function MonthView({ month, isYearView = false }) {
             ...filters.countries,
             ...filters.programName,
             ...filters.activityType,
-            ...filters.newlyCreated,
+            
 
 
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
+          filters.isNewlyCreated !== undefined ||
           filters.draftStatus !== undefined;
 
         if (!hasFiltersApplied) {
@@ -302,26 +328,30 @@ export default function MonthView({ month, isYearView = false }) {
                     return false; // Handle errors gracefully
                   }
                 });
+              
                 const isNewlyCreatedMatch =
-                !filters.newlyCreated.some((option) => option.checked) || // If no "Newly Created" filter is checked, include all events
-                filters.newlyCreated.some((option) => {
-                  const entryCreatedDate = event.entryCreatedDate
-                    ? dayjs(event.entryCreatedDate)
-                    : null; // Check if entryCreatedDate exists and is not null
-                  const isWithinTwoWeeks =
-                    entryCreatedDate &&
-                    dayjs().diff(entryCreatedDate, "day") <= 14; // Check if it's within two weeks
+  !filters.newlyCreated?.some((option) => option.checked) ||
+  filters.newlyCreated?.some((option) => {
+    if (option.checked) {
+      const entryCreatedDate = event.entryCreatedDate
+        ? dayjs(event.entryCreatedDate)
+        : null;
 
-                  // Return false if entryCreatedDate is null or undefined
-                  if (!entryCreatedDate) return false;
+      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+        console.warn("Invalid or missing entryCreatedDate for event:", event);
+        return option.value === false; // Consider missing dates as "old"
+      }
 
-                  // Return true if the option matches the criteria
-                  return (
-                    option.checked &&
-                    ((option.value && isWithinTwoWeeks) ||
-                      (!option.value && !isWithinTwoWeeks))
-                  );
-                });
+      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
+      return option.value === isWithinTwoWeeks;
+    }
+    return false;
+  });
+
+              
+              
+                
+                
               return (
                 subRegionMatch &&
                 gepMatch &&
@@ -356,13 +386,9 @@ export default function MonthView({ month, isYearView = false }) {
 
     fetchAndFilterEvents();
   }, [location, filters, daySelected]);
-  useEffect(() => {
-    console.log("Filters:", filters.isDraft);
-  }, [filters.isDraft]);
+  
 
-  useEffect(() => {
-    console.log("Filters in GlobalContext:", filters);
-  }, [filters]);
+
 
   // Close modals when location changes
   useEffect(() => {

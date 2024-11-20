@@ -15,7 +15,6 @@ export default function Day({ day, events, isYearView, month }) {
   const maxEventsToShow = 3;
   const [hoveredEvent, setHoveredEvent] = useState(null);  
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 }); 
-  console.log('events are', events)
   const dayEvents = useMemo(() => {
     return events.filter((evt) => {
       // Conditional check based on year view

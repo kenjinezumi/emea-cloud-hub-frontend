@@ -90,11 +90,11 @@ export default function DayView() {
             ...filters.countries,
             ...filters.programName,
             ...filters.activityType,
-            ...filters.newlyCreated,
 
 
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
+          filters.isNewlyCreated !== undefined ||
           filters.draftStatus !== undefined;
 
         if (!hasFiltersApplied) {
@@ -331,26 +331,25 @@ export default function DayView() {
                     return false; // Handle errors gracefully
                   }
                 });
+              
                 const isNewlyCreatedMatch =
-                !filters.newlyCreated.some((option) => option.checked) || // If no "Newly Created" filter is checked, include all events
-                filters.newlyCreated.some((option) => {
-                  const entryCreatedDate = event.entryCreatedDate
-                    ? dayjs(event.entryCreatedDate)
-                    : null; // Check if entryCreatedDate exists and is not null
-                  const isWithinTwoWeeks =
-                    entryCreatedDate &&
-                    dayjs().diff(entryCreatedDate, "day") <= 14; // Check if it's within two weeks
+  !filters.newlyCreated?.some((option) => option.checked) ||
+  filters.newlyCreated?.some((option) => {
+    if (option.checked) {
+      const entryCreatedDate = event.entryCreatedDate
+        ? dayjs(event.entryCreatedDate)
+        : null;
 
-                  // Return false if entryCreatedDate is null or undefined
-                  if (!entryCreatedDate) return false;
+      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+        console.warn("Invalid or missing entryCreatedDate for event:", event);
+        return option.value === false; // Consider missing dates as "old"
+      }
 
-                  // Return true if the option matches the criteria
-                  return (
-                    option.checked &&
-                    ((option.value && isWithinTwoWeeks) ||
-                      (!option.value && !isWithinTwoWeeks))
-                  );
-                });
+      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
+      return option.value === isWithinTwoWeeks;
+    }
+    return false;
+  });
               return (
                 subRegionMatch &&
                 gepMatch &&
