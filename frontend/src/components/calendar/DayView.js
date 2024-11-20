@@ -94,6 +94,7 @@ export default function DayView() {
 
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
+          filters.isNewlyCreated !== undefined ||
           filters.draftStatus !== undefined;
 
         if (!hasFiltersApplied) {
@@ -331,6 +332,24 @@ export default function DayView() {
                   }
                 });
               
+                const isNewlyCreatedMatch =
+  !filters.newlyCreated?.some((option) => option.checked) ||
+  filters.newlyCreated?.some((option) => {
+    if (option.checked) {
+      const entryCreatedDate = event.entryCreatedDate
+        ? dayjs(event.entryCreatedDate)
+        : null;
+
+      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+        console.warn("Invalid or missing entryCreatedDate for event:", event);
+        return option.value === false; // Consider missing dates as "old"
+      }
+
+      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
+      return option.value === isWithinTwoWeeks;
+    }
+    return false;
+  });
               return (
                 subRegionMatch &&
                 gepMatch &&
@@ -344,6 +363,7 @@ export default function DayView() {
                 regionMatch &&
                 countryMatch && 
                 programNameMatch && activityTypeMatch
+                && isNewlyCreatedMatch
               );
             } catch (filterError) {
               console.error("Error applying filters to event:", filterError);

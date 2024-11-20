@@ -509,3 +509,8 @@ export const programNameOptions = [
   "Threat Ready with Mandiant",
   "Transforming SecOps",
 ]
+
+export const newlyCreatedOptions = [
+  { label: "Yes", value: true, checked: false },
+  { label: "No", value: false, checked: false },
+];

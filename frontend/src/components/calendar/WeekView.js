@@ -108,7 +108,9 @@ export default function WeekView() {
 
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
-      filters.draftStatus !== undefined;
+      filters.isNewlyCreated !== undefined ||
+      filters.draftStatus !== undefined          
+
 
     // If no filters are applied, return all events
     if (!hasFiltersApplied) {
@@ -310,8 +312,25 @@ export default function WeekView() {
                     return false; // Handle errors gracefully
                   }
                 });
+              
+                const isNewlyCreatedMatch =
+  !filters.newlyCreated?.some((option) => option.checked) ||
+  filters.newlyCreated?.some((option) => {
+    if (option.checked) {
+      const entryCreatedDate = event.entryCreatedDate
+        ? dayjs(event.entryCreatedDate)
+        : null;
 
+      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+        console.warn("Invalid or missing entryCreatedDate for event:", event);
+        return option.value === false; // Consider missing dates as "old"
+      }
 
+      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
+      return option.value === isWithinTwoWeeks;
+    }
+    return false;
+  });
       return (
         subRegionMatch &&
         gepMatch &&
@@ -324,7 +343,9 @@ export default function WeekView() {
         isDraftMatch &&
         regionMatch &&
         countryMatch && 
-        programNameMatch && activityTypeMatch
+        programNameMatch && activityTypeMatch              
+        && isNewlyCreatedMatch
+
       );
     });
   }, [filters, events]);

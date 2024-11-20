@@ -35,7 +35,12 @@ const GlobalContext = createContext({
     accountSegments: [],
     productFamily: [],
     industry: [],
+    activityType: [],
     isPartneredEvent: '',
+    isNewlyCreated: [
+      { label: 'Yes', value: true, checked: false },
+      { label: 'No', value: false, checked: false },
+    ],  
     isDraft: [
       { label: 'Yes', value: true, checked: false },
       { label: 'No', value: false, checked: false },
@@ -47,6 +52,7 @@ const GlobalContext = createContext({
   searchText: null,
   resetFormData: () => {},
   isAuthenticated: false,
+
 });
 
 export const GlobalProvider = ({ children }) => {

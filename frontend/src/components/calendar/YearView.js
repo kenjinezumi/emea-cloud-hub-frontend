@@ -120,11 +120,10 @@ export default function YearView() {
         ...filters.regions,
         ...filters.countries,
         ...filters.programName,
-        ...filters.activityType,
-
 
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
+      filters.isNewlyCreated !== undefined ||
       filters.draftStatus !== undefined;
 
     // If no filters are applied, return all events
@@ -355,7 +354,6 @@ export default function YearView() {
 
     return isChecked && matches;
   });
-
   const activityTypeMatch =
                 !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
                 filters.activityType.some((activity) => {
@@ -370,7 +368,25 @@ export default function YearView() {
                     return false; // Handle errors gracefully
                   }
                 });
+              
+                const isNewlyCreatedMatch =
+  !filters.newlyCreated?.some((option) => option.checked) ||
+  filters.newlyCreated?.some((option) => {
+    if (option.checked) {
+      const entryCreatedDate = event.entryCreatedDate
+        ? dayjs(event.entryCreatedDate)
+        : null;
 
+      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+        console.warn("Invalid or missing entryCreatedDate for event:", event);
+        return option.value === false; // Consider missing dates as "old"
+      }
+
+      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
+      return option.value === isWithinTwoWeeks;
+    }
+    return false;
+  });
           return (
             subRegionMatch &&
             gepMatch &&
@@ -383,7 +399,9 @@ export default function YearView() {
             isDraftMatch &&
             regionMatch &&
             countryMatch && 
-            programNameMatch && activityTypeMatch
+            programNameMatch                
+             && isNewlyCreatedMatch
+
           );
         } catch (filterError) {
           console.error("Error applying filters to event:", filterError, event);
