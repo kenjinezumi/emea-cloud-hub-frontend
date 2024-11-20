@@ -215,6 +215,7 @@ const dummyEventData = [{
   "eventId": "07710a35-a838-4758-9dc2-1482e4bf187e",
   "tacticId": null,
   "title": "Kenji TEST 2",
+   "entryCreatedDate": "2024-11-19 04:29:02.634856 UTC",
   "description": "This is a test and should be deleted. Please delete it. ",
   "emoji": null,
   "organisedBy": ["ktsuchiya@google.com"],
@@ -22661,7 +22662,7 @@ const dummyEventData = [{
   "description": "Ping Identity delivered a webinar on their Chrome integration.",
   "emoji": "",
   "organisedBy": ["humphriesa"],
-  "startDate": "2024-10-24",
+  "startDate": "2025-01-24",
   "endDate": "2025-05-30",
   "marketingProgramInstanceId": "PAR27624",
   "eventType": "Digital Event",
@@ -28104,7 +28105,7 @@ const dummyEventData = [{
   "audiencePersona": ["Industry LOB - Gaming", "Industry LOB - Gov"],
   "audienceSeniority": ["Practitioner"],
   "accountSectors": {
-    "commercial": true,
+    "commercial": false,
     "public": true
   },
   "accountSegments": {

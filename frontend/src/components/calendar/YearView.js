@@ -120,6 +120,7 @@ export default function YearView() {
         ...filters.regions,
         ...filters.countries,
         ...filters.programName,
+        ...filters.newlyCreated,
 
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
@@ -353,7 +354,26 @@ export default function YearView() {
 
     return isChecked && matches;
   });
+  const isNewlyCreatedMatch =
+  !filters.newlyCreated.some((option) => option.checked) || // If no "Newly Created" filter is checked, include all events
+  filters.newlyCreated.some((option) => {
+    const entryCreatedDate = event.entryCreatedDate
+      ? dayjs(event.entryCreatedDate)
+      : null; // Check if entryCreatedDate exists and is not null
+    const isWithinTwoWeeks =
+      entryCreatedDate &&
+      dayjs().diff(entryCreatedDate, "day") <= 14; // Check if it's within two weeks
 
+    // Return false if entryCreatedDate is null or undefined
+    if (!entryCreatedDate) return false;
+
+    // Return true if the option matches the criteria
+    return (
+      option.checked &&
+      ((option.value && isWithinTwoWeeks) ||
+        (!option.value && !isWithinTwoWeeks))
+    );
+  });
           return (
             subRegionMatch &&
             gepMatch &&
@@ -366,7 +386,9 @@ export default function YearView() {
             isDraftMatch &&
             regionMatch &&
             countryMatch && 
-            programNameMatch
+            programNameMatch                
+             && isNewlyCreatedMatch
+
           );
         } catch (filterError) {
           console.error("Error applying filters to event:", filterError, event);

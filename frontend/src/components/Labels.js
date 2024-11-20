@@ -12,7 +12,9 @@ import {
   industryOptions,
   partnerEventOptions,
   draftStatusOptions,
-  programNameOptions
+  programNameOptions,
+  eventTypeOptions,
+  newlyCreatedOptions
 } from "./filters/FiltersData";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
@@ -74,6 +76,9 @@ export default function Filters() {
         .map((option) => ({ label: option, checked: false }))
         .sort((a, b) => a.label.localeCompare(b.label)) // Sort alphabetically by label
     );
+    const [localNewlyCreatedOptions, setLocalNewlyCreatedOptions] = useState(
+      newlyCreatedOptions.map((option) => ({ ...option }))
+    );
     
     
 
@@ -87,6 +92,8 @@ export default function Filters() {
   const [isCountryExpanded, setIsCountryExpanded] = useState(false);
 
   const [isGepExpanded, setIsGepExpanded] = useState(false);
+  const [isActivityTypeExpanded, setIsActivityTypeExpanded] = useState(false);
+
   const [isAccountSectorExpanded, setIsAccountSectorExpanded] = useState(false);
   const [isAccountSegmentExpanded, setIsAccountSegmentExpanded] =
     useState(false);
@@ -97,7 +104,12 @@ export default function Filters() {
   const [isPartnerEventExpanded, setIsPartnerEventExpanded] = useState(false);
   const [isDraftStatusExpanded, setIsDraftStatusExpanded] = useState(false);
   const [isProgramNameExpanded, setIsProgramNameExpanded] = useState(false);
+  const [isNewlyCreatedExpanded, setIsNewlyCreatedExpanded] = useState(false);
 
+  const [localActivityTypeOptions, setLocalActivityTypeOptions] = useState(
+   eventTypeOptions.map((option) => ({ label: option.label, checked: option.checked }))
+  );
+  
   //Custom filters state
   const [customFilterName, setCustomFilterName] = useState("");
   const [savedFilters, setSavedFilters] = useState([]);
@@ -122,6 +134,9 @@ export default function Filters() {
     );
     setLocalAccountSectorOptions(
       localAccountSectorOptions.map((option) => ({ ...option, checked: false }))
+    );
+    setLocalActivityTypeOptions(
+      localActivityTypeOptions.map((option) => ({ ...option, checked: false }))
     );
     setLocalAccountSegmentOptions(
       localAccountSegmentOptions.map((option) => ({
@@ -165,6 +180,9 @@ export default function Filters() {
     );
     setLocalProgramNameOptions(
       localProgramNameOptions.map((option) => ({ ...option, checked: true }))
+    );
+    setLocalActivityTypeOptions(
+      localActivityTypeOptions.map((option) => ({ ...option, checked: true }))
     );
     setLocalAccountSectorOptions(
       localAccountSectorOptions.map((option) => ({ ...option, checked: true }))
@@ -225,6 +243,8 @@ export default function Filters() {
       countries: localCountryOptions,
       gep: localGepOptions,
       programName: localProgramNameOptions,
+      activityType: localActivityTypeOptions, 
+
       accountSectors: localAccountSectorOptions,
       accountSegments: localAccountSegmentOptions,
       buyerSegmentRollup: localBuyerSegmentRollupOptions,
@@ -232,6 +252,8 @@ export default function Filters() {
       industry: localIndustryOptions,
       partnerEvent: localPartnerEventOptions,
       draftStatus: localDraftStatusOptions,
+      newlyCreated: localNewlyCreatedOptions, 
+
     });
   }, [
     localRegionOptions,
@@ -239,6 +261,7 @@ export default function Filters() {
     localCountryOptions,
     localGepOptions,
     localProgramNameOptions,
+    localActivityTypeOptions,
     localAccountSectorOptions,
     localAccountSegmentOptions,
     localBuyerSegmentRollupOptions,
@@ -246,6 +269,7 @@ export default function Filters() {
     localIndustryOptions,
     localPartnerEventOptions,
     localDraftStatusOptions,
+    localNewlyCreatedOptions,
     updateFilters,
   ]);
 
@@ -301,6 +325,21 @@ export default function Filters() {
     }
   };
   
+  const filterByNewlyCreated = (events) => {
+    const selectedOptions = localNewlyCreatedOptions
+      .filter((option) => option.checked)
+      .map((option) => option.value);
+  
+    if (selectedOptions.length === 0) return events; // No filter applied
+  
+    return events.filter((event) => {
+      const entryCreatedDate = new Date(event.entryCreatedDate); // Adjust based on your date format
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const isNewlyCreated = entryCreatedDate >= twoWeeksAgo;
+      return selectedOptions.includes(isNewlyCreated);
+    });
+  };
   
 
   const getUserLdap = () => {
@@ -360,6 +399,10 @@ export default function Filters() {
             industry: localIndustryOptions.map(({ label, checked }) => ({ label, checked })),
             partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({ label, checked })),
             draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({ label, checked })),
+            activityType: localActivityTypeOptions.map(({ label, checked }) => ({
+              label,
+              checked,
+            })),
           },
         ],
       };
@@ -414,6 +457,14 @@ export default function Filters() {
       return match ? { ...filter, checked: match.checked } : filter;
     });
   
+    const updatedActivityTypeOptions = localActivityTypeOptions.map((filter) => {
+      const match = config[0]?.activityType?.find(
+        (item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+      );
+      return match ? { ...filter, checked: match.checked } : filter;
+    });
+    setLocalActivityTypeOptions(updatedActivityTypeOptions);
+
     const updatedAccountSectorOptions = localAccountSectorOptions.map((filter) => {
       const match = config[0]?.accountSectors?.find((item) => {
         if (!item) {
@@ -779,6 +830,15 @@ export default function Filters() {
         setIsProgramNameExpanded
       )}
 
+    {renderFilterSection(
+      "Activity Type",
+      localActivityTypeOptions,
+      setLocalActivityTypeOptions,
+      isActivityTypeExpanded, // You'll define this state below
+      setIsActivityTypeExpanded
+    )}
+
+
 
       {renderFilterSection(
         "Is Partner Involved?",
@@ -794,6 +854,14 @@ export default function Filters() {
         isDraftStatusExpanded,
         setIsDraftStatusExpanded
       )}
+      {renderFilterSection(
+        "Is Newly Created?",
+        localNewlyCreatedOptions,
+        setLocalNewlyCreatedOptions,
+        isNewlyCreatedExpanded, // You can manage accordion expansion states
+        setIsNewlyCreatedExpanded
+)}
+
       <Snackbar
   open={snackbarOpen}
   autoHideDuration={3000}
