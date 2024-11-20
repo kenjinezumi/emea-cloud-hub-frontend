@@ -17,23 +17,16 @@ export default function Day({ day, events, isYearView, month }) {
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 }); 
   const dayEvents = useMemo(() => {
     return events.filter((evt) => {
-      // Conditional check based on year view
-      if (isYearView) {
-        // In year view, access `day.date` which is a `dayjs` object
-        return (
-          dayjs(evt.startDate).isBefore(day.date.endOf("day")) &&
-          dayjs(evt.endDate).isAfter(day.date.startOf("day"))
-        );
-      } else {
-        // Not in year view, `day` is a `dayjs` object directly
-       
-        return (
-          dayjs(evt.startDate) &&
-          dayjs(evt.endDate)
-        );
-      }
+      const eventStart = dayjs(evt.startDate);
+      const eventEnd = dayjs(evt.endDate);
+  
+      return (
+        eventStart.isSame(day, "day") || // Event starts on this day
+        eventEnd.isSame(day, "day") || // Event ends on this day
+        (eventStart.isBefore(day.endOf("day")) && eventEnd.isAfter(day.startOf("day"))) // Event spans this day
+      );
     });
-  }, [events, day, isYearView]);
+  }, [events, day]);
 
 
   const hasEvents = dayEvents.length > 0;
@@ -116,11 +109,14 @@ const isCurrentMonth = isYearView
   const handleSeeMoreClick = useCallback(
     (e) => {
       e.stopPropagation();
-      setDaySelected(day);
+      console.log("Selected Day in handleSeeMoreClick:", day.format(), "Year:", day.year());
+      setDaySelected(day.clone());
       setCurrentView("day");
     },
     [day, setDaySelected, setCurrentView]
   );
+  
+  
 
   const handleEventClick = useCallback(
     (evt) => {

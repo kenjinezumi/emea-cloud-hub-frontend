@@ -86,6 +86,7 @@ export const GlobalProvider = ({ children }) => {
     accountSectors: [],
     accountSegments: [],
     productFamily: [],
+    activityType: [],
     industry: [],
     isPartneredEvent: [
       { label: 'Yes', value: true, checked: false },
