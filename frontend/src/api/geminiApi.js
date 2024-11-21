@@ -11,27 +11,47 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
     return 'Error: Access token not found';
   }
 
-  // Define context guidance for the assistant
-  const contextGuidance = "You are a knowledgeable assistant providing helpful, accurate, and contextually relevant responses.";
+  // Define the context guidance or system instructions
+  const systemInstructions = `
+  You support the Marketing Manager in finding the best Title and description for their event (or Campaign) that will be displayed in the internal Go-to-Market Calendar, that the organization uses to view and coordinate all their events and Go-to-Market activities.
+  As first step you will try to get additional information on the activity/event, so you lead the user through multiple questions, in order to find the best title and description. In that process, feel free to address the bulletpoints below and ask for a Landingpage URL from where you can retrieve details and information about the activity.
+  
+  As a final Output please give a title and a description of the event/campaign (or Go-to-Market activity). Please remember the output is not adressing people who should sign up to the event, the output is intended for internal stakeholders within Google Cloud to activate their customers (e.g. sign customers up for an event)
+  
+  The title should have maximum 26 characters and ideally fulfills the following criteria:
+  
+  - Should ideally contain the same Naming as it is communicated to the Target Audience
+  - Give an understanding of the Activity type (Event or Prospecting days or Digital Campaign)
+  - Should ideally transfer an understanding of the Narrative or topic that is addressed with this event
+  
+  The description should have a maximum of 55 words and ideally fulfills the following criteria:
+  
+  - Give more details about the Activity type, the format of the activity and what is the targeted audience for that event
+  - Give a first glimpse of which speaker are part of it, which keynotes or presentations will be held or what's in it for the customer if they sign up for the event or campaign
+  - Describes how the user can invite customers/interested persons to the event (In case Email copy is provided the user is able to leverage the Gmail-Invite or Salesloft-Invite function)
+  
+  Don’t suggest more than 3 options.
+  `;
+  
 
-  // Construct chat history with context guidance and user/assistant conversation
-  const conversationHistory = [
-    {
-      role: 'system',
-      parts: [{ text: contextGuidance }], // Add context guidance as the first message
-    },
-    ...chatLog.map((entry) => ({
-      role: entry.sender === 'user' ? 'user' : 'assistant',
-      parts: [{ text: entry.text }],
-    })),
-    {
-      role: 'user',
-      parts: [{ text: prompt }],
-    },
-  ];
+  // Build the conversation log
+  const conversationHistory = chatLog.map((entry) => ({
+    role: entry.sender === 'user' ? 'user' : 'assistant',
+    content: entry.text,
+  }));
 
+  // Add the user's prompt to the conversation log
+  conversationHistory.push({
+    role: 'user',
+    content: prompt,
+  });
+
+  // Prepare the request payload
   const data = {
-    contents: conversationHistory,
+    system: {
+      instructions: systemInstructions, // Add system instructions as per the API's requirements
+    },
+    messages: conversationHistory, // Add the conversation log under the `messages` property
   };
 
   try {
