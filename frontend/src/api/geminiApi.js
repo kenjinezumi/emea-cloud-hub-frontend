@@ -11,17 +11,24 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
     return 'Error: Access token not found';
   }
 
-  // Construct chat history including the new prompt
-  const conversationHistory = chatLog.map((entry) => ({
-    role: entry.sender === 'user' ? 'user' : 'assistant',
-    parts: [{ text: entry.text }],
-  }));
+  // Define context guidance for the assistant
+  const contextGuidance = "You are a knowledgeable assistant providing helpful, accurate, and contextually relevant responses.";
 
-  // Add the new user input as the last entry
-  conversationHistory.push({
-    role: 'user',
-    parts: [{ text: prompt }],
-  });
+  // Construct chat history with context guidance and user/assistant conversation
+  const conversationHistory = [
+    {
+      role: 'system',
+      parts: [{ text: contextGuidance }], // Add context guidance as the first message
+    },
+    ...chatLog.map((entry) => ({
+      role: entry.sender === 'user' ? 'user' : 'assistant',
+      parts: [{ text: entry.text }],
+    })),
+    {
+      role: 'user',
+      parts: [{ text: prompt }],
+    },
+  ];
 
   const data = {
     contents: conversationHistory,
@@ -48,7 +55,6 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
       console.warn('Access token expired. Attempting to refresh...');
 
       // Attempt to refresh the token
-      // const storedRefreshToken = localStorage.getItem('accessToken'); // Replace with how you store the refresh token
       const tokenData = await refreshAccessToken(refreshToken);
 
       if (tokenData.accessToken) {
@@ -56,7 +62,7 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
         accessToken = tokenData.accessToken;
         sessionStorage.setItem('accessToken', accessToken);
         localStorage.setItem('accessToken', accessToken);
-        
+
         console.log('Token refreshed. Retrying request...');
 
         // Retry the request with the new access token
