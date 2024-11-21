@@ -68,9 +68,7 @@ export default function MonthView({ month, isYearView = false }) {
     fetchOrganisedByData();
   }, []);
 
-    // Call the async function
-    fetchOrganisedByData();
-  }, []);
+
 
 
   useEffect(() => {
