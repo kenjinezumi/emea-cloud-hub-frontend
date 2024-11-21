@@ -204,7 +204,6 @@ export default function EventInfoPopup({ event, close }) {
   };
 
   const handleSalesLoftConfirmation = async () => {
-    const accessTokenSalesloft = process.env.REACT_APP_SALESLOFT_API_TOKEN;
 
     try {
       const salesLoftTemplate = languagesAndTemplates.find(
@@ -217,7 +216,6 @@ export default function EventInfoPopup({ event, close }) {
       }
 
       const result = await createSalesLoftEmailTemplate(
-        accessTokenSalesloft,
         salesLoftTemplate
       );
       if (result.success) {
@@ -1491,7 +1489,7 @@ export default function EventInfoPopup({ event, close }) {
                   Gmail Invite
                 </Button>
 
-                {/* <Button
+                <Button
                 variant="contained"
                 sx={{
                   backgroundColor: hasLanguagesAndTemplates
@@ -1524,7 +1522,7 @@ export default function EventInfoPopup({ event, close }) {
                 onClick={handleSalesLoftInvite}
               >
                 SalesLoft Invite
-              </Button> */}
+              </Button>
               </Stack>
             </Box>
           </Paper>

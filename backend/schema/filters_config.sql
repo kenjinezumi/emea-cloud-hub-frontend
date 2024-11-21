@@ -13,6 +13,5 @@ CREATE TABLE `google.com:cloudhub.data.filters_config` (
     `productFamily` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,
     `industry` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,
     `partnerEvent` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,
-    `draftStatus` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>
-  >>
+    `draftStatus` ARRAY<STRUCT<`label` STRING, `checked` BOOL>>,   
 );
