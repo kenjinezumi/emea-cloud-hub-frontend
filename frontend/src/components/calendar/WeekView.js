@@ -335,13 +335,11 @@ export default function WeekView() {
   const organisedByMatch = (() => {
     // Check if no organiser filter is applied
     if (!filters.organisedBy || filters.organisedBy.length === 0) {
-      console.log("No organiser filter applied, matching all events.");
       return true; // No organiser filter applied
     }
   
     // Check if the event has no organiser data
     if (!event.organisedBy || event.organisedBy.length === 0) {
-      console.log("Event has no organiser data:", event);
       return false; // Event does not have an organiser
     }
   
@@ -350,9 +348,6 @@ export default function WeekView() {
       event.organisedBy.includes(organiser)
     );
   
-    console.log("OrganisedBy filter applied:", filters.organisedBy);
-    console.log("Event organisedBy field:", event.organisedBy);
-    console.log("OrganisedBy match result:", isMatch);
   
     return isMatch; // Return the match result
   })();
