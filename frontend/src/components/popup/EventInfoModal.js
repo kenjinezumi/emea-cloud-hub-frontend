@@ -287,7 +287,7 @@ export default function EventInfoPopup({ event, close }) {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
       let accessToken = localStorage.getItem("accessToken");
       const refreshToken = localStorage.getItem("refreshToken");
-  
+
       // Check if access token is missing
       if (!accessToken) {
         sessionStorage.clear();
@@ -299,24 +299,26 @@ export default function EventInfoPopup({ event, close }) {
         }, 2000);
         return;
       }
-  
+
       const user = JSON.parse(localStorage.getItem("user"));
       const email = user?.emails?.[0]?.value;
-  
+
       if (!email || !selectedLanguage) {
-        console.error("No email or selected language found. Aborting draft creation.");
+        console.error(
+          "No email or selected language found. Aborting draft creation."
+        );
         alert("No email or template selected.");
         return;
       }
-  
+
       const template = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.template;
-  
+
       const subjectLine = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.subjectLine;
-  
+
       if (!template) {
         console.error("No template found for the selected language.");
         alert("No template found for the selected language.");
@@ -327,16 +329,19 @@ export default function EventInfoPopup({ event, close }) {
         alert("No subject line found for the selected language.");
         return;
       }
-  
+
       const emailDetails = {
         to: email,
         subject: subjectLine,
         body: template,
         accessToken: accessToken,
       };
-  
-      console.log("Sending request to create Gmail draft with email details:", emailDetails);
-  
+
+      console.log(
+        "Sending request to create Gmail draft with email details:",
+        emailDetails
+      );
+
       let response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
         credentials: "include",
@@ -345,26 +350,33 @@ export default function EventInfoPopup({ event, close }) {
         },
         body: JSON.stringify(emailDetails),
       });
-  
+
       console.log("Response from server:", response);
-  
+
       if (!response.ok) {
         // Check if the error indicates an expired token or credential issue
         const responseText = await response.text();
-        if (response.status === 401 || response.status === 500 ||responseText.includes('Invalid Credentials') || responseText.includes('TokenExpired')) {
-          console.warn("Access token expired or invalid. Attempting to refresh...");
-  
+        if (
+          response.status === 401 ||
+          response.status === 500 ||
+          responseText.includes("Invalid Credentials") ||
+          responseText.includes("TokenExpired")
+        ) {
+          console.warn(
+            "Access token expired or invalid. Attempting to refresh..."
+          );
+
           if (refreshToken) {
             const tokenData = await refreshAccessToken(refreshToken);
-  
+
             if (tokenData.accessToken) {
               // Store the new access token
               accessToken = tokenData.accessToken;
               sessionStorage.setItem("accessToken", accessToken);
               localStorage.setItem("accessToken", accessToken);
-  
+
               console.log("Token refreshed successfully. Retrying request...");
-  
+
               // Retry the request with the new access token
               emailDetails.accessToken = accessToken;
               response = await fetch(`${apiUrl}send-gmail-invite`, {
@@ -375,16 +387,23 @@ export default function EventInfoPopup({ event, close }) {
                 },
                 body: JSON.stringify(emailDetails),
               });
-  
+
               if (!response.ok) {
-                console.error("Retry failed to create draft. Response status:", response.status);
-                throw new Error(`Failed to create Gmail draft after token refresh: ${response.statusText}`);
+                console.error(
+                  "Retry failed to create draft. Response status:",
+                  response.status
+                );
+                throw new Error(
+                  `Failed to create Gmail draft after token refresh: ${response.statusText}`
+                );
               }
             } else {
               console.error("Failed to refresh token. Redirecting to login...");
               sessionStorage.clear();
               localStorage.clear();
-              setSnackbarMessage("Gmail token could not be refreshed. Redirecting to login...");
+              setSnackbarMessage(
+                "Gmail token could not be refreshed. Redirecting to login..."
+              );
               setSnackbarOpen(true);
               setTimeout(() => {
                 window.location.href = "/login";
@@ -392,7 +411,9 @@ export default function EventInfoPopup({ event, close }) {
               return;
             }
           } else {
-            console.error("No refresh token available. Redirecting to login...");
+            console.error(
+              "No refresh token available. Redirecting to login..."
+            );
             sessionStorage.clear();
             localStorage.clear();
             setSnackbarMessage("Gmail token expired. Redirecting to login...");
@@ -403,14 +424,19 @@ export default function EventInfoPopup({ event, close }) {
             return;
           }
         } else {
-          console.error("Failed to create draft. Response status:", response.status);
-          throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
+          console.error(
+            "Failed to create draft. Response status:",
+            response.status
+          );
+          throw new Error(
+            `Failed to create Gmail draft: ${response.statusText}`
+          );
         }
       }
-  
+
       const data = await response.json();
       console.log("Draft created successfully. Server response:", data);
-  
+
       if (data.success) {
         console.log("Redirecting to Gmail drafts at:", data.draftUrl);
         window.open(data.draftUrl, "_blank");
@@ -423,8 +449,6 @@ export default function EventInfoPopup({ event, close }) {
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
-  
-  
 
   const formatListWithSpaces = (list) => {
     if (!list) return "";
@@ -662,10 +686,9 @@ export default function EventInfoPopup({ event, close }) {
           {selectedEvent.isDirectPartner && (
             <Chip label="Direct Partner" color="secondary" size="small" />
           )}
-          {dayjs().diff(dayjs(selectedEvent.publishedDate), "day", true) <=
-            7 && (
+          {dayjs().diff(dayjs(selectedEvent.entryCreatedDate), "day") <= 14 && (
             <Chip
-              label="Newly published"
+              label="Newly Created"
               color="success"
               variant="outlined"
               size="small"
@@ -883,31 +906,32 @@ export default function EventInfoPopup({ event, close }) {
         )}
 
         {/* Program Name Section */}
-    {selectedEvent.programName?.length > 0 && (
-      <Typography
-        variant="body2"
-        display="flex"
-        alignItems="center"
-        sx={{
-          wordBreak: "break-word",
-          whiteSpace: "normal",
-          flexWrap: "wrap",
-        }}      >
-        <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-        Program:
-        <Typography
-          variant="body2"
-          sx={{
-            marginLeft: "5px",
-            wordBreak: "break-word",
-            whiteSpace: "normal",
-            display: "inline",
-          }}
-        >
-          {selectedEvent.programName.join(", ")}
-        </Typography>
-      </Typography>
-    )}
+        {selectedEvent.programName?.length > 0 && (
+          <Typography
+            variant="body2"
+            display="flex"
+            alignItems="center"
+            sx={{
+              wordBreak: "break-word",
+              whiteSpace: "normal",
+              flexWrap: "wrap",
+            }}
+          >
+            <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
+            Program:
+            <Typography
+              variant="body2"
+              sx={{
+                marginLeft: "5px",
+                wordBreak: "break-word",
+                whiteSpace: "normal",
+                display: "inline",
+              }}
+            >
+              {selectedEvent.programName.join(", ")}
+            </Typography>
+          </Typography>
+        )}
 
         {selectedEvent.okr?.length > 0 &&
           selectedEvent.okr.some((okr) => okr.percentage !== "") && (
