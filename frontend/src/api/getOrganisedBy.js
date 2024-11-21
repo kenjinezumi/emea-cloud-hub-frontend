@@ -1,5 +1,5 @@
 // Import the dummy data
-import dummyEventData from "./dummyEventData";
+import dummyOrganisedData from "./dummyOrganisedData";
 
 export async function getOrganisedBy() {
   const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
@@ -25,6 +25,9 @@ export async function getOrganisedBy() {
     const data = await response.json();
     console.log(data.data);    
     return data.data;
+// console.log("Returning dummyOrganisedData:", dummyOrganisedData); // Debugging
+
+// return dummyOrganisedData;
     
 
   } catch (error) {

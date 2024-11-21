@@ -14,7 +14,7 @@ import {
   draftStatusOptions,
   programNameOptions,
   eventTypeOptions,
-  newlyCreatedOptions
+  newlyCreatedOptions,
 } from "./filters/FiltersData";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
@@ -30,6 +30,7 @@ import {
   AccordionDetails,
   Snackbar,
   Alert,
+  Autocomplete,
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -37,14 +38,16 @@ import { blue } from "@mui/material/colors";
 import { sendFilterDataToAPI } from "../api/pushFiltersConfig";
 import { getFilterDataFromAPI } from "../api/getFilterData";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
-import { deleteFilterDataFromAPI} from "../api/deleteFilterData";
+import { deleteFilterDataFromAPI } from "../api/deleteFilterData";
+import { getOrganisedBy } from "../api/getOrganisedBy";
+
 export default function Filters() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [localProgramNameOptions, setLocalProgramNameOptions] = useState(
     programNameOptions.map((option) => ({ label: option, checked: false }))
   );
-  
+
   const [localSubRegionFilters, setLocalSubRegionFilters] = useState(
     subRegionOptions.map((option) => ({ label: option, checked: false }))
   );
@@ -68,22 +71,52 @@ export default function Filters() {
   const [localDraftStatusOptions, setLocalDraftStatusOptions] =
     useState(draftStatusOptions);
   const [localRegionOptions, setLocalRegionOptions] = useState(
-      regionOptions.map((option) => ({ label: option, checked: false }))
-    );
-    
-    const [localCountryOptions, setLocalCountryOptions] = useState(
-      countryOptions
-        .map((option) => ({ label: option, checked: false }))
-        .sort((a, b) => a.label.localeCompare(b.label)) // Sort alphabetically by label
-    );
-    const [localNewlyCreatedOptions, setLocalNewlyCreatedOptions] = useState(
-      newlyCreatedOptions.map((option) => ({ ...option }))
-    );
-    
-    
+    regionOptions.map((option) => ({ label: option, checked: false }))
+  );
+
+  const [localCountryOptions, setLocalCountryOptions] = useState(
+    countryOptions
+      .map((option) => ({ label: option, checked: false }))
+      .sort((a, b) => a.label.localeCompare(b.label)) // Sort alphabetically by label
+  );
+  const [localNewlyCreatedOptions, setLocalNewlyCreatedOptions] = useState(
+    newlyCreatedOptions.map((option) => ({ ...option }))
+  );
 
   const [refresh, setRefresh] = useState(false);
 
+  //Organised by
+
+  const [organisedByOptions, setOrganisedByOptions] = useState(); // Default to an empty array
+  const [selectedOrganiser, setSelectedOrganiser] = useState(); // Default to an empty array for multi-select
+  const [isOrganisedByExpanded, setIsOrganisedByExpanded] = useState(false);
+
+  useEffect(() => {
+    const fetchOrganisedBy = async () => {
+      try {
+        const data = await getOrganisedBy();
+  
+        // Ensure `data` is an array
+        if (Array.isArray(data)) {
+          const flattenedData = data.map((item) => item.organisedBy[0]); // Flatten organisedBy arrays
+          console.log("Flattened OrganisedBy Data:", flattenedData); // Debugging
+          setOrganisedByOptions(flattenedData);
+        } else {
+        }
+      } catch (error) {
+        console.error("Failed to fetch OrganisedBy options:", error);
+      }
+    };
+  
+    fetchOrganisedBy();
+  }, []);
+  
+
+  const handleOrganiserChange = (event, newValue) => {
+    setSelectedOrganiser(newValue.length ? newValue : null); // Set to null if no value is selected
+    console.log("Selected Organiser:", newValue);
+  };
+  
 
   //Accordions
   const [isSubRegionExpanded, setIsSubRegionExpanded] = useState(false);
@@ -107,9 +140,12 @@ export default function Filters() {
   const [isNewlyCreatedExpanded, setIsNewlyCreatedExpanded] = useState(false);
 
   const [localActivityTypeOptions, setLocalActivityTypeOptions] = useState(
-   eventTypeOptions.map((option) => ({ label: option.label, checked: option.checked }))
+    eventTypeOptions.map((option) => ({
+      label: option.label,
+      checked: option.checked,
+    }))
   );
-  
+
   //Custom filters state
   const [customFilterName, setCustomFilterName] = useState("");
   const [savedFilters, setSavedFilters] = useState([]);
@@ -153,7 +189,7 @@ export default function Filters() {
     setLocalProductFamilyOptions(
       localProductFamilyOptions.map((option) => ({ ...option, checked: false }))
     );
-    
+
     setLocalIndustryOptions(
       localIndustryOptions.map((option) => ({ ...option, checked: false }))
     );
@@ -163,6 +199,7 @@ export default function Filters() {
     setLocalDraftStatusOptions(
       localDraftStatusOptions.map((option) => ({ ...option, checked: false }))
     );
+    setSelectedOrganiser(null);
   };
 
   const selectAllFilters = () => {
@@ -220,7 +257,6 @@ export default function Filters() {
     );
     console.log(`Checkbox toggled for label: ${label}`);
     forceRefresh();
-
   };
 
   const forceRefresh = () => {
@@ -229,12 +265,11 @@ export default function Filters() {
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
-  
+
   const showSnackbar = (message) => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
   };
-  
 
   useEffect(() => {
     updateFilters({
@@ -243,7 +278,7 @@ export default function Filters() {
       countries: localCountryOptions,
       gep: localGepOptions,
       programName: localProgramNameOptions,
-      activityType: localActivityTypeOptions, 
+      activityType: localActivityTypeOptions,
 
       accountSectors: localAccountSectorOptions,
       accountSegments: localAccountSegmentOptions,
@@ -252,8 +287,8 @@ export default function Filters() {
       industry: localIndustryOptions,
       partnerEvent: localPartnerEventOptions,
       draftStatus: localDraftStatusOptions,
-      newlyCreated: localNewlyCreatedOptions, 
-
+      newlyCreated: localNewlyCreatedOptions,
+      organisedBy: selectedOrganiser,
     });
   }, [
     localRegionOptions,
@@ -270,8 +305,78 @@ export default function Filters() {
     localPartnerEventOptions,
     localDraftStatusOptions,
     localNewlyCreatedOptions,
+    selectedOrganiser,
     updateFilters,
   ]);
+
+  const [selectedOrganisers, setSelectedOrganisers] = useState([]); // For multi-select
+
+  const renderOrganisedBySection = (
+    title,
+    options = [],
+    selectedOptions = [],
+    onOptionsChange,
+    expanded,
+    setExpanded
+  ) => (
+    <div className="mb-4">
+      <div
+        onClick={() => setExpanded(!expanded)}
+        className="cursor-pointer flex items-center"
+      >
+        <Typography variant="subtitle2" className="mr-2">
+          {title}
+        </Typography>
+        {expanded ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+      </div>
+      {expanded && (
+        <div className="mt-3">
+          <Autocomplete
+            options={options || []} // Ensure options are always an array
+            multiple
+            value={selectedOptions || []} // Ensure selectedOptions are always an array
+            onChange={(event, newValue) => onOptionsChange(newValue)}
+            renderTags={() => null} // Chips will be rendered separately
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="outlined"
+                size="small"
+                placeholder="Type or select organisers"
+              />
+            )}
+            sx={{ width: "100%" }}
+          />
+          {selectedOptions && selectedOptions.length > 0 && ( // Render chips only when there are selected options
+            <Box sx={{ display: "flex", flexWrap: "wrap", mt: 1, gap: 1 }}>
+              {selectedOptions.map((organiser, index) => (
+                <Chip
+                  key={index}
+                  label={organiser}
+                  onDelete={() =>
+                    onOptionsChange(
+                      selectedOptions.filter((item) => item !== organiser)
+                    )
+                  }
+                  sx={{
+                    backgroundColor: "#e0f7fa",
+                    color: "#00796b",
+                    fontSize: "12px",
+                    height: "24px",
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+        </div>
+      )}
+    </div>
+  );
+  
+  
+  
+
+  
 
   const renderFilterSection = (
     title,
@@ -311,27 +416,28 @@ export default function Filters() {
     try {
       // Get the ldap value (you can adjust this if ldap is stored elsewhere)
       const ldap = getUserLdap(); // Ensure `getUserLdap` is defined and returns the LDAP
-  
+
       // Call delete API with both filterName and ldap
       await deleteFilterDataFromAPI(filterName, ldap);
-  
+
       // Remove filter from the local savedFilters state
-      const updatedFilters = savedFilters.filter(filter => filter.filterName !== filterName);
+      const updatedFilters = savedFilters.filter(
+        (filter) => filter.filterName !== filterName
+      );
       setSavedFilters(updatedFilters);
       showSnackbar("Filter deleted successfully!");
-
     } catch (error) {
       console.error("Error deleting filter:", error);
     }
   };
-  
+
   const filterByNewlyCreated = (events) => {
     const selectedOptions = localNewlyCreatedOptions
       .filter((option) => option.checked)
       .map((option) => option.value);
-  
+
     if (selectedOptions.length === 0) return events; // No filter applied
-  
+
     return events.filter((event) => {
       const entryCreatedDate = new Date(event.entryCreatedDate); // Adjust based on your date format
       const twoWeeksAgo = new Date();
@@ -340,19 +446,18 @@ export default function Filters() {
       return selectedOptions.includes(isNewlyCreated);
     });
   };
-  
 
   const getUserLdap = () => {
-    const userData = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user'));
-    
+    const userData = JSON.parse(
+      localStorage.getItem("user") || sessionStorage.getItem("user")
+    );
+
     if (userData && userData.emails && userData.emails[0].value) {
       const email = userData.emails[0].value;
-      return email.split('@')[0];
+      return email.split("@")[0];
     }
-      throw new Error('No user data found in local storage or session storage');
+    throw new Error("No user data found in local storage or session storage");
   };
-  
-
 
   useEffect(() => {
     // Function to fetch and set saved filters
@@ -371,53 +476,88 @@ export default function Filters() {
     fetchSavedFilters();
   }, []);
 
-
   const handleSaveFilter = () => {
     const ldap = getUserLdap();
-  
+
     // Check if LDAP retrieval was successful
-    if (ldap.startsWith('Error:')) {
+    if (ldap.startsWith("Error:")) {
       console.error(ldap);
       return;
     }
-  
+
     if (customFilterName.trim()) {
       const filterData = {
         ldap: ldap, // Replace with actual LDAP or user identifier if available
         filterName: customFilterName.trim(), // Top-level filterName field
         config: [
           {
-            regions: localRegionOptions.map(({ label, checked }) => ({ label, checked })),
-            subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
-            countries: localCountryOptions.map(({ label, checked }) => ({ label, checked })),
-            gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
-            programName: localProgramNameOptions.map(({ label, checked }) => ({ label, checked })),
-            accountSectors: localAccountSectorOptions.map(({ label, checked }) => ({ label, checked })),
-            accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
-            buyerSegmentRollup: localBuyerSegmentRollupOptions.map(({ label, checked }) => ({ label, checked })),
-            productFamily: localProductFamilyOptions.map(({ label, checked }) => ({ label, checked })),
-            industry: localIndustryOptions.map(({ label, checked }) => ({ label, checked })),
-            partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({ label, checked })),
-            draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({ label, checked })),
-            activityType: localActivityTypeOptions.map(({ label, checked }) => ({
+            regions: localRegionOptions.map(({ label, checked }) => ({
               label,
               checked,
             })),
+            subRegions: localSubRegionFilters.map(({ label, checked }) => ({
+              label,
+              checked,
+            })),
+            countries: localCountryOptions.map(({ label, checked }) => ({
+              label,
+              checked,
+            })),
+            gep: localGepOptions.map(({ label, checked }) => ({
+              label,
+              checked,
+            })),
+            programName: localProgramNameOptions.map(({ label, checked }) => ({
+              label,
+              checked,
+            })),
+            accountSectors: localAccountSectorOptions.map(
+              ({ label, checked }) => ({ label, checked })
+            ),
+            accountSegments: localAccountSegmentOptions.map(
+              ({ label, checked }) => ({ label, checked })
+            ),
+            buyerSegmentRollup: localBuyerSegmentRollupOptions.map(
+              ({ label, checked }) => ({ label, checked })
+            ),
+            productFamily: localProductFamilyOptions.map(
+              ({ label, checked }) => ({ label, checked })
+            ),
+            industry: localIndustryOptions.map(({ label, checked }) => ({
+              label,
+              checked,
+            })),
+            partnerEvent: localPartnerEventOptions.map(
+              ({ label, checked }) => ({ label, checked })
+            ),
+            draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({
+              label,
+              checked,
+            })),
+            activityType: localActivityTypeOptions.map(
+              ({ label, checked }) => ({
+                label,
+                checked,
+              })
+            ),
+            organisedBy: selectedOrganiser,
           },
         ],
       };
-  
+
       // Send the formatted filter data to the backend
       sendFilterDataToAPI(filterData);
-  
-      // Add the filter to the local savedFilters state
-      setSavedFilters([...savedFilters, { filterName: customFilterName.trim(), config: filterData.config }]);
-      setCustomFilterName(''); 
-      showSnackbar("Filter saved successfully!");
 
+      // Add the filter to the local savedFilters state
+      setSavedFilters([
+        ...savedFilters,
+        { filterName: customFilterName.trim(), config: filterData.config },
+      ]);
+      setCustomFilterName("");
+      showSnackbar("Filter saved successfully!");
     }
   };
-  
+
   const handleChipClick = (config) => {
     console.log("Applying filter config:", config);
     applyFilterConfig(config);
@@ -428,123 +568,169 @@ export default function Filters() {
       console.error("applyFilterConfig: Received undefined or invalid config.");
       return;
     }
-  
+
+    const organisedBy = config[0]?.organisedBy || null;
+
     // Apply the filter configuration to update the checked states with detailed logging
     const updatedSubRegionFilters = localSubRegionFilters.map((filter) => {
       const match = config[0]?.subRegions?.find((item) => {
         if (!item) {
           return false;
         }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+        return (
+          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+        );
       });
       return match ? { ...filter, checked: match.checked } : filter;
     });
-  
+
     const updatedGepOptions = localGepOptions.map((filter) => {
       const match = config[0]?.gep?.find((item) => {
         if (!item) {
           return false;
         }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+        return (
+          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+        );
       });
       return match ? { ...filter, checked: match.checked } : filter;
     });
 
     const updatedProgramNameOptions = localProgramNameOptions.map((filter) => {
       const match = config[0]?.programName?.find(
-        (item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+        (item) =>
+          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
       return match ? { ...filter, checked: match.checked } : filter;
     });
-  
-    const updatedActivityTypeOptions = localActivityTypeOptions.map((filter) => {
-      const match = config[0]?.activityType?.find(
-        (item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
-      );
-      return match ? { ...filter, checked: match.checked } : filter;
-    });
+
+    const updatedActivityTypeOptions = localActivityTypeOptions.map(
+      (filter) => {
+        const match = config[0]?.activityType?.find(
+          (item) =>
+            item.label.trim().toLowerCase() ===
+            filter.label.trim().toLowerCase()
+        );
+        return match ? { ...filter, checked: match.checked } : filter;
+      }
+    );
     setLocalActivityTypeOptions(updatedActivityTypeOptions);
 
-    const updatedAccountSectorOptions = localAccountSectorOptions.map((filter) => {
-      const match = config[0]?.accountSectors?.find((item) => {
-        if (!item) {
-          return false;
-        }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
-      });
+    const updatedAccountSectorOptions = localAccountSectorOptions.map(
+      (filter) => {
+        const match = config[0]?.accountSectors?.find((item) => {
+          if (!item) {
+            return false;
+          }
+          return (
+            item.label.trim().toLowerCase() ===
+            filter.label.trim().toLowerCase()
+          );
+        });
+        return match ? { ...filter, checked: match.checked } : filter;
+      }
+    );
+
+    const updatedRegionOptions = localRegionOptions.map((filter) => {
+      const match = config[0]?.regions?.find(
+        (item) =>
+          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+      );
       return match ? { ...filter, checked: match.checked } : filter;
     });
 
-    const updatedRegionOptions = localRegionOptions.map((filter) => {
-      const match = config[0]?.regions?.find((item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase());
-      return match ? { ...filter, checked: match.checked } : filter;
-    });
-  
     const updatedCountryOptions = localCountryOptions.map((filter) => {
-      const match = config[0]?.countries?.find((item) => item.label.trim().toLowerCase() === filter.label.trim().toLowerCase());
+      const match = config[0]?.countries?.find(
+        (item) =>
+          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+      );
       return match ? { ...filter, checked: match.checked } : filter;
     });
-  
-    const updatedAccountSegmentOptions = localAccountSegmentOptions.map((filter) => {
-      const match = config[0]?.accountSegments?.find((item) => {
-        if (!item) {
-          return false;
-        }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
-      });
-      return match ? { ...filter, checked: match.checked } : filter;
-    });
-  
-    const updatedBuyerSegmentRollupOptions = localBuyerSegmentRollupOptions.map((filter) => {
-      const match = config[0]?.buyerSegmentRollup?.find((item) => {
-        if (!item) {
-          return false;
-        }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
-      });
-      return match ? { ...filter, checked: match.checked } : filter;
-    });
-  
-    const updatedProductFamilyOptions = localProductFamilyOptions.map((filter) => {
-      const match = config[0]?.productFamily?.find((item) => {
-        if (!item) {
-          return false;
-        }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
-      });
-      return match ? { ...filter, checked: match.checked } : filter;
-    });
-  
+
+    const updatedAccountSegmentOptions = localAccountSegmentOptions.map(
+      (filter) => {
+        const match = config[0]?.accountSegments?.find((item) => {
+          if (!item) {
+            return false;
+          }
+          return (
+            item.label.trim().toLowerCase() ===
+            filter.label.trim().toLowerCase()
+          );
+        });
+        return match ? { ...filter, checked: match.checked } : filter;
+      }
+    );
+
+    const updatedBuyerSegmentRollupOptions = localBuyerSegmentRollupOptions.map(
+      (filter) => {
+        const match = config[0]?.buyerSegmentRollup?.find((item) => {
+          if (!item) {
+            return false;
+          }
+          return (
+            item.label.trim().toLowerCase() ===
+            filter.label.trim().toLowerCase()
+          );
+        });
+        return match ? { ...filter, checked: match.checked } : filter;
+      }
+    );
+
+    const updatedProductFamilyOptions = localProductFamilyOptions.map(
+      (filter) => {
+        const match = config[0]?.productFamily?.find((item) => {
+          if (!item) {
+            return false;
+          }
+          return (
+            item.label.trim().toLowerCase() ===
+            filter.label.trim().toLowerCase()
+          );
+        });
+        return match ? { ...filter, checked: match.checked } : filter;
+      }
+    );
+
     const updatedIndustryOptions = localIndustryOptions.map((filter) => {
       const match = config[0]?.industry?.find((item) => {
         if (!item) {
           return false;
         }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+        return (
+          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+        );
       });
       return match ? { ...filter, checked: match.checked } : filter;
     });
-  
-    const updatedPartnerEventOptions = localPartnerEventOptions.map((filter) => {
-      const match = config[0]?.partnerEvent?.find((item) => {
-        if (!item) {
-          return false;
-        }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
-      });
-      return match ? { ...filter, checked: match.checked } : filter;
-    });
-  
+
+    const updatedPartnerEventOptions = localPartnerEventOptions.map(
+      (filter) => {
+        const match = config[0]?.partnerEvent?.find((item) => {
+          if (!item) {
+            return false;
+          }
+          return (
+            item.label.trim().toLowerCase() ===
+            filter.label.trim().toLowerCase()
+          );
+        });
+        return match ? { ...filter, checked: match.checked } : filter;
+      }
+    );
+
     const updatedDraftStatusOptions = localDraftStatusOptions.map((filter) => {
       const match = config[0]?.draftStatus?.find((item) => {
         if (!item) {
           return false;
         }
-        return item.label.trim().toLowerCase() === filter.label.trim().toLowerCase();
+        return (
+          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+        );
       });
       return match ? { ...filter, checked: match.checked } : filter;
     });
-  
+
     // Update states to trigger re-render with checked options
     setLocalRegionOptions(updatedRegionOptions);
     setLocalCountryOptions(updatedCountryOptions);
@@ -558,15 +744,11 @@ export default function Filters() {
     setLocalIndustryOptions(updatedIndustryOptions);
     setLocalPartnerEventOptions(updatedPartnerEventOptions);
     setLocalDraftStatusOptions(updatedDraftStatusOptions);
-  
+    setSelectedOrganiser(organisedBy);
+
     // Trigger a UI refresh to reflect changes
     forceRefresh();
   };
-  
-  
-  
-  
-  
 
   return (
     <div className="mt-4">
@@ -655,17 +837,17 @@ export default function Filters() {
                 borderRadius: "4px",
                 fontSize: "10px",
                 height: "30px",
-                '& .MuiOutlinedInput-root': {
-                  height: '30px',
-                  '& input': {
-                    height: '18px',
-                    padding: '0 8px',
-                    fontSize: '10px',
-                    outline: 'none', // Remove default outline
+                "& .MuiOutlinedInput-root": {
+                  height: "30px",
+                  "& input": {
+                    height: "18px",
+                    padding: "0 8px",
+                    fontSize: "10px",
+                    outline: "none", // Remove default outline
                   },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#1a73e8', // Customize border color when focused
-                    borderWidth: '1px', // Optional: Make the border thinner
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#1a73e8", // Customize border color when focused
+                    borderWidth: "1px", // Optional: Make the border thinner
                   },
                 },
               }}
@@ -673,12 +855,12 @@ export default function Filters() {
               InputLabelProps={{
                 shrink: false, // Disable label shrink on input
                 style: {
-                  fontSize: '10px',
-                  top: '-6px',
-                  visibility: customFilterName ? 'hidden' : 'visible', // Hide label when input is not empty
+                  fontSize: "10px",
+                  top: "-6px",
+                  visibility: customFilterName ? "hidden" : "visible", // Hide label when input is not empty
                 },
-              }}        
-               />
+              }}
+            />
             <IconButton
               aria-label="save filter"
               onClick={handleSaveFilter}
@@ -703,7 +885,6 @@ export default function Filters() {
                 <Chip
                   key={index}
                   label={filter.filterName || "Unnamed Filter"} // Display a fallback if filterName is missing
-
                   onClick={() => handleChipClick(filter.config)}
                   onDelete={() => handleDeleteFilter(filter.filterName)}
                   sx={{
@@ -753,12 +934,12 @@ export default function Filters() {
       <hr style={{ margin: "8px 0", border: 0 }} />
 
       {renderFilterSection(
-      "Region",
-      localRegionOptions,
-      setLocalRegionOptions,
-      isRegionExpanded,
-      setIsRegionExpanded
-    )}
+        "Region",
+        localRegionOptions,
+        setLocalRegionOptions,
+        isRegionExpanded,
+        setIsRegionExpanded
+      )}
 
       {renderFilterSection(
         "Sub-Region",
@@ -769,13 +950,13 @@ export default function Filters() {
       )}
 
       {/* Render the "Country" filter section */}
-    {renderFilterSection(
-      "Country",
-      localCountryOptions,
-      setLocalCountryOptions,
-      isCountryExpanded,
-      setIsCountryExpanded
-    )}
+      {renderFilterSection(
+        "Country",
+        localCountryOptions,
+        setLocalCountryOptions,
+        isCountryExpanded,
+        setIsCountryExpanded
+      )}
 
       {renderFilterSection(
         "Account Sector",
@@ -830,15 +1011,25 @@ export default function Filters() {
         setIsProgramNameExpanded
       )}
 
-    {renderFilterSection(
-      "Activity Type",
-      localActivityTypeOptions,
-      setLocalActivityTypeOptions,
-      isActivityTypeExpanded, // You'll define this state below
-      setIsActivityTypeExpanded
-    )}
+      {renderFilterSection(
+        "Activity Type",
+        localActivityTypeOptions,
+        setLocalActivityTypeOptions,
+        isActivityTypeExpanded, // You'll define this state below
+        setIsActivityTypeExpanded
+      )}
 
-
+      {renderOrganisedBySection(
+        "Organised By",
+        organisedByOptions,
+        selectedOrganiser,
+        (newValue) => {
+          setSelectedOrganiser(newValue); // Update the selected organiser
+          console.log("Selected Organiser:", newValue);
+        },
+        isOrganisedByExpanded,
+        setIsOrganisedByExpanded
+      )}
 
       {renderFilterSection(
         "Is Partner Involved?",
@@ -860,19 +1051,22 @@ export default function Filters() {
         setLocalNewlyCreatedOptions,
         isNewlyCreatedExpanded, // You can manage accordion expansion states
         setIsNewlyCreatedExpanded
-)}
+      )}
 
       <Snackbar
-  open={snackbarOpen}
-  autoHideDuration={3000}
-  onClose={handleSnackbarClose}
-  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
->
-  <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-    {snackbarMessage}
-  </Alert>
-</Snackbar>
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
-    
   );
 }
