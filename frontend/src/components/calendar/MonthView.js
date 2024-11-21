@@ -19,6 +19,9 @@ export default function MonthView({ month, isYearView = false }) {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const location = useLocation();
+
+
+
   function generateMonthView(month, year) {
     const startOfMonth = dayjs(`${year}-${month + 1}-01`).startOf("month");
     const startOfCalendar = startOfMonth.startOf("week");
@@ -38,6 +41,7 @@ export default function MonthView({ month, isYearView = false }) {
   
     return days;
   }
+
   
   
   const monthDays = useMemo(() => {
@@ -45,33 +49,44 @@ export default function MonthView({ month, isYearView = false }) {
     const month = daySelected.month(); // Extract month (0-based) from the selected day
     return generateMonthView(month, year);
   }, [daySelected]);
+
+
+
+
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
-        const eventData = await getEventData("eventDataQuery");
-        setEvents(eventData);
+        const eventDataRaw = await getEventData("eventDataQuery");
+        setEvents(eventDataRaw);
 
-        if (!Array.isArray(eventData)) {
+        if (!Array.isArray(eventDataRaw)) {
           console.error(
             "fetchAndFilterEvents was called with 'eventData' that is not an array:",
-            eventData
+            eventDataRaw
           );
           return;
         }
 
-        const filteredByDay = eventData.filter((event) => {
+        const selectedMonthStart = daySelected.startOf("month");
+        const selectedMonthEnd = daySelected.endOf("month");
+        
+        
+        // Filter events for the selected month and year
+        const filteredByDay = eventDataRaw.filter((event) => {
           const eventStart = dayjs(event.startDate);
           const eventEnd = dayjs(event.endDate);
-          const selectedDayStart = daySelected.startOf("day");
-          const selectedDayEnd = daySelected.endOf("day");
-
-          return (
-            eventStart.isSame(daySelected, "day") ||
-            eventEnd.isSame(daySelected, "day") ||
-            (eventStart.isBefore(selectedDayEnd) &&
-              eventEnd.isAfter(selectedDayStart))
-          );
+        
+          // Ensure events are within the selected month and year
+          const isWithinMonthAndYear =
+            eventStart.isSame(selectedMonthStart, "month") ||
+            eventEnd.isSame(selectedMonthStart, "month") ||
+            (eventStart.isBefore(selectedMonthEnd) && eventEnd.isAfter(selectedMonthStart));
+        
+          return isWithinMonthAndYear;
         });
+        
+        
+        
 
         const hasFiltersApplied =
           [
