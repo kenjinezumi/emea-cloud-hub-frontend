@@ -1412,7 +1412,7 @@ export default function EventInfoPopup({ event, close }) {
                     </Stack>
                   ) : (
                     <Typography variant="body2" color="textSecondary">
-                      No languages provided
+                      No invite available
                     </Typography>
                   )}
 

@@ -20,6 +20,7 @@ export default function MonthView({ month, isYearView = false }) {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const location = useLocation();
+  const [organisedByData, setOrganisedByData] = useState(null); // State to hold organisedBy data
 
 
 
@@ -53,19 +54,25 @@ export default function MonthView({ month, isYearView = false }) {
 
 
   useEffect(() => {
-    // Create an async function to fetch data
+    // Fetch organisedBy data
     const fetchOrganisedByData = async () => {
       try {
         const data = await getOrganisedBy();
         setOrganisedByData(data); // Save the data to state
+        console.log("OrganisedBy Data:", data); // Log the fetched data
       } catch (error) {
-        console.error("Failed to fetch organised by data:", error);
+        console.error("Failed to fetch organisedBy data:", error);
       }
     };
+
+    fetchOrganisedByData();
+  }, []);
 
     // Call the async function
     fetchOrganisedByData();
   }, []);
+
+
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
