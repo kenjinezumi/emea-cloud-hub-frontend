@@ -124,6 +124,7 @@ export default function YearView() {
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
       filters.isNewlyCreated !== undefined ||
+      filters.organisedBy !== undefined ||
       filters.draftStatus !== undefined;
 
     // If no filters are applied, return all events
@@ -387,6 +388,30 @@ export default function YearView() {
     }
     return false;
   });
+  const organisedByMatch = (() => {
+    // Check if no organiser filter is applied
+    if (!filters.organisedBy || filters.organisedBy.length === 0) {
+      console.log("No organiser filter applied, matching all events.");
+      return true; // No organiser filter applied
+    }
+  
+    // Check if the event has no organiser data
+    if (!event.organisedBy || event.organisedBy.length === 0) {
+      console.log("Event has no organiser data:", event);
+      return false; // Event does not have an organiser
+    }
+  
+    // Check for match
+    const isMatch = filters.organisedBy.every((organiser) =>
+      event.organisedBy.includes(organiser)
+    );
+  
+    console.log("OrganisedBy filter applied:", filters.organisedBy);
+    console.log("Event organisedBy field:", event.organisedBy);
+    console.log("OrganisedBy match result:", isMatch);
+  
+    return isMatch; // Return the match result
+  })();
           return (
             subRegionMatch &&
             gepMatch &&
@@ -400,7 +425,7 @@ export default function YearView() {
             regionMatch &&
             countryMatch && 
             programNameMatch                
-             && isNewlyCreatedMatch
+             && isNewlyCreatedMatch && organisedByMatch
 
           );
         } catch (filterError) {

@@ -54,24 +54,6 @@ export default function MonthView({ month, isYearView = false }) {
 
 
   useEffect(() => {
-    // Fetch organisedBy data
-    const fetchOrganisedByData = async () => {
-      try {
-        const data = await getOrganisedBy();
-        setOrganisedByData(data); // Save the data to state
-        console.log("OrganisedBy Data:", data); // Log the fetched data
-      } catch (error) {
-        console.error("Failed to fetch organisedBy data:", error);
-      }
-    };
-
-    fetchOrganisedByData();
-  }, []);
-
-
-
-
-  useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
         const eventDataRaw = await getEventData("eventDataQuery");
@@ -118,12 +100,15 @@ export default function MonthView({ month, isYearView = false }) {
             ...filters.regions,
             ...filters.countries,
             ...filters.programName,
-            ...filters.activityType,
+            ...filters.activityType
+            
             
 
 
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
+          filters.organisedBy !== undefined ||
+
           filters.isNewlyCreated !== undefined ||
           filters.draftStatus !== undefined;
 
@@ -381,6 +366,33 @@ export default function MonthView({ month, isYearView = false }) {
     return false;
   });
 
+  const organisedByMatch = (() => {
+    // Check if no organiser filter is applied
+    if (!filters.organisedBy || filters.organisedBy.length === 0) {
+      console.log("No organiser filter applied, matching all events.");
+      return true; // No organiser filter applied
+    }
+  
+    // Check if the event has no organiser data
+    if (!event.organisedBy || event.organisedBy.length === 0) {
+      console.log("Event has no organiser data:", event);
+      return false; // Event does not have an organiser
+    }
+  
+    // Check for match
+    const isMatch = filters.organisedBy.every((organiser) =>
+      event.organisedBy.includes(organiser)
+    );
+  
+    console.log("OrganisedBy filter applied:", filters.organisedBy);
+    console.log("Event organisedBy field:", event.organisedBy);
+    console.log("OrganisedBy match result:", isMatch);
+  
+    return isMatch; // Return the match result
+  })();
+  
+  
+
               
               
                 
@@ -397,7 +409,7 @@ export default function MonthView({ month, isYearView = false }) {
                 isDraftMatch &&
                 regionMatch &&
                 countryMatch && 
-                programNameMatch && activityTypeMatch && isNewlyCreatedMatch
+                programNameMatch && activityTypeMatch && isNewlyCreatedMatch && organisedByMatch
 
               );
             } catch (filterError) {

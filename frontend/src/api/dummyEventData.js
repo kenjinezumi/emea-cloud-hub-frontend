@@ -7,7 +7,7 @@ const dummyEventData= [
     "entryCreatedDate": "2024-11-19 04:29:02.634856 UTC",
     "description": "This is a test and should be deleted. Please delete it. ",
     "emoji": null,
-    "organisedBy": ["ktsuchiya@google.com"],
+    "organisedBy": ["Napoleon"],
     "startDate": "2024-10-10T14:15:41.000Z",
     "endDate": "2024-10-20T15:15:41.000Z",
     "marketingProgramInstanceId": "KTSUCHIYA229",
