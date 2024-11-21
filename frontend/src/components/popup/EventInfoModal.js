@@ -1597,7 +1597,7 @@ export default function EventInfoPopup({ event, close }) {
                   />
                 ))
               ) : (
-                <Typography>No languages available</Typography>
+                <Typography>No invite available</Typography>
               )}
             </RadioGroup>
           </FormControl>

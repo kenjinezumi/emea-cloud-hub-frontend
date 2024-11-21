@@ -5,6 +5,7 @@ import { getEventData } from "../../api/getEventData";
 import EventPopup from "../popup/EventInfoModal";
 import Day from "../Day/DayMonth";
 import dayjs from "dayjs";
+import { getOrganisedBy } from "../../api/getOrganisedBy";
 export default function MonthView({ month, isYearView = false }) {
   const {
     daySelected,
@@ -51,8 +52,20 @@ export default function MonthView({ month, isYearView = false }) {
   }, [daySelected]);
 
 
+  useEffect(() => {
+    // Create an async function to fetch data
+    const fetchOrganisedByData = async () => {
+      try {
+        const data = await getOrganisedBy();
+        setOrganisedByData(data); // Save the data to state
+      } catch (error) {
+        console.error("Failed to fetch organised by data:", error);
+      }
+    };
 
-
+    // Call the async function
+    fetchOrganisedByData();
+  }, []);
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
