@@ -10,7 +10,7 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
     console.error("No access token found. Please authenticate.");
     return 'Error: Access token not found';
   }
-
+  
   // Define the context guidance or system instructions
   const systemInstructions = `
   You support the Marketing Manager in finding the best Title and description for their event (or Campaign) that will be displayed in the internal Go-to-Market Calendar, that the organization uses to view and coordinate all their events and Go-to-Market activities.
@@ -33,27 +33,31 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
   Don’t suggest more than 3 options.
   `;
   
-
-  // Build the conversation log
+  // Construct chat history including the new prompt
   const conversationHistory = chatLog.map((entry) => ({
     role: entry.sender === 'user' ? 'user' : 'assistant',
     parts: [{ text: entry.text }],
   }));
-  
 
-  // Add the user's prompt to the conversation log
+  // Add the new user input as the last entry
   conversationHistory.push({
     role: 'user',
-    content: prompt,
+    parts: [{ text: prompt }],
   });
 
-  // Prepare the request payload
+
   const data = {
-    system: {
-      instructions: systemInstructions, // Add system instructions as per the API's requirements
+    contents: conversationHistory,
+    systemInstruction: {
+      role: "system",
+      parts: [
+        {
+          text: systemInstructions,
+        },
+      ],
     },
-    contents: conversationHistory, // Add the conversation log under the `messages` property
   };
+  
 
   try {
     // First attempt to fetch data
@@ -76,6 +80,7 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
       console.warn('Access token expired. Attempting to refresh...');
 
       // Attempt to refresh the token
+      // const storedRefreshToken = localStorage.getItem('accessToken'); // Replace with how you store the refresh token
       const tokenData = await refreshAccessToken(refreshToken);
 
       if (tokenData.accessToken) {
@@ -83,7 +88,7 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
         accessToken = tokenData.accessToken;
         sessionStorage.setItem('accessToken', accessToken);
         localStorage.setItem('accessToken', accessToken);
-
+        
         console.log('Token refreshed. Retrying request...');
 
         // Retry the request with the new access token
