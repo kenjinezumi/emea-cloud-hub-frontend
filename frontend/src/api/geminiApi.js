@@ -37,8 +37,9 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
   // Build the conversation log
   const conversationHistory = chatLog.map((entry) => ({
     role: entry.sender === 'user' ? 'user' : 'assistant',
-    content: entry.text,
+    parts: [{ text: entry.text }],
   }));
+  
 
   // Add the user's prompt to the conversation log
   conversationHistory.push({
@@ -51,7 +52,7 @@ const fetchGeminiResponse = async (prompt, chatLog = []) => {
     system: {
       instructions: systemInstructions, // Add system instructions as per the API's requirements
     },
-    messages: conversationHistory, // Add the conversation log under the `messages` property
+    contents: conversationHistory, // Add the conversation log under the `messages` property
   };
 
   try {
