@@ -27,7 +27,7 @@ import { Box } from "@mui/system";
 import debounce from "lodash.debounce";
 import geminiLogo from "../popup/logo/gemini.png";
 import ReactMarkdown from "react-markdown";
-
+import LoadingDots from "./GeminiAnimation";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import {
   LocalizationProvider,
@@ -161,6 +161,8 @@ const EventForm = () => {
     setGeminiPrompt("");
     setChatLog([]);
   };
+
+
 
   const handleGeminiSubmit = async () => {
     if (!geminiPrompt.trim()) return; // Prevent empty submission
@@ -834,32 +836,33 @@ const EventForm = () => {
                     maxHeight: "300px",
                   }}
                 >
-                  {chatLog.length > 0 ? (
-                    chatLog.map((entry, index) => (
-                      <Box key={index} sx={{ mb: 1 }}>
-                        <Typography
-                          variant="body2"
-                          color={
-                            entry.sender === "user" ? "textPrimary" : "primary"
-                          }
-                          sx={{
-                            fontWeight:
-                              entry.sender === "user" ? "bold" : "normal",
-                          }}
-                        >
-                          {entry.sender === "user" ? "You: " : "Gemini: "}
-                        </Typography>
-                        <Box sx={{ ml: 2 }}>
-                          {/* Use ReactMarkdown to render markdown content */}
-                          <ReactMarkdown>{entry.text}</ReactMarkdown>
-                        </Box>
-                      </Box>
-                    ))
-                  ) : (
-                    <Typography variant="body2" color="textSecondary">
-                      Your AI-generated description will appear here.
-                    </Typography>
-                  )}
+{isStreaming ? (
+      // Display loading dots when fetching data
+      <LoadingDots />
+    ) : chatLog.length > 0 ? (
+      // Display chat log when available
+      chatLog.map((entry, index) => (
+        <Box key={index} sx={{ mb: 1 }}>
+          <Typography
+            variant="body2"
+            color={entry.sender === "user" ? "textPrimary" : "primary"}
+            sx={{
+              fontWeight: entry.sender === "user" ? "bold" : "normal",
+            }}
+          >
+            {entry.sender === "user" ? "You: " : "Gemini: "}
+          </Typography>
+          <Box sx={{ ml: 2 }}>
+            <ReactMarkdown>{entry.text}</ReactMarkdown>
+          </Box>
+        </Box>
+      ))
+    ) : (
+      // Placeholder when no response or input yet
+      <Typography variant="body2" color="textSecondary">
+        Your AI-generated description will appear here.
+      </Typography>
+    )}
                 </Box>
 
                 {/* Input field for prompt */}
