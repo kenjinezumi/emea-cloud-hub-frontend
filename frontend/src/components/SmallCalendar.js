@@ -9,7 +9,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 export default function SmallCalendar() {
   const [currentMonthIdx, setCurrentMonthIdx] = useState(dayjs().month());
   const [currentYear, setCurrentYear] = useState(dayjs().year());
-  const [currentMonth, setCurrentMonth] = useState(getMonth());
+  const [currentMonth, setCurrentMonth] = useState(getMonth(currentMonthIdx, currentYear));
 
   const {
     monthIndex,
@@ -19,17 +19,20 @@ export default function SmallCalendar() {
   } = useContext(GlobalContext);
 
   useEffect(() => {
+    // Update currentMonth when currentMonthIdx or currentYear changes
     setCurrentMonth(getMonth(currentMonthIdx, currentYear));
   }, [currentMonthIdx, currentYear]);
 
   useEffect(() => {
-    setCurrentMonthIdx(monthIndex);
-    setCurrentYear(daySelected.year());
-  }, [monthIndex, daySelected]);
+    if (daySelected) {
+      setCurrentMonthIdx(daySelected.month());
+      setCurrentYear(daySelected.year());
+    }
+  }, [daySelected]);
 
   function handlePrevMonth() {
     if (currentMonthIdx === 0) {
-      setCurrentMonthIdx(11);
+      setCurrentMonthIdx(11); // December of the previous year
       setCurrentYear(currentYear - 1);
     } else {
       setCurrentMonthIdx(currentMonthIdx - 1);
@@ -38,7 +41,7 @@ export default function SmallCalendar() {
 
   function handleNextMonth() {
     if (currentMonthIdx === 11) {
-      setCurrentMonthIdx(0);
+      setCurrentMonthIdx(0); // January of the next year
       setCurrentYear(currentYear + 1);
     } else {
       setCurrentMonthIdx(currentMonthIdx + 1);
@@ -84,21 +87,24 @@ export default function SmallCalendar() {
           </span>
         ))}
         {currentMonth.map((row, i) => (
-          <React.Fragment key={i}>
-            {row.map((day, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setSmallCalendarMonth(currentMonthIdx);
-                  setDaySelected(day);
-                }}
-                className={`py-1 w-full ${getDayClass(day)}`}
-              >
-                <span className="text-sm">{day.format('D')}</span>
-              </button>
-            ))}
-          </React.Fragment>
-        ))}
+  <React.Fragment key={i}>
+    {row.map((day, idx) => (
+      <button
+        key={idx}
+        onClick={() => {
+          const clickedDay = day.clone(); // Clone the day to avoid mutations
+          setSmallCalendarMonth(clickedDay.month());
+          setDaySelected(clickedDay); // Ensure the correct year is passed
+        }}
+        className={`py-1 w-full ${getDayClass(day)}`}
+      >
+        <span className="text-sm">{day.format("D")}</span>
+      </button>
+    ))}
+  </React.Fragment>
+))}
+
+
       </div>
     </div>
   );

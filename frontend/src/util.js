@@ -1,18 +1,19 @@
 import dayjs from 'dayjs';
 
-export function getMonth(month = dayjs().month()) {
+export function getMonth(month = dayjs().month(), year = dayjs().year()) {
   month = Math.floor(month);
-  const year = dayjs().year();
   const firstDayOfTheMonth = dayjs(new Date(year, month, 1)).day();
-  let currentMonthCount = 0 - firstDayOfTheMonth;
+  let currentMonthCount = 0 - firstDayOfTheMonth; // Start from the first visible day of the calendar
   const daysMatrix = new Array(5).fill([]).map(() => {
     return new Array(7).fill(null).map(() => {
       currentMonthCount++;
-      return dayjs(new Date(year, month, currentMonthCount));
+      return dayjs(new Date(year, month, currentMonthCount)); // Use the provided year
     });
   });
   return daysMatrix;
 }
+
+
 
 export function createYearData(year) {
   const yearData = [];
