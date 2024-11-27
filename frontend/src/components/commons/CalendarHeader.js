@@ -144,7 +144,11 @@ export default function CalendarHeader() {
   }
   
   
+  const handleYearChange = (newYear) => {
+    setDaySelected(daySelected.year(newYear)); // Change year
+  };
 
+  
   function handleReset() {
     const today = dayjs();
     setDaySelected(today);
