@@ -400,7 +400,7 @@ export default function YearView() {
     }
   
     // Check for match
-    const isMatch = filters.organisedBy.every((organiser) =>
+    const isMatch = filters.organisedBy.some((organiser) =>
       event.organisedBy.includes(organiser)
     );
   

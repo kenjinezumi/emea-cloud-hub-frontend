@@ -378,10 +378,9 @@ export default function MonthView({ month, isYearView = false }) {
     }
   
     // Check for match
-    const isMatch = filters.organisedBy.every((organiser) =>
+    const isMatch = filters.organisedBy.some((organiser) =>
       event.organisedBy.includes(organiser)
     );
-
   
     return isMatch; // Return the match result
   })();
