@@ -18,6 +18,7 @@ export default function Day({ day, events, isYearView, month }) {
   const dayEvents = useMemo(() => {
     return events.filter((evt) => {
       // Conditional check based on year view
+      
       if (isYearView) {
         // In year view, access `day.date` which is a `dayjs` object
         return (
@@ -25,15 +26,26 @@ export default function Day({ day, events, isYearView, month }) {
           dayjs(evt.endDate).isAfter(day.date.startOf("day"))
         );
       } else {
-        // Not in year view, `day` is a `dayjs` object directly
-       
-        return (
-          dayjs(evt.startDate) &&
-          dayjs(evt.endDate)
-        );
+        const eventStart = dayjs(evt.startDate).startOf("day");
+      const eventEnd = dayjs(evt.endDate).startOf("day");
+      const currentDay = day.startOf("day");
+        if (eventStart.isSame(eventEnd, "day")) {
+          // Single-day event
+          return eventStart.isSame(currentDay, "day");
+        }else {
+          // Multi-day event
+          return (
+            eventStart.isBefore(currentDay.endOf("day")) &&
+            eventEnd.isAfter(currentDay.startOf("day"))
+          );
+        }
+        
       }
     });
   }, [events, day, isYearView]);
+
+
+  
 
 
   const hasEvents = dayEvents.length > 0;

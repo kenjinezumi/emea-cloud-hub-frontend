@@ -363,7 +363,7 @@ export default function DayView() {
     }
   
     // Check for match
-    const isMatch = filters.organisedBy.every((organiser) =>
+    const isMatch = filters.organisedBy.some((organiser) =>
       event.organisedBy.includes(organiser)
     );
   
