@@ -142,7 +142,7 @@ export default function Filters() {
   const [localActivityTypeOptions, setLocalActivityTypeOptions] = useState(
     eventTypeOptions.map((option) => ({
       label: option.label,
-      checked: option.checked,
+      checked:false,
     }))
   );
 
