@@ -59,7 +59,7 @@ const EventFormEmailInvitation = () => {
 
   const [isFormValid, setIsFormValid] = useState(true);
   const saveAndNavigate = useFormNavigation();
-  const [setEditorContent] = useState("");
+  const [editorContent, setEditorContent] = useState("");
 
   useEffect(() => {
     const updatedFormData = { ...formData, languagesAndTemplates };
@@ -104,9 +104,17 @@ const EventFormEmailInvitation = () => {
     setLanguagesAndTemplates(updatedItems);
   };
 
-  const handlePersonalizationInsert = (token) => {
-    setEditorContent((prevContent) => `${prevContent} ${token}`);
+  const handlePersonalizationInsert = (token, index) => {
+    setLanguagesAndTemplates((prev) =>
+      prev.map((item, i) =>
+        i === index
+          ? { ...item, template: `${item.template || ""} ${token}` }
+          : item
+      )
+    );
   };
+  
+  
 
   const handleSubjectLineChange = (value, index) => {
     setLanguagesAndTemplates((prev) =>
@@ -362,7 +370,7 @@ const EventFormEmailInvitation = () => {
                                   variant="outlined"
                                   size="small"
                                   onClick={() =>
-                                    handlePersonalizationInsert(token)
+                                    handlePersonalizationInsert(token, index)
                                   }
                                   sx={{ margin: "5px" }}
                                 >
