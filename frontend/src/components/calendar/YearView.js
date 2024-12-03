@@ -189,23 +189,40 @@ export default function YearView() {
 
           // Account Sector filter match
           const accountSectorMatch =
-            !filters.accountSectors.some((sector) => sector.checked) ||
-            filters.accountSectors.some((sector) => {
-              try {
-                return (
-                  sector.checked &&
-                  event.accountSectors?.[sector.label.toLowerCase()] === true
-                );
-              } catch (err) {
-                console.error(
-                  "Error checking accountSectors filter:",
-                  err,
-                  sector,
-                  event
-                );
-                return false;
+          // Include all events if no sectors are checked
+          !filters.accountSectors.some((sector) => sector.checked) ||
+          // Check if any sector matches the event
+          filters.accountSectors.some((sector) => {
+            try {
+              if (sector.checked) {
+                // Map filter labels to keys in the event data
+                const sectorMapping = {
+                  "Public Sector": "public",
+                  "Commercial": "commercial"
+                };
+        
+                // Find the corresponding key for the filter label
+                const sectorKey = sectorMapping[sector.label];
+                if (!sectorKey) {
+                  console.warn(`No mapping found for sector label: ${sector.label}`);
+                  return false;
+                }
+        
+                // Check if the event matches the mapped key
+                return event.accountSectors?.[sectorKey] === true;
               }
-            });
+              return false;
+            } catch (err) {
+              console.error(
+                "Error checking accountSectors filter:",
+                err,
+                sector,
+                event
+              );
+              return false;
+            }
+          });
+        
 
           // Account Segment filter match
           const accountSegmentMatch =

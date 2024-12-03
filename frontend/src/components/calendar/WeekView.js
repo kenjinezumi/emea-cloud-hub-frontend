@@ -139,14 +139,30 @@ export default function WeekView() {
             segment.checked && event.audienceSeniority?.includes(segment.label)
         );
 
-      const accountSectorMatch =
+        const accountSectorMatch =
+        // Include all events if no sectors are checked
         !filters.accountSectors.some((sector) => sector.checked) ||
+        // Check if any sector matches the event
         filters.accountSectors.some((sector) => {
           try {
-            return (
-              sector.checked &&
-              event.accountSectors?.[sector.label.toLowerCase()] === true
-            );
+            if (sector.checked) {
+              // Map filter labels to keys in the event data
+              const sectorMapping = {
+                "Public Sector": "public",
+                "Commercial": "commercial"
+              };
+      
+              // Find the corresponding key for the filter label
+              const sectorKey = sectorMapping[sector.label];
+              if (!sectorKey) {
+                console.warn(`No mapping found for sector label: ${sector.label}`);
+                return false;
+              }
+      
+              // Check if the event matches the mapped key
+              return event.accountSectors?.[sectorKey] === true;
+            }
+            return false;
           } catch (err) {
             console.error(
               "Error checking accountSectors filter:",
@@ -157,6 +173,7 @@ export default function WeekView() {
             return false;
           }
         });
+      
         const regionMatch =
                 !filters.regions.some((region) => region.checked) ||
                 filters.regions.some((region) => {
