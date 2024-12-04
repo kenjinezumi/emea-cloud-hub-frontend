@@ -54,8 +54,15 @@ export default function Filters() {
   const [localGepOptions, setLocalGepOptions] = useState(
     gepOptions.map((option) => ({ label: option, checked: false }))
   );
-  const [localAccountSectorOptions, setLocalAccountSectorOptions] =
-    useState(accountSectorOptions);
+  const [localAccountSectorOptions, setLocalAccountSectorOptions] = useState(
+    accountSectorOptions.map((option) => ({
+      label: option.label, // Display this in the UI
+      value: option.value, // Use this for logic
+      checked: option.checked, // Initial checked state
+    }))
+  );
+  
+  
   const [localAccountSegmentOptions, setLocalAccountSegmentOptions] = useState(
     accountSegmentOptions
   );
@@ -99,7 +106,7 @@ export default function Filters() {
         // Ensure `data` is an array
         if (Array.isArray(data)) {
           const flattenedData = data.map((item) => item.organisedBy[0]); // Flatten organisedBy arrays
-          console.log("Flattened OrganisedBy Data:", flattenedData); // Debugging
+          
           setOrganisedByOptions(flattenedData);
         } else {
         }
@@ -114,7 +121,7 @@ export default function Filters() {
 
   const handleOrganiserChange = (event, newValue) => {
     setSelectedOrganiser(newValue.length ? newValue : null); // Set to null if no value is selected
-    console.log("Selected Organiser:", newValue);
+    
   };
   
 
@@ -247,17 +254,22 @@ export default function Filters() {
     );
   };
 
-  const handleFilterChange = (setFilterState, label) => {
+  const handleFilterChange = (setFilterState, value, isAccountSector = false) => {
     setFilterState((prevFilters) =>
       prevFilters.map((filter) =>
-        filter.label === label
+        isAccountSector
+          ? filter.value === value
+            ? { ...filter, checked: !filter.checked }
+            : filter
+          : filter.label === value 
           ? { ...filter, checked: !filter.checked }
           : filter
       )
     );
-    console.log(`Checkbox toggled for label: ${label}`);
+    
     forceRefresh();
   };
+  
 
   const forceRefresh = () => {
     setRefresh(!refresh);
@@ -374,7 +386,6 @@ export default function Filters() {
   );
   
   
-  
 
   
 
@@ -383,7 +394,8 @@ export default function Filters() {
     filters,
     setFilterState,
     expanded,
-    setExpanded
+    setExpanded,
+    isAccountSector = false
   ) => (
     <div className="mb-4">
       <div
@@ -396,12 +408,14 @@ export default function Filters() {
         {expanded ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
       </div>
       {expanded &&
-        filters.map(({ label, checked }, idx) => (
+        filters.map(({ label, value, checked }, idx) => (
           <label key={idx} className="items-center mt-3 block">
             <input
               type="checkbox"
               checked={checked}
-              onChange={() => handleFilterChange(setFilterState, label)}
+              onChange={() =>
+                handleFilterChange(setFilterState, isAccountSector ? value : label, isAccountSector)
+              }
               className="form-checkbox h-5 w-5 rounded focus:ring-0 cursor-pointer"
             />
             <span className="ml-2 text-gray-700 capitalize text-xs">
@@ -411,6 +425,7 @@ export default function Filters() {
         ))}
     </div>
   );
+  
 
   const handleDeleteFilter = async (filterName) => {
     try {
@@ -511,9 +526,10 @@ export default function Filters() {
               label,
               checked,
             })),
-            accountSectors: localAccountSectorOptions.map(
-              ({ label, checked }) => ({ label, checked })
-            ),
+            accountSectors: localAccountSectorOptions.map(({ value, checked }) => ({
+              value,
+              checked,
+            })),
             accountSegments: localAccountSegmentOptions.map(
               ({ label, checked }) => ({ label, checked })
             ),
@@ -559,7 +575,7 @@ export default function Filters() {
   };
 
   const handleChipClick = (config) => {
-    console.log("Applying filter config:", config);
+
     applyFilterConfig(config);
   };
 
@@ -958,13 +974,14 @@ export default function Filters() {
         setIsCountryExpanded
       )}
 
-      {renderFilterSection(
-        "Account Sector",
-        localAccountSectorOptions,
-        setLocalAccountSectorOptions,
-        isAccountSectorExpanded,
-        setIsAccountSectorExpanded
-      )}
+{renderFilterSection(
+  "Account Sector",
+  localAccountSectorOptions,
+  (value) => handleFilterChange(setLocalAccountSectorOptions, value, true), // Pass the flag
+  isAccountSectorExpanded,
+  setIsAccountSectorExpanded
+)}
+
       {renderFilterSection(
         "Account Segment",
         localAccountSegmentOptions,
@@ -1025,7 +1042,7 @@ export default function Filters() {
         selectedOrganiser,
         (newValue) => {
           setSelectedOrganiser(newValue); // Update the selected organiser
-          console.log("Selected Organiser:", newValue);
+          
         },
         isOrganisedByExpanded,
         setIsOrganisedByExpanded

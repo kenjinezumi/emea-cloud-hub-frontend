@@ -335,10 +335,7 @@ export default function EventInfoPopup({ event, close }) {
         accessToken: accessToken,
       };
 
-      console.log(
-        "Sending request to create Gmail draft with email details:",
-        emailDetails
-      );
+
 
       let response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
@@ -349,7 +346,6 @@ export default function EventInfoPopup({ event, close }) {
         body: JSON.stringify(emailDetails),
       });
 
-      console.log("Response from server:", response);
 
       if (!response.ok) {
         // Check if the error indicates an expired token or credential issue
@@ -373,7 +369,6 @@ export default function EventInfoPopup({ event, close }) {
               sessionStorage.setItem("accessToken", accessToken);
               localStorage.setItem("accessToken", accessToken);
 
-              console.log("Token refreshed successfully. Retrying request...");
 
               // Retry the request with the new access token
               emailDetails.accessToken = accessToken;
@@ -433,17 +428,13 @@ export default function EventInfoPopup({ event, close }) {
       }
 
       const data = await response.json();
-      console.log("Draft created successfully. Server response:", data);
 
       if (data.success) {
-        console.log("Redirecting to Gmail drafts at:", data.draftUrl);
         window.open(data.draftUrl, "_blank");
       } else {
-        console.error("Error creating draft email. Server response:", data);
         alert("Error creating draft email.");
       }
     } catch (error) {
-      console.error("Error creating Gmail draft:", error);
       alert("Failed to create Gmail draft. Please try again.");
     }
   };
@@ -454,7 +445,6 @@ export default function EventInfoPopup({ event, close }) {
     if (!Array.isArray(list)) return "";
     return list.map((item) => item.replace(/,/g, ", ")).join(", ");
   };
-  console.log("languagesAndTemplates:", languagesAndTemplates);
 
   const googleColors = [
     "rgba(66, 133, 244, 0.6)", // Google Blue
@@ -1246,11 +1236,8 @@ export default function EventInfoPopup({ event, close }) {
               }}
             >
               <EventIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-              {dayjs(selectedEvent.startDate).format(
-                "dddd, MMMM D, YYYY h:mm A"
-              )}{" "}
-              -{" "}
-              {dayjs(selectedEvent.endDate).format("dddd, MMMM D, YYYY h:mm A")}
+              {dayjs(selectedEvent.startDate).format("ddd, MMM D, YYYY h:mm A")} -{" "}
+              {dayjs(selectedEvent.endDate).format("ddd, MMM D, YYYY h:mm A")}
             </Typography>
 
             {[
