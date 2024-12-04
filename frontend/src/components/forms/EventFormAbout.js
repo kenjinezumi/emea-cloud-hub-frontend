@@ -363,8 +363,9 @@ const EventForm = () => {
 
     const isTitleValid = title?.trim() !== "";
     const isDescriptionValid = description?.trim() !== "";
-    const isStartDateValid = startDate && !isSameDate(startDate, today);
-    const isEndDateValid = endDate && !isSameDate(endDate, today);
+    const isStartDateValid = !!startDate;
+    const isEndDateValid = !!endDate && new Date(endDate) > new Date(startDate);
+  
 
     const isOrganisedByValid = organisedBy.length > 0;
     const isEventTypeValid = eventType?.trim() !== "";
@@ -436,6 +437,8 @@ const EventForm = () => {
     setEmoji(emojiData.emoji);
     setIsEmojiPickerOpen(false);
   };
+
+  
 
   const handleAddOrganiser = () => {
     const trimmedOrganiser = newOrganiser.trim();
