@@ -187,6 +187,7 @@ export default function EventInfoPopup({ event, close }) {
       (item) =>
         item.platform === "Salesloft" && item.language === selectedLanguage
     );
+    console.log(languagesAndTemplates)
 
     if (!salesLoftTemplate) {
       setSnackbarMessage("SalesLoft template not provided.");
@@ -215,6 +216,11 @@ export default function EventInfoPopup({ event, close }) {
         throw new Error("SalesLoft template not found.");
       }
 
+      if (!salesLoftTemplate.subjectLine || !salesLoftTemplate.template) {
+        throw new Error(
+          "Template data is incomplete. Missing subjectLine or template."
+        );
+      }
       const result = await createSalesLoftEmailTemplate(
         salesLoftTemplate
       );
@@ -1549,7 +1555,7 @@ export default function EventInfoPopup({ event, close }) {
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        sx={{ zIndex: 10000 }}
+        sx={{ zIndex: 80000 }}
       >
         <DialogTitle>Confirm SalesLoft Invite</DialogTitle>
         <DialogContent>
