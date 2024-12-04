@@ -502,63 +502,24 @@ export default function Filters() {
 
     if (customFilterName.trim()) {
       const filterData = {
-        ldap: ldap, // Replace with actual LDAP or user identifier if available
-        filterName: customFilterName.trim(), // Top-level filterName field
-        config: [
-          {
-            regions: localRegionOptions.map(({ label, checked }) => ({
-              label,
-              checked,
-            })),
-            subRegions: localSubRegionFilters.map(({ label, checked }) => ({
-              label,
-              checked,
-            })),
-            countries: localCountryOptions.map(({ label, checked }) => ({
-              label,
-              checked,
-            })),
-            gep: localGepOptions.map(({ label, checked }) => ({
-              label,
-              checked,
-            })),
-            programName: localProgramNameOptions.map(({ label, checked }) => ({
-              label,
-              checked,
-            })),
-            accountSectors: localAccountSectorOptions.map(({ value, checked }) => ({
-              value,
-              checked,
-            })),
-            accountSegments: localAccountSegmentOptions.map(
-              ({ label, checked }) => ({ label, checked })
-            ),
-            buyerSegmentRollup: localBuyerSegmentRollupOptions.map(
-              ({ label, checked }) => ({ label, checked })
-            ),
-            productFamily: localProductFamilyOptions.map(
-              ({ label, checked }) => ({ label, checked })
-            ),
-            industry: localIndustryOptions.map(({ label, checked }) => ({
-              label,
-              checked,
-            })),
-            partnerEvent: localPartnerEventOptions.map(
-              ({ label, checked }) => ({ label, checked })
-            ),
-            draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({
-              label,
-              checked,
-            })),
-            activityType: localActivityTypeOptions.map(
-              ({ label, checked }) => ({
-                label,
-                checked,
-              })
-            ),
-            organisedBy: selectedOrganiser,
-          },
-        ],
+        ldap,
+        filterName: customFilterName.trim(),
+        config: {
+          regions: localRegionOptions.map(({ label, checked }) => ({ label, checked })),
+          subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
+          countries: localCountryOptions.map(({ label, checked }) => ({ label, checked })),
+          gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
+          programName: localProgramNameOptions.map(({ label, checked }) => ({ label, checked })),
+          accountSectors: localAccountSectorOptions.map(({ value, checked }) => ({ value, checked })),
+          accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
+          buyerSegmentRollup: localBuyerSegmentRollupOptions.map(({ label, checked }) => ({ label, checked })),
+          productFamily: localProductFamilyOptions.map(({ label, checked }) => ({ label, checked })),
+          industry: localIndustryOptions.map(({ label, checked }) => ({ label, checked })),
+          partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({ label, checked })),
+          draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({ label, checked })),
+          activityType: localActivityTypeOptions.map(({ label, checked }) => ({ label, checked })),
+          organisedBy: selectedOrganiser || [],
+        },
       };
 
       // Send the formatted filter data to the backend

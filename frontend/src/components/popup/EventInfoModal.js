@@ -675,12 +675,19 @@ export default function EventInfoPopup({ event, close }) {
             <Chip label="Direct Partner" color="secondary" size="small" />
           )}
           {dayjs().diff(dayjs(selectedEvent.entryCreatedDate), "day") <= 14 && (
+            <Tooltip
+            title={`Created on: ${dayjs(selectedEvent.entryCreatedDate).format(
+              "MMM D, YYYY h:mm A"
+            )}`}
+            arrow
+          >
             <Chip
               label="Newly Created"
               color="success"
               variant="outlined"
               size="small"
             />
+            </Tooltip>
           )}
 
           {selectedEvent.isHighPriority && (
