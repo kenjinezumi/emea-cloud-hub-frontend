@@ -1026,6 +1026,8 @@ WHERE eventId = @eventId;
     }
 
     try {
+        const generatedCadenceId = data.cadence_id || uuidv4();
+
         const response = await fetch("https://api.salesloft.com/v2/cadence_imports.json", {
             method: "POST",
             headers: {
@@ -1036,6 +1038,8 @@ WHERE eventId = @eventId;
                 cadence_import: {
                     name: data.title, // Cadence title
                     description: data.description || "No description provided",
+                    cadence_id: generatedCadenceId, 
+                    settings: data.settings || {},
                     steps: [
                         {
                             subject: data.subject,
