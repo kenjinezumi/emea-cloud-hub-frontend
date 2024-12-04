@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import GlobalContext from "../../context/GlobalContext";
 import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
@@ -22,16 +28,14 @@ export default function MonthView({ month, isYearView = false }) {
   const location = useLocation();
   const [organisedByData, setOrganisedByData] = useState(null); // State to hold organisedBy data
 
-
-
   function generateMonthView(month, year) {
     const startOfMonth = dayjs(`${year}-${month + 1}-01`).startOf("month");
     const startOfCalendar = startOfMonth.startOf("week");
     const endOfCalendar = startOfMonth.endOf("month").endOf("week");
-  
+
     const days = [];
     let currentDay = startOfCalendar;
-  
+
     while (currentDay.isBefore(endOfCalendar, "day")) {
       const week = [];
       for (let i = 0; i < 7; i++) {
@@ -40,18 +44,15 @@ export default function MonthView({ month, isYearView = false }) {
       }
       days.push(week);
     }
-  
+
     return days;
   }
 
-  
-  
   const monthDays = useMemo(() => {
     const year = daySelected.year(); // Extract year from the selected day
     const month = daySelected.month(); // Extract month (0-based) from the selected day
     return generateMonthView(month, year);
   }, [daySelected]);
-
 
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
@@ -69,24 +70,21 @@ export default function MonthView({ month, isYearView = false }) {
 
         const selectedMonthStart = daySelected.startOf("month");
         const selectedMonthEnd = daySelected.endOf("month");
-        
-        
+
         // Filter events for the selected month and year
         const filteredByDay = eventDataRaw.filter((event) => {
           const eventStart = dayjs(event.startDate);
           const eventEnd = dayjs(event.endDate);
-        
+
           // Ensure events are within the selected month and year
           const isWithinMonthAndYear =
             eventStart.isSame(selectedMonthStart, "month") ||
             eventEnd.isSame(selectedMonthStart, "month") ||
-            (eventStart.isBefore(selectedMonthEnd) && eventEnd.isAfter(selectedMonthStart));
-        
+            (eventStart.isBefore(selectedMonthEnd) &&
+              eventEnd.isAfter(selectedMonthStart));
+
           return isWithinMonthAndYear;
         });
-        
-        
-        
 
         const hasFiltersApplied =
           [
@@ -100,15 +98,10 @@ export default function MonthView({ month, isYearView = false }) {
             ...filters.regions,
             ...filters.countries,
             ...filters.programName,
-            ...filters.activityType
-            
-            
-
-
+            ...filters.activityType,
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
           filters.organisedBy !== undefined ||
-
           filters.isNewlyCreated !== undefined ||
           filters.draftStatus !== undefined;
 
@@ -145,7 +138,7 @@ export default function MonthView({ month, isYearView = false }) {
                     return false;
                   }
                 });
-                const regionMatch =
+              const regionMatch =
                 !filters.regions.some((region) => region.checked) ||
                 filters.regions.some((region) => {
                   try {
@@ -181,7 +174,6 @@ export default function MonthView({ month, isYearView = false }) {
                   }
                 });
 
-
               const buyerSegmentRollupMatch =
                 !filters.buyerSegmentRollup.some(
                   (segment) => segment.checked
@@ -201,7 +193,7 @@ export default function MonthView({ month, isYearView = false }) {
                   }
                 });
 
-                const accountSectorMatch =
+              const accountSectorMatch =
                 // Include all events if no sectors are checked
                 !filters.accountSectors.some((sector) => sector.checked) ||
                 // Check if any sector matches the event
@@ -211,16 +203,18 @@ export default function MonthView({ month, isYearView = false }) {
                       // Map filter labels to keys in the event data
                       const sectorMapping = {
                         "Public Sector": "public",
-                        "Commercial": "commercial"
+                        Commercial: "commercial",
                       };
-              
+
                       // Find the corresponding key for the filter label
                       const sectorKey = sectorMapping[sector.label];
                       if (!sectorKey) {
-                        console.warn(`No mapping found for sector label: ${sector.label}`);
+                        console.warn(
+                          `No mapping found for sector label: ${sector.label}`
+                        );
                         return false;
                       }
-              
+
                       // Check if the event matches the mapped key
                       return event.accountSectors?.[sectorKey] === true;
                     }
@@ -235,7 +229,6 @@ export default function MonthView({ month, isYearView = false }) {
                     return false;
                   }
                 });
-              
 
               const accountSegmentMatch =
                 !filters.accountSegments.some((segment) => segment.checked) ||
@@ -310,103 +303,109 @@ export default function MonthView({ month, isYearView = false }) {
                     .filter((option) => option.checked)
                     .map((option) => option.value)
                 : [];
-                const isDraftMatch = 
+              const isDraftMatch =
                 selectedDraftStatuses.length === 0 ||
                 (() => {
                   // Initialize an array to hold applicable statuses
                   const applicableStatuses = [];
-              
+
                   // Add "Draft" if the event is in draft mode
                   if (event.isDraft) {
                     applicableStatuses.push("Draft");
                   } else {
                     // If not a draft, add "Finalized" as a base status
                     applicableStatuses.push("Finalized");
-              
+
                     // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
                     if (
                       !event.isDraft &&
-                      event.languagesAndTemplates?.some(template =>
+                      event.languagesAndTemplates?.some((template) =>
                         ["Gmail", "Salesloft"].includes(template.platform)
                       )
                     ) {
                       applicableStatuses.push("Invite available");
                     }
                   }
-              
+
                   // Check if any selectedDraftStatuses match the applicable statuses
-                  return selectedDraftStatuses.some(status => applicableStatuses.includes(status));
+                  return selectedDraftStatuses.some((status) =>
+                    applicableStatuses.includes(status)
+                  );
                 })();
-                const programNameMatch =
+              const programNameMatch =
                 filters.programName.every((filter) => !filter.checked) ||
                 filters.programName.some((filter) => {
                   const isChecked = filter.checked;
                   const matches = event.programName?.some((name) =>
                     name.toLowerCase().includes(filter.label.toLowerCase())
                   );
-              
+
                   return isChecked && matches;
                 });
 
-                const activityTypeMatch =
+              const activityTypeMatch =
                 !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
                 filters.activityType.some((activity) => {
                   try {
                     // Check if the event type matches the checked activity types
                     return (
                       activity.checked &&
-                      event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
+                      event.eventType?.toLowerCase() ===
+                        activity.label.toLowerCase() // Ensure case-insensitive comparison
                     );
                   } catch (err) {
-                    console.error("Error checking activityType filter:", err, activity, event);
+                    console.error(
+                      "Error checking activityType filter:",
+                      err,
+                      activity,
+                      event
+                    );
                     return false; // Handle errors gracefully
                   }
                 });
-              
-                const isNewlyCreatedMatch =
-  !filters.newlyCreated?.some((option) => option.checked) ||
-  filters.newlyCreated?.some((option) => {
-    if (option.checked) {
-      const entryCreatedDate = event.entryCreatedDate
-        ? dayjs(event.entryCreatedDate)
-        : null;
 
-      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-        console.warn("Invalid or missing entryCreatedDate for event:", event);
-        return option.value === false; // Consider missing dates as "old"
-      }
+              const isNewlyCreatedMatch =
+                !filters.newlyCreated?.some((option) => option.checked) ||
+                filters.newlyCreated?.some((option) => {
+                  if (option.checked) {
+                    const entryCreatedDate = event.entryCreatedDate
+                      ? dayjs(event.entryCreatedDate)
+                      : null;
 
-      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
-      return option.value === isWithinTwoWeeks;
-    }
-    return false;
-  });
+                    if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+                      console.warn(
+                        "Invalid or missing entryCreatedDate for event:",
+                        event
+                      );
+                      return option.value === false; // Consider missing dates as "old"
+                    }
 
-  const organisedByMatch = (() => {
-    // Check if no organiser filter is applied
-    if (!filters.organisedBy || filters.organisedBy.length === 0) {
-      return true; // No organiser filter applied
-    }
-  
-    // Check if the event has no organiser data
-    if (!event.organisedBy || event.organisedBy.length === 0) {
-      return false; // Event does not have an organiser
-    }
-  
-    // Check for match
-    const isMatch = filters.organisedBy.some((organiser) =>
-      event.organisedBy.includes(organiser)
-    );
-  
-    return isMatch; // Return the match result
-  })();
-  
-  
+                    const isWithinTwoWeeks =
+                      dayjs().diff(entryCreatedDate, "day") <= 14;
+                    return option.value === isWithinTwoWeeks;
+                  }
+                  return false;
+                });
 
-              
-              
-                
-                
+              const organisedByMatch = (() => {
+                // Check if no organiser filter is applied
+                if (!filters.organisedBy || filters.organisedBy.length === 0) {
+                  return true; // No organiser filter applied
+                }
+
+                // Check if the event has no organiser data
+                if (!event.organisedBy || event.organisedBy.length === 0) {
+                  return false; // Event does not have an organiser
+                }
+
+                // Check for match
+                const isMatch = filters.organisedBy.some((organiser) =>
+                  event.organisedBy.includes(organiser)
+                );
+
+                return isMatch; // Return the match result
+              })();
+
               return (
                 subRegionMatch &&
                 gepMatch &&
@@ -418,9 +417,11 @@ export default function MonthView({ month, isYearView = false }) {
                 isPartneredEventMatch &&
                 isDraftMatch &&
                 regionMatch &&
-                countryMatch && 
-                programNameMatch && activityTypeMatch && isNewlyCreatedMatch && organisedByMatch
-
+                countryMatch &&
+                programNameMatch &&
+                activityTypeMatch &&
+                isNewlyCreatedMatch &&
+                organisedByMatch
               );
             } catch (filterError) {
               console.error("Error applying filters to event:", filterError);
@@ -441,9 +442,6 @@ export default function MonthView({ month, isYearView = false }) {
 
     fetchAndFilterEvents();
   }, [location, filters, daySelected]);
-  
-
-
 
   // Close modals when location changes
   useEffect(() => {
@@ -461,8 +459,6 @@ export default function MonthView({ month, isYearView = false }) {
     [setDaySelected, setSelectedEvents, setSelectedEvent]
   );
 
-  
-
   return (
     <div
       className={
@@ -474,17 +470,15 @@ export default function MonthView({ month, isYearView = false }) {
       {isYearView
         ? month.map((month, monthIdx) => (
             <React.Fragment key={monthIdx}>
-              
-                  {month.map((day, dayIdx) => (
-                    <Day
-                      key={`day-${monthIdx}-${dayIdx}`}
-                      day={day} // Pass the day object
-                      events={filteredEvents}
-                      isYearView={isYearView}
-                      month={day.month} // Use month correctly
-                    />
-                  ))}
-            
+              {month.map((day, dayIdx) => (
+                <Day
+                  key={`day-${monthIdx}-${dayIdx}`}
+                  day={day} // Pass the day object
+                  events={filteredEvents}
+                  isYearView={isYearView}
+                  month={day.month} // Use month correctly
+                />
+              ))}
             </React.Fragment>
           ))
         : monthDays.map((row, i) => (
@@ -503,5 +497,4 @@ export default function MonthView({ month, isYearView = false }) {
       <EventPopup /> {/* Render the EventPopup component */}
     </div>
   );
-  
 }
