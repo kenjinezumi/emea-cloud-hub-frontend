@@ -1,6 +1,6 @@
 const API_URL = 'https://backend-dot-cloudhub.googleplex.com/';
 
-const createSalesLoftEmailTemplate = async (accessToken, salesLoftTemplate) => {
+const createSalesLoftEmailTemplate = async (salesLoftTemplate) => {
   console.log('Sending SalesLoft template to backend:', salesLoftTemplate);
 
   try {
@@ -18,7 +18,6 @@ const createSalesLoftEmailTemplate = async (accessToken, salesLoftTemplate) => {
           open_tracking: true,
           click_tracking: true,
           attachment_ids: '',
-          token: accessToken, // Sending Bearer token in the body
         },
         message: 'salesloft-cadence',  // Set the message to salesloft-cadence
         queryName: 'createSalesLoftCadence',  // Query name for backend logic
