@@ -127,7 +127,7 @@ export default function ExtraDetailsForm() {
     const updatedFormData = {
       ...formData,
       // isApprovedForCustomerUse: customerUse === "yes" ? true : false,
-      program,
+      programName: program,
       isApprovedForCustomerUse: null,
       okr: Object.keys(okrSelections).map((label) => ({
         type: label,
