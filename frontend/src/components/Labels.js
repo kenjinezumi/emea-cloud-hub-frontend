@@ -104,7 +104,9 @@ export default function Filters() {
 
         // Ensure `data` is an array
         if (Array.isArray(data)) {
-          const flattenedData = data.map((item) => item.organisedBy[0]); // Flatten organisedBy arrays
+          const flattenedData = data.map((item) => item.organisedBy[0])
+          .filter(Boolean) 
+          .sort((a, b) => a.localeCompare(b)); 
 
           setOrganisedByOptions(flattenedData);
         } else {
