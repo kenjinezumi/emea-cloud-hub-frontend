@@ -34,29 +34,23 @@ import SecurityIcon from "@mui/icons-material/Security";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 
 export const gepOptions = [
-  { label: "Build Modern Apps", icon: BuildIcon, color: "#ff5722" }, // Orange
-  { label: "Data Cloud", icon: CloudIcon, color: "#2196f3" }, // Blue
+  { label: "AI", icon: LightbulbIcon, color: "#ffc107" }, // Amber
+  { label: "Data & Analytics", icon: CloudIcon, color: "#2196f3" }, // Blue
   { label: "Developer", icon: DeveloperModeIcon, color: "#4caf50" }, // Green
-  {
-    label: "Digital Natives - Early Stage Startups",
-    icon: PeopleIcon,
-    color: "#9c27b0",
-  }, // Purple
   { label: "Google Workspace", icon: WorkspacePremiumIcon, color: "#fbc02d" }, // Yellow
   {
-    label: "Infrastructure Modernization",
-    icon: StorageIcon,
-    color: "#795548",
-  }, // Brown
+    label: "Modern Infrastructure and Apps",
+    icon: BuildIcon,
+    color: "#ff5722",
+  }, // Orange
   {
-    label: "Not Application (Not tied to Any Global Engagement Plays)",
+    label: "Not Applicable (Not tied to Any Global Campaign)",
     icon: PublicIcon,
     color: "#607d8b",
   }, // Grey
-  { label: "Reimagine FSI", icon: PeopleIcon, color: "#ff9800" }, // Orange
-  { label: "Secure What Matters Most", icon: SecurityIcon, color: "#e91e63" }, // Pink
-  { label: "Solving for Innovation", icon: LightbulbIcon, color: "#ffc107" }, // Amber
+  { label: "Security", icon: SecurityIcon, color: "#e91e63" }, // Pink
 ];
+
 
 export default function YearView() {
   const {
@@ -120,7 +114,6 @@ export default function YearView() {
         ...filters.regions,
         ...filters.countries,
         ...filters.programName,
-
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
       filters.isNewlyCreated !== undefined ||
@@ -189,40 +182,41 @@ export default function YearView() {
 
           // Account Sector filter match
           const accountSectorMatch =
-          // Include all events if no sectors are checked
-          !filters.accountSectors.some((sector) => sector.checked) ||
-          // Check if any sector matches the event
-          filters.accountSectors.some((sector) => {
-            try {
-              if (sector.checked) {
-                // Map filter labels to keys in the event data
-                const sectorMapping = {
-                  "Public Sector": "public",
-                  "Commercial": "commercial"
-                };
-        
-                // Find the corresponding key for the filter label
-                const sectorKey = sectorMapping[sector.label];
-                if (!sectorKey) {
-                  console.warn(`No mapping found for sector label: ${sector.label}`);
-                  return false;
+            // Include all events if no sectors are checked
+            !filters.accountSectors.some((sector) => sector.checked) ||
+            // Check if any sector matches the event
+            filters.accountSectors.some((sector) => {
+              try {
+                if (sector.checked) {
+                  // Map filter labels to keys in the event data
+                  const sectorMapping = {
+                    "Public Sector": "public",
+                    Commercial: "commercial",
+                  };
+
+                  // Find the corresponding key for the filter label
+                  const sectorKey = sectorMapping[sector.label];
+                  if (!sectorKey) {
+                    console.warn(
+                      `No mapping found for sector label: ${sector.label}`
+                    );
+                    return false;
+                  }
+
+                  // Check if the event matches the mapped key
+                  return event.accountSectors?.[sectorKey] === true;
                 }
-        
-                // Check if the event matches the mapped key
-                return event.accountSectors?.[sectorKey] === true;
+                return false;
+              } catch (err) {
+                console.error(
+                  "Error checking accountSectors filter:",
+                  err,
+                  sector,
+                  event
+                );
+                return false;
               }
-              return false;
-            } catch (err) {
-              console.error(
-                "Error checking accountSectors filter:",
-                err,
-                sector,
-                event
-              );
-              return false;
-            }
-          });
-        
+            });
 
           // Account Segment filter match
           const accountSegmentMatch =
@@ -232,7 +226,7 @@ export default function YearView() {
                 const accountSegment = event.accountSegments?.[segment.label];
                 return (
                   segment.checked &&
-                  accountSegment?.selected  && // Convert selected to a boolean
+                  accountSegment?.selected && // Convert selected to a boolean
                   parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
                 );
               } catch (err) {
@@ -246,13 +240,11 @@ export default function YearView() {
               }
             });
 
-            const regionMatch =
+          const regionMatch =
             !filters.regions.some((region) => region.checked) ||
             filters.regions.some((region) => {
               try {
-                return (
-                  region.checked && event.region?.includes(region.label)
-                );
+                return region.checked && event.region?.includes(region.label);
               } catch (err) {
                 console.error(
                   "Error checking region filter:",
@@ -282,7 +274,6 @@ export default function YearView() {
               }
             });
 
-
           // Product Family filter match
           const productFamilyMatch =
             !filters.productFamily.some((product) => product.checked) ||
@@ -292,7 +283,7 @@ export default function YearView() {
                   event.productAlignment?.[product.label];
                 return (
                   product.checked &&
-                  productAlignment?.selected  && // Convert selected to a boolean
+                  productAlignment?.selected && // Convert selected to a boolean
                   parseFloat(productAlignment?.percentage) > 0 // Convert percentage to a number and ensure it's greater than 0
                 );
               } catch (err) {
@@ -335,95 +326,106 @@ export default function YearView() {
                 .filter((option) => option.checked)
                 .map((option) => option.value)
             : [];
-            const isDraftMatch = 
-  selectedDraftStatuses.length === 0 ||
-  (() => {
-    // Initialize an array to hold applicable statuses
-    const applicableStatuses = [];
+          const isDraftMatch =
+            selectedDraftStatuses.length === 0 ||
+            (() => {
+              // Initialize an array to hold applicable statuses
+              const applicableStatuses = [];
 
-    // Add "Draft" if the event is in draft mode
-    if (event.isDraft) {
-      applicableStatuses.push("Draft");
-    } else {
-      // If not a draft, add "Finalized" as a base status
-      applicableStatuses.push("Finalized");
+              // Add "Draft" if the event is in draft mode
+              if (event.isDraft) {
+                applicableStatuses.push("Draft");
+              } else {
+                // If not a draft, add "Finalized" as a base status
+                applicableStatuses.push("Finalized");
 
-      // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
-      if (
-        !event.isDraft &&
-        event.languagesAndTemplates?.some(template =>
-          ["Gmail", "Salesloft"].includes(template.platform)
-        )
-      ) {
-        applicableStatuses.push("Invite available");
-      }
-    }
+                // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
+                if (
+                  !event.isDraft &&
+                  event.languagesAndTemplates?.some((template) =>
+                    ["Gmail", "Salesloft"].includes(template.platform)
+                  )
+                ) {
+                  applicableStatuses.push("Invite available");
+                }
+              }
 
-    // Check if any selectedDraftStatuses match the applicable statuses
-    return selectedDraftStatuses.some(status => applicableStatuses.includes(status));
-  })();
-  const programNameMatch =
-  filters.programName.every((filter) => !filter.checked) ||
-  filters.programName.some((filter) => {
-    const isChecked = filter.checked;
-    const matches = event.programName?.some((name) =>
-      name.toLowerCase().includes(filter.label.toLowerCase())
-    );
+              // Check if any selectedDraftStatuses match the applicable statuses
+              return selectedDraftStatuses.some((status) =>
+                applicableStatuses.includes(status)
+              );
+            })();
+          const programNameMatch =
+            filters.programName.every((filter) => !filter.checked) ||
+            filters.programName.some((filter) => {
+              const isChecked = filter.checked;
+              const matches = event.programName?.some((name) =>
+                name.toLowerCase().includes(filter.label.toLowerCase())
+              );
 
-    return isChecked && matches;
-  });
-  const activityTypeMatch =
-                !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
-                filters.activityType.some((activity) => {
-                  try {
-                    // Check if the event type matches the checked activity types
-                    return (
-                      activity.checked &&
-                      event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
-                    );
-                  } catch (err) {
-                    console.error("Error checking activityType filter:", err, activity, event);
-                    return false; // Handle errors gracefully
-                  }
-                });
-              
-                const isNewlyCreatedMatch =
-  !filters.newlyCreated?.some((option) => option.checked) ||
-  filters.newlyCreated?.some((option) => {
-    if (option.checked) {
-      const entryCreatedDate = event.entryCreatedDate
-        ? dayjs(event.entryCreatedDate)
-        : null;
+              return isChecked && matches;
+            });
+          const activityTypeMatch =
+            !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
+            filters.activityType.some((activity) => {
+              try {
+                // Check if the event type matches the checked activity types
+                return (
+                  activity.checked &&
+                  event.eventType?.toLowerCase() ===
+                    activity.label.toLowerCase() // Ensure case-insensitive comparison
+                );
+              } catch (err) {
+                console.error(
+                  "Error checking activityType filter:",
+                  err,
+                  activity,
+                  event
+                );
+                return false; // Handle errors gracefully
+              }
+            });
 
-      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-        console.warn("Invalid or missing entryCreatedDate for event:", event);
-        return option.value === false; // Consider missing dates as "old"
-      }
+          const isNewlyCreatedMatch =
+            !filters.newlyCreated?.some((option) => option.checked) ||
+            filters.newlyCreated?.some((option) => {
+              if (option.checked) {
+                const entryCreatedDate = event.entryCreatedDate
+                  ? dayjs(event.entryCreatedDate)
+                  : null;
 
-      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
-      return option.value === isWithinTwoWeeks;
-    }
-    return false;
-  });
-  const organisedByMatch = (() => {
-    // Check if no organiser filter is applied
-    if (!filters.organisedBy || filters.organisedBy.length === 0) {
-      return true; // No organiser filter applied
-    }
-  
-    // Check if the event has no organiser data
-    if (!event.organisedBy || event.organisedBy.length === 0) {
-      return false; // Event does not have an organiser
-    }
-  
-    // Check for match
-    const isMatch = filters.organisedBy.some((organiser) =>
-      event.organisedBy.includes(organiser)
-    );
-  
-  
-    return isMatch; // Return the match result
-  })();
+                if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+                  console.warn(
+                    "Invalid or missing entryCreatedDate for event:",
+                    event
+                  );
+                  return option.value === false; // Consider missing dates as "old"
+                }
+
+                const isWithinTwoWeeks =
+                  dayjs().diff(entryCreatedDate, "day") <= 14;
+                return option.value === isWithinTwoWeeks;
+              }
+              return false;
+            });
+          const organisedByMatch = (() => {
+            // Check if no organiser filter is applied
+            if (!filters.organisedBy || filters.organisedBy.length === 0) {
+              return true; // No organiser filter applied
+            }
+
+            // Check if the event has no organiser data
+            if (!event.organisedBy || event.organisedBy.length === 0) {
+              return false; // Event does not have an organiser
+            }
+
+            // Check for match
+            const isMatch = filters.organisedBy.some((organiser) =>
+              event.organisedBy.includes(organiser)
+            );
+
+            return isMatch; // Return the match result
+          })();
           return (
             subRegionMatch &&
             gepMatch &&
@@ -435,10 +437,10 @@ export default function YearView() {
             isPartneredEventMatch &&
             isDraftMatch &&
             regionMatch &&
-            countryMatch && 
-            programNameMatch                
-             && isNewlyCreatedMatch && organisedByMatch
-
+            countryMatch &&
+            programNameMatch &&
+            isNewlyCreatedMatch &&
+            organisedByMatch
           );
         } catch (filterError) {
           console.error("Error applying filters to event:", filterError, event);
@@ -450,36 +452,48 @@ export default function YearView() {
     return events.filter((_, index) => results[index]);
   }, []);
 
-  // Calculate GEP occurrences per month
   const gepCounts = useMemo(() => {
+    // Initialize counts for each GEP option for all 12 months
     const counts = gepOptions.reduce((acc, gepOption) => {
       acc[gepOption.label] = Array(12).fill(0); // One entry per month for each GEP option
       return acc;
     }, {});
-
+  
+    // Iterate over filtered events
     filteredEvents.forEach((event) => {
       if (event.startDate && event.endDate && event.gep) {
         const startDate = dayjs(event.startDate);
         const endDate = dayjs(event.endDate);
-        const startMonth = startDate.month();
-        const endMonth = endDate.month();
-
-        event.gep.forEach((gep) => {
-          if (counts[gep]) {
-            for (
-              let monthIndex = startMonth;
-              monthIndex <= endMonth;
-              monthIndex++
-            ) {
-              counts[gep][monthIndex]++; // Increment the count for this GEP and month
+  
+        // Ensure valid dates and calculate start and end months
+        if (startDate.isValid() && endDate.isValid()) {
+          const startMonth = Math.max(0, startDate.month()); // Clamp to valid month indices
+          const endMonth = Math.min(11, endDate.month()); // Clamp to valid month indices
+  
+          // If the event spans multiple months, include all months within the range
+          for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            const isEventInMonth =
+              (startDate.year() < year || (startDate.year() === year && startMonth <= monthIndex)) &&
+              (endDate.year() > year || (endDate.year() === year && endMonth >= monthIndex));
+  
+            if (isEventInMonth) {
+              // Increment the count for each GEP in the event
+              event.gep.forEach((gep) => {
+                if (counts[gep]) {
+                  counts[gep][monthIndex]++;
+                }
+              });
             }
           }
-        });
+        }
       }
     });
-
+  
     return counts;
-  }, [filteredEvents]);
+  }, [filteredEvents, year]);
+  
+  
+  
 
   useEffect(() => {
     setShowEventModal(false);
