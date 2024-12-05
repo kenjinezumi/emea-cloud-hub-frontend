@@ -61,8 +61,7 @@ export default function Filters() {
       checked: option.checked, // Initial checked state
     }))
   );
-  
-  
+
   const [localAccountSegmentOptions, setLocalAccountSegmentOptions] = useState(
     accountSegmentOptions
   );
@@ -102,11 +101,11 @@ export default function Filters() {
     const fetchOrganisedBy = async () => {
       try {
         const data = await getOrganisedBy();
-  
+
         // Ensure `data` is an array
         if (Array.isArray(data)) {
           const flattenedData = data.map((item) => item.organisedBy[0]); // Flatten organisedBy arrays
-          
+
           setOrganisedByOptions(flattenedData);
         } else {
         }
@@ -114,16 +113,13 @@ export default function Filters() {
         console.error("Failed to fetch OrganisedBy options:", error);
       }
     };
-  
+
     fetchOrganisedBy();
   }, []);
-  
 
   const handleOrganiserChange = (event, newValue) => {
     setSelectedOrganiser(newValue.length ? newValue : null); // Set to null if no value is selected
-    
   };
-  
 
   //Accordions
   const [isSubRegionExpanded, setIsSubRegionExpanded] = useState(false);
@@ -149,7 +145,7 @@ export default function Filters() {
   const [localActivityTypeOptions, setLocalActivityTypeOptions] = useState(
     eventTypeOptions.map((option) => ({
       label: option.label,
-      checked:false,
+      checked: false,
     }))
   );
 
@@ -254,22 +250,25 @@ export default function Filters() {
     );
   };
 
-  const handleFilterChange = (setFilterState, value, isAccountSector = false) => {
+  const handleFilterChange = (
+    setFilterState,
+    value,
+    isAccountSector = false
+  ) => {
     setFilterState((prevFilters) =>
       prevFilters.map((filter) =>
         isAccountSector
           ? filter.value === value
             ? { ...filter, checked: !filter.checked }
             : filter
-          : filter.label === value 
+          : filter.label === value
           ? { ...filter, checked: !filter.checked }
           : filter
       )
     );
-    
+
     forceRefresh();
   };
-  
 
   const forceRefresh = () => {
     setRefresh(!refresh);
@@ -359,35 +358,32 @@ export default function Filters() {
             )}
             sx={{ width: "100%" }}
           />
-          {selectedOptions && selectedOptions.length > 0 && ( // Render chips only when there are selected options
-            <Box sx={{ display: "flex", flexWrap: "wrap", mt: 1, gap: 1 }}>
-              {selectedOptions.map((organiser, index) => (
-                <Chip
-                  key={index}
-                  label={organiser}
-                  onDelete={() =>
-                    onOptionsChange(
-                      selectedOptions.filter((item) => item !== organiser)
-                    )
-                  }
-                  sx={{
-                    backgroundColor: "#e0f7fa",
-                    color: "#00796b",
-                    fontSize: "12px",
-                    height: "24px",
-                  }}
-                />
-              ))}
-            </Box>
-          )}
+          {selectedOptions &&
+            selectedOptions.length > 0 && ( // Render chips only when there are selected options
+              <Box sx={{ display: "flex", flexWrap: "wrap", mt: 1, gap: 1 }}>
+                {selectedOptions.map((organiser, index) => (
+                  <Chip
+                    key={index}
+                    label={organiser}
+                    onDelete={() =>
+                      onOptionsChange(
+                        selectedOptions.filter((item) => item !== organiser)
+                      )
+                    }
+                    sx={{
+                      backgroundColor: "#e0f7fa",
+                      color: "#00796b",
+                      fontSize: "12px",
+                      height: "24px",
+                    }}
+                  />
+                ))}
+              </Box>
+            )}
         </div>
       )}
     </div>
   );
-  
-  
-
-  
 
   const renderFilterSection = (
     title,
@@ -414,7 +410,11 @@ export default function Filters() {
               type="checkbox"
               checked={checked}
               onChange={() =>
-                handleFilterChange(setFilterState, isAccountSector ? value : label, isAccountSector)
+                handleFilterChange(
+                  setFilterState,
+                  isAccountSector ? value : label,
+                  isAccountSector
+                )
               }
               className="form-checkbox h-5 w-5 rounded focus:ring-0 cursor-pointer"
             />
@@ -425,7 +425,6 @@ export default function Filters() {
         ))}
     </div>
   );
-  
 
   const handleDeleteFilter = async (filterName) => {
     try {
@@ -505,19 +504,54 @@ export default function Filters() {
         ldap,
         filterName: customFilterName.trim(),
         config: {
-          regions: localRegionOptions.map(({ label, checked }) => ({ label, checked })),
-          subRegions: localSubRegionFilters.map(({ label, checked }) => ({ label, checked })),
-          countries: localCountryOptions.map(({ label, checked }) => ({ label, checked })),
-          gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
-          programName: localProgramNameOptions.map(({ label, checked }) => ({ label, checked })),
-          accountSectors: localAccountSectorOptions.map(({ value, checked }) => ({ value, checked })),
-          accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({ label, checked })),
-          buyerSegmentRollup: localBuyerSegmentRollupOptions.map(({ label, checked }) => ({ label, checked })),
-          productFamily: localProductFamilyOptions.map(({ label, checked }) => ({ label, checked })),
-          industry: localIndustryOptions.map(({ label, checked }) => ({ label, checked })),
-          partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({ label, checked })),
-          draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({ label, checked })),
-          activityType: localActivityTypeOptions.map(({ label, checked }) => ({ label, checked })),
+          regions: localRegionOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          subRegions: localSubRegionFilters.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          countries: localCountryOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          gep: localGepOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          programName: localProgramNameOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          accountSectors: localAccountSectorOptions.map(
+            ({ value, checked }) => ({ value, checked })
+          ),
+          accountSegments: localAccountSegmentOptions.map(
+            ({ label, checked }) => ({ label, checked })
+          ),
+          buyerSegmentRollup: localBuyerSegmentRollupOptions.map(
+            ({ label, checked }) => ({ label, checked })
+          ),
+          productFamily: localProductFamilyOptions.map(
+            ({ label, checked }) => ({ label, checked })
+          ),
+          industry: localIndustryOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          activityType: localActivityTypeOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
           organisedBy: selectedOrganiser || [],
         },
       };
@@ -536,7 +570,6 @@ export default function Filters() {
   };
 
   const handleChipClick = (config) => {
-
     applyFilterConfig(config);
   };
 
@@ -935,13 +968,14 @@ export default function Filters() {
         setIsCountryExpanded
       )}
 
-{renderFilterSection(
-  "Account Sector",
-  localAccountSectorOptions,
-  (value) => handleFilterChange(setLocalAccountSectorOptions, value, true), // Pass the flag
-  isAccountSectorExpanded,
-  setIsAccountSectorExpanded
-)}
+      {renderFilterSection(
+        "Account Sector",
+        localAccountSectorOptions,
+        (value) =>
+          handleFilterChange(setLocalAccountSectorOptions, value, true), // Pass the flag
+        isAccountSectorExpanded,
+        setIsAccountSectorExpanded
+      )}
 
       {renderFilterSection(
         "Account Segment",
@@ -1003,7 +1037,6 @@ export default function Filters() {
         selectedOrganiser,
         (newValue) => {
           setSelectedOrganiser(newValue); // Update the selected organiser
-          
         },
         isOrganisedByExpanded,
         setIsOrganisedByExpanded

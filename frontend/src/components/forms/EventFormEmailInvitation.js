@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext, useState, useRef } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import {
@@ -26,6 +26,7 @@ import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 
 const platformOptions = ["Gmail", "Salesloft"];
+
 const personalizationOptions = [
   "{{first_name}}",
   "{{last_name}}",
@@ -60,6 +61,7 @@ const EventFormEmailInvitation = () => {
   const [isFormValid, setIsFormValid] = useState(true);
   const saveAndNavigate = useFormNavigation();
   const [editorContent, setEditorContent] = useState("");
+  const quillRefs = useRef([]);
 
   useEffect(() => {
     const updatedFormData = { ...formData, languagesAndTemplates };
@@ -105,16 +107,32 @@ const EventFormEmailInvitation = () => {
   };
 
   const handlePersonalizationInsert = (token, index) => {
-    setLanguagesAndTemplates((prev) =>
-      prev.map((item, i) =>
-        i === index
-          ? { ...item, template: `${item.template || ""} ${token}` }
-          : item
-      )
-    );
+    // Access the correct editor from refs
+    const quillEditor = quillRefs.current[index]?.getEditor();
+
+    if (quillEditor) {
+      // Focus the editor to ensure it's active
+      quillEditor.focus();
+
+      // Get the current cursor position
+      const selection = quillEditor.getSelection();
+
+      if (selection && selection.index != null) {
+        // Insert token at the cursor position
+        const cursorPosition = selection.index;
+        quillEditor.insertText(cursorPosition, token);
+
+        // Move the cursor to the end of the inserted token
+        quillEditor.setSelection(cursorPosition + token.length);
+      } else {
+        // If no selection, append token to the end of the current content
+        const currentContent = quillEditor.getText();
+        quillEditor.setText(`${currentContent.trim()} ${token}`);
+      }
+    } else {
+      console.warn("Quill editor not available for index:", index);
+    }
   };
-  
-  
 
   const handleSubjectLineChange = (value, index) => {
     setLanguagesAndTemplates((prev) =>
@@ -139,15 +157,6 @@ const EventFormEmailInvitation = () => {
         item.template.trim() !== "" &&
         item.subjectLine.trim() !== ""
     );
-
-    // setIsFormValid(formIsValid);
-
-    // if (!formIsValid) {
-    //   setSnackbarMessage("Please fill in all required fields.");
-    //   setSnackbarOpen(true);
-    //   return;
-    // }
-
     const updatedFormData = {
       ...formData,
       languagesAndTemplates,
@@ -164,7 +173,6 @@ const EventFormEmailInvitation = () => {
         setTimeout(() => {
           saveAndNavigate(updatedFormData, "/audience");
         }, 1500);
-        
       } else {
         setSnackbarMessage("Failed to save draft.");
         setSnackbarOpen(true);
@@ -284,33 +292,35 @@ const EventFormEmailInvitation = () => {
                         </FormControl>
                       </Grid>
                       <Grid item xs={12}>
-  <FormControl fullWidth>
-    <Typography variant="subtitle1">Email Language</Typography>
-    <Autocomplete
-      value={item.language || ""}
-      onChange={(event, newValue) => {
-        handleLanguageChange(newValue, index);
-      }}
-      freeSolo
-      options={languageOptions.filter(
-        (language) =>
-          !languagesAndTemplates.some(
-            (templateItem, idx) =>
-              templateItem.language === language &&
-              templateItem.platform === item.platform &&
-              idx !== index // Ensure the current item is not filtered out
-          )
-      )}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label="Select Language"
-          variant="outlined"
-        />
-      )}
-    />
-  </FormControl>
-</Grid>
+                        <FormControl fullWidth>
+                          <Typography variant="subtitle1">
+                            Email Language
+                          </Typography>
+                          <Autocomplete
+                            value={item.language || ""}
+                            onChange={(event, newValue) => {
+                              handleLanguageChange(newValue, index);
+                            }}
+                            freeSolo
+                            options={languageOptions.filter(
+                              (language) =>
+                                !languagesAndTemplates.some(
+                                  (templateItem, idx) =>
+                                    templateItem.language === language &&
+                                    templateItem.platform === item.platform &&
+                                    idx !== index // Ensure the current item is not filtered out
+                                )
+                            )}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Select Language"
+                                variant="outlined"
+                              />
+                            )}
+                          />
+                        </FormControl>
+                      </Grid>
 
                       <Grid item xs={12}>
                         <Typography variant="subtitle1">
@@ -333,6 +343,7 @@ const EventFormEmailInvitation = () => {
                         {item.platform === "Salesloft" ? (
                           <>
                             <ReactQuill
+                              ref={(el) => (quillRefs.current[index] = el)} // Assign unique ref for each editor
                               value={item.template || ""}
                               onChange={(content) =>
                                 handleEditorChange(content, index)
