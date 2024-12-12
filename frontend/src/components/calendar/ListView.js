@@ -147,10 +147,14 @@ export default function ListView() {
 useEffect(() => {
   if (searchText) {
     const lowercasedSearchText = searchText.toLowerCase();
-    const filtered = events.filter(event =>
-      event.title.toLowerCase().includes(lowercasedSearchText) ||
-      event.description.toLowerCase().includes(lowercasedSearchText)
-    );
+    const filtered = events.filter(event => {
+      const title = event.title || ''; // Default to an empty string if null/undefined
+      const description = event.description || ''; // Default to an empty string if null/undefined
+      return (
+        title.toLowerCase().includes(lowercasedSearchText) ||
+        description.toLowerCase().includes(lowercasedSearchText)
+      );
+    });
     setFilteredEvents(
       filtered.sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
     );
@@ -160,6 +164,7 @@ useEffect(() => {
     );
   }
 }, [searchText, events]);
+
 
   // Memoized function to handle event click
   const handleEventClick = useCallback((eventData) => {
