@@ -1026,34 +1026,32 @@ WHERE eventId = @eventId;
     }
 
     try {
-        // Generate `cadence_id` if not provided
         const generatedCadenceId = data.cadence_id || uuidv4();
-
-        // Use subjectLine for title and description if not provided
         const title = data.subjectLine || "Default Title";
         const description = data.subjectLine || "Default Description";
 
-        // Construct the steps array dynamically
-        const steps = [
-            {
-                type: "EMAIL",
-                subject: data.subjectLine || "No Subject",
-                body: data.template || "No Body",
-            },
-        ];
-
-        // Construct the payload
+        // Populate the required fields
         const payload = {
             cadence_id: generatedCadenceId,
-            name: title, // Use subjectLine as the title
-            description, // Use subjectLine as the description
+            name: title, // Title of the cadence
+            description, // Description of the cadence
             settings: data.settings || {}, // Optional settings
-            steps, // Use the dynamically created steps array
+            steps: [
+                {
+                    type: "EMAIL",
+                    subject: data.subjectLine || "No Subject",
+                    body: data.template || "No Body",
+                },
+            ],
+            target_daily_people: data.target_daily_people || 50, // Example default: 50
+            remove_replied: data.remove_replied ?? true, // Default to true
+            remove_bounced: data.remove_bounced ?? true, // Default to true
+            external_identifier: data.external_identifier || generatedCadenceId, // Use generated ID if not provided
+            cadence_function: data.cadence_function || "Default Function", // Example default value
         };
 
         console.log("Payload being sent to SalesLoft API:", JSON.stringify(payload, null, 2));
 
-        // Make the API request
         const response = await fetch("https://api.salesloft.com/v2/cadence_imports.json", {
             method: "POST",
             headers: {
@@ -1065,9 +1063,7 @@ WHERE eventId = @eventId;
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(
-                `SalesLoft API error: Status ${response.status}, Message: ${errorText}`
-            );
+            throw new Error(`SalesLoft API error: Status ${response.status}, Message: ${errorText}`);
         }
 
         const responseData = await response.json();
@@ -1083,6 +1079,7 @@ WHERE eventId = @eventId;
         };
     }
 };
+
 
 
 
