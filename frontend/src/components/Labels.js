@@ -44,58 +44,79 @@ import { getOrganisedBy } from "../api/getOrganisedBy";
 export default function Filters() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [localProgramNameOptions, setLocalProgramNameOptions] = useState(
-    programNameOptions.map((option) => ({ label: option, checked: false }))
-  );
+  
+  const [refresh, setRefresh] = useState(false);
 
-  const [localSubRegionFilters, setLocalSubRegionFilters] = useState(
-    subRegionOptions.map((option) => ({ label: option, checked: false }))
-  );
-  const [localGepOptions, setLocalGepOptions] = useState(
-    gepOptions.map((option) => ({ label: option, checked: false }))
-  );
-  const [localAccountSectorOptions, setLocalAccountSectorOptions] = useState(
+  const savedFilters = JSON.parse(localStorage.getItem("persistedFilters")) || {};
+
+// Initialize state for each filter
+const [localRegionOptions, setLocalRegionOptions] = useState(
+  savedFilters.regions || regionOptions.map((option) => ({ label: option, checked: false }))
+);
+
+const [localSubRegionFilters, setLocalSubRegionFilters] = useState(
+  savedFilters.subRegions || subRegionOptions.map((option) => ({ label: option, checked: false }))
+);
+
+const [localCountryOptions, setLocalCountryOptions] = useState(
+  savedFilters.countries ||
+    countryOptions.map((option) => ({ label: option, checked: false })).sort((a, b) => a.label.localeCompare(b.label))
+);
+
+const [localGepOptions, setLocalGepOptions] = useState(
+  savedFilters.gep || gepOptions.map((option) => ({ label: option, checked: false }))
+);
+
+const [localProgramNameOptions, setLocalProgramNameOptions] = useState(
+  savedFilters.programName || programNameOptions.map((option) => ({ label: option, checked: false }))
+);
+
+const [localAccountSectorOptions, setLocalAccountSectorOptions] = useState(
+  savedFilters.accountSectors ||
     accountSectorOptions.map((option) => ({
       label: option.label, // Display this in the UI
       value: option.value, // Use this for logic
-      checked: option.checked, // Initial checked state
+      checked: option.checked || false, // Initial checked state
     }))
-  );
+);
 
-  const [localAccountSegmentOptions, setLocalAccountSegmentOptions] = useState(
-    accountSegmentOptions
-  );
-  const [localBuyerSegmentRollupOptions, setLocalBuyerSegmentRollupOptions] =
-    useState(buyerSegmentRollupOptions);
-  const [localProductFamilyOptions, setLocalProductFamilyOptions] =
-    useState(productFamilyOptions);
-  const [localIndustryOptions, setLocalIndustryOptions] = useState(
-    industryOptions.map((option) => ({ label: option, checked: false }))
-  );
-  const [localPartnerEventOptions, setLocalPartnerEventOptions] =
-    useState(partnerEventOptions);
-  const [localDraftStatusOptions, setLocalDraftStatusOptions] =
-    useState(draftStatusOptions);
-  const [localRegionOptions, setLocalRegionOptions] = useState(
-    regionOptions.map((option) => ({ label: option, checked: false }))
-  );
+const [localAccountSegmentOptions, setLocalAccountSegmentOptions] = useState(
+  savedFilters.accountSegments || accountSegmentOptions
+);
 
-  const [localCountryOptions, setLocalCountryOptions] = useState(
-    countryOptions
-      .map((option) => ({ label: option, checked: false }))
-      .sort((a, b) => a.label.localeCompare(b.label)) // Sort alphabetically by label
-  );
-  const [localNewlyCreatedOptions, setLocalNewlyCreatedOptions] = useState(
-    newlyCreatedOptions.map((option) => ({ ...option }))
-  );
+const [localBuyerSegmentRollupOptions, setLocalBuyerSegmentRollupOptions] = useState(
+  savedFilters.buyerSegmentRollup || buyerSegmentRollupOptions
+);
 
-  const [refresh, setRefresh] = useState(false);
+const [localProductFamilyOptions, setLocalProductFamilyOptions] = useState(
+  savedFilters.productFamily || productFamilyOptions
+);
 
-  //Organised by
+const [localIndustryOptions, setLocalIndustryOptions] = useState(
+  savedFilters.industry || industryOptions.map((option) => ({ label: option, checked: false }))
+);
 
-  const [organisedByOptions, setOrganisedByOptions] = useState(); // Default to an empty array
-  const [selectedOrganiser, setSelectedOrganiser] = useState(); // Default to an empty array for multi-select
-  const [isOrganisedByExpanded, setIsOrganisedByExpanded] = useState(false);
+const [localPartnerEventOptions, setLocalPartnerEventOptions] = useState(
+  savedFilters.partnerEvent || partnerEventOptions
+);
+
+const [localDraftStatusOptions, setLocalDraftStatusOptions] = useState(
+  savedFilters.draftStatus || draftStatusOptions
+);
+
+const [localNewlyCreatedOptions, setLocalNewlyCreatedOptions] = useState(
+  savedFilters.newlyCreated || newlyCreatedOptions.map((option) => ({ ...option }))
+);
+
+const [localActivityTypeOptions, setLocalActivityTypeOptions] = useState(
+  savedFilters.activityType || eventTypeOptions.map((option) => ({ label: option.label, checked: false }))
+);
+
+// State for "Organised By"
+const [organisedByOptions, setOrganisedByOptions] = useState(); // Default to an empty array
+const [selectedOrganiser, setSelectedOrganiser] = useState(savedFilters.organisedBy || null); // Default to persisted value
+
+
 
   useEffect(() => {
     const fetchOrganisedBy = async () => {
@@ -143,19 +164,73 @@ export default function Filters() {
   const [isDraftStatusExpanded, setIsDraftStatusExpanded] = useState(false);
   const [isProgramNameExpanded, setIsProgramNameExpanded] = useState(false);
   const [isNewlyCreatedExpanded, setIsNewlyCreatedExpanded] = useState(false);
+  const [isOrganisedByExpanded, setIsOrganisedByExpanded] = useState(false);
 
-  const [localActivityTypeOptions, setLocalActivityTypeOptions] = useState(
-    eventTypeOptions.map((option) => ({
-      label: option.label,
-      checked: false,
-    }))
-  );
 
   //Custom filters state
   const [customFilterName, setCustomFilterName] = useState("");
-  const [savedFilters, setSavedFilters] = useState([]);
+  const [setSavedFilters] = useState([]);
 
   const { updateFilters } = useContext(GlobalContext);
+  useEffect(() => {
+    const filtersToPersist = {
+      regions: localRegionOptions,
+      subRegions: localSubRegionFilters,
+      countries: localCountryOptions,
+      gep: localGepOptions,
+      programName: localProgramNameOptions,
+      activityType: localActivityTypeOptions,
+      accountSectors: localAccountSectorOptions,
+      accountSegments: localAccountSegmentOptions,
+      buyerSegmentRollup: localBuyerSegmentRollupOptions,
+      productFamily: localProductFamilyOptions,
+      industry: localIndustryOptions,
+      partnerEvent: localPartnerEventOptions,
+      draftStatus: localDraftStatusOptions,
+      newlyCreated: localNewlyCreatedOptions,
+      organisedBy: selectedOrganiser,
+    };
+    console.log("Saving filters to localStorage:", filtersToPersist); // Debugging log
+    localStorage.setItem("persistedFilters", JSON.stringify(filtersToPersist));
+  }, [
+    localRegionOptions,
+    localSubRegionFilters,
+    localCountryOptions,
+    localGepOptions,
+    localProgramNameOptions,
+    localActivityTypeOptions,
+    localAccountSectorOptions,
+    localAccountSegmentOptions,
+    localBuyerSegmentRollupOptions,
+    localProductFamilyOptions,
+    localIndustryOptions,
+    localPartnerEventOptions,
+    localDraftStatusOptions,
+    localNewlyCreatedOptions,
+    selectedOrganiser,
+  ]);
+  useEffect(() => {
+    const savedFilters = JSON.parse(localStorage.getItem("persistedFilters"));
+    console.log("Loaded filters from localStorage:", savedFilters); // Debugging log
+
+    if (savedFilters) {
+      setLocalRegionOptions(savedFilters.regions || localRegionOptions);
+      setLocalSubRegionFilters(savedFilters.subRegions || localSubRegionFilters);
+      setLocalCountryOptions(savedFilters.countries || localCountryOptions);
+      setLocalGepOptions(savedFilters.gep || localGepOptions);
+      setLocalProgramNameOptions(savedFilters.programName || localProgramNameOptions);
+      setLocalActivityTypeOptions(savedFilters.activityType || localActivityTypeOptions);
+      setLocalAccountSectorOptions(savedFilters.accountSectors || localAccountSectorOptions);
+      setLocalAccountSegmentOptions(savedFilters.accountSegments || localAccountSegmentOptions);
+      setLocalBuyerSegmentRollupOptions(savedFilters.buyerSegmentRollup || localBuyerSegmentRollupOptions);
+      setLocalProductFamilyOptions(savedFilters.productFamily || localProductFamilyOptions);
+      setLocalIndustryOptions(savedFilters.industry || localIndustryOptions);
+      setLocalPartnerEventOptions(savedFilters.partnerEvent || localPartnerEventOptions);
+      setLocalDraftStatusOptions(savedFilters.draftStatus || localDraftStatusOptions);
+      setLocalNewlyCreatedOptions(savedFilters.newlyCreated || localNewlyCreatedOptions);
+      setSelectedOrganiser(savedFilters.organisedBy || selectedOrganiser);
+    }
+  }, []);  
 
   const clearAllFilters = () => {
     setLocalRegionOptions(
