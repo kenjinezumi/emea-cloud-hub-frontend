@@ -355,9 +355,9 @@ export default function DayView() {
   !filters.newlyCreated?.some((option) => option.checked) ||
   filters.newlyCreated?.some((option) => {
     if (option.checked) {
-      const entryCreatedDate = event.entryCreatedDate
-        ? dayjs(event.entryCreatedDate)
-        : null;
+      const entryCreatedDate = event.entryCreatedDate?.value
+        ? dayjs(event.entryCreatedDate.value)
+        : null; // Access `value` property
 
       if (!entryCreatedDate || !entryCreatedDate.isValid()) {
         console.warn("Invalid or missing entryCreatedDate for event:", event);
@@ -369,6 +369,9 @@ export default function DayView() {
     }
     return false;
   });
+
+
+
   const organisedByMatch = (() => {
     // Check if no organiser filter is applied
     if (!filters.organisedBy || filters.organisedBy.length === 0) {

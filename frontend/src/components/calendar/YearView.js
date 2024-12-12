@@ -386,28 +386,25 @@ export default function YearView() {
               }
             });
 
-          const isNewlyCreatedMatch =
+            const isNewlyCreatedMatch =
             !filters.newlyCreated?.some((option) => option.checked) ||
             filters.newlyCreated?.some((option) => {
               if (option.checked) {
-                const entryCreatedDate = event.entryCreatedDate
-                  ? dayjs(event.entryCreatedDate)
-                  : null;
-
+                const entryCreatedDate = event.entryCreatedDate?.value
+                  ? dayjs(event.entryCreatedDate.value)
+                  : null; // Access `value` property
+          
                 if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-                  console.warn(
-                    "Invalid or missing entryCreatedDate for event:",
-                    event
-                  );
+                  console.warn("Invalid or missing entryCreatedDate for event:", event);
                   return option.value === false; // Consider missing dates as "old"
                 }
-
-                const isWithinTwoWeeks =
-                  dayjs().diff(entryCreatedDate, "day") <= 14;
+          
+                const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
                 return option.value === isWithinTwoWeeks;
               }
               return false;
             });
+          
           const organisedByMatch = (() => {
             // Check if no organiser filter is applied
             if (!filters.organisedBy || filters.organisedBy.length === 0) {

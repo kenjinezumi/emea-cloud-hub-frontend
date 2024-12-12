@@ -526,17 +526,27 @@ const [selectedOrganiser, setSelectedOrganiser] = useState(savedFilters.organise
     const selectedOptions = localNewlyCreatedOptions
       .filter((option) => option.checked)
       .map((option) => option.value);
-
+  
     if (selectedOptions.length === 0) return events; // No filter applied
-
+  
     return events.filter((event) => {
-      const entryCreatedDate = new Date(event.entryCreatedDate); // Adjust based on your date format
+      const entryCreatedDate = event.entryCreatedDate?.value
+        ? new Date(event.entryCreatedDate.value) // Access the nested `value` property
+        : null;
+  
+      if (!entryCreatedDate) {
+        console.warn("Missing or invalid entryCreatedDate for event:", event);
+        return selectedOptions.includes(false); // Treat missing dates as "not newly created"
+      }
+  
       const twoWeeksAgo = new Date();
       twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+  
       const isNewlyCreated = entryCreatedDate >= twoWeeksAgo;
       return selectedOptions.includes(isNewlyCreated);
     });
   };
+  
 
   const getUserLdap = () => {
     const userData = JSON.parse(
