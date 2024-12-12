@@ -1018,67 +1018,94 @@ WHERE eventId = @eventId;
     }
   }
 
-  const createSalesLoftCadence = async (data) => {
-    const SALESLOFT_API_TOKEN = process.env.SALESLOFT_API_TOKEN;
+  // based on -> https://developers.salesloft.com/docs/platform/cadence-imports/more-examples/#email-step-request
 
-    if (!SALESLOFT_API_TOKEN) {
-        throw new Error("SalesLoft API token is missing. Ensure it's set in the environment variables.");
-    }
+const createSalesLoftCadence = async (data) => {
+  const SALESLOFT_API_TOKEN = process.env.SALESLOFT_API_TOKEN;
 
-    try {
-        const generatedCadenceId = data.cadence_id || uuidv4();
-        const title = data.subjectLine || "Default Title";
-        const description = data.subjectLine || "Default Description";
+  if (!SALESLOFT_API_TOKEN) {
+    throw new Error("SalesLoft API token is missing. Ensure it's set in the environment variables.");
+  }
 
-        // Populate the required fields
-        const payload = {
-            cadence_id: generatedCadenceId,
-            name: title, // Title of the cadence
-            description, // Description of the cadence
-            settings: data.settings || {}, // Optional settings
-            steps: [
-                {
-                    type: "EMAIL",
-                    subject: data.subjectLine || "No Subject",
-                    body: data.template || "No Body",
+  const payload = {
+    settings: {
+      name: data.subjectLine || "Email Cadence Example",
+      target_daily_people: 10,
+      remove_replied: true,
+      remove_bounced: true,
+      cadence_function: "outbound",
+      external_identifier: null,
+    },
+    sharing_settings: {
+      team_cadence: false,
+    },
+    cadence_content: {
+      step_groups: [
+        {
+          automated_settings: {
+            time_of_day: "09:00",
+            timezone_mode: "person",
+            send_type: "at_time",
+            allow_send_on_weekends: true,
+          },
+          automated: true,
+          day: 1,
+          due_immediately: false,
+          reference_id: "123",
+          steps: [
+            {
+              enabled: true,
+              name: "First Email",
+              type: "Email",
+              type_settings: {
+                previous_email_step_group_reference_id: null,
+                email_template: {
+                  attachments: [],
+                  body: data.template || "<div>Email Body</div>",
+                  click_tracking: true,
+                  open_tracking: true,
+                  subject: data.subjectLine || "Hi there!",
+                  title: data.subjectLine || "Title",
                 },
-            ],
-            target_daily_people: data.target_daily_people || 50, // Example default: 50
-            remove_replied: data.remove_replied ?? true, // Default to true
-            remove_bounced: data.remove_bounced ?? true, // Default to true
-            external_identifier: data.external_identifier || generatedCadenceId, // Use generated ID if not provided
-            cadence_function: data.cadence_function || "Default Function", // Example default value
-        };
-
-        console.log("Payload being sent to SalesLoft API:", JSON.stringify(payload, null, 2));
-
-        const response = await fetch("https://api.salesloft.com/v2/cadence_imports.json", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${SALESLOFT_API_TOKEN}`,
-                "Content-Type": "application/json",
+              },
             },
-            body: JSON.stringify(payload),
-        });
+          ],
+        },
+      ],
+    },
+  };
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`SalesLoft API error: Status ${response.status}, Message: ${errorText}`);
-        }
+  try {
+    const response = await fetch("https://api.salesloft.com/v2/cadence_imports.json", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${SALESLOFT_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-        const responseData = await response.json();
-        return {
-            success: true,
-            data: responseData,
-        };
-    } catch (error) {
-        console.error("Error creating SalesLoft cadence:", error);
-        return {
-            success: false,
-            error: error.message,
-        };
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `SalesLoft API error: Status ${response.status}, Message: ${errorText}`
+      );
     }
+
+    const responseData = await response.json();
+    return {
+      success: true,
+      data: responseData,
+    };
+  } catch (error) {
+    console.error("Error creating SalesLoft cadence:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
 };
+
 
 
 
