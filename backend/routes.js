@@ -1029,17 +1029,26 @@ WHERE eventId = @eventId;
         // Generate `cadence_id` if not provided
         const generatedCadenceId = data.cadence_id || uuidv4();
 
+        // Use subjectLine for title and description if not provided
+        const title = data.subjectLine || "Default Title";
+        const description = data.subjectLine || "Default Description";
+
+        // Construct the steps array dynamically
+        const steps = [
+            {
+                type: "EMAIL",
+                subject: data.subjectLine || "No Subject",
+                body: data.template || "No Body",
+            },
+        ];
+
         // Construct the payload
         const payload = {
-            cadence_id: generatedCadenceId, // Always include a UUID
-            name: data.title, // Cadence title
-            description: data.description || "No description provided",
+            cadence_id: generatedCadenceId,
+            name: title, // Use subjectLine as the title
+            description, // Use subjectLine as the description
             settings: data.settings || {}, // Optional settings
-            steps: data.steps.map((step) => ({
-                type: step.type,
-                subject: step.subject,
-                body: step.body,
-            })),
+            steps, // Use the dynamically created steps array
         };
 
         console.log("Payload being sent to SalesLoft API:", JSON.stringify(payload, null, 2));
@@ -1078,12 +1087,17 @@ WHERE eventId = @eventId;
 
 
 
+
   function cleanEventData(eventData) {
     const cleanedData = {};
 
     for (const key in eventData) {
       if (eventData.hasOwnProperty(key)) {
         const value = eventData[key];
+
+        if (key === "entryCreatedDate") {
+          continue;
+      }
 
         // Check if value is non-null, non-undefined, non-empty string, non-empty array, and non-empty struct
         if (value !== null && value !== undefined) {
