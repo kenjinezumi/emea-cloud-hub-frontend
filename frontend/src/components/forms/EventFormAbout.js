@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState, useCallback } from "react";
+import React, { useEffect, useContext, useState, useCallback, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   Button,
@@ -53,7 +53,7 @@ const EventForm = () => {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [colorMap, setColorMap] = useState({});
   const [organisedByOptions, setOrganisedByOptions] = useState([]);
-  const [newOrganiser, setNewOrganiser] = useState(""); // Input field for adding organisers
+  const [newOrganiser, setNewOrganiser] = useState(""); 
 
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -134,12 +134,18 @@ const EventForm = () => {
   const [isTitleError, setIsTitleError] = useState(false);
   const [isDescriptionError, setIsDescriptionError] = useState(false);
   const [isStartDateError, setIsStartDateError] = useState(false);
+
   const [isEndDateError, setIsEndDateError] = useState(false);
   const [isOrganisedByError, setIsOrganisedByError] = useState(false);
   const [isEventTypeError, setIsEventTypeError] = useState(false);
   const saveAndNavigate = useFormNavigation();
   const [hasStartDateChanged, setHasStartDateChanged] = useState(false);
   const [hasEndDateChanged, setHasEndDateChanged] = useState(false);
+  const isEndDateValid = useMemo(() => !!endDate, [endDate]);
+  const isEndDateLater = useMemo(
+  () => isEndDateValid && new Date(endDate) > new Date(startDate),
+  [endDate, startDate, isEndDateValid]
+);
   const handleStartDateChange = (newDate) => {
     setStartDate(newDate);
     setHasStartDateChanged(true);
@@ -364,9 +370,8 @@ const EventForm = () => {
     const isTitleValid = title?.trim() !== "";
     const isDescriptionValid = description?.trim() !== "";
     const isStartDateValid = !!startDate;
-    const isEndDateValid = !!endDate && new Date(endDate) > new Date(startDate);
-  
 
+  
     const isOrganisedByValid = organisedBy.length > 0;
     const isEventTypeValid = eventType?.trim() !== "";
     const isEventIdValid = !!eventId;
@@ -374,8 +379,8 @@ const EventForm = () => {
     setIsTitleError(!isTitleValid);
     setIsDescriptionError(!isDescriptionValid);
     setIsStartDateError(!isStartDateValid);
-    setIsEndDateError(!isEndDateValid);
-    setIsOrganisedByError(!isOrganisedByValid);
+    setIsEndDateError(!(isEndDateValid && isEndDateLater));
+     setIsOrganisedByError(!isOrganisedByValid);
     setIsEventTypeError(!isEventTypeValid);
 
     const formIsValid =
@@ -383,6 +388,7 @@ const EventForm = () => {
       isDescriptionValid &&
       isStartDateValid &&
       isEndDateValid &&
+      isEndDateLater && 
       isOrganisedByValid &&
       isEventTypeValid &&
       isEventIdValid;
@@ -390,10 +396,19 @@ const EventForm = () => {
     setIsFormValid(formIsValid);
 
     if (!formIsValid) {
-      setSnackbarMessage("Please fill in all required fields.");
+      if (!isStartDateValid) {
+        setSnackbarMessage("Start date cannot be empty.");
+      } else if (!isEndDateValid) {
+        setSnackbarMessage("End date cannot be empty.");
+      } else if (!isEndDateLater) {
+        setSnackbarMessage("End date must be later than the start date.");
+      } else {
+        setSnackbarMessage("Please fill in all required fields.");
+      }
       setSnackbarOpen(true);
       return;
     }
+
     const draftData = {
       eventId,
       title,
@@ -718,10 +733,8 @@ const EventForm = () => {
                         <TextField
                           {...params}
                           fullWidth
-                          error={isStartDateError} // Highlight in red if start date is missing
-                          helperText={
-                            isStartDateError ? "Start date is required" : ""
-                          } // Show error message
+                          error={isStartDateError} 
+                          helperText={isStartDateError ? "Start date cannot be empty." : ""} 
                         />
                       )}
                     />
@@ -742,9 +755,20 @@ const EventForm = () => {
                           {...params}
                           fullWidth
                           error={isEndDateError} // Highlight in red if end date is missing
-                          helperText={
-                            isEndDateError ? "End date is required" : ""
-                          } // Show error message
+                          helperText={!isEndDateValid
+                              ? "End date cannot be empty."
+                              : !isEndDateLater
+                              ? "End date must be later than start date."
+                              : ""
+                          }
+                          FormHelperTextProps={{
+                            sx: {
+                              color: 'red', // Ensure the helper text is red
+                              margin: 0, // Remove any additional margin
+                              position: 'absolute', // Prevent shifting the input
+                              bottom: '-20px', // Adjust the position of the helper text
+                            },
+                          }}
                         />
                       )}
                     />
