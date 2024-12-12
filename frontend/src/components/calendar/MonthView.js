@@ -6,6 +6,8 @@ import React, {
   useMemo,
 } from "react";
 import GlobalContext from "../../context/GlobalContext";
+import { CircularProgress } from "@mui/material";
+
 import { useLocation } from "react-router-dom";
 import { getEventData } from "../../api/getEventData";
 import EventPopup from "../popup/EventInfoModal";
@@ -27,6 +29,7 @@ export default function MonthView({ month, isYearView = false }) {
   const [filteredEvents, setFilteredEvents] = useState([]);
   const location = useLocation();
   const [organisedByData, setOrganisedByData] = useState(null); // State to hold organisedBy data
+  const [loading, setLoading] = useState(false); // State for loading spinner
 
   function generateMonthView(month, year) {
     const startOfMonth = dayjs(`${year}-${month + 1}-01`).startOf("month");
@@ -56,6 +59,7 @@ export default function MonthView({ month, isYearView = false }) {
 
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
+      setLoading(true); // Start loading spinner
       try {
         const eventDataRaw = await getEventData("eventDataQuery");
         setEvents(eventDataRaw);
@@ -67,6 +71,7 @@ export default function MonthView({ month, isYearView = false }) {
           );
           return;
         }
+        
 
         const selectedMonthStart = daySelected.startOf("month");
         const selectedMonthEnd = daySelected.endOf("month");
@@ -433,6 +438,8 @@ export default function MonthView({ month, isYearView = false }) {
         setFilteredEvents(finalFilteredEvents);
       } catch (error) {
         console.error("Error fetching event data:", error);
+      }finally {
+        setLoading(false); // Stop loading spinner
       }
     };
 
@@ -463,34 +470,41 @@ export default function MonthView({ month, isYearView = false }) {
           : "flex-1 grid grid-cols-7 grid-rows-5 overflow"
       }
     >
-      {isYearView
-        ? month.map((month, monthIdx) => (
-            <React.Fragment key={monthIdx}>
-              {month.map((day, dayIdx) => (
-                <Day
-                  key={`day-${monthIdx}-${dayIdx}`}
-                  day={day} // Pass the day object
-                  events={filteredEvents}
-                  isYearView={isYearView}
-                  month={day.month} // Use month correctly
-                />
-              ))}
-            </React.Fragment>
-          ))
-        : monthDays.map((row, i) => (
-            <React.Fragment key={i}>
-              {row.map((day, idx) => (
-                <Day
-                  key={`day-${i}-${idx}`}
-                  day={day} // Pass the updated day object
-                  events={filteredEvents}
-                  isYearView={isYearView}
-                  month={day.month()} // Use day.month() for monthDays
-                />
-              ))}
-            </React.Fragment>
-          ))}
+      {loading ? ( // Conditional rendering for loading spinner
+        <div className="flex justify-center items-center h-full">
+          <CircularProgress /> {/* Spinner from Material-UI */}
+        </div>
+      ) : isYearView ? (
+        month.map((month, monthIdx) => (
+          <React.Fragment key={monthIdx}>
+            {month.map((day, dayIdx) => (
+              <Day
+                key={`day-${monthIdx}-${dayIdx}`}
+                day={day} // Pass the day object
+                events={filteredEvents}
+                isYearView={isYearView}
+                month={day.month} // Use month correctly
+              />
+            ))}
+          </React.Fragment>
+        ))
+      ) : (
+        monthDays.map((row, i) => (
+          <React.Fragment key={i}>
+            {row.map((day, idx) => (
+              <Day
+                key={`day-${i}-${idx}`}
+                day={day} // Pass the updated day object
+                events={filteredEvents}
+                isYearView={isYearView}
+                month={day.month()} // Use day.month() for monthDays
+              />
+            ))}
+          </React.Fragment>
+        ))
+      )}
       <EventPopup /> {/* Render the EventPopup component */}
     </div>
   );
+  
 }
