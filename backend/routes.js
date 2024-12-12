@@ -1026,40 +1026,38 @@ WHERE eventId = @eventId;
     }
 
     try {
+        // Generate `cadence_id` if not provided
         const generatedCadenceId = data.cadence_id || uuidv4();
 
-        // Ensure settings include at least the 'name' field
-        const settings = {
-            name: data.title, // Cadence name
-            ...data.settings, // Spread any additional settings provided
+        // Construct the payload
+        const payload = {
+            cadence_id: generatedCadenceId, // Always include a UUID
+            name: data.title, // Cadence title
+            description: data.description || "No description provided",
+            settings: data.settings || {}, // Optional settings
+            steps: data.steps.map((step) => ({
+                type: step.type,
+                subject: step.subject,
+                body: step.body,
+            })),
         };
 
+        console.log("Payload being sent to SalesLoft API:", JSON.stringify(payload, null, 2));
+
+        // Make the API request
         const response = await fetch("https://api.salesloft.com/v2/cadence_imports.json", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${SALESLOFT_API_TOKEN}`,
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                cadence_import: {
-                    name: data.title, // Cadence title
-                    description: data.description || "No description provided",
-                    cadence_id: generatedCadenceId,
-                    settings: settings,
-                    steps: [
-                        {
-                            subject: data.subject,
-                            body: data.body,
-                            type: "EMAIL",
-                        },
-                    ],
-                },
-            }),
+            body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
+            const errorText = await response.text();
             throw new Error(
-                `SalesLoft API error: Status ${response.status}, Message: ${await response.text()}`
+                `SalesLoft API error: Status ${response.status}, Message: ${errorText}`
             );
         }
 
@@ -1076,6 +1074,7 @@ WHERE eventId = @eventId;
         };
     }
 };
+
 
 
 
