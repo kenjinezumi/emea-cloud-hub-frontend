@@ -1019,7 +1019,7 @@ WHERE eventId = @eventId;
   }
 
   const createSalesLoftCadence = async (data) => {
-    const SALESLOFT_API_TOKEN = process.env.SALESLOFT_API_TOKEN; // Securely access the token in the backend
+    const SALESLOFT_API_TOKEN = process.env.SALESLOFT_API_TOKEN;
 
     if (!SALESLOFT_API_TOKEN) {
         throw new Error("SalesLoft API token is missing. Ensure it's set in the environment variables.");
@@ -1028,18 +1028,24 @@ WHERE eventId = @eventId;
     try {
         const generatedCadenceId = data.cadence_id || uuidv4();
 
+        // Ensure settings include at least the 'name' field
+        const settings = {
+            name: data.title, // Cadence name
+            ...data.settings, // Spread any additional settings provided
+        };
+
         const response = await fetch("https://api.salesloft.com/v2/cadence_imports.json", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${SALESLOFT_API_TOKEN}`, // Use the token securely in the backend
+                Authorization: `Bearer ${SALESLOFT_API_TOKEN}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
                 cadence_import: {
                     name: data.title, // Cadence title
                     description: data.description || "No description provided",
-                    cadence_id: generatedCadenceId, 
-                    settings: data.settings || {},
+                    cadence_id: generatedCadenceId,
+                    settings: settings,
                     steps: [
                         {
                             subject: data.subject,
@@ -1070,6 +1076,7 @@ WHERE eventId = @eventId;
         };
     }
 };
+
 
 
   function cleanEventData(eventData) {
