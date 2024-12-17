@@ -1029,15 +1029,15 @@ const createSalesLoftCadence = async (data) => {
 
   const payload = {
     settings: {
-      name: data.subjectLine || "Email Cadence Example",
-      target_daily_people: 10,
+      name: data.title || "Missing cadence name",
+      target_daily_people: 1000,
       remove_replied: true,
       remove_bounced: true,
       cadence_function: "outbound",
       external_identifier: null,
     },
     sharing_settings: {
-      team_cadence: false,
+      team_cadence: true,
     },
     cadence_content: {
       step_groups: [
@@ -1055,7 +1055,7 @@ const createSalesLoftCadence = async (data) => {
           steps: [
             {
               enabled: true,
-              name: "First Email",
+              name: "Event invitation",
               type: "Email",
               type_settings: {
                 previous_email_step_group_reference_id: null,
@@ -1065,7 +1065,7 @@ const createSalesLoftCadence = async (data) => {
                   click_tracking: true,
                   open_tracking: true,
                   subject: data.subjectLine || "Hi there!",
-                  title: data.subjectLine || "Title",
+                  title: data.title || "Title",
                 },
               },
             },
