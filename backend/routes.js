@@ -947,9 +947,14 @@ WHERE eventId = @eventId;
         eventId,
       };
 
+      const checkTypes = {
+        eventId: "STRING",
+      };
+
       const [rows] = await bigquery.query({
         query: checkEventQuery,
         params: checkParams,
+        types: checkTypes,
         location: "US",
       });
 
@@ -974,9 +979,18 @@ WHERE eventId = @eventId;
           dateUpdatedCloudHub: new Date().toISOString(),
         };
 
+        const updateTypes = {
+          ...Object.fromEntries(
+            Object.keys(cleanedData).map((key) => [key, getTypeOfValue(cleanedData[key])])
+          ),
+          eventId: "STRING",
+          dateUpdatedCloudHub: "STRING",
+        };
+
         await bigquery.query({
           query: updateQuery,
           params: updateParams,
+          types: updateTypes,
           location: "US",
         });
 
@@ -998,13 +1012,23 @@ WHERE eventId = @eventId;
           .join(", ")})
       `;
 
-        const insertParams = cleanedData;
+      const insertParams = {
+        ...cleanedData,
+      };
 
-        await bigquery.query({
-          query: insertQuery,
-          params: insertParams,
-          location: "US",
-        });
+      const insertTypes = {
+        ...Object.fromEntries(
+          Object.keys(cleanedData).map((key) => [key, getTypeOfValue(cleanedData[key])])
+        ),
+      };
+
+
+      await bigquery.query({
+        query: insertQuery,
+        params: insertParams,
+        types: insertTypes, // Explicit types
+        location: "US",
+      });
 
         logger.info("Event data inserted successfully.", {
           eventId,
@@ -1017,6 +1041,17 @@ WHERE eventId = @eventId;
       throw error;
     }
   }
+
+  function getTypeOfValue(value) {
+    if (value === null || value === undefined) return "STRING"; // Default type for null values
+    if (typeof value === "string") return "STRING";
+    if (typeof value === "number") return "FLOAT64";
+    if (typeof value === "boolean") return "BOOL";
+    if (Array.isArray(value)) return "ARRAY";
+    if (typeof value === "object") return "STRUCT";
+    return "STRING"; // Fallback for unexpected types
+  }
+  
 
   // based on -> https://developers.salesloft.com/docs/platform/cadence-imports/more-examples/#email-step-request
 
