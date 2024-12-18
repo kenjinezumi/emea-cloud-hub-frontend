@@ -1033,7 +1033,7 @@ const createSalesLoftCadence = async (data) => {
       target_daily_people: 1000,
       remove_replied: true,
       remove_bounced: true,
-      cadence_function: "outbound",
+      cadence_function: "event",
       external_identifier: null,
     },
     sharing_settings: {
@@ -1062,10 +1062,10 @@ const createSalesLoftCadence = async (data) => {
                 previous_email_step_group_reference_id: null,
                 email_template: {
                   attachments: [],
-                  body: data.template || "<div>Email Body</div>",
+                  body: data.body || "<div>Email Body</div>",
                   click_tracking: true,
                   open_tracking: true,
-                  subject: data.subjectLine || "Hi there!",
+                  subject: data.subject || "Hi there!",
                   title: data.title || "Title",
                 },
               },
