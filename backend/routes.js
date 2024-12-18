@@ -1038,6 +1038,7 @@ const createSalesLoftCadence = async (data) => {
     },
     sharing_settings: {
       team_cadence: true,
+      shared: true,
     },
     cadence_content: {
       step_groups: [
