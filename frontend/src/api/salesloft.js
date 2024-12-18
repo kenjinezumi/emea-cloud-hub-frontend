@@ -1,6 +1,6 @@
 const API_URL = 'https://backend-dot-cloudhub.googleplex.com/';
 
-const createSalesLoftEmailTemplate = async (salesLoftTemplate, title) => {
+const createSalesLoftEmailTemplate = async (salesLoftTemplate) => {
   console.log('Sending SalesLoft template to backend:', salesLoftTemplate);
 
   try {
@@ -12,7 +12,7 @@ const createSalesLoftEmailTemplate = async (salesLoftTemplate, title) => {
       },
       body: JSON.stringify({
         data: {
-          title: title,
+          title: 'SalesLoft Email',
           subject: salesLoftTemplate.subjectLine,
           body: salesLoftTemplate.template,
           open_tracking: true,
