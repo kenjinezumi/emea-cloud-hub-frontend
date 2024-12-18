@@ -222,7 +222,7 @@ export default function EventInfoPopup({ event, close }) {
         );
       }
       const result = await createSalesLoftEmailTemplate(
-        salesLoftTemplate, selectedEvent.title
+        salesLoftTemplate
       );
       if (result.success) {
         setSnackbarMessage("SalesLoft email template created successfully!");
