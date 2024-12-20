@@ -15,6 +15,8 @@ import {
   MenuItem,
   Chip,
   TextField,
+  CircularProgress,
+  Box
 } from "@mui/material";
 import "../styles/Forms.css";
 import CalendarHeaderForm from "../commons/CalendarHeaderForm";
@@ -25,7 +27,7 @@ import { useFormNavigation } from "../../hooks/useFormNavigation";
 
 export default function LocationFormPage() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
-
+  const [loading, setLoading] = useState(false); 
   const [region, setRegion] = useState(
     formData?.region || selectedEvent?.region || ""
   );
@@ -93,6 +95,8 @@ export default function LocationFormPage() {
   };
 
   const handleNext = async () => {
+    setLoading(true);
+
     const isRegionValid = region?.trim() !== "";    
     const isSubRegionValid = subRegion.length > 0;
     const isCountryValid = country.length > 0;
@@ -106,6 +110,7 @@ export default function LocationFormPage() {
 
     if (!formIsValid) {
       setIsFormValid(false);
+      setLoading(false);
       return;
     }
 
@@ -119,7 +124,6 @@ export default function LocationFormPage() {
       isDraft: true,
       isPublished: false,
     };
-    console.log(currentFormData)
     updateFormData(currentFormData);
 
 
@@ -129,15 +133,18 @@ export default function LocationFormPage() {
         setSnackbarMessage("Details saved and published successfully!");
         setSnackbarOpen(true);
         setTimeout(() => {
+          setLoading(false);
           saveAndNavigate(currentFormData, "/extra");
         }, 1500);
 
       } else {
         setSnackbarMessage("Failed to save and publish.");
+        setLoading(false);
         setSnackbarOpen(true);
       }
     } catch (error) {
       setSnackbarMessage("An error occurred while saving and publishing.");
+      setLoading(false);
       setSnackbarOpen(true);
     } 
   };
@@ -400,31 +407,43 @@ export default function LocationFormPage() {
             >
               Previous
             </Button>
+            {loading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
+                  borderRadius: "8px", // Optional: match the button's border-radius
+                  zIndex: 1, // Ensure it appears on top
+                }}
+              >
+                <CircularProgress size={40} />
+              </Box>
+            )}
+
+            {/* Button */}
             <Button
               variant="contained"
               onClick={handleNext}
-              className="next-button"
-              style={{
+              sx={{
                 backgroundColor: blue[500],
                 color: "white",
-                float: "right",
-                margin: "5px",
+                margin: "10px",
+                "&:hover": {
+                  backgroundColor: blue[700],
+                },
               }}
+              disabled={loading} // Disable button while loading
             >
               Next
             </Button>
-            {/* <Button
-              variant="contained"
-              onClick={handleSaveAsDraft}
-              style={{
-                backgroundColor: blue[500],
-                color: "white",
-                float: "left",
-                margin: "5px",
-              }}
-            >
-              Save as Draft
-            </Button> */}
+            
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}
