@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import GlobalContext from "../../context/GlobalContext";
-import { Paper, Typography, Box } from "@mui/material";
+import { Paper, Typography, Box, CircularProgress } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import DayColumn from "../Day/DayColumn";
@@ -36,6 +36,7 @@ export default function WeekView() {
   const [setFilteredEvents] = useState([]);
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [loading, setLoading] = useState(false);
   const userTimezone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     []
@@ -63,19 +64,19 @@ export default function WeekView() {
         if (applicableStatuses.includes("Finalized")) return 1; // Medium
         return 0; // Lowest (Draft)
       };
-  
+
       const statusPriorityA = getStatusPriority(a);
       const statusPriorityB = getStatusPriority(b);
-  
+
       if (statusPriorityA !== statusPriorityB) {
         return statusPriorityB - statusPriorityA; // Descending order
       }
-  
+
       // 2. High Priority flag
       if (a.isHighPriority !== b.isHighPriority) {
         return b.isHighPriority - a.isHighPriority; // High Priority comes first
       }
-  
+
       // 3. Descending by expected attendees
       return b.expectedAttendees - a.expectedAttendees;
     });
@@ -105,13 +106,11 @@ export default function WeekView() {
         ...filters.countries,
         ...filters.programName,
         ...filters.activityType,
-
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
       filters.isNewlyCreated !== undefined ||
       filters.organisedBy !== undefined ||
-      filters.draftStatus !== undefined;     
-
+      filters.draftStatus !== undefined;
 
     // If no filters are applied, return all events
     if (!hasFiltersApplied) {
@@ -139,7 +138,7 @@ export default function WeekView() {
             segment.checked && event.audienceSeniority?.includes(segment.label)
         );
 
-        const accountSectorMatch =
+      const accountSectorMatch =
         // Include all events if no sectors are checked
         !filters.accountSectors.some((sector) => sector.checked) ||
         // Check if any sector matches the event
@@ -149,16 +148,18 @@ export default function WeekView() {
               // Map filter labels to keys in the event data
               const sectorMapping = {
                 "Public Sector": "public",
-                "Commercial": "commercial"
+                Commercial: "commercial",
               };
-      
+
               // Find the corresponding key for the filter label
               const sectorKey = sectorMapping[sector.label];
               if (!sectorKey) {
-                console.warn(`No mapping found for sector label: ${sector.label}`);
+                console.warn(
+                  `No mapping found for sector label: ${sector.label}`
+                );
                 return false;
               }
-      
+
               // Check if the event matches the mapped key
               return event.accountSectors?.[sectorKey] === true;
             }
@@ -173,43 +174,33 @@ export default function WeekView() {
             return false;
           }
         });
-      
-        const regionMatch =
-                !filters.regions.some((region) => region.checked) ||
-                filters.regions.some((region) => {
-                  try {
-                    return (
-                      region.checked && event.region?.includes(region.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking region filter:",
-                      err,
-                      region,
-                      event
-                    );
-                    return false;
-                  }
-                });
 
-              const countryMatch =
-                !filters.countries.some((country) => country.checked) ||
-                filters.countries.some((country) => {
-                  try {
-                    return (
-                      country.checked && event.country?.includes(country.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking country filter:",
-                      err,
-                      country,
-                      event
-                    );
-                    return false;
-                  }
-                });
+      const regionMatch =
+        !filters.regions.some((region) => region.checked) ||
+        filters.regions.some((region) => {
+          try {
+            return region.checked && event.region?.includes(region.label);
+          } catch (err) {
+            console.error("Error checking region filter:", err, region, event);
+            return false;
+          }
+        });
 
+      const countryMatch =
+        !filters.countries.some((country) => country.checked) ||
+        filters.countries.some((country) => {
+          try {
+            return country.checked && event.country?.includes(country.label);
+          } catch (err) {
+            console.error(
+              "Error checking country filter:",
+              err,
+              country,
+              event
+            );
+            return false;
+          }
+        });
 
       const accountSegmentMatch =
         !filters.accountSegments.some((segment) => segment.checked) ||
@@ -218,7 +209,7 @@ export default function WeekView() {
             const accountSegment = event.accountSegments?.[segment.label];
             return (
               segment.checked &&
-              accountSegment?.selected  && // Convert selected to a boolean
+              accountSegment?.selected && // Convert selected to a boolean
               parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
             );
           } catch (err) {
@@ -239,7 +230,7 @@ export default function WeekView() {
             const productAlignment = event.productAlignment?.[product.label];
             return (
               product.checked &&
-              productAlignment?.selected  &&
+              productAlignment?.selected &&
               parseFloat(productAlignment?.percentage) > 0
             );
           } catch (err) {
@@ -278,96 +269,107 @@ export default function WeekView() {
             .filter((option) => option.checked)
             .map((option) => option.value)
         : [];
-        const isDraftMatch = 
-  selectedDraftStatuses.length === 0 ||
-  (() => {
-    // Initialize an array to hold applicable statuses
-    const applicableStatuses = [];
+      const isDraftMatch =
+        selectedDraftStatuses.length === 0 ||
+        (() => {
+          // Initialize an array to hold applicable statuses
+          const applicableStatuses = [];
 
-    // Add "Draft" if the event is in draft mode
-    if (event.isDraft) {
-      applicableStatuses.push("Draft");
-    } else {
-      // If not a draft, add "Finalized" as a base status
-      applicableStatuses.push("Finalized");
+          // Add "Draft" if the event is in draft mode
+          if (event.isDraft) {
+            applicableStatuses.push("Draft");
+          } else {
+            // If not a draft, add "Finalized" as a base status
+            applicableStatuses.push("Finalized");
 
-      // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
-      if (
-        !event.isDraft &&
-        event.languagesAndTemplates?.some(template =>
-          ["Gmail", "Salesloft"].includes(template.platform)
-        )
-      ) {
-        applicableStatuses.push("Invite available");
-      }
-    }
+            // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
+            if (
+              !event.isDraft &&
+              event.languagesAndTemplates?.some((template) =>
+                ["Gmail", "Salesloft"].includes(template.platform)
+              )
+            ) {
+              applicableStatuses.push("Invite available");
+            }
+          }
 
-    // Check if any selectedDraftStatuses match the applicable statuses
-    return selectedDraftStatuses.some(status => applicableStatuses.includes(status));
-  })();
-  const programNameMatch =
-  filters.programName.every((filter) => !filter.checked) ||
-  filters.programName.some((filter) => {
-    const isChecked = filter.checked;
-    const matches = event.programName?.some((name) =>
-      name.toLowerCase().includes(filter.label.toLowerCase())
-    );
+          // Check if any selectedDraftStatuses match the applicable statuses
+          return selectedDraftStatuses.some((status) =>
+            applicableStatuses.includes(status)
+          );
+        })();
+      const programNameMatch =
+        filters.programName.every((filter) => !filter.checked) ||
+        filters.programName.some((filter) => {
+          const isChecked = filter.checked;
+          const matches = event.programName?.some((name) =>
+            name.toLowerCase().includes(filter.label.toLowerCase())
+          );
 
-    return isChecked && matches;
-  });
+          return isChecked && matches;
+        });
 
-  const activityTypeMatch =
-                !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
-                filters.activityType.some((activity) => {
-                  try {
-                    // Check if the event type matches the checked activity types
-                    return (
-                      activity.checked &&
-                      event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
-                    );
-                  } catch (err) {
-                    console.error("Error checking activityType filter:", err, activity, event);
-                    return false; // Handle errors gracefully
-                  }
-                });
-              
-                const isNewlyCreatedMatch =
-  !filters.newlyCreated?.some((option) => option.checked) ||
-  filters.newlyCreated?.some((option) => {
-    if (option.checked) {
-      const entryCreatedDate = event.entryCreatedDate?.value
-        ? dayjs(event.entryCreatedDate.value)
-        : null; // Access `value` property
+      const activityTypeMatch =
+        !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
+        filters.activityType.some((activity) => {
+          try {
+            // Check if the event type matches the checked activity types
+            return (
+              activity.checked &&
+              event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
+            );
+          } catch (err) {
+            console.error(
+              "Error checking activityType filter:",
+              err,
+              activity,
+              event
+            );
+            return false; // Handle errors gracefully
+          }
+        });
 
-      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-        console.warn("Invalid or missing entryCreatedDate for event:", event);
-        return option.value === false; // Consider missing dates as "old"
-      }
+      const isNewlyCreatedMatch =
+        !filters.newlyCreated?.some((option) => option.checked) ||
+        filters.newlyCreated?.some((option) => {
+          if (option.checked) {
+            const entryCreatedDate = event.entryCreatedDate?.value
+              ? dayjs(event.entryCreatedDate.value)
+              : null; // Access `value` property
 
-      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
-      return option.value === isWithinTwoWeeks;
-    }
-    return false;
-  });
-  const organisedByMatch = (() => {
-    // Check if no organiser filter is applied
-    if (!filters.organisedBy || filters.organisedBy.length === 0) {
-      return true; // No organiser filter applied
-    }
-  
-    // Check if the event has no organiser data
-    if (!event.organisedBy || event.organisedBy.length === 0) {
-      return false; // Event does not have an organiser
-    }
-  
-    // Check for match
-    const isMatch = filters.organisedBy.some((organiser) =>
-      event.organisedBy.includes(organiser)
-    );
-  
-  
-    return isMatch; // Return the match result
-  })();
+            if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+              console.warn(
+                "Invalid or missing entryCreatedDate for event:",
+                event
+              );
+              return option.value === false; // Consider missing dates as "old"
+            }
+
+            const isWithinTwoWeeks =
+              dayjs().diff(entryCreatedDate, "day") <= 14;
+            return option.value === isWithinTwoWeeks;
+          }
+          return false;
+        });
+      const organisedByMatch = (() => {
+        // Check if no organiser filter is applied
+        if (!filters.organisedBy || filters.organisedBy.length === 0) {
+          return true; // No organiser filter applied
+        }
+
+        // Check if the event has no organiser data
+        if (!event.organisedBy || event.organisedBy.length === 0) {
+          return false; // Event does not have an organiser
+        }
+
+        // Check for match
+        const isMatch = filters.organisedBy.some((organiser) =>
+          event.organisedBy.includes(organiser)
+        );
+
+        return isMatch; // Return the match result
+      })();
+
       return (
         subRegionMatch &&
         gepMatch &&
@@ -379,21 +381,26 @@ export default function WeekView() {
         isPartneredEventMatch &&
         isDraftMatch &&
         regionMatch &&
-        countryMatch && 
-        programNameMatch && activityTypeMatch              
-        && isNewlyCreatedMatch && organisedByMatch
-
+        countryMatch &&
+        programNameMatch &&
+        activityTypeMatch &&
+        isNewlyCreatedMatch &&
+        organisedByMatch
       );
     });
   }, [filters, events]);
 
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
+      setLoading(true);
+
       try {
         const eventData = await getEventData("eventDataQuery");
         setEvents(eventData);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching event data:", error);
+        setLoading(false);
       }
     };
 
@@ -420,22 +427,24 @@ export default function WeekView() {
       filteredEvents.filter((event) => {
         const eventStart = dayjs(event.startDate);
         const eventEnd = dayjs(event.endDate);
-  
+
         return (
           eventStart.isValid() &&
           eventEnd.isValid() &&
           !eventStart.isSame(eventEnd, "day") &&
-          eventStart.isBefore(currentWeek[currentWeek.length - 1].endOf("day")) &&
+          eventStart.isBefore(
+            currentWeek[currentWeek.length - 1].endOf("day")
+          ) &&
           eventEnd.isAfter(currentWeek[0].startOf("day"))
         );
       })
     );
-  
+
     const singleDayEvents = sortEventsByPriority(
       filteredEvents.filter((event) => {
         const eventStart = dayjs(event.startDate);
         const eventEnd = dayjs(event.endDate);
-  
+
         return (
           eventStart.isSame(eventEnd, "day") &&
           eventStart.isValid() &&
@@ -566,222 +575,236 @@ export default function WeekView() {
         flexDirection: "column",
       }}
     >
-      {/* Header for displaying days of the week */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          paddingBottom: "10px",
-          paddingTop: "10px",
-          backgroundColor: "white",
-          borderBottom: "1px solid ",
-        }}
-      >
-        {currentWeek.map((day) => (
-          <Typography
-            key={day.format("YYYY-MM-DD")}
-            align="center"
-            variant="h6"
+      {loading ? (
+        /* Show spinner if loading is true */
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          {/* Header for displaying days of the week */}
+          <Box
             sx={{
-              flex: 1,
-              textAlign: "center",
-              paddingLeft: "10px",
-              paddingRight: "10px",
+              display: "flex",
+              justifyContent: "space-between",
+              paddingBottom: "10px",
+              paddingTop: "10px",
+              backgroundColor: "white",
+              borderBottom: "1px solid ",
             }}
           >
-            {day.format("ddd, D MMM")}
-          </Typography>
-        ))}
-      </Box>
+            {currentWeek.map((day) => (
+              <Typography
+                key={day.format("YYYY-MM-DD")}
+                align="center"
+                variant="h6"
+                sx={{
+                  flex: 1,
+                  textAlign: "center",
+                  paddingLeft: "10px",
+                  paddingRight: "10px",
+                }}
+              >
+                {day.format("ddd, D MMM")}
+              </Typography>
+            ))}
+          </Box>
 
-      {/* Multi-day Events Section */}
-      {multiDayEventGroups.length > 0 && (
-        <Box
-          sx={{
-            position: "relative",
-            height: "200px", // Fixed height for multi-day events section
-            overflowY: "auto", // Allow vertical scrolling
-            padding: "15px 20px", // More balanced padding
-            borderBottom: "1px solid #ddd",
-            paddingTop: "10px", // Subtle bottom border
-            marginLeft: "60px", // Maintain the margin to align with other content
-            marginTop: "20px",
-            marginBottom: "20px",
-            borderRadius: "8px", // Add rounded corners for a modern look
-            transition: "box-shadow 0.3s ease-in-out", // Smooth transition for shadow
-            "&:hover": {
-              boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)", // Increase shadow on hover
-            },
-            scrollbarWidth: "thin", // Thin scrollbar for non-Chrome browsers
-            "&::-webkit-scrollbar": {
-              width: "8px", // Set the width for the scrollbar in Chrome/Safari
-            },
-            "&::-webkit-scrollbar-thumb": {
-              backgroundColor: "#b3b3b3", // Scrollbar thumb color
-              borderRadius: "4px", // Rounded scrollbar thumb
-            },
-            "&::-webkit-scrollbar-track": {
-              backgroundColor: "#f1f1f1", // Scrollbar track color
-            },
-          }}
-        >
-          {multiDayEventGroups.map((group, groupIndex) =>
-            group.map((event, eventIndex) => {
-              const { backgroundColor, color, icon } = getEventStyleAndIcon(
-                event.eventType
-              );
-              const styles = calculateMultiDayEventStyles(
-                event,
-                groupIndex,
-                eventIndex,
-                currentWeek
-              );
+          {/* Multi-day Events Section */}
+          {multiDayEventGroups.length > 0 && (
+            <Box
+              sx={{
+                position: "relative",
+                height: "200px",
+                overflowY: "auto",
+                padding: "15px 20px",
+                borderBottom: "1px solid #ddd",
+                paddingTop: "10px",
+                marginLeft: "60px",
+                marginTop: "20px",
+                marginBottom: "20px",
+                borderRadius: "8px",
+                transition: "box-shadow 0.3s ease-in-out",
+                "&:hover": {
+                  boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",
+                },
+                scrollbarWidth: "thin",
+                "&::-webkit-scrollbar": {
+                  width: "8px",
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "#b3b3b3",
+                  borderRadius: "4px",
+                },
+                "&::-webkit-scrollbar-track": {
+                  backgroundColor: "#f1f1f1",
+                },
+              }}
+            >
+              {multiDayEventGroups.map((group, groupIndex) =>
+                group.map((event, eventIndex) => {
+                  const { backgroundColor, color, icon } = getEventStyleAndIcon(
+                    event.eventType
+                  );
+                  const styles = calculateMultiDayEventStyles(
+                    event,
+                    groupIndex,
+                    eventIndex,
+                    currentWeek
+                  );
 
-
-              
-
-              return (
-                <div
-                  key={event.eventId}
-                  style={{
-                    position: "absolute",
-                    ...styles, // Apply calculated styles for top, left, and width
-                    backgroundColor,
-                    color,
-                    padding: "8px 12px",
-                    borderRadius: "12px",
-                    display: "flex",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    height: "30px", // Fixed height for multi-day events
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)", // Add shadow
-                    transition: "background-color 0.2s, box-shadow 0.2s", // Smooth transitions
-                    borderLeft: `4px solid ${color}`, // Border to indicate event type
-                    marginBottom: "5px", // Add spacing between events
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = color
-                      ? `${color}33`
-                      : "#f0f0f0"; // Change background on hover
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 12px rgba(0, 0, 0, 0.2)";
-                    handleMouseEnter(e, event); // Increase shadow on hover
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = backgroundColor; // Reset background
-                    e.currentTarget.style.boxShadow =
-                      "0 2px 8px rgba(0, 0, 0, 0.15)";
-                    handleMouseLeave();
-                  }}
-                  onClick={() => handleEventClick(event)}
-                >
-                  {icon}
-                  <Typography
-                    noWrap
-                    sx={{
-                      marginLeft: "8px", // Add space between icon and text
-                      color: "#333", // Text color
-                      flex: 1, // Allow text to take available space
-                      fontSize: "0.875rem", // Adjust font size
-                    }}
-                  >
-                    {event.title}
-                  </Typography>
-                </div>
-              );
-            })
+                  return (
+                    <div
+                      key={event.eventId}
+                      style={{
+                        position: "absolute",
+                        ...styles,
+                        backgroundColor,
+                        color,
+                        padding: "8px 12px",
+                        borderRadius: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        height: "30px",
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                        transition: "background-color 0.2s, box-shadow 0.2s",
+                        borderLeft: `4px solid ${color}`,
+                        marginBottom: "5px",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = color
+                          ? `${color}33`
+                          : "#f0f0f0";
+                        e.currentTarget.style.boxShadow =
+                          "0 4px 12px rgba(0, 0, 0, 0.2)";
+                        handleMouseEnter(e, event);
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = backgroundColor;
+                        e.currentTarget.style.boxShadow =
+                          "0 2px 8px rgba(0, 0, 0, 0.15)";
+                        handleMouseLeave();
+                      }}
+                      onClick={() => handleEventClick(event)}
+                    >
+                      {icon}
+                      <Typography
+                        noWrap
+                        sx={{
+                          marginLeft: "8px",
+                          color: "#333",
+                          flex: 1,
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        {event.title}
+                      </Typography>
+                    </div>
+                  );
+                })
+              )}
+            </Box>
           )}
-        </Box>
-      )}
-      {hoveredEvent && (
-        <Box
-          sx={{
-            position: "absolute",
-            top: `${tooltipPosition.y}px`, // Use tooltipPosition state for Y
-            left: `${tooltipPosition.x}px`, // Use tooltipPosition state for X
-            backgroundColor: "#fff",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-            padding: "8px 12px",
-            borderRadius: "8px",
-            zIndex: 1000,
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-            {hoveredEvent.title}
-          </Typography>
-          <Typography variant="body2">
-            {dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} -{" "}
-            {dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}
-          </Typography>
-        </Box>
-      )}
 
-      {/* Scrollable Week View for Single-day Events */}
-      <Box
-        ref={weekViewRef}
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          flex: 1,
-          overflowY: "auto",
-          overflowX: "hidden",
-        }}
-      >
-        {/* Time labels column */}
-        <Box
-          sx={{
-            flex: "0 0 60px",
-            borderRight: "1px solid #ddd",
-            position: "relative",
-          }}
-        >
-          {Array.from({ length: endHour - startHour }, (_, hour) => (
-            <Typography
-              key={hour}
+          {hoveredEvent && (
+            <Box
               sx={{
                 position: "absolute",
-                top: `${hour * hourHeight}px`,
-                width: "50px",
-                textAlign: "right",
-                paddingRight: "10px",
-                fontSize: "12px",
-                color: "#666",
+                top: `${tooltipPosition.y}px`,
+                left: `${tooltipPosition.x}px`,
+                backgroundColor: "#fff",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                zIndex: 1000,
               }}
             >
-              {dayjs().hour(hour).minute(0).format("HH:mm")}
-            </Typography>
-          ))}
-        </Box>
-
-        {/* Actual day columns */}
-        {currentWeek.map((day, index) => {
-          const filteredEventsForDay = singleDayEvents.filter((event) => {
-            return dayjs(event.startDate).isSame(day, "day");
-          });
-
-          return (
-            <Box
-              key={day.format("YYYY-MM-DD")}
-              sx={{
-                flex: 1,
-                position: "relative",
-                borderLeft: "1px solid #ddd",
-                borderBottom: "1px solid #ddd",
-              }}
-            >
-              <DayColumn
-                daySelected={day}
-                events={filteredEventsForDay}
-                onEventClick={handleEventClick}
-                showTimeLabels={index === 0} // Only show time labels for the first column
-              />
+              <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                {hoveredEvent.title}
+              </Typography>
+              <Typography variant="body2">
+                {dayjs(hoveredEvent.startDate).format("MMM D, h:mm A")} -{" "}
+                {dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}
+              </Typography>
             </Box>
-          );
-        })}
-      </Box>
+          )}
 
-      {showEventInfoModal && selectedEvent && (
-        <EventInfoPopup event={selectedEvent} close={closeEventModal} />
+          {/* Scrollable Week View for Single-day Events */}
+          <Box
+            ref={weekViewRef}
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              flex: 1,
+              overflowY: "auto",
+              overflowX: "hidden",
+            }}
+          >
+            {/* Time labels column */}
+            <Box
+              sx={{
+                flex: "0 0 60px",
+                borderRight: "1px solid #ddd",
+                position: "relative",
+              }}
+            >
+              {Array.from({ length: endHour - startHour }, (_, hour) => (
+                <Typography
+                  key={hour}
+                  sx={{
+                    position: "absolute",
+                    top: `${hour * hourHeight}px`,
+                    width: "50px",
+                    textAlign: "right",
+                    paddingRight: "10px",
+                    fontSize: "12px",
+                    color: "#666",
+                  }}
+                >
+                  {dayjs().hour(hour).minute(0).format("HH:mm")}
+                </Typography>
+              ))}
+            </Box>
+
+            {/* Actual day columns */}
+            {currentWeek.map((day, index) => {
+              const filteredEventsForDay = singleDayEvents.filter((event) =>
+                dayjs(event.startDate).isSame(day, "day")
+              );
+
+              return (
+                <Box
+                  key={day.format("YYYY-MM-DD")}
+                  sx={{
+                    flex: 1,
+                    position: "relative",
+                    borderLeft: "1px solid #ddd",
+                    borderBottom: "1px solid #ddd",
+                  }}
+                >
+                  <DayColumn
+                    daySelected={day}
+                    events={filteredEventsForDay}
+                    onEventClick={handleEventClick}
+                    showTimeLabels={index === 0}
+                  />
+                </Box>
+              );
+            })}
+          </Box>
+
+          {showEventInfoModal && selectedEvent && (
+            <EventInfoPopup event={selectedEvent} close={closeEventModal} />
+          )}
+        </>
       )}
     </Paper>
   );
