@@ -15,6 +15,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  CircularProgress,
+  Box,
 } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import LinkIcon from "@mui/icons-material/Link";
@@ -45,32 +47,37 @@ export default function LinksForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [links, setLinks] = useState({
     landingPageLinks:
-      Array.isArray(formData?.landingPageLinks) && formData.landingPageLinks.length > 0
+      Array.isArray(formData?.landingPageLinks) &&
+      formData.landingPageLinks.length > 0
         ? formData.landingPageLinks.filter((link) => link) // Filter out empty links
-        : Array.isArray(selectedEvent?.landingPageLinks) && selectedEvent.landingPageLinks.length > 0
+        : Array.isArray(selectedEvent?.landingPageLinks) &&
+          selectedEvent.landingPageLinks.length > 0
         ? selectedEvent.landingPageLinks.filter((link) => link) // Filter out empty links
         : [],
     salesKitLinks:
-      Array.isArray(formData?.salesKitLinks) && formData.salesKitLinks.length > 0
+      Array.isArray(formData?.salesKitLinks) &&
+      formData.salesKitLinks.length > 0
         ? formData.salesKitLinks.filter((link) => link)
-        : Array.isArray(selectedEvent?.salesKitLinks) && selectedEvent.salesKitLinks.length > 0
+        : Array.isArray(selectedEvent?.salesKitLinks) &&
+          selectedEvent.salesKitLinks.length > 0
         ? selectedEvent.salesKitLinks.filter((link) => link)
         : [],
     hailoLinks:
       Array.isArray(formData?.hailoLinks) && formData.hailoLinks.length > 0
         ? formData.hailoLinks.filter((link) => link)
-        : Array.isArray(selectedEvent?.hailoLinks) && selectedEvent.hailoLinks.length > 0
+        : Array.isArray(selectedEvent?.hailoLinks) &&
+          selectedEvent.hailoLinks.length > 0
         ? selectedEvent.hailoLinks.filter((link) => link)
         : [],
     otherDocumentsLinks:
-      Array.isArray(formData?.otherDocumentsLinks) && formData.otherDocumentsLinks.length > 0
+      Array.isArray(formData?.otherDocumentsLinks) &&
+      formData.otherDocumentsLinks.length > 0
         ? formData.otherDocumentsLinks.filter((link) => link)
-        : Array.isArray(selectedEvent?.otherDocumentsLinks) && selectedEvent.otherDocumentsLinks.length > 0
+        : Array.isArray(selectedEvent?.otherDocumentsLinks) &&
+          selectedEvent.otherDocumentsLinks.length > 0
         ? selectedEvent.otherDocumentsLinks.filter((link) => link)
         : [],
   });
-  
-  
 
   // Initialize `newLink` for inputs
   const [newLink, setNewLink] = useState({
@@ -82,6 +89,7 @@ export default function LinksForm() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [isError, setIsError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const saveAndNavigate = useFormNavigation();
   useEffect(() => {
@@ -91,7 +99,6 @@ export default function LinksForm() {
       updateFormData(currentFormData);
     }
   }, [links, formData, updateFormData]);
-  
 
   const handleLinkChange = (type, value) => {
     setNewLink({ ...newLink, [type]: value });
@@ -152,11 +159,11 @@ export default function LinksForm() {
   };
 
   const handlePaste = (type, event) => {
-    const pastedData = event.clipboardData.getData('text');
+    const pastedData = event.clipboardData.getData("text");
     const linkArray = pastedData.split(/[ ,;\n]+/).filter(Boolean);
     const validLinks = linkArray.filter((link) => isValidUrl(link));
     const invalidLinks = linkArray.filter((link) => !isValidUrl(link));
-  
+
     if (validLinks.length > 0) {
       setLinks({
         ...links,
@@ -164,18 +171,19 @@ export default function LinksForm() {
       });
       setNewLink({ ...newLink, [type]: "" }); // Clear the input field after adding
     }
-  
+
     if (invalidLinks.length > 0) {
       setSnackbarMessage(`Invalid URLs: ${invalidLinks.join(", ")}`);
       setIsError(true);
       setSnackbarOpen(true);
     }
-  
+
     event.preventDefault(); // Prevent the default paste behavior
   };
 
-  
   const handleSaveAndPublish = async () => {
+    setLoading(true);
+
     const requiredFields = {
       organisedBy: formData.organisedBy,
       title: formData.title,
@@ -209,6 +217,7 @@ export default function LinksForm() {
       setSnackbarMessage(
         `Please fill in all required fields: ${missingFields.join(", ")}`
       );
+      setLoading(false);
       setIsError(true);
       setSnackbarOpen(true);
       return;
@@ -225,42 +234,21 @@ export default function LinksForm() {
       const response = await sendDataToAPI(newFormData);
       if (response.success) {
         setSnackbarMessage("Details saved and published successfully!");
+        setLoading(false);
         setSnackbarOpen(true);
       } else {
         setSnackbarMessage("Failed to save and publish.");
+        setLoading(false);
         setSnackbarOpen(true);
       }
     } catch (error) {
       setSnackbarMessage("An error occurred while saving and publishing.");
+      setLoading(false);
       setSnackbarOpen(true);
     } finally {
       setDialogOpen(false);
+      setLoading(false);
       saveAndNavigate({}, "/");
-    }
-  };
-
-  const handleSaveAsDraft = async () => {
-    const newFormData = {
-      ...formData,
-      ...links,
-      isDraft: true,
-      isPublished: false,
-    };
-
-    updateFormData(newFormData);
-
-    try {
-      const response = await sendDataToAPI(newFormData, "draft");
-      if (response.success) {
-        setSnackbarMessage("Draft saved successfully!");
-        setSnackbarOpen(true);
-      } else {
-        setSnackbarMessage("Failed to save draft.");
-        setSnackbarOpen(true);
-      }
-    } catch (error) {
-      setSnackbarMessage("An error occurred while saving the draft.");
-      setSnackbarOpen(true);
     }
   };
 
@@ -426,17 +414,53 @@ export default function LinksForm() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-          In case you added email invite copy, users will be able to invite customers with that copy.
-          <br/><br/>
-          Please make sure your information is accurate
+            In case you added email invite copy, users will be able to invite
+            customers with that copy.
+            <br />
+            <br />
+            Please make sure your information is accurate
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} color="primary">
             Exit
           </Button>
-          <Button onClick={handleSaveAndPublish} color="primary" autoFocus>
-            Save and Publish
+
+          {loading && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
+                borderRadius: "8px", // Optional: match the button's border-radius
+                zIndex: 1, // Ensure it appears on top
+              }}
+            >
+              <CircularProgress size={40} />
+            </Box>
+          )}
+
+          {/* Button */}
+          <Button
+            variant="contained"
+            onClick={handleSaveAndPublish}
+            sx={{
+              backgroundColor: blue[500],
+              color: "white",
+              margin: "10px",
+              "&:hover": {
+                backgroundColor: blue[700],
+              },
+            }}
+            disabled={loading} // Disable button while loading
+          >
+            Next
           </Button>
         </DialogActions>
       </Dialog>

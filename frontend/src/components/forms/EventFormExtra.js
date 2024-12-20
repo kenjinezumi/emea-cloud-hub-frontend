@@ -25,6 +25,8 @@ import {
   Checkbox,
   Input,
   Switch,
+  CircularProgress,
+  Box,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import "../styles/Forms.css";
@@ -48,6 +50,7 @@ export default function ExtraDetailsForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(true);
   const [customerUse, setCustomerUse] = useState(
     formData?.isApprovedForCustomerUse !== undefined
@@ -189,7 +192,7 @@ export default function ExtraDetailsForm() {
   };
 
   const handleNext = async () => {
-    // const isCustomerUseValid = customerUse !== "";
+    setLoading(true);
     const isGepValid = gep.length > 0;
     const isProgramValid = program.length > 0;
 
@@ -200,6 +203,7 @@ export default function ExtraDetailsForm() {
     if (!isGepValid || !isProgramValid) {
       setIsFormValid(false);
       setSnackbarMessage("Please fill in all required fields.");
+      setLoading(false);
       setSnackbarOpen(true);
       return;
     }
@@ -219,12 +223,14 @@ export default function ExtraDetailsForm() {
 
       if (okrTotalPercentage > 100) {
         setSnackbarMessage("Total OKR percentage cannot exceed 100%");
+        setLoading(false);
         setSnackbarOpen(true);
         return;
       }
 
       if (okrTotalPercentage !== 100) {
         setSnackbarMessage("Total OKR percentage must equal 100%");
+        setLoading(false);
         setSnackbarOpen(true);
         return;
       }
@@ -247,70 +253,17 @@ export default function ExtraDetailsForm() {
         setSnackbarMessage("Draft saved successfully!");
         setSnackbarOpen(true);
         setTimeout(() => {
+          setLoading(false);
           saveAndNavigate(updatedFormData, "/email-invitation");
         }, 1500);
       } else {
         setSnackbarMessage("Failed to save draft.");
+        setLoading(false);
         setSnackbarOpen(true);
       }
     } catch (error) {
       setSnackbarMessage("An error occurred while saving the draft.");
-      setSnackbarOpen(true);
-    }
-  };
-
-  const handleSaveAsDraft = async () => {
-    const isDraft = formData.isDraft !== undefined ? formData.isDraft : true;
-
-    const selectedOkrs = Object.keys(okrSelections)
-      .filter((key) => okrSelections[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: okrSelections[key].percentage,
-      }));
-
-    if (selectedOkrs.length > 0) {
-      const okrTotalPercentage = selectedOkrs.reduce(
-        (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
-        0
-      );
-
-      if (okrTotalPercentage > 100) {
-        setSnackbarMessage("Total OKR percentage cannot exceed 100%");
-        setSnackbarOpen(true);
-        return;
-      }
-
-      if (okrTotalPercentage !== 100) {
-        setSnackbarMessage("Total OKR percentage must equal 100%");
-        setSnackbarOpen(true);
-        return;
-      }
-    }
-
-    const draftData = {
-      isApprovedForCustomerUse: customerUse === "yes",
-      okr: selectedOkrs,
-      gep,
-      isPartneredEvent: isPartneredEvent === true,
-      isDraft: true,
-      isPublished: false,
-    };
-
-    const updatedFormData = { ...formData, ...draftData };
-    updateFormData(updatedFormData);
-
-    try {
-      const response = await sendDataToAPI(updatedFormData, "draft");
-      if (response.success) {
-        setSnackbarMessage("Draft saved successfully!");
-        setSnackbarOpen(true);
-      } else {
-        setSnackbarMessage("Failed to save draft.");
-        setSnackbarOpen(true);
-      }
-    } catch (error) {
-      setSnackbarMessage("An error occurred while saving the draft.");
+      setLoading(false);
       setSnackbarOpen(true);
     }
   };
@@ -337,30 +290,7 @@ export default function ExtraDetailsForm() {
             </span>
           </Typography>
           <Grid container spacing={2}>
-            {/* <Grid item xs={12}>
-              <FormControl component="fieldset" error={isCustomerUseError}>
-                <Typography variant="subtitle1">
-                  Approved for customer use?
-                </Typography>
-                <RadioGroup
-                  value={customerUse}
-                  onChange={(e) => setCustomerUse(e.target.value)}
-                >
-                  <FormControlLabel
-                    value="yes"
-                    control={<Radio />}
-                    label="Yes"
-                  />
-                  <FormControlLabel value="no" control={<Radio />} label="No" />
-                </RadioGroup>
-                {isCustomerUseError && (
-                  <Typography variant="body2" color="error">
-                    Please select an option for customer use approval.
-                  </Typography>
-                )}
-              </FormControl>
-            </Grid> */}
-
+            
             {/* OKR Selection as Expandable Accordion */}
             <Grid item xs={12}>
               <Accordion>
@@ -539,30 +469,43 @@ export default function ExtraDetailsForm() {
             >
               Previous
             </Button>
+            {loading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
+                  borderRadius: "8px", // Optional: match the button's border-radius
+                  zIndex: 1, // Ensure it appears on top
+                }}
+              >
+                <CircularProgress size={40} />
+              </Box>
+            )}
+
+            {/* Button */}
             <Button
               variant="contained"
               onClick={handleNext}
-              style={{
+              sx={{
                 backgroundColor: blue[500],
                 color: "white",
-                float: "left",
                 margin: "10px",
+                "&:hover": {
+                  backgroundColor: blue[700],
+                },
               }}
+              disabled={loading} // Disable button while loading
             >
               Next
             </Button>
-            {/* <Button
-              variant="contained"
-              onClick={handleSaveAsDraft}
-              style={{
-                backgroundColor: blue[500],
-                color: "white",
-                float: "right",
-                margin: "10px",
-              }}
-            >
-              Save as Draft
-            </Button> */}
+
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}

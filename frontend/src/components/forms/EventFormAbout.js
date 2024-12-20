@@ -1,4 +1,10 @@
-import React, { useEffect, useContext, useState, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { v4 as uuidv4 } from "uuid";
 import {
   Button,
@@ -22,6 +28,7 @@ import {
   DialogContent,
   DialogTitle,
   Tooltip,
+  CircularProgress,
 } from "@mui/material";
 import { Box } from "@mui/system";
 import debounce from "lodash.debounce";
@@ -53,7 +60,8 @@ const EventForm = () => {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [colorMap, setColorMap] = useState({});
   const [organisedByOptions, setOrganisedByOptions] = useState([]);
-  const [newOrganiser, setNewOrganiser] = useState(""); 
+  const [newOrganiser, setNewOrganiser] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -143,9 +151,9 @@ const EventForm = () => {
   const [hasEndDateChanged, setHasEndDateChanged] = useState(false);
   const isEndDateValid = useMemo(() => !!endDate, [endDate]);
   const isEndDateLater = useMemo(
-  () => isEndDateValid && new Date(endDate) > new Date(startDate),
-  [endDate, startDate, isEndDateValid]
-);
+    () => isEndDateValid && new Date(endDate) > new Date(startDate),
+    [endDate, startDate, isEndDateValid]
+  );
   const handleStartDateChange = (newDate) => {
     setStartDate(newDate);
     setHasStartDateChanged(true);
@@ -167,8 +175,6 @@ const EventForm = () => {
     setGeminiPrompt("");
     setChatLog([]);
   };
-
-
 
   const handleGeminiSubmit = async () => {
     if (!geminiPrompt.trim()) return; // Prevent empty submission
@@ -362,6 +368,7 @@ const EventForm = () => {
   };
 
   const handleNext = async () => {
+    setLoading(true);
     const existingEventId = selectedEvent
       ? selectedEvent.eventId
       : formData.eventId;
@@ -371,7 +378,6 @@ const EventForm = () => {
     const isDescriptionValid = description?.trim() !== "";
     const isStartDateValid = !!startDate;
 
-  
     const isOrganisedByValid = organisedBy.length > 0;
     const isEventTypeValid = eventType?.trim() !== "";
     const isEventIdValid = !!eventId;
@@ -380,7 +386,7 @@ const EventForm = () => {
     setIsDescriptionError(!isDescriptionValid);
     setIsStartDateError(!isStartDateValid);
     setIsEndDateError(!(isEndDateValid && isEndDateLater));
-     setIsOrganisedByError(!isOrganisedByValid);
+    setIsOrganisedByError(!isOrganisedByValid);
     setIsEventTypeError(!isEventTypeValid);
 
     const formIsValid =
@@ -388,7 +394,7 @@ const EventForm = () => {
       isDescriptionValid &&
       isStartDateValid &&
       isEndDateValid &&
-      isEndDateLater && 
+      isEndDateLater &&
       isOrganisedByValid &&
       isEventTypeValid &&
       isEventIdValid;
@@ -406,6 +412,7 @@ const EventForm = () => {
         setSnackbarMessage("Please fill in all required fields.");
       }
       setSnackbarOpen(true);
+      setLoading(false);
       return;
     }
 
@@ -437,14 +444,17 @@ const EventForm = () => {
         setSnackbarOpen(true);
         setTimeout(() => {
           saveAndNavigate(updatedFormData, "/location");
+          setLoading(false);
         }, 1500);
       } else {
         setSnackbarMessage("Failed to save draft.");
         setSnackbarOpen(true);
+        setLoading(false);
       }
     } catch (error) {
       setSnackbarMessage("An error occurred while saving the draft.");
       setSnackbarOpen(true);
+      setLoading(false);
     }
   };
 
@@ -452,8 +462,6 @@ const EventForm = () => {
     setEmoji(emojiData.emoji);
     setIsEmojiPickerOpen(false);
   };
-
-  
 
   const handleAddOrganiser = () => {
     const trimmedOrganiser = newOrganiser.trim();
@@ -498,47 +506,6 @@ const EventForm = () => {
   };
   const toggleEmojiPicker = () => setIsEmojiPickerOpen((prev) => !prev);
 
-  // const handleSaveAsDraft = async () => {
-  //   const existingEventId = selectedEvent ? selectedEvent.eventId : formData.eventId;
-  //   const eventId = existingEventId || uuidv4();
-  //   const isDraft = true;
-  //   const newFormData = {
-  //     eventId,
-  //     title,
-  //     description,
-  //     emoji,
-  //     organisedBy,
-  //     marketingActivityType,
-  //     isHighPriority,
-  //     isEventSeries,
-  //     startDate,
-  //     endDate,
-  //     marketingProgramInstanceId,
-  //     eventType,
-  //     isDraft,
-  //     userTimezone,
-  //     speakers,
-  //     isDraft: true,
-  //     isPublished: false,
-  //   };
-
-  //   updateFormData(newFormData);
-
-  //   try {
-  //     const response = await sendDataToAPI(newFormData);
-  //     if (response.success) {
-  //       updateFormData(newFormData);
-  //       setSnackbarMessage("Draft saved successfully!");
-  //       setSnackbarOpen(true);
-  //     } else {
-  //       setSnackbarMessage("Failed to save draft.");
-  //       setSnackbarOpen(true);
-  //     }
-  //   } catch (error) {
-  //     setSnackbarMessage("An error occurred while saving the draft.");
-  //     setSnackbarOpen(true);
-  //   }
-  // };
   const isDefaultDate = (date) => date && date.getTime() === 0;
   return (
     <div
@@ -733,8 +700,12 @@ const EventForm = () => {
                         <TextField
                           {...params}
                           fullWidth
-                          error={isStartDateError} 
-                          helperText={isStartDateError ? "Start date cannot be empty." : ""} 
+                          error={isStartDateError}
+                          helperText={
+                            isStartDateError
+                              ? "Start date cannot be empty."
+                              : ""
+                          }
                         />
                       )}
                     />
@@ -755,7 +726,8 @@ const EventForm = () => {
                           {...params}
                           fullWidth
                           error={isEndDateError} // Highlight in red if end date is missing
-                          helperText={!isEndDateValid
+                          helperText={
+                            !isEndDateValid
                               ? "End date cannot be empty."
                               : !isEndDateLater
                               ? "End date must be later than start date."
@@ -763,10 +735,10 @@ const EventForm = () => {
                           }
                           FormHelperTextProps={{
                             sx: {
-                              color: 'red', // Ensure the helper text is red
+                              color: "red", // Ensure the helper text is red
                               margin: 0, // Remove any additional margin
-                              position: 'absolute', // Prevent shifting the input
-                              bottom: '-20px', // Adjust the position of the helper text
+                              position: "absolute", // Prevent shifting the input
+                              bottom: "-20px", // Adjust the position of the helper text
                             },
                           }}
                         />
@@ -863,33 +835,36 @@ const EventForm = () => {
                     maxHeight: "300px",
                   }}
                 >
-{isStreaming ? (
-      // Display loading dots when fetching data
-      <LoadingDots />
-    ) : chatLog.length > 0 ? (
-      // Display chat log when available
-      chatLog.map((entry, index) => (
-        <Box key={index} sx={{ mb: 1 }}>
-          <Typography
-            variant="body2"
-            color={entry.sender === "user" ? "textPrimary" : "primary"}
-            sx={{
-              fontWeight: entry.sender === "user" ? "bold" : "normal",
-            }}
-          >
-            {entry.sender === "user" ? "You: " : "Gemini: "}
-          </Typography>
-          <Box sx={{ ml: 2 }}>
-            <ReactMarkdown>{entry.text}</ReactMarkdown>
-          </Box>
-        </Box>
-      ))
-    ) : (
-      // Placeholder when no response or input yet
-      <Typography variant="body2" color="textSecondary">
-        Your AI-generated description will appear here.
-      </Typography>
-    )}
+                  {isStreaming ? (
+                    // Display loading dots when fetching data
+                    <LoadingDots />
+                  ) : chatLog.length > 0 ? (
+                    // Display chat log when available
+                    chatLog.map((entry, index) => (
+                      <Box key={index} sx={{ mb: 1 }}>
+                        <Typography
+                          variant="body2"
+                          color={
+                            entry.sender === "user" ? "textPrimary" : "primary"
+                          }
+                          sx={{
+                            fontWeight:
+                              entry.sender === "user" ? "bold" : "normal",
+                          }}
+                        >
+                          {entry.sender === "user" ? "You: " : "Gemini: "}
+                        </Typography>
+                        <Box sx={{ ml: 2 }}>
+                          <ReactMarkdown>{entry.text}</ReactMarkdown>
+                        </Box>
+                      </Box>
+                    ))
+                  ) : (
+                    // Placeholder when no response or input yet
+                    <Typography variant="body2" color="textSecondary">
+                      Your AI-generated description will appear here.
+                    </Typography>
+                  )}
                 </Box>
 
                 {/* Input field for prompt */}
@@ -1032,19 +1007,50 @@ const EventForm = () => {
               >
                 Save as Draft
               </Button> */}
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{
-                  backgroundColor: blue[500],
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: blue[700],
-                  },
+              <div
+                style={{
+                  marginTop: "20px",
+                  textAlign: "right",
+                  position: "relative",
                 }}
               >
-                Next
-              </Button>
+                {/* Spinner overlay */}
+                {loading && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
+                      borderRadius: "8px", // Optional: match the button's border-radius
+                      zIndex: 1, // Ensure it appears on top
+                    }}
+                  >
+                    <CircularProgress size={40} />
+                  </Box>
+                )}
+
+                {/* Button */}
+                <Button
+                  variant="contained"
+                  onClick={handleNext}
+                  sx={{
+                    backgroundColor: blue[500],
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: blue[700],
+                    },
+                  }}
+                  disabled={loading} // Disable button while loading
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </form>
         </div>
