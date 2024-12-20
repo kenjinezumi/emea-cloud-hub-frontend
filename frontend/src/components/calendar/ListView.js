@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useCallback } from 'react';
 import dayjs from 'dayjs';
-import { List, ListItem, ListItemText, Typography, Paper } from '@mui/material';
+import { List, ListItem, ListItemText, Typography, Paper, CircularProgress, Box } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import GlobalContext from '../../context/GlobalContext';
 import { getEventData } from '../../api/getEventData';
@@ -9,6 +9,8 @@ import EventInfoPopup from '../popup/EventInfoModal';
 export default function ListView() {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [loading, setLoading] = useState(false); 
+
   const {
     filters,
     setShowEventModal,
@@ -22,11 +24,16 @@ export default function ListView() {
   // Fetch events whenever the location changes
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Start loading spinner
+
       try {
         const eventData = await getEventData('eventDataQuery');
         setEvents(eventData);
+        setLoading(false); 
       } catch (error) {
-        console.error('Error fetching event data:', error);
+        console.error('Error fetching event data:', error);       
+        setLoading(false); 
+
       }
     };
 
@@ -34,116 +41,6 @@ export default function ListView() {
     setShowEventModal(false);
     setShowInfoEventModal(false);
   }, [location, setShowEventModal, setShowInfoEventModal]);
-
-  // Apply filters to events
-  // useEffect(() => {
-  //   const fetchAndFilterEvents = async () => {
-  //     try {
-  //       const eventData = await getEventData('eventDataQuery');
-  //       setEvents(eventData);
-  
-  //       if (!Array.isArray(eventData)) {
-  //         console.error("fetchAndFilterEvents was called with 'eventData' that is not an array:", eventData);
-  //         return;
-  //       }
-  
-  //       const results = await Promise.all(eventData.map(async (event) => {
-  //         try {
-  //           const subRegionMatch = filters.subRegions.some(subRegion => {
-  //             try {
-  //               return subRegion.checked && event.subRegion?.includes(subRegion.label);
-  //             } catch (err) {
-  //               console.error('Error checking subRegion filter:', err, subRegion, event);
-  //               return false;
-  //             }
-  //           });
-  
-  //           const gepMatch = filters.gep.some(gep => {
-  //             try {
-  //               return gep.checked && event.gep?.includes(gep.label);
-  //             } catch (err) {
-  //               console.error('Error checking GEP filter:', err, gep, event);
-  //               return false;
-  //             }
-  //           });
-  
-  //           const buyerSegmentRollupMatch = filters.buyerSegmentRollup.some(segment => {
-  //             try {
-  //               return segment.checked && event.buyerSegmentRollup?.includes(segment.label);
-  //             } catch (err) {
-  //               console.error('Error checking buyerSegmentRollup filter:', err, segment, event);
-  //               return false;
-  //             }
-  //           });
-  
-  //           const accountSectorMatch = filters.accountSectors.some(sector => {
-  //             try {
-  //               return sector.checked && event.accountSectors?.[sector.label];
-  //             } catch (err) {
-  //               console.error('Error checking accountSectors filter:', err, sector, event);
-  //               return false;
-  //             }
-  //           });
-  
-  //           const accountSegmentMatch = filters.accountSegments.some(segment => {
-  //             try {
-  //               return segment.checked && event.accountSegments?.[segment.label]?.selected;
-  //             } catch (err) {
-  //               console.error('Error checking accountSegments filter:', err, segment, event);
-  //               return false;
-  //             }
-  //           });
-  
-  //           const productFamilyMatch = filters.productFamily.some(product => {
-  //             try {
-  //               return product.checked && event.productAlignment?.[product.label]?.selected;
-  //             } catch (err) {
-  //               console.error('Error checking productFamily filter:', err, product, event);
-  //               return false;
-  //             }
-  //           });
-  
-  //           const industryMatch = filters.industry.some(industry => {
-  //             try {
-  //               return industry.checked && event.industry === industry.label;
-  //             } catch (err) {
-  //               console.error('Error checking industry filter:', err, industry, event);
-  //               return false;
-  //             }
-  //           });
-  
-  //           const isPartneredEventMatch = filters.isPartneredEvent === event.isPartneredEvent;
-  //           const isDraftMatch = filters.isDraft === event.isDraft;
-
-  
-  //           return (
-  //             subRegionMatch &&
-  //             gepMatch &&
-  //             buyerSegmentRollupMatch &&
-  //             accountSectorMatch &&
-  //             accountSegmentMatch &&
-  //             productFamilyMatch &&
-  //             industryMatch &&
-  //             isPartneredEventMatch &&
-  //             isDraftMatch
-  //           );
-  //         } catch (filterError) {
-  //           console.error('Error applying filters to event:', filterError, event);
-  //           return false;
-  //         }
-  //       }));
-  
-  //       setFilteredEvents(eventData.filter((_, index) => results[index]));
-  //     } catch (error) {
-  //       console.error('Error fetching event data:', error);
-  //     }
-  //   };
-  
-  //   fetchAndFilterEvents();
-  // }, [location, filters]);
-
-  // Filter events based on search text
-// Filter events based on search text and sort by date in descending order
 useEffect(() => {
   if (searchText) {
     const lowercasedSearchText = searchText.toLowerCase();
@@ -192,6 +89,20 @@ useEffect(() => {
 
   return (
     <Paper sx={{ margin: 2, padding: 2, width: '90%', overflowY: 'auto' }}>
+        {loading ? (
+        // Show spinner while loading
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
       <List>
         {filteredEvents.map((event, index) => {
           const borderColor = getBorderColor(event.eventType);
@@ -222,6 +133,8 @@ useEffect(() => {
         })}
       </List>
       {showEventInfoModal && <EventInfoPopup />}
+      </>
+      )}
     </Paper>
   );
 }
