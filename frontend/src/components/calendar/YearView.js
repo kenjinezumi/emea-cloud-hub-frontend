@@ -16,7 +16,7 @@ import {
   Box,
   Chip,
   Tooltip,
-  Modal,
+  Modal
 } from "@mui/material";
 import "../styles/Yearview.css";
 import { useLocation } from "react-router-dom";
@@ -62,9 +62,9 @@ export default function YearView() {
   } = useContext(GlobalContext);
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const [selectedGepEvents, setSelectedGepEvents] = useState(null); // For showing filtered events
-  const [selectedMonth, setSelectedMonth] = useState(null); // For filtering events by month
-  const [selectedGep, setSelectedGep] = useState(null); //
+  const [selectedGepEvents, setSelectedGepEvents] = useState(null); 
+  const [selectedMonth, setSelectedMonth] = useState(null); 
+  const [selectedGep, setSelectedGep] = useState(null);
   const location = useLocation();
 
   const year = daySelected.year();
