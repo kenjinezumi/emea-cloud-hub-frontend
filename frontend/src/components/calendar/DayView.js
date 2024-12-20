@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import GlobalContext from "../../context/GlobalContext";
-import { Typography, Paper, Box } from "@mui/material";
+import { Typography, Paper, Box, CircularProgress } from "@mui/material";
 import dayjs from "dayjs";
 import minMax from "dayjs/plugin/minMax";
 import { useLocation } from "react-router-dom";
@@ -43,6 +43,7 @@ export default function DayView() {
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [loading, setLoading] = useState(false); 
 
   const hourHeight = 90;
   const startHour = 0;
@@ -51,6 +52,7 @@ export default function DayView() {
 
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
+      setLoading(true);
       try {
         const eventData = await getEventData("eventDataQuery");
         setEvents(eventData);
@@ -420,6 +422,8 @@ export default function DayView() {
         setFilteredEvents(finalFilteredEvents);
       } catch (error) {
         console.error("Error fetching event data:", error);
+      } finally {
+        setLoading(false); // Stop loading spinner
       }
     };
 
@@ -691,8 +695,22 @@ export default function DayView() {
         </Typography>
       </div>
 
+      {loading ? ( 
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "calc(100vh - 100px)",
+          }}
+        >
+          <CircularProgress />
+        </div>
+      ) : (
+
+        <>
       {/* Multi-Day Events Section */}
-      {multiDayEvents.length > 0 && (
+      { multiDayEvents.length > 0 && (
         <Box
           sx={{
             position: "relative",
@@ -1001,6 +1019,10 @@ export default function DayView() {
           onClose={() => setShowInfoEventModal(false)}
         />
       )}
+      </>
+    )}
     </Paper>
+    
   );
+
 }
