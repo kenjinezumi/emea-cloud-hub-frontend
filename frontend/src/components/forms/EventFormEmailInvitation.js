@@ -14,6 +14,8 @@ import {
   Autocomplete,
   Select,
   MenuItem,
+  CircularProgress,
+  Box,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmailIcon from "@mui/icons-material/Email";
@@ -43,6 +45,7 @@ const EventFormEmailInvitation = () => {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [loading, setLoading] = useState(false);
   const [languagesAndTemplates, setLanguagesAndTemplates] = useState(
     formData?.languagesAndTemplates?.length > 0
       ? formData.languagesAndTemplates
@@ -151,6 +154,8 @@ const EventFormEmailInvitation = () => {
   };
 
   const handleNext = async () => {
+    setLoading(true);
+
     const formIsValid = languagesAndTemplates.every(
       (item) =>
         item.language.trim() !== "" &&
@@ -171,14 +176,17 @@ const EventFormEmailInvitation = () => {
         setSnackbarMessage("Draft saved successfully!");
         setSnackbarOpen(true);
         setTimeout(() => {
+          setLoading(false);
           saveAndNavigate(updatedFormData, "/audience");
         }, 1500);
       } else {
         setSnackbarMessage("Failed to save draft.");
+        setLoading(false);
         setSnackbarOpen(true);
       }
     } catch (error) {
       setSnackbarMessage("An error occurred while saving the draft.");
+      setLoading(false);
       setSnackbarOpen(true);
     }
   };
@@ -187,30 +195,6 @@ const EventFormEmailInvitation = () => {
     saveAndNavigate({ languagesAndTemplates }, "/extra");
   };
 
-  const handleSaveAsDraft = async () => {
-    const updatedFormData = {
-      ...formData,
-      languagesAndTemplates,
-      isDraft: true,
-      isPublished: false,
-    };
-
-    updateFormData(updatedFormData);
-
-    try {
-      const response = await sendDataToAPI(updatedFormData, "draft");
-      if (response.success) {
-        setSnackbarMessage("Draft saved successfully!");
-        setSnackbarOpen(true);
-      } else {
-        setSnackbarMessage("Failed to save draft.");
-        setSnackbarOpen(true);
-      }
-    } catch (error) {
-      setSnackbarMessage("An error occurred while saving the draft.");
-      setSnackbarOpen(true);
-    }
-  };
 
   return (
     <div
@@ -477,33 +461,42 @@ const EventFormEmailInvitation = () => {
               >
                 Previous
               </Button>
+              {loading && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
+                    borderRadius: "8px", // Optional: match the button's border-radius
+                    zIndex: 1, // Ensure it appears on top
+                  }}
+                >
+                  <CircularProgress size={40} />
+                </Box>
+              )}
+
+              {/* Button */}
               <Button
                 variant="contained"
                 onClick={handleNext}
                 sx={{
                   backgroundColor: blue[500],
                   color: "white",
-                  marginRight: 2,
+                  margin: "10px",
                   "&:hover": {
                     backgroundColor: blue[700],
                   },
                 }}
+                disabled={loading} // Disable button while loading
               >
                 Next
               </Button>
-              {/* <Button
-                variant="contained"
-                onClick={handleSaveAsDraft}
-                sx={{
-                  backgroundColor: blue[500],
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: blue[700],
-                  },
-                }}
-              >
-                Save as Draft
-              </Button> */}
             </div>
           </form>
         </div>
