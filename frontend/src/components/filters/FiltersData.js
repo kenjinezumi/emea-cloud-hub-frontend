@@ -2,6 +2,8 @@ export const eventTypeOptions = [
   {label: 'Online Event', checked: true},
   {label: 'Physical Event', checked: true},
   {label: 'Hybrid Event', checked: true},
+  {label: 'Prospecting Sprint', checked: true},
+
 ];
 
 export const regionFilters = [
