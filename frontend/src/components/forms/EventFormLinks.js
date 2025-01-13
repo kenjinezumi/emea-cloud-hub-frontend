@@ -88,6 +88,7 @@ export default function LinksForm() {
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const { setCurrentView } = useContext(GlobalContext);
   const [isError, setIsError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -236,6 +237,8 @@ export default function LinksForm() {
         setSnackbarMessage("Details saved and published successfully!");
         setLoading(false);
         setSnackbarOpen(true);
+        setCurrentView("month");
+        saveAndNavigate({}, "/");
       } else {
         setSnackbarMessage("Failed to save and publish.");
         setLoading(false);
@@ -248,7 +251,6 @@ export default function LinksForm() {
     } finally {
       setDialogOpen(false);
       setLoading(false);
-      saveAndNavigate({}, "/");
     }
   };
 

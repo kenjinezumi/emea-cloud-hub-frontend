@@ -2,6 +2,8 @@ export const eventTypeOptions = [
   {label: 'Online Event', checked: true},
   {label: 'Physical Event', checked: true},
   {label: 'Hybrid Event', checked: true},
+  {label: 'Prospecting Sprint', checked: true},
+
 ];
 
 export const regionFilters = [
@@ -479,8 +481,8 @@ export const partnerEventOptions = [
 
 export const draftStatusOptions = [
   { label: 'Draft', value: 'Draft', checked: false },
-  { label: 'Finalized', value: 'Finalized', checked: false },
-  { label: 'Invite available', value: 'Invite available', checked: false },
+  { label: 'Finalized', value: 'Finalized', checked: true },
+  { label: 'Invite available', value: 'Invite available', checked: true },
 ];
 
 export const programNameOptions = [

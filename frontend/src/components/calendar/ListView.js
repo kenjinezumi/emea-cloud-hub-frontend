@@ -53,7 +53,7 @@ useEffect(() => {
       );
     });
     setFilteredEvents(
-      filtered.sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
+      filtered.sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
     );
   } else {
     setFilteredEvents(

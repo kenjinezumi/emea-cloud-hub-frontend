@@ -588,7 +588,7 @@ export default function Filters() {
     const filterData = {
       ldap,
       filterName: customFilterName.trim(),
-      config: {
+      config:[ {
         regions: localRegionOptions.map(({ label, checked }) => ({ label, checked })),
         subRegions: localSubRegionFilters.map(({ label, checked }) => ({
           label,
@@ -632,7 +632,7 @@ export default function Filters() {
           checked,
         })),
         organisedBy: selectedOrganiser || [],
-      },
+      }],
     };
 
     // Send the formatted filter data to the backend
