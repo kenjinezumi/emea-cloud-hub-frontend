@@ -744,8 +744,184 @@ WHERE eventId = @eventId;
         const types = {
           ldap: 'STRING',
           filterName: 'STRING',
-          config: configType,  // from our function
+          config: {
+            type: 'STRUCT',
+            fields: {
+              // For "regions": array of { label: STRING, checked: BOOL }
+              regions: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              // For "subRegions": same shape as regions
+              subRegions: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              // Countries, same shape again
+              countries: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              // GEP also has { label, checked }
+              gep: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              programName: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              activityType: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              // accountSectors has { label: "Commercial", checked: false }
+              // (You might also see it spelled "value" instead of "label", double-check your code.)
+              accountSectors: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              accountSegments: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              buyerSegmentRollup: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              productFamily: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              industry: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              // For partnerEvent, you have { label, value, checked }
+              partnerEvent: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    value: 'BOOL',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              // For draftStatus, you have { label, value, checked } where 'value' is a STRING
+              draftStatus: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    value: 'STRING',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              // For newlyCreated, it's { label, value: BOOL, checked: BOOL }
+              newlyCreated: {
+                type: 'ARRAY',
+                arrayType: {
+                  type: 'STRUCT',
+                  fields: {
+                    label: 'STRING',
+                    value: 'BOOL',
+                    checked: 'BOOL',
+                  },
+                },
+              },
+    
+              // organisedBy can be null or an array of strings
+              organisedBy: {
+                type: 'ARRAY',
+                arrayType: 'STRING',
+              },
+            },
+          },
         };
+    
 
         // 4) Add `types` to the query options
         const options = {
