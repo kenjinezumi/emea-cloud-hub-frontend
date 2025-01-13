@@ -216,6 +216,76 @@ module.exports = (firestoreStore) => {
   </html>
 `;
 
+/**
+ * Recursively infers BigQuery parameter types from a JS object or array.
+ * 
+ * @param {*} value - The JavaScript value to map to a BigQuery type.
+ * @returns {Object|string} - A type descriptor suitable for the `types` field in BigQuery query options.
+ */
+function inferBigQueryType(value) {
+  // 1) Handle null or undefined
+  if (value === null || value === undefined) {
+    // We can't fully guess null's type.
+    // You may want to return 'STRING' or something default.
+    // Or throw an error that you can't handle null.
+    return 'STRING'; // or handle some default
+  }
+
+  // 2) If it's an array
+  if (Array.isArray(value)) {
+    // If it's empty, we can't guess the element type from data.
+    // We'll guess that it's an array of STRING or array of STRUCT, etc. 
+    // Because you know your schema, you can default to 'STRING' if needed.
+    if (value.length === 0) {
+      // If you expect arrays-of-STRUCT, you could do:
+      // return { type: 'ARRAY', arrayType: 'STRING' };
+      // or if you want to assume array of STRING by default:
+      return { type: 'ARRAY', arrayType: 'STRING' };
+    }
+
+    // If it’s not empty, infer from the first element
+    const firstElem = value[0];
+    const inferredElemType = inferBigQueryType(firstElem);
+
+    // If the first element’s type is a string (e.g. "STRING"), do:
+    if (typeof inferredElemType === 'string') {
+      // e.g. { type: 'ARRAY', arrayType: 'STRING' }
+      return { type: 'ARRAY', arrayType: inferredElemType };
+    } else {
+      // Otherwise, it's probably an object like { type: 'STRUCT', fields: {...} }
+      return { type: 'ARRAY', arrayType: inferredElemType };
+    }
+  }
+
+  // 3) If it’s an object (and not an array)
+  if (typeof value === 'object') {
+    const fields = {};
+    for (const key of Object.keys(value)) {
+      fields[key] = inferBigQueryType(value[key]);
+    }
+    return {
+      type: 'STRUCT',
+      fields,
+    };
+  }
+
+  // 4) If it’s a primitive: string, boolean, number, etc.
+  if (typeof value === 'string') {
+    return 'STRING';
+  } else if (typeof value === 'boolean') {
+    return 'BOOL';
+  } else if (typeof value === 'number') {
+    // Could default to INT64 or FLOAT64. 
+    // BigQuery uses INT64 for integers, FLOAT64 for decimals. 
+    // We'll assume INT64 for simplicity:
+    return 'INT64';
+  }
+
+  // Catch-all fallback:
+  return 'STRING';
+}
+
+
   // Function to populate the base template with content
   function populateTemplate(template, bodyContent) {
     // Replace newlines in the body content with <br> for proper HTML rendering
@@ -661,27 +731,36 @@ WHERE eventId = @eventId;
       }
 
       try {
-        logger.info("POST /: Saving filter configuration.", {
-          ldap,
-        });
+        // 1) Build the insertQuery, same as before
+          const insertQuery = `
+          INSERT INTO \`google.com:cloudhub.data.filters_config\` (id, ldap, filterName, config)
+          VALUES (GENERATE_UUID(), @ldap, @filterName, @config);
+        `;
 
-        const insertQuery = `
-        INSERT INTO \`google.com:cloudhub.data.filters_config\` (id, ldap, filterName, config)
-        VALUES (GENERATE_UUID(), @ldap, @filterName, @config);
-    `;
+        // 2) Dynamically generate the parameter types for `config`
+        const configType = inferBigQueryType(config);
 
+        // 3) Build the entire `types` object for your parameters
+        const types = {
+          ldap: 'STRING',
+          filterName: 'STRING',
+          config: configType,  // from our function
+        };
+
+        // 4) Add `types` to the query options
         const options = {
           query: insertQuery,
           location: "US",
           params: {
-            ldap: ldap,
-            filterName: filterName,
-            config: config,
+            ldap,
+            filterName,
+            config,
           },
+          types,
         };
 
-        await bigquery.query(options);
-
+  // 5) Run the query
+  await bigquery.query(options);
         logger.info("POST /: Filter configuration saved successfully.", {
           ldap,
         });
