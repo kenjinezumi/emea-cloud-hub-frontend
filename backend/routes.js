@@ -652,12 +652,11 @@ WHERE eventId = @eventId;
       // Save filter logic
       const { ldap, filterName, config } = data;
 
-      if (!ldap || !filterName || !config || config.length === 0) {
+      if (!ldap || !filterName || !config) {
         logger.warn("POST /: Incomplete data for saving filter.");
         return res.status(400).json({
           success: false,
-          message:
-            "LDAP and filter configuration are required for saving filter.",
+          message: "LDAP, filter name, and config are required for saving filter.",
         });
       }
 
