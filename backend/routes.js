@@ -216,6 +216,41 @@ module.exports = (firestoreStore) => {
   </html>
 `;
 
+function removeNullFields(obj) {
+  if (obj === null) {
+    // Return undefined or null so the caller can decide to drop it.
+    // We return undefined so that if this is an array element, it can be filtered out.
+    return undefined;
+  }
+
+  // If it's an array, recursively process each item and filter out nullish.
+  if (Array.isArray(obj)) {
+    const cleanedArray = obj
+      .map((item) => removeNullFields(item))    // Clean each element
+      .filter((item) => item !== undefined);    // Drop undefined
+    return cleanedArray;
+  }
+
+  // If it's an object (and not null or array), recurse for each property
+  if (typeof obj === "object") {
+    const cleanedObj = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = removeNullFields(obj[key]);
+        // Only assign it if the cleaned value is not undefined
+        if (value !== undefined) {
+          cleanedObj[key] = value;
+        }
+      }
+    }
+    return cleanedObj;
+  }
+
+  // For primitive types (string, number, boolean) just return them as-is
+  return obj;
+}
+
+
 /**
  * Recursively infers BigQuery parameter types from a JS object or array.
  * 
@@ -1368,11 +1403,13 @@ const createSalesLoftCadence = async (data) => {
 
 
   function cleanEventData(eventData) {
+    const  withoutNulls = removeNullFields(eventData);
+
     const cleanedData = {};
 
-    for (const key in eventData) {
-      if (eventData.hasOwnProperty(key)) {
-        const value = eventData[key];
+    for (const key in withoutNulls) {
+      if (withoutNulls.hasOwnProperty(key)) {
+        const value = withoutNulls[key];
 
         if (key === "entryCreatedDate") {
           continue;
