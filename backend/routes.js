@@ -216,39 +216,36 @@ module.exports = (firestoreStore) => {
   </html>
 `;
 
-function removeNullFields(obj) {
-  if (obj === null) {
-    // Return undefined or null so the caller can decide to drop it.
-    // We return undefined so that if this is an array element, it can be filtered out.
-    return undefined;
-  }
+function removeNullFields(obj, preserveFields = []) {
+  if (obj === null) return undefined;
 
-  // If it's an array, recursively process each item and filter out nullish.
   if (Array.isArray(obj)) {
-    const cleanedArray = obj
-      .map((item) => removeNullFields(item))    // Clean each element
-      .filter((item) => item !== undefined);    // Drop undefined
-    return cleanedArray;
+    return obj
+      .map(item => removeNullFields(item, preserveFields))
+      .filter(item => item !== undefined);
   }
 
-  // If it's an object (and not null or array), recurse for each property
   if (typeof obj === "object") {
     const cleanedObj = {};
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const value = removeNullFields(obj[key]);
-        // Only assign it if the cleaned value is not undefined
-        if (value !== undefined) {
-          cleanedObj[key] = value;
-        }
+      // If this key is in the "preserveFields" list, do NOT remove it if it's null
+      if (obj[key] === null && preserveFields.includes(key)) {
+        // Keep the field as `null` rather than removing it
+        cleanedObj[key] = null;
+        continue;
+      }
+      // Otherwise proceed with normal null removal
+      const cleanedValue = removeNullFields(obj[key], preserveFields);
+      if (cleanedValue !== undefined) {
+        cleanedObj[key] = cleanedValue;
       }
     }
     return cleanedObj;
   }
 
-  // For primitive types (string, number, boolean) just return them as-is
   return obj;
 }
+
 
 
 /**
@@ -1403,7 +1400,8 @@ const createSalesLoftCadence = async (data) => {
 
 
   function cleanEventData(eventData) {
-    const  withoutNulls = removeNullFields(eventData);
+    const withoutNulls = removeNullFields(eventData, ["type"]);
+
 
     const cleanedData = {};
 
