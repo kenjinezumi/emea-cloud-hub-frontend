@@ -1009,7 +1009,7 @@ export default function Filters() {
           }}
           onClick={clearAllFilters}
         >
-          Clear all filters
+          Reset all filters
         </button>
       </div>
 
