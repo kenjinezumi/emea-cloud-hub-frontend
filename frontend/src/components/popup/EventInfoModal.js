@@ -221,9 +221,12 @@ export default function EventInfoPopup({ event, close }) {
           "Template data is incomplete. Missing subjectLine or template."
         );
       }
-      const result = await createSalesLoftEmailTemplate(
-        salesLoftTemplate
-      );
+      const result = await createSalesLoftEmailTemplate({
+        title: selectedEvent.title,            
+        subjectLine: salesLoftTemplate.subjectLine,
+        template: salesLoftTemplate.template,
+      });
+      
       if (result.success) {
         setSnackbarMessage("SalesLoft email template created successfully!");
       } else {
