@@ -12,7 +12,7 @@ const createSalesLoftEmailTemplate = async (salesLoftTemplate) => {
       },
       body: JSON.stringify({
         data: {
-          title: 'SalesLoft Email',
+          title: salesLoftTemplate.title,
           subject: salesLoftTemplate.subjectLine,
           body: salesLoftTemplate.template,
           open_tracking: true,
