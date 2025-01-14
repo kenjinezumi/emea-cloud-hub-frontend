@@ -305,7 +305,14 @@ export default function Filters() {
     setLocalProductFamilyOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
     setLocalIndustryOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
     setLocalPartnerEventOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
-    setLocalDraftStatusOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
+    setLocalDraftStatusOptions((prev) =>
+      prev.map((option) => {
+        if (option.label === "Finalized" || option.label === "Invite available") {
+          return { ...option, checked: true };
+        }
+        return { ...option, checked: false };
+      })
+    );
     setSelectedOrganiser(null);
   };
 
@@ -1002,7 +1009,7 @@ export default function Filters() {
           }}
           onClick={clearAllFilters}
         >
-          Clear all filters
+          Reset all filters
         </button>
       </div>
 
