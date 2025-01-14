@@ -228,7 +228,7 @@ export default function EventInfoPopup({ event, close }) {
       });
       
       if (result.success) {
-        setSnackbarMessage("SalesLoft email template created successfully!");
+        setSnackbarMessage("Team Cadence available in Salesloft - Search in Salesloft by Event Title");
       } else {
         setSnackbarMessage(
           "Failed to create SalesLoft template. Please try again."
