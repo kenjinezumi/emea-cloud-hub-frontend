@@ -100,13 +100,13 @@ export default function LocationFormPage() {
     const isRegionValid = region?.trim() !== "";    
     const isSubRegionValid = subRegion.length > 0;
     const isCountryValid = country.length > 0;
-    const isCityValid = city?.trim() !== "";
+    // const isCityValid = city?.trim() !== "";
     setIsRegionError(!isRegionValid);
     setIsSubRegionError(!isSubRegionValid);
     setIsCountryError(!isCountryValid);
     // setIsCityError(!isCityValid);
     const formIsValid =
-      isRegionValid && isSubRegionValid && isCountryValid && isCityValid;
+      isRegionValid && isSubRegionValid && isCountryValid;
 
     if (!formIsValid) {
       setIsFormValid(false);
