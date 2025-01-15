@@ -51,14 +51,7 @@ const EventFormEmailInvitation = () => {
       ? formData.languagesAndTemplates
       : selectedEvent?.languagesAndTemplates?.length > 0
       ? selectedEvent.languagesAndTemplates
-      : [
-          {
-            platform: "Gmail",
-            language: "",
-            template: "",
-            subjectLine: "",
-          },
-        ]
+      : []
   );
 
   const [isFormValid, setIsFormValid] = useState(true);
@@ -67,15 +60,23 @@ const EventFormEmailInvitation = () => {
   const quillRefs = useRef([]);
 
   useEffect(() => {
-    const updatedFormData = { ...formData, languagesAndTemplates };
-
-    updateFormData(updatedFormData);
+    // Compare old array vs. new array to prevent an unnecessary update
+    const oldTemplates = formData?.languagesAndTemplates ?? [];
+    if (JSON.stringify(oldTemplates) !== JSON.stringify(languagesAndTemplates)) {
+      // Only update if there's a real difference
+      updateFormData({
+        ...formData,
+        languagesAndTemplates,
+      });
+    }
+    // NOTE: if formData has other fields that can change, see #2 below
   }, [languagesAndTemplates, formData, updateFormData]);
+  
 
   const handleAddLanguageAndTemplate = () => {
     setLanguagesAndTemplates([
       ...languagesAndTemplates,
-      { platform: "Gmail", language: "", template: "", subjectLine: "" },
+      { platform: "", language: "", template: "", subjectLine: "" },
     ]);
   };
 
@@ -236,7 +237,9 @@ const EventFormEmailInvitation = () => {
 
           <form noValidate>
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              {languagesAndTemplates.map((item, index) => (
+            {languagesAndTemplates.length > 0 ? (
+
+              languagesAndTemplates.map((item, index) => (
                 <Accordion
                   key={index}
                   sx={{ width: "100%", marginBottom: "8px" }}
@@ -247,11 +250,12 @@ const EventFormEmailInvitation = () => {
                     id={`panel-header-${index}`}
                   >
                     <Typography>
-                      {item.platform
-                        ? `${item.platform}${
-                            item.language ? ` - ${item.language}` : ""
-                          }`
-                        : `${item.language || "Select Language"}`}
+                                  {item.platform
+                    ? // If a platform is selected:
+                      `${item.platform}${item.language ? ` - ${item.language}` : ""}`
+                    : // If no platform is selected, display 'Add'
+                      "Add"
+    }
                     </Typography>
                   </AccordionSummary>
 
@@ -423,7 +427,11 @@ const EventFormEmailInvitation = () => {
                     </Grid>
                   </AccordionDetails>
                 </Accordion>
-              ))}
+              ))
+            ): (
+              // Render a message or simply nothing if you don't want to display anything
+              <Typography></Typography>
+            )}
               <Grid item xs={12}>
                 <Button
                   variant="outlined"
