@@ -15,6 +15,7 @@ import {
   countriesData,
 } from "../filters/FiltersData";
 import {
+  Alert,
   IconButton,
   Typography,
   Paper,
@@ -72,6 +73,7 @@ export default function EventInfoPopup({ event, close }) {
   const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const [linkedInDialogOpen, setLinkedInDialogOpen] = useState(false);
+  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
 
   const [calendarConfirmationDialogOpen, setCalendarConfirmationDialogOpen] =
     useState(false); // State for confirmation dialog
@@ -228,17 +230,20 @@ export default function EventInfoPopup({ event, close }) {
       });
       
       if (result.success) {
-        setSnackbarMessage("Team Cadence available in Salesloft - Search in Salesloft by Event Title");
+        setSnackbarMessage("Salesloft Cadence successfully created - Search in Salesloft by event title");
+        setSnackbarSeverity("success");
       } else {
         setSnackbarMessage(
           "Failed to create SalesLoft template. Please try again."
         );
+        setSnackbarSeverity("error");
       }
     } catch (error) {
       console.error("Error creating SalesLoft email template:", error);
       setSnackbarMessage(
         `Failed to create SalesLoft template: ${error.message}`
       );
+      setSnackbarSeverity("error");
     } finally {
       setDialogOpen(false);
       setSnackbarOpen(true);
@@ -1702,12 +1707,21 @@ export default function EventInfoPopup({ event, close }) {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
+          <Snackbar
+      open={snackbarOpen}
+      autoHideDuration={6000}
+      onClose={() => setSnackbarOpen(false)}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Optional: Positioning
+    >
+      <Alert
         onClose={() => setSnackbarOpen(false)}
-        message={snackbarMessage}
-      />
+        severity={snackbarSeverity}
+        sx={{ width: '100%' }}
+      >
+        {snackbarMessage}
+      </Alert>
+</Snackbar>
+
     </div>
   );
 }
