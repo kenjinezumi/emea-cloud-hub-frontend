@@ -286,7 +286,7 @@ export default function LinksForm() {
                   {(() => {
                     switch (key) {
                       case "hailoLinks":
-                        return "Hailo";
+                        return "Haiilo";
                       case "landingPageLinks":
                         return "Landing Page";
                       case "salesKitLinks":

@@ -43,7 +43,7 @@ export default function DayView() {
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
 
   const hourHeight = 90;
   const startHour = 0;
@@ -92,8 +92,6 @@ export default function DayView() {
             ...filters.countries,
             ...filters.programName,
             ...filters.activityType,
-
-
           ].some((filter) => filter.checked) ||
           filters.partnerEvent !== undefined ||
           filters.isNewlyCreated !== undefined ||
@@ -133,7 +131,7 @@ export default function DayView() {
                     return false;
                   }
                 });
-                const regionMatch =
+              const regionMatch =
                 !filters.regions.some((region) => region.checked) ||
                 filters.regions.some((region) => {
                   try {
@@ -169,7 +167,6 @@ export default function DayView() {
                   }
                 });
 
-
               const buyerSegmentRollupMatch =
                 !filters.buyerSegmentRollup.some(
                   (segment) => segment.checked
@@ -189,43 +186,42 @@ export default function DayView() {
                   }
                 });
 
-                const accountSectorMatch =
-  // Include all events if no sectors are checked
-  !filters.accountSectors.some((sector) => sector.checked) ||
-  // Check if any sector matches the event
-  filters.accountSectors.some((sector) => {
-    try {
-      if (sector.checked) {
-        // Map filter labels to keys in the event data
-        const sectorMapping = {
-          "Public Sector": "public",
-          "Commercial": "commercial"
-        };
+              const accountSectorMatch =
+                // Include all events if no sectors are checked
+                !filters.accountSectors.some((sector) => sector.checked) ||
+                // Check if any sector matches the event
+                filters.accountSectors.some((sector) => {
+                  try {
+                    if (sector.checked) {
+                      // Map filter labels to keys in the event data
+                      const sectorMapping = {
+                        "Public Sector": "public",
+                        Commercial: "commercial",
+                      };
 
-        // Find the corresponding key for the filter label
-        const sectorKey = sectorMapping[sector.label];
-        if (!sectorKey) {
-          console.warn(`No mapping found for sector label: ${sector.label}`);
-          return false;
-        }
+                      // Find the corresponding key for the filter label
+                      const sectorKey = sectorMapping[sector.label];
+                      if (!sectorKey) {
+                        console.warn(
+                          `No mapping found for sector label: ${sector.label}`
+                        );
+                        return false;
+                      }
 
-        // Check if the event matches the mapped key
-        return event.accountSectors?.[sectorKey] === true;
-      }
-      return false;
-    } catch (err) {
-      console.error(
-        "Error checking accountSectors filter:",
-        err,
-        sector,
-        event
-      );
-      return false;
-    }
-  });
-
-              
-              
+                      // Check if the event matches the mapped key
+                      return event.accountSectors?.[sectorKey] === true;
+                    }
+                    return false;
+                  } catch (err) {
+                    console.error(
+                      "Error checking accountSectors filter:",
+                      err,
+                      sector,
+                      event
+                    );
+                    return false;
+                  }
+                });
 
               const accountSegmentMatch =
                 !filters.accountSegments.some((segment) => segment.checked) ||
@@ -300,99 +296,108 @@ export default function DayView() {
                     .filter((option) => option.checked)
                     .map((option) => option.value)
                 : [];
-                const isDraftMatch = 
+              const isDraftMatch =
                 selectedDraftStatuses.length === 0 ||
                 (() => {
                   // Initialize an array to hold applicable statuses
                   const applicableStatuses = [];
-              
+
                   // Add "Draft" if the event is in draft mode
                   if (event.isDraft) {
                     applicableStatuses.push("Draft");
                   } else {
                     // If not a draft, add "Finalized" as a base status
                     applicableStatuses.push("Finalized");
-              
+
                     // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
                     if (
                       !event.isDraft &&
-                      event.languagesAndTemplates?.some(template =>
+                      event.languagesAndTemplates?.some((template) =>
                         ["Gmail", "Salesloft"].includes(template.platform)
                       )
                     ) {
                       applicableStatuses.push("Invite available");
                     }
                   }
-              
+
                   // Check if any selectedDraftStatuses match the applicable statuses
-                  return selectedDraftStatuses.some(status => applicableStatuses.includes(status));
+                  return selectedDraftStatuses.some((status) =>
+                    applicableStatuses.includes(status)
+                  );
                 })();
-                const programNameMatch =
+              const programNameMatch =
                 filters.programName.every((filter) => !filter.checked) ||
                 filters.programName.some((filter) => {
                   const isChecked = filter.checked;
                   const matches = event.programName?.some((name) =>
                     name.toLowerCase().includes(filter.label.toLowerCase())
                   );
-              
+
                   return isChecked && matches;
                 });
 
-                const activityTypeMatch =
+              const activityTypeMatch =
                 !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
                 filters.activityType.some((activity) => {
                   try {
                     // Check if the event type matches the checked activity types
                     return (
                       activity.checked &&
-                      event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
+                      event.eventType?.toLowerCase() ===
+                        activity.label.toLowerCase() // Ensure case-insensitive comparison
                     );
                   } catch (err) {
-                    console.error("Error checking activityType filter:", err, activity, event);
+                    console.error(
+                      "Error checking activityType filter:",
+                      err,
+                      activity,
+                      event
+                    );
                     return false; // Handle errors gracefully
                   }
                 });
-              
-                const isNewlyCreatedMatch =
-  !filters.newlyCreated?.some((option) => option.checked) ||
-  filters.newlyCreated?.some((option) => {
-    if (option.checked) {
-      const entryCreatedDate = event.entryCreatedDate?.value
-        ? dayjs(event.entryCreatedDate.value)
-        : null; // Access `value` property
 
-      if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-        console.warn("Invalid or missing entryCreatedDate for event:", event);
-        return option.value === false; // Consider missing dates as "old"
-      }
+              const isNewlyCreatedMatch =
+                !filters.newlyCreated?.some((option) => option.checked) ||
+                filters.newlyCreated?.some((option) => {
+                  if (option.checked) {
+                    const entryCreatedDate = event.entryCreatedDate?.value
+                      ? dayjs(event.entryCreatedDate.value)
+                      : null; // Access `value` property
 
-      const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
-      return option.value === isWithinTwoWeeks;
-    }
-    return false;
-  });
+                    if (!entryCreatedDate || !entryCreatedDate.isValid()) {
+                      console.warn(
+                        "Invalid or missing entryCreatedDate for event:",
+                        event
+                      );
+                      return option.value === false; // Consider missing dates as "old"
+                    }
 
+                    const isWithinTwoWeeks =
+                      dayjs().diff(entryCreatedDate, "day") <= 14;
+                    return option.value === isWithinTwoWeeks;
+                  }
+                  return false;
+                });
 
+              const organisedByMatch = (() => {
+                // Check if no organiser filter is applied
+                if (!filters.organisedBy || filters.organisedBy.length === 0) {
+                  return true; // No organiser filter applied
+                }
 
-  const organisedByMatch = (() => {
-    // Check if no organiser filter is applied
-    if (!filters.organisedBy || filters.organisedBy.length === 0) {
-      return true; // No organiser filter applied
-    }
-  
-    // Check if the event has no organiser data
-    if (!event.organisedBy || event.organisedBy.length === 0) {
-      return false; // Event does not have an organiser
-    }
-  
-    // Check for match
-    const isMatch = filters.organisedBy.some((organiser) =>
-      event.organisedBy.includes(organiser)
-    );
-  
-  
-    return isMatch; // Return the match result
-  })();
+                // Check if the event has no organiser data
+                if (!event.organisedBy || event.organisedBy.length === 0) {
+                  return false; // Event does not have an organiser
+                }
+
+                // Check for match
+                const isMatch = filters.organisedBy.some((organiser) =>
+                  event.organisedBy.includes(organiser)
+                );
+
+                return isMatch; // Return the match result
+              })();
               return (
                 subRegionMatch &&
                 gepMatch &&
@@ -404,9 +409,11 @@ export default function DayView() {
                 isPartneredEventMatch &&
                 isDraftMatch &&
                 regionMatch &&
-                countryMatch && 
-                programNameMatch && activityTypeMatch
-                && isNewlyCreatedMatch && organisedByMatch
+                countryMatch &&
+                programNameMatch &&
+                activityTypeMatch &&
+                isNewlyCreatedMatch &&
+                organisedByMatch
               );
             } catch (filterError) {
               console.error("Error applying filters to event:", filterError);
@@ -479,7 +486,7 @@ export default function DayView() {
       // 1. Check event status (Finalized or Invite-ready)
       const getEventStatusPriority = (event) => {
         const applicableStatuses = [];
-        
+
         if (event.isDraft) {
           applicableStatuses.push("Draft");
         } else {
@@ -492,29 +499,28 @@ export default function DayView() {
             applicableStatuses.push("Invite available");
           }
         }
-  
+
         if (applicableStatuses.includes("Invite available")) return 2; // Highest priority
         if (applicableStatuses.includes("Finalized")) return 1; // Second priority
         return 0; // Default priority for drafts
       };
-  
+
       const statusPriorityA = getEventStatusPriority(a);
       const statusPriorityB = getEventStatusPriority(b);
-  
+
       if (statusPriorityA !== statusPriorityB) {
         return statusPriorityB - statusPriorityA; // Higher status priority first
       }
-  
+
       // 2. Check High Priority tag
       if (a.isHighPriority !== b.isHighPriority) {
         return b.isHighPriority - a.isHighPriority; // `true` comes first
       }
-  
+
       // 3. Descending by expected attendees
       return b.expectedAttendees - a.expectedAttendees;
     });
 
-    
     const groups = [];
 
     sortedEvents.forEach((event) => {
@@ -695,7 +701,7 @@ export default function DayView() {
         </Typography>
       </div>
 
-      {loading ? ( 
+      {loading ? (
         <div
           style={{
             display: "flex",
@@ -707,248 +713,91 @@ export default function DayView() {
           <CircularProgress />
         </div>
       ) : (
-
         <>
-      {/* Multi-Day Events Section */}
-      { multiDayEvents.length > 0 && (
-        <Box
-          sx={{
-            position: "relative",
-            height: "200px", // Fixed height for multi-day events section
-            overflowY: "auto",
-            overflowX: "hidden", // Hide horizontal scrolling
-            padding: "10px 20px",
-            borderBottom: "1px solid #ccc",
-            marginTop: "20px",
-            marginBottom: "20px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            "&:hover": {
-              boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",
-            },
-          }}
-        >
-          {multiDayEvents.map((event, index) => {
-            const { backgroundColor, color, icon } = getEventStyleAndIcon(
-              event.eventType
-            );
-            return (
-              <div
-                key={event.eventId}
-                style={{
-                  position: "absolute",
-                  top: `${index * multiDayEventHeight}px`,
-                  left: "0%",
-                  width: "100%",
-                  height: `${multiDayEventHeight}px`,
-                  backgroundColor,
-                  color,
-                  padding: "8px 12px",
-                  borderRadius: "8px", // Rounded corners
-                  display: "flex",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  zIndex: 2,
-                  borderLeft: `4px solid ${color}`, // Thicker border for visual hierarchy
-                  marginLeft: "20px", // Slight adjustment to avoid overlapping with time labels
-                  marginRight: "60px", // Additional margin for better layout
-                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)", // Subtle shadow for depth
-                  transition:
-                    "background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out", // Smooth transitions for hover
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = color
-                    ? `${color}33`
-                    : "#f0f0f0";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(0, 0, 0, 0.2)";
-                  handleMouseEnter(e, event);
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = backgroundColor;
-                  e.currentTarget.style.boxShadow =
-                    "0 2px 8px rgba(0, 0, 0, 0.15)";
-                  handleMouseLeave();
-                }}
-                onMouseMove={(e) => {
-                  handleMouseMove(e);
-                }}
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent event propagation
-                  handleEventClick(event); // Trigger event click handler
-                }}
-              >
-                {icon}
-                <Typography
-                  noWrap
-                  sx={{
-                    marginLeft: "8px", // Space between icon and text
-                    color: "#333", // Darker text for readability
-                    flex: 1, // Let the text take up remaining space
-                    fontSize: "0.875rem", // Adjusted font size for consistency
-                  }}
-                >
-                  {event.title}
-                </Typography>
-              </div>
-            );
-          })}
-        </Box>
-      )}
-      {hoveredEvent && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: `${tooltipPosition.y}px`,
-            left: `${tooltipPosition.x}px`,
-            backgroundColor: "#fff",
-            padding: "8px 12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-            borderRadius: "8px",
-            zIndex: 1000,
-            pointerEvents: "none",
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-            {hoveredEvent.title}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{ display: "flex", alignItems: "center" }}
-          >
-            {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
-            {hoveredEvent.startDate &&
-            hoveredEvent.endDate &&
-            dayjs(hoveredEvent.startDate).diff(
-              dayjs(hoveredEvent.endDate),
-              "minutes"
-            ) !== 0 ? (
-              `${dayjs(hoveredEvent.startDate).format(
-                "MMM D, h:mm A"
-              )} - ${dayjs(hoveredEvent.endDate).format("MMM D, h:mm A")}`
-            ) : (
-              <>
-                <ErrorOutlineIcon
-                  sx={{
-                    fontSize: "16px",
-                    color: "#d32f2f",
-                    marginRight: "4px",
-                  }}
-                />
-                Missing or invalid date
-              </>
-            )}
-          </Typography>
-        </Box>
-      )}
-
-      {/* Scrollable Calendar Grid */}
-      <div
-        ref={dayViewRef}
-        style={{
-          overflowY: "auto",
-          height: "calc(100vh - 100px)",
-          position: "relative",
-        }}
-      >
-        <div
-          style={{
-            position: "relative",
-            height: `${hourHeight * (endHour - startHour)}px`,
-            width: "100%",
-            marginLeft: "0px",
-          }}
-        >
-          {/* Hour Labels */}
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-start",
-              zIndex: 1,
-              color: "#999",
-            }}
-          >
-            {Array.from(
-              { length: endHour - startHour },
-              (_, i) => i + startHour
-            ).map((hour) => (
-              <div
-                key={hour}
-                style={{
-                  height: `${hourHeight}px`,
-                  position: "relative",
-                  borderTop: "1px solid rgba(0, 0, 0, 0.1)",
-                  left: 0,
-                  right: 0,
-                  width: "100%",
-                  zIndex: 1,
-                }}
-              >
-                {dayjs().hour(hour).minute(0).format("HH:mm")}
-              </div>
-            ))}
-          </div>
-
-          {/* Single-Day Events */}
-          {overlappingEventGroups.map((group) =>
-            group.map((event) => {
-              const { top, height, left, width } = calculateEventBlockStyles(
-                event,
-                group
-              );
-              const eventTypeStyle = getEventStyleAndIcon(event.eventType);
-              return (
-                <div
-                  key={event.eventId}
-                  style={{
-                    position: "absolute",
-                    top,
-                    left: `${left}%`,
-                    width: `${width}%`,
-                    height: `${height}px`,
-                    backgroundColor: eventTypeStyle.backgroundColor,
-                    color: eventTypeStyle.color,
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    zIndex: 2,
-                    borderLeft: `4px solid ${eventTypeStyle.color}`,
-                    marginLeft: "60px",
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                    transition: "background-color 0.2s, box-shadow 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = eventTypeStyle.color
-                      ? `${eventTypeStyle.color}33`
-                      : "#f0f0f0";
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 12px rgba(0, 0, 0, 0.2)";
-                    handleMouseEnter(e, event);
-                  }}
-                  onMouseMove={(e) => {
-                    handleMouseMove(e);
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      eventTypeStyle.backgroundColor;
-                    e.currentTarget.style.boxShadow =
-                      "0 2px 8px rgba(0, 0, 0, 0.15)";
-                    handleMouseLeave();
-                  }}
-                  onClick={() => handleEventClick(event)}
-                >
-                  {eventTypeStyle.icon}
-                  <Typography noWrap>{event.title}</Typography>
-                </div>
-              );
-            })
+          {/* Multi-Day Events Section */}
+          {multiDayEvents.length > 0 && (
+            <Box
+              sx={{
+                position: "relative",
+                height: "200px", // Fixed height for multi-day events section
+                overflowY: "auto",
+                overflowX: "hidden", // Hide horizontal scrolling
+                padding: "10px 20px",
+                borderBottom: "1px solid #ccc",
+                marginTop: "20px",
+                marginBottom: "20px",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                "&:hover": {
+                  boxShadow: "0 6px 16px rgba(0, 0, 0, 0.15)",
+                },
+              }}
+            >
+              {multiDayEvents.map((event, index) => {
+                const { backgroundColor, color, icon } = getEventStyleAndIcon(
+                  event.eventType
+                );
+                return (
+                  <div
+                    key={event.eventId}
+                    style={{
+                      position: "absolute",
+                      top: `${index * multiDayEventHeight}px`,
+                      left: "0%",
+                      width: "100%",
+                      height: `${multiDayEventHeight}px`,
+                      backgroundColor,
+                      color,
+                      padding: "8px 12px",
+                      borderRadius: "8px", // Rounded corners
+                      display: "flex",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      zIndex: 2,
+                      borderLeft: `4px solid ${color}`, // Thicker border for visual hierarchy
+                      marginLeft: "20px", // Slight adjustment to avoid overlapping with time labels
+                      marginRight: "60px", // Additional margin for better layout
+                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)", // Subtle shadow for depth
+                      transition:
+                        "background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out", // Smooth transitions for hover
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = color
+                        ? `${color}33`
+                        : "#f0f0f0";
+                      e.currentTarget.style.boxShadow =
+                        "0 4px 12px rgba(0, 0, 0, 0.2)";
+                      handleMouseEnter(e, event);
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = backgroundColor;
+                      e.currentTarget.style.boxShadow =
+                        "0 2px 8px rgba(0, 0, 0, 0.15)";
+                      handleMouseLeave();
+                    }}
+                    onMouseMove={(e) => {
+                      handleMouseMove(e);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent event propagation
+                      handleEventClick(event); // Trigger event click handler
+                    }}
+                  >
+                    {icon}
+                    <Typography
+                      noWrap
+                      sx={{
+                        marginLeft: "8px", // Space between icon and text
+                        color: "#333", // Darker text for readability
+                        flex: 1, // Let the text take up remaining space
+                        fontSize: "0.875rem", // Adjusted font size for consistency
+                      }}
+                    >
+                      {event.title}
+                    </Typography>
+                  </div>
+                );
+              })}
+            </Box>
           )}
           {hoveredEvent && (
             <Box
@@ -997,32 +846,187 @@ export default function DayView() {
             </Box>
           )}
 
-          {/* Current Time Line */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: `${currentTimePosition}px`,
-              left: "0",
-              right: "0",
-              height: "2px",
-              backgroundColor: "#d32f2f",
-              zIndex: 1500,
+          {/* Scrollable Calendar Grid */}
+          <div
+            ref={dayViewRef}
+            style={{
+              overflowY: "auto",
+              height: "calc(100vh - 100px)",
+              position: "relative",
             }}
-          />
-        </div>
-      </div>
+          >
+            <div
+              style={{
+                position: "relative",
+                height: `${hourHeight * (endHour - startHour)}px`,
+                width: "100%",
+                marginLeft: "0px",
+              }}
+            >
+              {/* Hour Labels */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  zIndex: 1,
+                  color: "#999",
+                }}
+              >
+                {Array.from(
+                  { length: endHour - startHour },
+                  (_, i) => i + startHour
+                ).map((hour) => (
+                  <div
+                    key={hour}
+                    style={{
+                      height: `${hourHeight}px`,
+                      position: "relative",
+                      borderTop: "1px solid rgba(0, 0, 0, 0.1)",
+                      left: 0,
+                      right: 0,
+                      width: "100%",
+                      zIndex: 1,
+                    }}
+                  >
+                    {dayjs().hour(hour).minute(0).format("HH:mm")}
+                  </div>
+                ))}
+              </div>
 
-      {/* Show Event Info Popup when an event is selected */}
-      {showEventInfoModal && selectedEvent && (
-        <EventInfoPopup
-          event={selectedEvent}
-          onClose={() => setShowInfoEventModal(false)}
-        />
+              {/* Single-Day Events */}
+              {overlappingEventGroups.map((group) =>
+                group.map((event) => {
+                  const { top, height, left, width } =
+                    calculateEventBlockStyles(event, group);
+                  const eventTypeStyle = getEventStyleAndIcon(event.eventType);
+                  return (
+                    <div
+                      key={event.eventId}
+                      style={{
+                        position: "absolute",
+                        top,
+                        left: `${left}%`,
+                        width: `${width}%`,
+                        height: `${height}px`,
+                        backgroundColor: eventTypeStyle.backgroundColor,
+                        color: eventTypeStyle.color,
+                        padding: "8px 12px",
+                        borderRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        zIndex: 2,
+                        borderLeft: `4px solid ${eventTypeStyle.color}`,
+                        marginLeft: "60px",
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        transition: "background-color 0.2s, box-shadow 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor =
+                          eventTypeStyle.color
+                            ? `${eventTypeStyle.color}33`
+                            : "#f0f0f0";
+                        e.currentTarget.style.boxShadow =
+                          "0 4px 12px rgba(0, 0, 0, 0.2)";
+                        handleMouseEnter(e, event);
+                      }}
+                      onMouseMove={(e) => {
+                        handleMouseMove(e);
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor =
+                          eventTypeStyle.backgroundColor;
+                        e.currentTarget.style.boxShadow =
+                          "0 2px 8px rgba(0, 0, 0, 0.15)";
+                        handleMouseLeave();
+                      }}
+                      onClick={() => handleEventClick(event)}
+                    >
+                      {eventTypeStyle.icon}
+                      <Typography noWrap>{event.title}</Typography>
+                    </div>
+                  );
+                })
+              )}
+              {hoveredEvent && (
+                <Box
+                  sx={{
+                    position: "fixed",
+                    top: `${tooltipPosition.y}px`,
+                    left: `${tooltipPosition.x}px`,
+                    backgroundColor: "#fff",
+                    padding: "8px 12px",
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+                    borderRadius: "8px",
+                    zIndex: 1000,
+                    pointerEvents: "none",
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+                    {hoveredEvent.title}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
+                    {hoveredEvent.startDate &&
+                    hoveredEvent.endDate &&
+                    dayjs(hoveredEvent.startDate).diff(
+                      dayjs(hoveredEvent.endDate),
+                      "minutes"
+                    ) !== 0 ? (
+                      `${dayjs(hoveredEvent.startDate).format(
+                        "MMM D, h:mm A"
+                      )} - ${dayjs(hoveredEvent.endDate).format(
+                        "MMM D, h:mm A"
+                      )}`
+                    ) : (
+                      <>
+                        <ErrorOutlineIcon
+                          sx={{
+                            fontSize: "16px",
+                            color: "#d32f2f",
+                            marginRight: "4px",
+                          }}
+                        />
+                        Missing or invalid date
+                      </>
+                    )}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Current Time Line */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: `${currentTimePosition}px`,
+                  left: "0",
+                  right: "0",
+                  height: "2px",
+                  backgroundColor: "#d32f2f",
+                  zIndex: 1500,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Show Event Info Popup when an event is selected */}
+          {showEventInfoModal && selectedEvent && (
+            <EventInfoPopup
+              event={selectedEvent}
+              onClose={() => setShowInfoEventModal(false)}
+            />
+          )}
+        </>
       )}
-      </>
-    )}
     </Paper>
-    
   );
-
 }
