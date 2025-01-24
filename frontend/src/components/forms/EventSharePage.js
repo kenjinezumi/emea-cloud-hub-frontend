@@ -1097,7 +1097,7 @@ function ShareEventPage() {
                   sx={{ display: "flex", alignItems: "center" }}
                 >
                   <LinkIcon style={{ color: blue[500], marginRight: 8 }} />
-                  Hailo Links:
+                  Haiilo Links:
                 </Typography>
                 {eventDetails.hailoLinks?.map((link, index) => (
                   <Typography key={index} variant="body1" sx={{ ml: 4 }}>

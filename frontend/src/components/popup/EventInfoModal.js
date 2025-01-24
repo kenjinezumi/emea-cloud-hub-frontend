@@ -1070,7 +1070,7 @@ export default function EventInfoPopup({ event, close }) {
             sx={{ whiteSpace: "normal" }}
           >
             <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
-            Hailo Links:{" "}
+            Haiilo Links:{" "}
             <Typography
               variant="body2"
               sx={{ marginLeft: "5px", whiteSpace: "normal" }}
@@ -1351,8 +1351,8 @@ export default function EventInfoPopup({ event, close }) {
                 title={
                   selectedEvent.hailoLinks &&
                   selectedEvent.hailoLinks.length > 0
-                    ? "View Hailo Links on LinkedIn"
-                    : "No Hailo link provided"
+                    ? "View Haiilo Links on LinkedIn"
+                    : "No Haiilo link provided"
                 }
                 arrow
                 sx={{
@@ -1630,7 +1630,7 @@ export default function EventInfoPopup({ event, close }) {
         fullWidth
         sx={{ zIndex: 100000000 }}
       >
-        <DialogTitle>Hailo Links</DialogTitle>
+        <DialogTitle>Haiilo Links</DialogTitle>
         <DialogContent>
           {selectedEvent.hailoLinks?.length > 0 ? (
             selectedEvent.hailoLinks.map((link, index) => (
@@ -1670,7 +1670,7 @@ export default function EventInfoPopup({ event, close }) {
               </Box>
             ))
           ) : (
-            <Typography>No Hailo links available</Typography>
+            <Typography>No Haiilo links available</Typography>
           )}
         </DialogContent>
         <DialogActions>
