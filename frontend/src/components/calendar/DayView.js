@@ -6,25 +6,25 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import GlobalContext from "../../context/GlobalContext";
 import { Typography, Paper, Box, CircularProgress } from "@mui/material";
+import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import minMax from "dayjs/plugin/minMax";
-import { useLocation } from "react-router-dom";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+
+import GlobalContext from "../../context/GlobalContext";
 import { getEventData } from "../../api/getEventData";
 import EventInfoPopup from "../popup/EventInfoModal";
 import { getEventStyleAndIcon } from "../../utils/eventStyles";
-import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
-import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
-// Extend dayjs with these plugins
+// Extend dayjs
+dayjs.extend(minMax);
 dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
-dayjs.extend(minMax);
 
 export default function DayView() {
-  const eventSlotMapRef = useRef({});
   const {
     daySelected,
     setShowEventModal,
@@ -32,45 +32,52 @@ export default function DayView() {
     setShowInfoEventModal,
     filters,
     showEventInfoModal,
-    selectedEvent, // Ensure we can pass the event to the popup
+    selectedEvent,
   } = useContext(GlobalContext);
 
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+
   const [currentTimePosition, setCurrentTimePosition] = useState(0);
-  const location = useLocation();
-  const dayViewRef = useRef(null);
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
 
+  const location = useLocation();
+  const dayViewRef = useRef(null);
+
+  // Constants for layout
   const hourHeight = 90;
   const startHour = 0;
   const endHour = 24;
-  const multiDayEventHeight = 30; // Fixed height for multi-day events
+  const multiDayEventHeight = 30;
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Fetch events and apply filters
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       setLoading(true);
       try {
         const eventData = await getEventData("eventDataQuery");
-        setEvents(eventData);
+        // Make sure we have an array
+        const allEvents = Array.isArray(eventData) ? eventData : [];
 
-        if (!Array.isArray(eventData)) {
-          console.error(
-            "fetchAndFilterEvents was called with 'eventData' that is not an array:",
-            eventData
-          );
-          return;
-        }
+        setEvents(allEvents);
 
-        const filteredByDay = eventData.filter((event) => {
+        // 1) Filter for only events that overlap the chosen day
+        const selectedDayStart = daySelected.startOf("day");
+        const selectedDayEnd = daySelected.endOf("day");
+
+        const dayOverlappingEvents = allEvents.filter((event) => {
           const eventStart = dayjs(event.startDate);
           const eventEnd = dayjs(event.endDate);
-          const selectedDayStart = daySelected.startOf("day");
-          const selectedDayEnd = daySelected.endOf("day");
 
+          // If no valid dates, skip
+          if (!eventStart.isValid() || !eventEnd.isValid()) return false;
+
+          // Overlap check for the selected day
           return (
             eventStart.isSame(daySelected, "day") ||
             eventEnd.isSame(daySelected, "day") ||
@@ -79,577 +86,424 @@ export default function DayView() {
           );
         });
 
-        const hasFiltersApplied =
+        // 2) If no filters are checked, skip further filtering
+        const anyFilterChecked =
           [
+            ...filters.regions,
             ...filters.subRegions,
+            ...filters.countries,
             ...filters.gep,
             ...filters.buyerSegmentRollup,
             ...filters.accountSectors,
             ...filters.accountSegments,
             ...filters.productFamily,
             ...filters.industry,
-            ...filters.regions,
-            ...filters.countries,
             ...filters.programName,
             ...filters.activityType,
-          ].some((filter) => filter.checked) ||
-          filters.partnerEvent !== undefined ||
-          filters.isNewlyCreated !== undefined ||
-          filters.organisedBy !== undefined ||
-          filters.draftStatus !== undefined;
+            ...filters.partnerEvent,
+            ...filters.draftStatus,
+            ...filters.newlyCreated,
+          ].some((f) => f.checked) ||
+          (filters.organisedBy && filters.organisedBy.length > 0);
 
-        if (!hasFiltersApplied) {
-          setEvents(filteredByDay);
-          setFilteredEvents(filteredByDay);
+        if (!anyFilterChecked) {
+          setFilteredEvents(dayOverlappingEvents);
           return;
         }
 
-        const results = await Promise.all(
-          filteredByDay.map(async (event) => {
-            try {
-              const subRegionMatch =
-                !filters.subRegions.some((subRegion) => subRegion.checked) ||
-                filters.subRegions.some((subRegion) => {
-                  try {
-                    return (
-                      subRegion.checked &&
-                      event.subRegion?.includes(subRegion.label)
-                    );
-                  } catch (err) {
-                    console.error("Error checking subRegion filter:", err);
-                    return false;
-                  }
-                });
+        // 3) Single-pass filter
+        const finalFiltered = dayOverlappingEvents.filter((event) => {
+          try {
+            const {
+              subRegions,
+              gep,
+              buyerSegmentRollup,
+              accountSectors,
+              accountSegments,
+              productFamily,
+              industry,
+              regions,
+              countries,
+              programName,
+              activityType,
+              partnerEvent,
+              draftStatus,
+              newlyCreated,
+              organisedBy,
+            } = filters;
 
-              const gepMatch =
-                !filters.gep.some((gep) => gep.checked) ||
-                filters.gep.some((gep) => {
-                  try {
-                    return gep.checked && event.gep?.includes(gep.label);
-                  } catch (err) {
-                    console.error("Error checking GEP filter:", err);
-                    return false;
-                  }
-                });
-              const regionMatch =
-                !filters.regions.some((region) => region.checked) ||
-                filters.regions.some((region) => {
-                  try {
-                    return (
-                      region.checked && event.region?.includes(region.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking region filter:",
-                      err,
-                      region,
-                      event
-                    );
-                    return false;
-                  }
-                });
+            // Region
+            const regionMatch =
+              !regions.some((r) => r.checked) ||
+              regions.some((r) => r.checked && event.region?.includes(r.label));
 
-              const countryMatch =
-                !filters.countries.some((country) => country.checked) ||
-                filters.countries.some((country) => {
-                  try {
-                    return (
-                      country.checked && event.country?.includes(country.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking country filter:",
-                      err,
-                      country,
-                      event
-                    );
-                    return false;
-                  }
-                });
-
-              const buyerSegmentRollupMatch =
-                !filters.buyerSegmentRollup.some(
-                  (segment) => segment.checked
-                ) ||
-                filters.buyerSegmentRollup.some((segment) => {
-                  try {
-                    return (
-                      segment.checked &&
-                      event.audienceSeniority?.includes(segment.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking buyerSegmentRollup filter:",
-                      err
-                    );
-                    return false;
-                  }
-                });
-
-              const accountSectorMatch =
-                // Include all events if no sectors are checked
-                !filters.accountSectors.some((sector) => sector.checked) ||
-                // Check if any sector matches the event
-                filters.accountSectors.some((sector) => {
-                  try {
-                    if (sector.checked) {
-                      // Map filter labels to keys in the event data
-                      const sectorMapping = {
-                        "Public Sector": "public",
-                        Commercial: "commercial",
-                      };
-
-                      // Find the corresponding key for the filter label
-                      const sectorKey = sectorMapping[sector.label];
-                      if (!sectorKey) {
-                        console.warn(
-                          `No mapping found for sector label: ${sector.label}`
-                        );
-                        return false;
-                      }
-
-                      // Check if the event matches the mapped key
-                      return event.accountSectors?.[sectorKey] === true;
-                    }
-                    return false;
-                  } catch (err) {
-                    console.error(
-                      "Error checking accountSectors filter:",
-                      err,
-                      sector,
-                      event
-                    );
-                    return false;
-                  }
-                });
-
-              const accountSegmentMatch =
-                !filters.accountSegments.some((segment) => segment.checked) ||
-                filters.accountSegments.some((segment) => {
-                  try {
-                    const accountSegment =
-                      event.accountSegments?.[segment.label];
-                    return (
-                      segment.checked &&
-                      accountSegment?.selected && // Convert selected to a boolean
-                      parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking accountSegments filter:",
-                      err,
-                      segment,
-                      event
-                    );
-                    return false;
-                  }
-                });
-
-              const productFamilyMatch =
-                !filters.productFamily.some((product) => product.checked) ||
-                filters.productFamily.some((product) => {
-                  try {
-                    const productAlignment =
-                      event.productAlignment?.[product.label];
-                    return (
-                      product.checked &&
-                      productAlignment?.selected &&
-                      parseFloat(productAlignment?.percentage) > 0
-                    );
-                  } catch (err) {
-                    console.error("Error checking productFamily filter:", err);
-                    return false;
-                  }
-                });
-
-              const industryMatch =
-                !filters.industry.some((industry) => industry.checked) ||
-                filters.industry.some((industry) => {
-                  try {
-                    return (
-                      industry.checked &&
-                      event.industry?.includes(industry.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking industry filter:",
-                      err,
-                      industry,
-                      event
-                    );
-                    return false;
-                  }
-                });
-              const selectedPartneredStatuses = Array.isArray(
-                filters.partnerEvent
-              )
-                ? filters.partnerEvent
-                    .filter((option) => option.checked)
-                    .map((option) => option.value)
-                : [];
-
-              const isPartneredEventMatch =
-                selectedPartneredStatuses.length === 0 ||
-                selectedPartneredStatuses.includes(event.isPartneredEvent);
-              const selectedDraftStatuses = Array.isArray(filters.draftStatus)
-                ? filters.draftStatus
-                    .filter((option) => option.checked)
-                    .map((option) => option.value)
-                : [];
-              const isDraftMatch =
-                selectedDraftStatuses.length === 0 ||
-                (() => {
-                  // Initialize an array to hold applicable statuses
-                  const applicableStatuses = [];
-
-                  // Add "Draft" if the event is in draft mode
-                  if (event.isDraft) {
-                    applicableStatuses.push("Draft");
-                  } else {
-                    // If not a draft, add "Finalized" as a base status
-                    applicableStatuses.push("Finalized");
-
-                    // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
-                    if (
-                      !event.isDraft &&
-                      event.languagesAndTemplates?.some((template) =>
-                        ["Gmail", "Salesloft"].includes(template.platform)
-                      )
-                    ) {
-                      applicableStatuses.push("Invite available");
-                    }
-                  }
-
-                  // Check if any selectedDraftStatuses match the applicable statuses
-                  return selectedDraftStatuses.some((status) =>
-                    applicableStatuses.includes(status)
-                  );
-                })();
-              const programNameMatch =
-                filters.programName.every((filter) => !filter.checked) ||
-                filters.programName.some((filter) => {
-                  const isChecked = filter.checked;
-                  const matches = event.programName?.some((name) =>
-                    name.toLowerCase().includes(filter.label.toLowerCase())
-                  );
-
-                  return isChecked && matches;
-                });
-
-              const activityTypeMatch =
-                !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
-                filters.activityType.some((activity) => {
-                  try {
-                    // Check if the event type matches the checked activity types
-                    return (
-                      activity.checked &&
-                      event.eventType?.toLowerCase() ===
-                        activity.label.toLowerCase() // Ensure case-insensitive comparison
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking activityType filter:",
-                      err,
-                      activity,
-                      event
-                    );
-                    return false; // Handle errors gracefully
-                  }
-                });
-
-              const isNewlyCreatedMatch =
-                !filters.newlyCreated?.some((option) => option.checked) ||
-                filters.newlyCreated?.some((option) => {
-                  if (option.checked) {
-                    const entryCreatedDate = event.entryCreatedDate?.value
-                      ? dayjs(event.entryCreatedDate.value)
-                      : null; // Access `value` property
-
-                    if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-                      console.warn(
-                        "Invalid or missing entryCreatedDate for event:",
-                        event
-                      );
-                      return option.value === false; // Consider missing dates as "old"
-                    }
-
-                    const isWithinTwoWeeks =
-                      dayjs().diff(entryCreatedDate, "day") <= 14;
-                    return option.value === isWithinTwoWeeks;
-                  }
-                  return false;
-                });
-
-              const organisedByMatch = (() => {
-                // Check if no organiser filter is applied
-                if (!filters.organisedBy || filters.organisedBy.length === 0) {
-                  return true; // No organiser filter applied
-                }
-
-                // Check if the event has no organiser data
-                if (!event.organisedBy || event.organisedBy.length === 0) {
-                  return false; // Event does not have an organiser
-                }
-
-                // Check for match
-                const isMatch = filters.organisedBy.some((organiser) =>
-                  event.organisedBy.includes(organiser)
-                );
-
-                return isMatch; // Return the match result
-              })();
-              return (
-                subRegionMatch &&
-                gepMatch &&
-                buyerSegmentRollupMatch &&
-                accountSectorMatch &&
-                accountSegmentMatch &&
-                productFamilyMatch &&
-                industryMatch &&
-                isPartneredEventMatch &&
-                isDraftMatch &&
-                regionMatch &&
-                countryMatch &&
-                programNameMatch &&
-                activityTypeMatch &&
-                isNewlyCreatedMatch &&
-                organisedByMatch
+            // Sub-region
+            const subRegionMatch =
+              !subRegions.some((sr) => sr.checked) ||
+              subRegions.some(
+                (sr) => sr.checked && event.subRegion?.includes(sr.label)
               );
-            } catch (filterError) {
-              console.error("Error applying filters to event:", filterError);
-              return false;
-            }
-          })
-        );
 
-        const finalFilteredEvents = filteredByDay.filter(
-          (_, index) => results[index]
-        );
+            // Country
+            const countryMatch =
+              !countries.some((c) => c.checked) ||
+              countries.some(
+                (c) => c.checked && event.country?.includes(c.label)
+              );
 
-        setFilteredEvents(finalFilteredEvents);
+            // GEP
+            const gepMatch =
+              !gep.some((g) => g.checked) ||
+              gep.some((g) => g.checked && event.gep?.includes(g.label));
+
+            // Buyer Segment
+            const buyerMatch =
+              !buyerSegmentRollup.some((b) => b.checked) ||
+              buyerSegmentRollup.some(
+                (b) => b.checked && event.audienceSeniority?.includes(b.label)
+              );
+
+            // Account Sectors
+            const sectorMatch =
+              !accountSectors.some((s) => s.checked) ||
+              accountSectors.some((s) => {
+                if (!s.checked) return false;
+                const labelToKey = {
+                  "Public Sector": "public",
+                  Commercial: "commercial",
+                };
+                const key = labelToKey[s.label];
+                return key ? event.accountSectors?.[key] === true : false;
+              });
+
+            // Account Segments
+            const segMatch =
+              !accountSegments.some((seg) => seg.checked) ||
+              accountSegments.some((seg) => {
+                if (!seg.checked) return false;
+                const eSeg = event.accountSegments?.[seg.label];
+                return eSeg?.selected && parseFloat(eSeg.percentage) > 0;
+              });
+
+            // Product Family
+            const productMatch =
+              !productFamily.some((pf) => pf.checked) ||
+              productFamily.some((pf) => {
+                if (!pf.checked) return false;
+                const alignment = event.productAlignment?.[pf.label];
+                return alignment?.selected && parseFloat(alignment.percentage) > 0;
+              });
+
+            // Industry
+            const industryMatch =
+              !industry.some((ind) => ind.checked) ||
+              industry.some(
+                (ind) => ind.checked && event.industry?.includes(ind.label)
+              );
+
+            // Program
+            const programMatch =
+              !programName.some((pn) => pn.checked) ||
+              programName.some(
+                (pn) =>
+                  pn.checked &&
+                  event.programName?.some((evName) =>
+                    evName.toLowerCase().includes(pn.label.toLowerCase())
+                  )
+              );
+
+            // Activity Type
+            const activityMatch =
+              !activityType.some((a) => a.checked) ||
+              activityType.some(
+                (a) =>
+                  a.checked &&
+                  event.eventType?.toLowerCase() === a.label.toLowerCase()
+              );
+
+            // Partner Event
+            const partnerChecked = partnerEvent
+              .filter((pe) => pe.checked)
+              .map((pe) => pe.value); // [true, false]
+            const partnerMatch =
+              partnerChecked.length === 0 ||
+              partnerChecked.includes(event.isPartneredEvent);
+
+            // Draft Status
+            const draftChecked = draftStatus
+              .filter((ds) => ds.checked)
+              .map((ds) => ds.value);
+            const draftMatch =
+              draftChecked.length === 0 ||
+              (() => {
+                const st = [];
+                if (event.isDraft) {
+                  st.push("Draft");
+                } else {
+                  st.push("Finalized");
+                  // If not draft, check invites
+                  const hasInvite = event.languagesAndTemplates?.some((tmpl) =>
+                    ["Gmail", "Salesloft"].includes(tmpl.platform)
+                  );
+                  if (hasInvite) st.push("Invite available");
+                }
+                return st.some((x) => draftChecked.includes(x));
+              })();
+
+            // Newly Created
+            const newlyChecked = newlyCreated.filter((nc) => nc.checked);
+            const newlyMatch =
+              newlyChecked.length === 0 ||
+              newlyChecked.some((nc) => {
+                const entryCreated = event.entryCreatedDate?.value
+                  ? dayjs(event.entryCreatedDate.value)
+                  : null;
+                if (!entryCreated || !entryCreated.isValid()) {
+                  // If missing => treat as old => matches if user picked "No"
+                  return nc.value === false;
+                }
+                const within2Weeks = dayjs().diff(entryCreated, "day") <= 14;
+                return nc.value === within2Weeks;
+              });
+
+            // Organised By (multi-select)
+            const orgMatch =
+              !organisedBy || organisedBy.length === 0
+                ? true
+                : organisedBy.some((org) => event.organisedBy?.includes(org));
+
+            // Combine
+            return (
+              regionMatch &&
+              subRegionMatch &&
+              countryMatch &&
+              gepMatch &&
+              buyerMatch &&
+              sectorMatch &&
+              segMatch &&
+              productMatch &&
+              industryMatch &&
+              programMatch &&
+              activityMatch &&
+              partnerMatch &&
+              draftMatch &&
+              newlyMatch &&
+              orgMatch
+            );
+          } catch (err) {
+            console.error("Error applying filters to event:", event, err);
+            return false;
+          }
+        });
+
+        setFilteredEvents(finalFiltered);
       } catch (error) {
         console.error("Error fetching event data:", error);
+        setEvents([]);
+        setFilteredEvents([]);
       } finally {
-        setLoading(false); // Stop loading spinner
+        setLoading(false);
       }
     };
 
     fetchAndFilterEvents();
-  }, [location, filters, daySelected]);
+  }, [filters, daySelected, location]);
 
-  // Reset modals when location changes
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Close modals on location change
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     setShowEventModal(false);
     setShowInfoEventModal(false);
   }, [location, setShowEventModal, setShowInfoEventModal]);
 
-  // Separate multi-day events and single-day events
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Multi-day vs single-day
+  // ─────────────────────────────────────────────────────────────────────────────
   const { multiDayEvents, singleDayEvents } = useMemo(() => {
-    const multiDayEvents = filteredEvents.filter((event) => {
-      const eventStart = dayjs(event.startDate);
-      const eventEnd = dayjs(event.endDate);
-      return (
-        !eventStart.isSame(daySelected, "day") ||
-        !eventEnd.isSame(daySelected, "day")
-      );
+    const multi = [];
+    const single = [];
+
+    filteredEvents.forEach((ev) => {
+      const start = dayjs(ev.startDate);
+      const end = dayjs(ev.endDate);
+
+      // If start == selectedDay and end == selectedDay => single day
+      if (start.isSame(daySelected, "day") && end.isSame(daySelected, "day")) {
+        single.push(ev);
+      } else {
+        multi.push(ev);
+      }
     });
 
-    const singleDayEvents = filteredEvents.filter((event) => {
-      const eventStart = dayjs(event.startDate);
-      const eventEnd = dayjs(event.endDate);
-      return (
-        eventStart.isSame(daySelected, "day") &&
-        eventEnd.isSame(daySelected, "day")
-      );
-    });
-
-    return { multiDayEvents, singleDayEvents };
+    return { multiDayEvents: multi, singleDayEvents: single };
   }, [filteredEvents, daySelected]);
 
-  // Group overlapping single-day events
-  const fixMissingTimeStart = (dateString) => {
-    if (!dateString.includes("T")) {
-      return `${dateString}T00:00`; // Default to 12:00 AM if time is missing
-    }
-    return dateString;
-  };
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Sorting & grouping single-day events (overlaps)
+  // ─────────────────────────────────────────────────────────────────────────────
+  const fixMissingTimeStart = (dateString) =>
+    dateString.includes("T") ? dateString : `${dateString}T00:00`;
+  const fixMissingTimeEnd = (dateString) =>
+    dateString.includes("T") ? dateString : `${dateString}T01:00`;
 
-  const fixMissingTimeEnd = (dateString) => {
-    if (!dateString.includes("T")) {
-      return `${dateString}T01:00`; // Default to 01:10 AM if time is missing
-    }
-    return dateString;
-  };
-
-  const groupOverlappingEvents = (events) => {
-    const sortedEvents = events.sort((a, b) => {
-      // 1. Check event status (Finalized or Invite-ready)
-      const getEventStatusPriority = (event) => {
-        const applicableStatuses = [];
-
-        if (event.isDraft) {
-          applicableStatuses.push("Draft");
+  const groupOverlappingEvents = useCallback((events) => {
+    // Sort by (1) status priority, (2) isHighPriority, (3) expectedAttendees
+    const sorted = [...events].sort((a, b) => {
+      const getStatusPriority = (ev) => {
+        // Draft < Finalized < Invite available
+        const statuses = [];
+        if (ev.isDraft) {
+          statuses.push("Draft");
         } else {
-          applicableStatuses.push("Finalized");
-          if (
-            event.languagesAndTemplates?.some((template) =>
-              ["Gmail", "Salesloft"].includes(template.platform)
-            )
-          ) {
-            applicableStatuses.push("Invite available");
-          }
+          statuses.push("Finalized");
+          const hasInvite = ev.languagesAndTemplates?.some((tpl) =>
+            ["Gmail", "Salesloft"].includes(tpl.platform)
+          );
+          if (hasInvite) statuses.push("Invite available");
         }
-
-        if (applicableStatuses.includes("Invite available")) return 2; // Highest priority
-        if (applicableStatuses.includes("Finalized")) return 1; // Second priority
-        return 0; // Default priority for drafts
+        if (statuses.includes("Invite available")) return 2;
+        if (statuses.includes("Finalized")) return 1;
+        return 0; // Draft
       };
 
-      const statusPriorityA = getEventStatusPriority(a);
-      const statusPriorityB = getEventStatusPriority(b);
+      const statA = getStatusPriority(a);
+      const statB = getStatusPriority(b);
+      if (statA !== statB) return statB - statA;
 
-      if (statusPriorityA !== statusPriorityB) {
-        return statusPriorityB - statusPriorityA; // Higher status priority first
-      }
-
-      // 2. Check High Priority tag
+      // Next: isHighPriority
       if (a.isHighPriority !== b.isHighPriority) {
-        return b.isHighPriority - a.isHighPriority; // `true` comes first
+        return b.isHighPriority - a.isHighPriority; // true first
       }
 
-      // 3. Descending by expected attendees
-      return b.expectedAttendees - a.expectedAttendees;
+      // Finally: expectedAttendees
+      return (b.expectedAttendees || 0) - (a.expectedAttendees || 0);
     });
 
+    // Then group
     const groups = [];
+    sorted.forEach((ev) => {
+      const evStart = dayjs(fixMissingTimeStart(ev.startDate));
+      const evEnd = dayjs(fixMissingTimeEnd(ev.endDate));
 
-    sortedEvents.forEach((event) => {
-      const eventStart = dayjs(fixMissingTimeStart(event.startDate));
-      const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
-
-      let addedToGroup = false;
-
+      let placed = false;
       for (const group of groups) {
-        const isOverlapping = group.some((groupEvent) => {
-          const groupEventStart = dayjs(
-            fixMissingTimeStart(groupEvent.startDate)
-          );
-          const groupEventEnd = dayjs(fixMissingTimeEnd(groupEvent.endDate));
+        const isOverlapping = group.some((gEv) => {
+          const gS = dayjs(fixMissingTimeStart(gEv.startDate));
+          const gE = dayjs(fixMissingTimeEnd(gEv.endDate));
 
-          // Handle zero-minute events: If start and end are the same, treat them as overlapping
-          const isZeroMinuteEvent = eventStart.isSame(eventEnd);
-
-          // Check for overlap or if it is a zero-minute event at the same time
+          // Overlap or zero-minute at same time
+          const zeroMinuteEvent = evStart.isSame(evEnd);
           return (
-            (eventStart.isBefore(groupEventEnd) &&
-              eventEnd.isAfter(groupEventStart)) ||
-            (isZeroMinuteEvent && eventStart.isSame(groupEventStart))
+            (evStart.isBefore(gE) && evEnd.isAfter(gS)) ||
+            (zeroMinuteEvent && evStart.isSame(gS))
           );
         });
-
         if (isOverlapping) {
-          group.push(event);
-          addedToGroup = true;
+          group.push(ev);
+          placed = true;
           break;
         }
       }
-
-      if (!addedToGroup) {
-        groups.push([event]);
+      if (!placed) {
+        groups.push([ev]);
       }
     });
 
     return groups;
-  };
+  }, []);
 
-  const overlappingEventGroups = useMemo(
-    () => groupOverlappingEvents(singleDayEvents),
-    [singleDayEvents]
-  );
+  const overlappingEventGroups = useMemo(() => {
+    return groupOverlappingEvents(singleDayEvents);
+  }, [singleDayEvents, groupOverlappingEvents]);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Layout for single-day event blocks
+  // ─────────────────────────────────────────────────────────────────────────────
   const calculateEventBlockStyles = useCallback(
-    (event, overlappingEvents) => {
+    (event, overlappingGroup) => {
       const eventStart = dayjs(fixMissingTimeStart(event.startDate));
       const eventEnd = dayjs(fixMissingTimeEnd(event.endDate));
 
-      const startOfDay = daySelected.startOf("day");
-      const endOfDay = daySelected.endOf("day");
+      const dayStart = daySelected.startOf("day");
+      const dayEnd = daySelected.endOf("day");
 
-      const displayStart = dayjs.max(startOfDay, eventStart);
-      const displayEnd = dayjs.min(endOfDay, eventEnd);
+      // Clamp if event extends beyond this day
+      const displayStart = dayjs.max(dayStart, eventStart);
+      const displayEnd = dayjs.min(dayEnd, eventEnd);
 
-      const minutesFromMidnight = displayStart.diff(startOfDay, "minutes");
+      const minutesFromMidnight = displayStart.diff(dayStart, "minutes");
       const durationInMinutes = displayEnd.diff(displayStart, "minutes");
 
       const top = (minutesFromMidnight / 60) * hourHeight;
       const height = (durationInMinutes / 60) * hourHeight || 0;
 
-      let overlappingGroup = [];
-
-      overlappingEvents.forEach((e) => {
-        const eStart = dayjs(fixMissingTimeStart(e.startDate));
-        const eEnd = dayjs(fixMissingTimeEnd(e.endDate));
-
-        if (eventStart.isBefore(eEnd) && eventEnd.isAfter(eStart)) {
-          overlappingGroup.push(e);
-        }
+      // Which events in the group overlap with this event?
+      let overlap = overlappingGroup.filter((ev) => {
+        const s = dayjs(fixMissingTimeStart(ev.startDate));
+        const e = dayjs(fixMissingTimeEnd(ev.endDate));
+        return eventStart.isBefore(e) && eventEnd.isAfter(s);
       });
 
-      overlappingGroup = overlappingGroup.sort((a, b) => {
+      // Sort them so we know their index
+      overlap.sort((a, b) => {
         return dayjs(fixMissingTimeStart(a.startDate)).diff(
           dayjs(fixMissingTimeStart(b.startDate))
         );
       });
 
-      const columnCount = overlappingGroup.length;
+      // Column logic
+      const columnCount = overlap.length;
       const width = columnCount > 1 ? 100 / columnCount : 100;
-      const left =
-        columnCount > 1 ? overlappingGroup.indexOf(event) * width : 0;
-
-      const zIndex = overlappingGroup.indexOf(event) + 1;
+      const left = columnCount > 1 ? overlap.indexOf(event) * width : 0;
+      const zIndex = overlap.indexOf(event) + 1;
 
       return { top, height, width, left, zIndex };
     },
     [daySelected, hourHeight]
   );
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Hover tooltip
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleMouseEnter = (e, event) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setHoveredEvent(event);
     setTooltipPosition({
-      x: e.clientX + 10, // Position tooltip 10px to the right of the event
-      y: e.clientY + 10, // Tooltip slightly below the mouse
+      x: e.clientX + 10,
+      y: e.clientY + 10,
     });
   };
 
-  // Update tooltip position on mouse move
   const handleMouseMove = (e) => {
     setTooltipPosition({
-      x: e.clientX + 10, // Update X position based on mouse
-      y: e.clientY + 10, // Update Y position based on mouse
+      x: e.clientX + 10,
+      y: e.clientY + 10,
     });
   };
 
-  // Handle mouse leave to hide tooltip
   const handleMouseLeave = () => {
     setHoveredEvent(null);
   };
 
-  // Memoized event handler for adding events
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Add & click handlers
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleAddEvent = useCallback(() => {
     setShowEventModal(true);
   }, [setShowEventModal]);
 
-  // Memoized event handler for clicking events
   const handleEventClick = useCallback(
-    (event) => {
-      setSelectedEvent(event); // Set the clicked event as the selected one
-      setShowInfoEventModal(true); // Trigger the modal to show
+    (ev) => {
+      setSelectedEvent(ev);
+      setShowInfoEventModal(true);
     },
     [setSelectedEvent, setShowInfoEventModal]
   );
 
-  // Automatically scroll to the current hour and update current time position
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Auto-scroll to current time
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (dayViewRef.current) {
       const currentHourOffset = dayjs().hour() * hourHeight;
@@ -659,19 +513,22 @@ export default function DayView() {
       });
     }
 
-    const updateCurrentTimePosition = () => {
+    // Position line for current time
+    const updatePosition = () => {
       const now = dayjs();
       const minutesFromMidnight = now.diff(now.startOf("day"), "minutes");
-      const position = (minutesFromMidnight / 60) * hourHeight;
-      setCurrentTimePosition(position);
+      const pos = (minutesFromMidnight / 60) * hourHeight;
+      setCurrentTimePosition(pos);
     };
 
-    updateCurrentTimePosition();
-    const interval = setInterval(updateCurrentTimePosition, 60000);
-
-    return () => clearInterval(interval);
+    updatePosition();
+    const intervalId = setInterval(updatePosition, 60_000);
+    return () => clearInterval(intervalId);
   }, [hourHeight]);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────────
   return (
     <Paper
       sx={{
@@ -702,8 +559,8 @@ export default function DayView() {
       </div>
 
       {loading ? (
-        <div
-          style={{
+        <Box
+          sx={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -711,7 +568,7 @@ export default function DayView() {
           }}
         >
           <CircularProgress />
-        </div>
+        </Box>
       ) : (
         <>
           {/* Multi-Day Events Section */}
@@ -719,9 +576,9 @@ export default function DayView() {
             <Box
               sx={{
                 position: "relative",
-                height: "200px", // Fixed height for multi-day events section
+                height: "200px",
                 overflowY: "auto",
-                overflowX: "hidden", // Hide horizontal scrolling
+                overflowX: "hidden",
                 padding: "10px 20px",
                 borderBottom: "1px solid #ccc",
                 marginTop: "20px",
@@ -738,7 +595,7 @@ export default function DayView() {
                 );
                 return (
                   <div
-                    key={event.eventId}
+                    key={event.eventId || `${event.title}-${index}`}
                     style={{
                       position: "absolute",
                       top: `${index * multiDayEventHeight}px`,
@@ -748,17 +605,16 @@ export default function DayView() {
                       backgroundColor,
                       color,
                       padding: "8px 12px",
-                      borderRadius: "8px", // Rounded corners
+                      borderRadius: "8px",
                       display: "flex",
                       alignItems: "center",
                       cursor: "pointer",
                       zIndex: 2,
-                      borderLeft: `4px solid ${color}`, // Thicker border for visual hierarchy
-                      marginLeft: "20px", // Slight adjustment to avoid overlapping with time labels
-                      marginRight: "60px", // Additional margin for better layout
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)", // Subtle shadow for depth
-                      transition:
-                        "background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out", // Smooth transitions for hover
+                      borderLeft: `4px solid ${color}`,
+                      marginLeft: "20px",
+                      marginRight: "60px",
+                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                      transition: "background-color 0.2s, box-shadow 0.2s",
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = color
@@ -774,22 +630,20 @@ export default function DayView() {
                         "0 2px 8px rgba(0, 0, 0, 0.15)";
                       handleMouseLeave();
                     }}
-                    onMouseMove={(e) => {
-                      handleMouseMove(e);
-                    }}
+                    onMouseMove={handleMouseMove}
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent event propagation
-                      handleEventClick(event); // Trigger event click handler
+                      e.stopPropagation();
+                      handleEventClick(event);
                     }}
                   >
                     {icon}
                     <Typography
                       noWrap
                       sx={{
-                        marginLeft: "8px", // Space between icon and text
-                        color: "#333", // Darker text for readability
-                        flex: 1, // Let the text take up remaining space
-                        fontSize: "0.875rem", // Adjusted font size for consistency
+                        marginLeft: "8px",
+                        color: "#333",
+                        flex: 1,
+                        fontSize: "0.875rem",
                       }}
                     >
                       {event.title}
@@ -799,6 +653,7 @@ export default function DayView() {
               })}
             </Box>
           )}
+
           {hoveredEvent && (
             <Box
               sx={{
@@ -820,7 +675,6 @@ export default function DayView() {
                 variant="body2"
                 sx={{ display: "flex", alignItems: "center" }}
               >
-                {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
                 {hoveredEvent.startDate &&
                 hoveredEvent.endDate &&
                 dayjs(hoveredEvent.startDate).diff(
@@ -846,7 +700,7 @@ export default function DayView() {
             </Box>
           )}
 
-          {/* Scrollable Calendar Grid */}
+          {/* Scrollable Day Grid */}
           <div
             ref={dayViewRef}
             style={{
@@ -863,19 +717,19 @@ export default function DayView() {
                 marginLeft: "0px",
               }}
             >
-              {/* Hour Labels */}
+              {/* Hour labels */}
               <div
                 style={{
                   position: "absolute",
                   top: 0,
                   left: 0,
                   right: 0,
-                  width: "100%",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-start",
                   zIndex: 1,
                   color: "#999",
+                  width: "100%",
                 }}
               >
                 {Array.from(
@@ -888,8 +742,6 @@ export default function DayView() {
                       height: `${hourHeight}px`,
                       position: "relative",
                       borderTop: "1px solid rgba(0, 0, 0, 0.1)",
-                      left: 0,
-                      right: 0,
                       width: "100%",
                       zIndex: 1,
                     }}
@@ -899,108 +751,60 @@ export default function DayView() {
                 ))}
               </div>
 
-              {/* Single-Day Events */}
+              {/* Single-day events */}
               {overlappingEventGroups.map((group) =>
-                group.map((event) => {
-                  const { top, height, left, width } =
-                    calculateEventBlockStyles(event, group);
-                  const eventTypeStyle = getEventStyleAndIcon(event.eventType);
+                group.map((ev) => {
+                  const { top, height, left, width } = calculateEventBlockStyles(
+                    ev,
+                    group
+                  );
+                  const evStyle = getEventStyleAndIcon(ev.eventType);
+
                   return (
                     <div
-                      key={event.eventId}
+                      key={ev.eventId || ev.title}
                       style={{
                         position: "absolute",
                         top,
                         left: `${left}%`,
                         width: `${width}%`,
                         height: `${height}px`,
-                        backgroundColor: eventTypeStyle.backgroundColor,
-                        color: eventTypeStyle.color,
+                        backgroundColor: evStyle.backgroundColor,
+                        color: evStyle.color,
                         padding: "8px 12px",
                         borderRadius: "8px",
                         display: "flex",
                         alignItems: "center",
                         cursor: "pointer",
                         zIndex: 2,
-                        borderLeft: `4px solid ${eventTypeStyle.color}`,
+                        borderLeft: `4px solid ${evStyle.color}`,
                         marginLeft: "60px",
                         boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
                         transition: "background-color 0.2s, box-shadow 0.2s",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          eventTypeStyle.color
-                            ? `${eventTypeStyle.color}33`
-                            : "#f0f0f0";
+                        e.currentTarget.style.backgroundColor = evStyle.color
+                          ? `${evStyle.color}33`
+                          : "#f0f0f0";
                         e.currentTarget.style.boxShadow =
                           "0 4px 12px rgba(0, 0, 0, 0.2)";
-                        handleMouseEnter(e, event);
+                        handleMouseEnter(e, ev);
                       }}
-                      onMouseMove={(e) => {
-                        handleMouseMove(e);
-                      }}
+                      onMouseMove={(e) => handleMouseMove(e)}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor =
-                          eventTypeStyle.backgroundColor;
+                          evStyle.backgroundColor;
                         e.currentTarget.style.boxShadow =
                           "0 2px 8px rgba(0, 0, 0, 0.15)";
                         handleMouseLeave();
                       }}
-                      onClick={() => handleEventClick(event)}
+                      onClick={() => handleEventClick(ev)}
                     >
-                      {eventTypeStyle.icon}
-                      <Typography noWrap>{event.title}</Typography>
+                      {evStyle.icon}
+                      <Typography noWrap>{ev.title}</Typography>
                     </div>
                   );
                 })
-              )}
-              {hoveredEvent && (
-                <Box
-                  sx={{
-                    position: "fixed",
-                    top: `${tooltipPosition.y}px`,
-                    left: `${tooltipPosition.x}px`,
-                    backgroundColor: "#fff",
-                    padding: "8px 12px",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-                    borderRadius: "8px",
-                    zIndex: 1000,
-                    pointerEvents: "none",
-                  }}
-                >
-                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                    {hoveredEvent.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ display: "flex", alignItems: "center" }}
-                  >
-                    {/* Conditionally render the date or show "Missing or invalid date" with one warning icon */}
-                    {hoveredEvent.startDate &&
-                    hoveredEvent.endDate &&
-                    dayjs(hoveredEvent.startDate).diff(
-                      dayjs(hoveredEvent.endDate),
-                      "minutes"
-                    ) !== 0 ? (
-                      `${dayjs(hoveredEvent.startDate).format(
-                        "MMM D, h:mm A"
-                      )} - ${dayjs(hoveredEvent.endDate).format(
-                        "MMM D, h:mm A"
-                      )}`
-                    ) : (
-                      <>
-                        <ErrorOutlineIcon
-                          sx={{
-                            fontSize: "16px",
-                            color: "#d32f2f",
-                            marginRight: "4px",
-                          }}
-                        />
-                        Missing or invalid date
-                      </>
-                    )}
-                  </Typography>
-                </Box>
               )}
 
               {/* Current Time Line */}
@@ -1018,7 +822,7 @@ export default function DayView() {
             </div>
           </div>
 
-          {/* Show Event Info Popup when an event is selected */}
+          {/* Info Popup */}
           {showEventInfoModal && selectedEvent && (
             <EventInfoPopup
               event={selectedEvent}
