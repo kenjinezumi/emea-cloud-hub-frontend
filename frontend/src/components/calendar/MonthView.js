@@ -381,7 +381,7 @@ export default function MonthView({ month, isYearView = false }) {
                 day={day}
                 events={filteredEvents}
                 isYearView={true}
-                month={day.month()}
+                month={day.date.month()}
               />
             ))}
           </React.Fragment>
