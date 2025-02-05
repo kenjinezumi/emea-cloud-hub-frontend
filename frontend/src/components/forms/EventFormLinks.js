@@ -282,18 +282,18 @@ export default function LinksForm() {
     };
 
     // If you want to skip the required fields for draft, remove the lines below
-    const missingFields = Object.keys(requiredFields).filter(
-      (key) => !requiredFields[key] || requiredFields[key].length === 0
-    );
-    if (missingFields.length > 0) {
-      setSnackbarMessage(
-        `Please fill in all required fields: ${missingFields.join(", ")}`
-      );
-      setLoading(false);
-      setIsError(true);
-      setSnackbarOpen(true);
-      return;
-    }
+    // const missingFields = Object.keys(requiredFields).filter(
+    //   (key) => !requiredFields[key] || requiredFields[key].length === 0
+    // );
+    // if (missingFields.length > 0) {
+    //   setSnackbarMessage(
+    //     `Please fill in all required fields: ${missingFields.join(", ")}`
+    //   );
+    //   setLoading(false);
+    //   setIsError(true);
+    //   setSnackbarOpen(true);
+    //   return;
+    // }
 
     // Build final form data with draft set
     const draftData = {
