@@ -44,70 +44,69 @@ const formatLabel = (key) => {
 };
 
 export default function LinksForm() {
-  const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
+  const { formData, selectedEvent, updateFormData, setCurrentView } =
+    useContext(GlobalContext);
+
+  // Our "links" state:
   const [links, setLinks] = useState({
     landingPageLinks:
-      Array.isArray(formData?.landingPageLinks) &&
-      formData.landingPageLinks.length > 0
-        ? formData.landingPageLinks.filter((link) => link) // Filter out empty links
-        : Array.isArray(selectedEvent?.landingPageLinks) &&
-          selectedEvent.landingPageLinks.length > 0
-        ? selectedEvent.landingPageLinks.filter((link) => link) // Filter out empty links
+      Array.isArray(formData?.landingPageLinks) && formData.landingPageLinks.length > 0
+        ? formData.landingPageLinks.filter((link) => link)
+        : Array.isArray(selectedEvent?.landingPageLinks) && selectedEvent.landingPageLinks.length > 0
+        ? selectedEvent.landingPageLinks.filter((link) => link)
         : [],
     salesKitLinks:
-      Array.isArray(formData?.salesKitLinks) &&
-      formData.salesKitLinks.length > 0
+      Array.isArray(formData?.salesKitLinks) && formData.salesKitLinks.length > 0
         ? formData.salesKitLinks.filter((link) => link)
-        : Array.isArray(selectedEvent?.salesKitLinks) &&
-          selectedEvent.salesKitLinks.length > 0
+        : Array.isArray(selectedEvent?.salesKitLinks) && selectedEvent.salesKitLinks.length > 0
         ? selectedEvent.salesKitLinks.filter((link) => link)
         : [],
     hailoLinks:
       Array.isArray(formData?.hailoLinks) && formData.hailoLinks.length > 0
         ? formData.hailoLinks.filter((link) => link)
-        : Array.isArray(selectedEvent?.hailoLinks) &&
-          selectedEvent.hailoLinks.length > 0
+        : Array.isArray(selectedEvent?.hailoLinks) && selectedEvent.hailoLinks.length > 0
         ? selectedEvent.hailoLinks.filter((link) => link)
         : [],
     otherDocumentsLinks:
-      Array.isArray(formData?.otherDocumentsLinks) &&
-      formData.otherDocumentsLinks.length > 0
+      Array.isArray(formData?.otherDocumentsLinks) && formData.otherDocumentsLinks.length > 0
         ? formData.otherDocumentsLinks.filter((link) => link)
-        : Array.isArray(selectedEvent?.otherDocumentsLinks) &&
-          selectedEvent.otherDocumentsLinks.length > 0
+        : Array.isArray(selectedEvent?.otherDocumentsLinks) && selectedEvent.otherDocumentsLinks.length > 0
         ? selectedEvent.otherDocumentsLinks.filter((link) => link)
         : [],
   });
 
-  // Initialize `newLink` for inputs
+  // For collecting new link values before adding them
   const [newLink, setNewLink] = useState({
     landingPage: "",
     salesKit: "",
     hailo: "",
     otherDocuments: "",
   });
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const { setCurrentView } = useContext(GlobalContext);
   const [isError, setIsError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+
   const saveAndNavigate = useFormNavigation();
+
+  // Save updated links to formData context
   useEffect(() => {
     const currentFormData = { ...formData, ...links };
-
     if (JSON.stringify(formData) !== JSON.stringify(currentFormData)) {
       updateFormData(currentFormData);
     }
   }, [links, formData, updateFormData]);
 
+  // Link input changes
   const handleLinkChange = (type, value) => {
     setNewLink({ ...newLink, [type]: value });
   };
 
-  // Function to handle adding a new link or multiple pasted links
+  // Split multi-line or multi-delimited text into separate links
   const handleAddLink = (type, value) => {
-    const linkArray = value.split(/[ ,;\n]+/).filter(Boolean); // Split pasted links
+    const linkArray = value.split(/[ ,;\n]+/).filter(Boolean);
     const validLinks = linkArray.filter((link) => isValidUrl(link));
     const invalidLinks = linkArray.filter((link) => !isValidUrl(link));
 
@@ -116,7 +115,7 @@ export default function LinksForm() {
         ...links,
         [`${type}Links`]: [...links[`${type}Links`], ...validLinks],
       });
-      setNewLink({ ...newLink, [type]: "" }); // Clear the input field after adding
+      setNewLink({ ...newLink, [type]: "" }); // Clear input
     }
 
     if (invalidLinks.length > 0) {
@@ -126,37 +125,18 @@ export default function LinksForm() {
     }
   };
 
-  // Handler for deleting a link
   const handleDeleteLink = (type, linkToDelete) => {
     setLinks({
       ...links,
-      [`${type}Links`]: links[`${type}Links`].filter(
-        (link) => link !== linkToDelete
-      ),
+      [`${type}Links`]: links[`${type}Links`].filter((link) => link !== linkToDelete),
     });
   };
 
-  // Function to handle the "Enter" key or pasting links
   const handleKeyPress = (type, event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       handleAddLink(type, newLink[type]);
     }
-  };
-
-  const handlePrevious = () => {
-    const currentFormData = {
-      ...links,
-    };
-    saveAndNavigate(currentFormData, "/audience");
-  };
-
-  const handleSave = () => {
-    setDialogOpen(true);
-  };
-
-  const handleDialogClose = () => {
-    setDialogOpen(false);
   };
 
   const handlePaste = (type, event) => {
@@ -170,7 +150,7 @@ export default function LinksForm() {
         ...links,
         [`${type}Links`]: [...links[`${type}Links`], ...validLinks],
       });
-      setNewLink({ ...newLink, [type]: "" }); // Clear the input field after adding
+      setNewLink({ ...newLink, [type]: "" }); // Clear
     }
 
     if (invalidLinks.length > 0) {
@@ -178,13 +158,28 @@ export default function LinksForm() {
       setIsError(true);
       setSnackbarOpen(true);
     }
-
-    event.preventDefault(); // Prevent the default paste behavior
+    event.preventDefault(); // Prevent default paste
   };
 
+  // “Previous” button
+  const handlePrevious = () => {
+    saveAndNavigate(links, "/audience");
+  };
+
+  // “Save” -> opens confirmation dialog for Publish
+  const handleSave = () => {
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
+  // “Save and Publish”
   const handleSaveAndPublish = async () => {
     setLoading(true);
 
+    // Minimal checks for required fields
     const requiredFields = {
       organisedBy: formData.organisedBy,
       title: formData.title,
@@ -196,8 +191,6 @@ export default function LinksForm() {
       region: formData.region,
       subRegion: formData.subRegion,
       country: formData.country,
-      // city: formData.city,
-      // isApprovedForCustomerUse: formData.isApprovedForCustomerUse,
       gep: formData.gep,
       audiencePersona: formData.audiencePersona,
       audienceSeniority: formData.audienceSeniority,
@@ -208,12 +201,11 @@ export default function LinksForm() {
       aiVsCore: formData.aiVsCore,
       industry: formData.industry,
       accountSectors: formData.accountSectors,
-      // program: formData.programName
     };
+
     const missingFields = Object.keys(requiredFields).filter(
       (key) => !requiredFields[key] || requiredFields[key].length === 0
     );
-
     if (missingFields.length > 0) {
       setSnackbarMessage(
         `Please fill in all required fields: ${missingFields.join(", ")}`
@@ -223,18 +215,21 @@ export default function LinksForm() {
       setSnackbarOpen(true);
       return;
     }
+
+    // Mark it as published
     const newFormData = {
       ...formData,
       ...links,
       isDraft: false,
       isPublished: true,
     };
-
     updateFormData(newFormData);
+
     try {
       const response = await sendDataToAPI(newFormData);
       if (response.success) {
         setSnackbarMessage("Details saved and published successfully!");
+        setIsError(false);
         setLoading(false);
         setSnackbarOpen(true);
         setCurrentView("month");
@@ -250,6 +245,81 @@ export default function LinksForm() {
       setSnackbarOpen(true);
     } finally {
       setDialogOpen(false);
+      setLoading(false);
+    }
+  };
+
+  // NEW: “Save as Draft” logic
+  const handleSaveAsDraft = async () => {
+    setLoading(true);
+
+    // We can do the same minimal checks or skip them for a draft.
+    // The user wants the same logic as “publish,” but isDraft=true, isPublished=false.
+    // So we’ll skip the missing fields check if we prefer. Or replicate it:
+
+    // Let's replicate the missing fields check:
+    const requiredFields = {
+      organisedBy: formData.organisedBy,
+      title: formData.title,
+      description: formData.description,
+      startDate: formData.startDate,
+      endDate: formData.endDate,
+      eventId: formData.eventId,
+      eventType: formData.eventType,
+      region: formData.region,
+      subRegion: formData.subRegion,
+      country: formData.country,
+      gep: formData.gep,
+      audiencePersona: formData.audiencePersona,
+      audienceSeniority: formData.audienceSeniority,
+      accountSegments: formData.accountSegments,
+      accountCategory: formData.accountCategory,
+      accountType: formData.accountType,
+      productAlignment: formData.productAlignment,
+      aiVsCore: formData.aiVsCore,
+      industry: formData.industry,
+      accountSectors: formData.accountSectors,
+    };
+
+    // If you want to skip the required fields for draft, remove the lines below
+    const missingFields = Object.keys(requiredFields).filter(
+      (key) => !requiredFields[key] || requiredFields[key].length === 0
+    );
+    if (missingFields.length > 0) {
+      setSnackbarMessage(
+        `Please fill in all required fields: ${missingFields.join(", ")}`
+      );
+      setLoading(false);
+      setIsError(true);
+      setSnackbarOpen(true);
+      return;
+    }
+
+    // Build final form data with draft set
+    const draftData = {
+      ...formData,
+      ...links,
+      isDraft: true,
+      isPublished: false,
+    };
+    updateFormData(draftData);
+
+    try {
+      const response = await sendDataToAPI(draftData);
+      if (response.success) {
+        setSnackbarMessage("Details saved as draft successfully!");
+        setIsError(false);
+        setSnackbarOpen(true);
+      } else {
+        setSnackbarMessage("Failed to save as draft.");
+        setIsError(true);
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      setSnackbarMessage("An error occurred while saving as draft.");
+      setIsError(true);
+      setSnackbarOpen(true);
+    } finally {
       setLoading(false);
     }
   };
@@ -279,11 +349,13 @@ export default function LinksForm() {
               Links
             </span>
           </Typography>
+
           <Grid container spacing={2}>
             {Object.entries(links).map(([key, value]) => (
               <Grid item xs={12} key={key}>
                 <Typography variant="subtitle1">
                   {(() => {
+                    // Customize labels for each link key
                     switch (key) {
                       case "hailoLinks":
                         return "Haiilo";
@@ -294,10 +366,7 @@ export default function LinksForm() {
                       case "otherDocumentsLinks":
                         return "Other Documents";
                       default:
-                        return key
-                          .replace("Links", "")
-                          .replace(/([A-Z])/g, " $1")
-                          .trim();
+                        return formatLabel(key);
                     }
                   })()}
                 </Typography>
@@ -310,7 +379,7 @@ export default function LinksForm() {
                     handleLinkChange(key.replace("Links", ""), e.target.value)
                   }
                   onKeyDown={(e) => handleKeyPress(key.replace("Links", ""), e)}
-                  onPaste={(e) => handlePaste(key.replace("Links", ""), e)} // Handle paste
+                  onPaste={(e) => handlePaste(key.replace("Links", ""), e)}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -330,6 +399,7 @@ export default function LinksForm() {
                   }}
                   margin="normal"
                 />
+
                 <div
                   style={{
                     display: "flex",
@@ -352,7 +422,9 @@ export default function LinksForm() {
               </Grid>
             ))}
           </Grid>
+
           <div style={{ marginTop: "20px", float: "right" }}>
+            {/* PREVIOUS BUTTON */}
             <Button
               variant="outlined"
               onClick={handlePrevious}
@@ -367,7 +439,9 @@ export default function LinksForm() {
             >
               Previous
             </Button>
-            {/* <Button
+
+            {/* NEW: SAVE AS DRAFT BUTTON */}
+            <Button
               variant="contained"
               onClick={handleSaveAsDraft}
               style={{
@@ -376,9 +450,12 @@ export default function LinksForm() {
                 float: "left",
                 margin: "10px",
               }}
+              disabled={loading}
             >
               Save as Draft
-            </Button> */}
+            </Button>
+
+            {/* PUBLISH BUTTON */}
             <Button
               variant="contained"
               onClick={handleSave}
@@ -388,11 +465,13 @@ export default function LinksForm() {
                 float: "right",
                 margin: "10px",
               }}
+              disabled={loading}
             >
               Publish
             </Button>
           </div>
         </div>
+
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={6000}
@@ -405,15 +484,14 @@ export default function LinksForm() {
         />
       </div>
 
+      {/* Publish Confirmation Dialog */}
       <Dialog
         open={dialogOpen}
         onClose={handleDialogClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Confirm Save and Publish"}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">{"Confirm Save and Publish"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             In case you added email invite copy, users will be able to invite
@@ -439,16 +517,15 @@ export default function LinksForm() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
-                borderRadius: "8px", // Optional: match the button's border-radius
-                zIndex: 1, // Ensure it appears on top
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                borderRadius: "8px",
+                zIndex: 1,
               }}
             >
               <CircularProgress size={40} />
             </Box>
           )}
 
-          {/* Button */}
           <Button
             variant="contained"
             onClick={handleSaveAndPublish}
@@ -460,7 +537,7 @@ export default function LinksForm() {
                 backgroundColor: blue[700],
               },
             }}
-            disabled={loading} // Disable button while loading
+            disabled={loading}
           >
             Next
           </Button>

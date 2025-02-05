@@ -505,6 +505,7 @@ export const programNameOptions = [
   "Gen AI",
   "Infrastructure Modernization",
   "Level up your security and privacy",
+  "Not Applicable (Not tied to any global campaign)",
   "Ready for Modern Threats",
   "Responsible AI",
   "Sustainability",
