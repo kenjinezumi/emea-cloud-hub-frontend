@@ -20,6 +20,8 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmailIcon from "@mui/icons-material/Email";
 import { blue } from "@mui/material/colors";
+
+// Custom imports
 import { languageOptions } from "../filters/FiltersData";
 import { sendDataToAPI } from "../../api/pushData";
 import GlobalContext from "../../context/GlobalContext";
@@ -27,8 +29,10 @@ import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 
+// Options for the "platform" dropdown
 const platformOptions = ["Gmail", "Salesloft"];
 
+// Personalization tokens for Salesloft
 const personalizationOptions = [
   "{{first_name}}",
   "{{last_name}}",
@@ -41,11 +45,17 @@ const personalizationOptions = [
   "{{My.last_name}}",
   "{{My.email_address}}",
 ];
-const EventFormEmailInvitation = () => {
+
+export default function EventFormEmailInvitation() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(true);
+
+  // “languagesAndTemplates” is an array of objects: [{ platform, language, subjectLine, template }]
   const [languagesAndTemplates, setLanguagesAndTemplates] = useState(
     formData?.languagesAndTemplates?.length > 0
       ? formData.languagesAndTemplates
@@ -54,98 +64,59 @@ const EventFormEmailInvitation = () => {
       : []
   );
 
-  const [isFormValid, setIsFormValid] = useState(true);
   const saveAndNavigate = useFormNavigation();
-  const [editorContent, setEditorContent] = useState("");
-  const quillRefs = useRef([]);
+  const quillRefs = useRef([]); // Refs for each ReactQuill instance
 
+  // Whenever “languagesAndTemplates” changes, update formData
   useEffect(() => {
-    // Compare old array vs. new array to prevent an unnecessary update
     const oldTemplates = formData?.languagesAndTemplates ?? [];
     if (JSON.stringify(oldTemplates) !== JSON.stringify(languagesAndTemplates)) {
-      // Only update if there's a real difference
       updateFormData({
         ...formData,
         languagesAndTemplates,
       });
     }
-    // NOTE: if formData has other fields that can change, see #2 below
+    // If you have more fields in formData, you can update them similarly
   }, [languagesAndTemplates, formData, updateFormData]);
-  
 
+  // Add a new item to languagesAndTemplates
   const handleAddLanguageAndTemplate = () => {
-    setLanguagesAndTemplates([
-      ...languagesAndTemplates,
+    setLanguagesAndTemplates((prev) => [
+      ...prev,
       { platform: "", language: "", template: "", subjectLine: "" },
     ]);
   };
 
+  // Remove an existing item
   const handleRemoveLanguageAndTemplate = (index) => {
     if (languagesAndTemplates.length > 1) {
-      const updatedItems = languagesAndTemplates.filter(
-        (_, idx) => idx !== index
-      );
-      setLanguagesAndTemplates(updatedItems);
+      const updated = languagesAndTemplates.filter((_, idx) => idx !== index);
+      setLanguagesAndTemplates(updated);
     } else {
       setSnackbarMessage("At least one email language is required.");
       setSnackbarOpen(true);
     }
   };
 
+  // Called when user picks a platform (Gmail / Salesloft)
   const handlePlatformChange = (value, index) => {
-    const updatedItems = [...languagesAndTemplates];
-    updatedItems[index].platform = value;
-    setLanguagesAndTemplates(updatedItems);
-  };
-
-  const handleLanguageChange = (value, index) => {
-    const updatedItems = [...languagesAndTemplates];
-    updatedItems[index].language = value;
-    setLanguagesAndTemplates(updatedItems);
-  };
-
-  const handleTemplateChange = (value, index) => {
-    const updatedItems = [...languagesAndTemplates];
-    updatedItems[index].template = value;
-    setLanguagesAndTemplates(updatedItems);
-  };
-
-  const handlePersonalizationInsert = (token, index) => {
-    // Access the correct editor from refs
-    const quillEditor = quillRefs.current[index]?.getEditor();
-
-    if (quillEditor) {
-      // Focus the editor to ensure it's active
-      quillEditor.focus();
-
-      // Get the current cursor position
-      const selection = quillEditor.getSelection();
-
-      if (selection && selection.index != null) {
-        // Insert token at the cursor position
-        const cursorPosition = selection.index;
-        quillEditor.insertText(cursorPosition, token);
-
-        // Move the cursor to the end of the inserted token
-        quillEditor.setSelection(cursorPosition + token.length);
-      } else {
-        // If no selection, append token to the end of the current content
-        const currentContent = quillEditor.getText();
-        quillEditor.setText(`${currentContent.trim()} ${token}`);
-      }
-    } else {
-      console.warn("Quill editor not available for index:", index);
-    }
-  };
-
-  const handleSubjectLineChange = (value, index) => {
     setLanguagesAndTemplates((prev) =>
       prev.map((item, i) =>
-        i === index ? { ...item, subjectLine: value } : item
+        i === index ? { ...item, platform: value } : item
       )
     );
   };
 
+  // Called when user picks a language from Autocomplete
+  const handleLanguageChange = (value, index) => {
+    setLanguagesAndTemplates((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, language: value } : item
+      )
+    );
+  };
+
+  // Called when user modifies the Quill editor or text field for template
   const handleEditorChange = (content, index) => {
     setLanguagesAndTemplates((prev) =>
       prev.map((item, i) =>
@@ -154,22 +125,76 @@ const EventFormEmailInvitation = () => {
     );
   };
 
+  // Called when user modifies the subject line
+  const handleSubjectLineChange = (value, index) => {
+    setLanguagesAndTemplates((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, subjectLine: value } : item
+      )
+    );
+  };
+
+  // Insert personalization token into the Quill editor
+  const handlePersonalizationInsert = (token, index) => {
+    const quillEditor = quillRefs.current[index]?.getEditor();
+    if (!quillEditor) return;
+
+    quillEditor.focus();
+    const selection = quillEditor.getSelection();
+
+    if (selection && selection.index != null) {
+      const cursorPosition = selection.index;
+      quillEditor.insertText(cursorPosition, token);
+      // Move cursor after inserted token
+      quillEditor.setSelection(cursorPosition + token.length);
+    } else {
+      // Append token to the end if no selection
+      const currentContent = quillEditor.getText();
+      quillEditor.setText(`${currentContent.trim()} ${token}`);
+    }
+  };
+
+  // “Next” button
   const handleNext = async () => {
     setLoading(true);
 
-    const formIsValid = languagesAndTemplates.every(
+    // 1) If any language is missing, default it to "English"
+    const corrected = languagesAndTemplates.map((item) => {
+      if (!item.language || !item.language.trim()) {
+        return { ...item, language: "English" };
+      }
+      return item;
+    });
+
+    // 2) Overwrite your local state with the corrected array
+    setLanguagesAndTemplates(corrected);
+
+    // 3) Now validate
+    const formIsValid = corrected.every(
       (item) =>
         item.language.trim() !== "" &&
         item.template.trim() !== "" &&
         item.subjectLine.trim() !== ""
     );
+    setIsFormValid(formIsValid);
+
+    // 4) If valid, attempt to save as a draft
     const updatedFormData = {
       ...formData,
-      languagesAndTemplates,
+      languagesAndTemplates: corrected,
       isDraft: true,
       isPublished: false,
     };
     updateFormData(updatedFormData);
+
+    if (!formIsValid) {
+      setSnackbarMessage(
+        "Please ensure each platform entry has a language, subject line, and template."
+      );
+      setSnackbarOpen(true);
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await sendDataToAPI(updatedFormData, "draft");
@@ -182,20 +207,20 @@ const EventFormEmailInvitation = () => {
         }, 1500);
       } else {
         setSnackbarMessage("Failed to save draft.");
-        setLoading(false);
         setSnackbarOpen(true);
+        setLoading(false);
       }
     } catch (error) {
       setSnackbarMessage("An error occurred while saving the draft.");
-      setLoading(false);
       setSnackbarOpen(true);
+      setLoading(false);
     }
   };
 
+  // “Previous” button
   const handlePrevious = () => {
     saveAndNavigate({ languagesAndTemplates }, "/extra");
   };
-
 
   return (
     <div
@@ -237,206 +262,201 @@ const EventFormEmailInvitation = () => {
 
           <form noValidate>
             <Grid container spacing={2} sx={{ mb: 3 }}>
-            {languagesAndTemplates.length > 0 ? (
+              {languagesAndTemplates.length > 0
+                ? languagesAndTemplates.map((item, index) => (
+                    <Accordion
+                      key={index}
+                      sx={{ width: "100%", marginBottom: "8px" }}
+                    >
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls={`panel-content-${index}`}
+                        id={`panel-header-${index}`}
+                      >
+                        <Typography>
+                          {item.platform
+                            ? // If a platform is selected
+                              `${item.platform}${
+                                item.language ? ` - ${item.language}` : ""
+                              }`
+                            : // If no platform is selected, display "Add"
+                              "Add"}
+                        </Typography>
+                      </AccordionSummary>
 
-              languagesAndTemplates.map((item, index) => (
-                <Accordion
-                  key={index}
-                  sx={{ width: "100%", marginBottom: "8px" }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls={`panel-content-${index}`}
-                    id={`panel-header-${index}`}
-                  >
-                    <Typography>
-                                  {item.platform
-                    ? // If a platform is selected:
-                      `${item.platform}${item.language ? ` - ${item.language}` : ""}`
-                    : // If no platform is selected, display 'Add'
-                      "Add"
-    }
-                    </Typography>
-                  </AccordionSummary>
+                      <AccordionDetails>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12}>
+                            <FormControl fullWidth>
+                              <Typography variant="subtitle1">Platform</Typography>
+                              <Select
+                                value={item.platform}
+                                onChange={(e) =>
+                                  handlePlatformChange(e.target.value, index)
+                                }
+                                fullWidth
+                              >
+                                {platformOptions.map((platform) => (
+                                  <MenuItem key={platform} value={platform}>
+                                    {platform}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Grid>
 
-                  <AccordionDetails>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <FormControl fullWidth>
-                          <Typography variant="subtitle1">Platform</Typography>
-                          <Select
-                            value={item.platform}
-                            onChange={(e) =>
-                              handlePlatformChange(e.target.value, index)
-                            }
-                            fullWidth
-                          >
-                            {platformOptions.map((platform) => (
-                              <MenuItem key={platform} value={platform}>
-                                {platform}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <FormControl fullWidth>
-                          <Typography variant="subtitle1">
-                            Email Language
-                          </Typography>
-                          <Autocomplete
-                            value={item.language || ""}
-                            onChange={(event, newValue) => {
-                              handleLanguageChange(newValue, index);
-                            }}
-                            freeSolo
-                            options={languageOptions.filter(
-                              (language) =>
-                                !languagesAndTemplates.some(
-                                  (templateItem, idx) =>
-                                    templateItem.language === language &&
-                                    templateItem.platform === item.platform &&
-                                    idx !== index // Ensure the current item is not filtered out
-                                )
-                            )}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label="Select Language"
-                                variant="outlined"
+                          <Grid item xs={12}>
+                            <FormControl fullWidth>
+                              <Typography variant="subtitle1">
+                                Email Language
+                              </Typography>
+                              <Autocomplete
+                                value={item.language || ""}
+                                onChange={(event, newValue) => {
+                                  handleLanguageChange(newValue, index);
+                                }}
+                                freeSolo
+                                options={languageOptions.filter(
+                                  (language) =>
+                                    // Disallow duplicates for the same platform
+                                    !languagesAndTemplates.some(
+                                      (other, idx2) =>
+                                        other.language === language &&
+                                        other.platform === item.platform &&
+                                        idx2 !== index
+                                    )
+                                )}
+                                renderInput={(params) => (
+                                  <TextField
+                                    {...params}
+                                    label="Select Language"
+                                    variant="outlined"
+                                  />
+                                )}
+                              />
+                            </FormControl>
+                          </Grid>
+
+                          <Grid item xs={12}>
+                            <Typography variant="subtitle1">
+                              Email Subject Line
+                            </Typography>
+                            <TextField
+                              value={item.subjectLine || ""}
+                              onChange={(e) =>
+                                handleSubjectLineChange(e.target.value, index)
+                              }
+                              variant="outlined"
+                              fullWidth
+                            />
+                          </Grid>
+
+                          <Grid item xs={12}>
+                            <Typography variant="subtitle1">Email Body</Typography>
+                            {item.platform === "Salesloft" ? (
+                              <>
+                                <ReactQuill
+                                  ref={(el) => (quillRefs.current[index] = el)}
+                                  value={item.template || ""}
+                                  onChange={(content) =>
+                                    handleEditorChange(content, index)
+                                  }
+                                  style={{
+                                    height: "300px",
+                                    maxHeight: "400px",
+                                    marginBottom: "20px",
+                                  }}
+                                  modules={{
+                                    toolbar: [
+                                      [
+                                        { header: "1" },
+                                        { header: "2" },
+                                        { font: [] },
+                                      ],
+                                      [{ list: "ordered" }, { list: "bullet" }],
+                                      ["bold", "italic", "underline"],
+                                      ["link", "image"],
+                                      ["clean"],
+                                    ],
+                                  }}
+                                />
+
+                                <div style={{ marginTop: "20px", pt: "40px" }}>
+                                  <Typography
+                                    variant="subtitle1"
+                                    style={{ marginTop: "50px" }}
+                                  >
+                                    Insert Personalisation Tokens:
+                                  </Typography>
+                                  {personalizationOptions.map((token, idx) => (
+                                    <Button
+                                      key={idx}
+                                      variant="outlined"
+                                      size="small"
+                                      onClick={() =>
+                                        handlePersonalizationInsert(token, index)
+                                      }
+                                      sx={{ margin: "5px" }}
+                                    >
+                                      {token}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </>
+                            ) : (
+                              <ReactQuill
+                                value={item.template || ""}
+                                onChange={(content) =>
+                                  handleEditorChange(content, index)
+                                }
+                                style={{
+                                  height: "300px",
+                                  maxHeight: "400px",
+                                  marginBottom: "20px",
+                                }}
+                                modules={{
+                                  toolbar: [
+                                    [
+                                      { header: "1" },
+                                      { header: "2" },
+                                      { font: [] },
+                                    ],
+                                    [{ list: "ordered" }, { list: "bullet" }],
+                                    ["bold", "italic", "underline"],
+                                    ["link", "image"],
+                                    ["clean"],
+                                  ],
+                                }}
                               />
                             )}
-                          />
-                        </FormControl>
-                      </Grid>
+                          </Grid>
 
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle1">
-                          Email Subject Line
-                        </Typography>
-                        <TextField
-                          label=""
-                          value={item.subjectLine || ""}
-                          onChange={(e) =>
-                            handleSubjectLineChange(e.target.value, index)
-                          }
-                          variant="outlined"
-                          fullWidth
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle1">Email Body</Typography>
-
-                        {/* Check if the platform is Salesloft, then show ReactQuill */}
-                        {item.platform === "Salesloft" ? (
-                          <>
-                            <ReactQuill
-                              ref={(el) => (quillRefs.current[index] = el)} // Assign unique ref for each editor
-                              value={item.template || ""}
-                              onChange={(content) =>
-                                handleEditorChange(content, index)
-                              }
-                              style={{
-                                height: "300px",
-                                maxHeight: "400px",
-                                marginBottom: "20px",
-                              }}
-                              modules={{
-                                toolbar: [
-                                  [
-                                    { header: "1" },
-                                    { header: "2" },
-                                    { font: [] },
-                                  ],
-                                  [{ list: "ordered" }, { list: "bullet" }],
-                                  ["bold", "italic", "underline"],
-                                  ["link", "image"],
-                                  ["clean"],
-                                ],
-                              }}
-                            />
-
-                            <div style={{ marginTop: "20px", pt: "40px" }}>
-                              <Typography
-                                variant="subtitle1"
-                                style={{ marginTop: "50px", pt: "40px" }}
+                          {index > 0 && (
+                            <Grid item xs={12}>
+                              <Button
+                                variant="outlined"
+                                onClick={() =>
+                                  handleRemoveLanguageAndTemplate(index)
+                                }
+                                sx={{
+                                  color: "#d32f2f",
+                                  borderColor: "#d32f2f",
+                                  marginTop: "1px",
+                                  textTransform: "none",
+                                }}
                               >
-                                Insert Personalisation Tokens:
-                              </Typography>
-                              {personalizationOptions.map((token, idx) => (
-                                <Button
-                                  key={idx}
-                                  variant="outlined"
-                                  size="small"
-                                  onClick={() =>
-                                    handlePersonalizationInsert(token, index)
-                                  }
-                                  sx={{ margin: "5px" }}
-                                >
-                                  {token}
-                                </Button>
-                              ))}
-                            </div>
-                          </>
-                        ) : (
-                          // Render a regular text field for Gmail
-                          <ReactQuill
-                            value={item.template || ""}
-                            onChange={(content) =>
-                              handleEditorChange(content, index)
-                            }
-                            style={{
-                              height: "300px",
-                              maxHeight: "400px",
-                              marginBottom: "20px",
-                            }}
-                            modules={{
-                              toolbar: [
-                                [
-                                  { header: "1" },
-                                  { header: "2" },
-                                  { font: [] },
-                                ],
-                                [{ list: "ordered" }, { list: "bullet" }],
-                                ["bold", "italic", "underline"],
-                                ["link", "image"],
-                                ["clean"],
-                              ],
-                            }}
-                          />
-                        )}
-                      </Grid>
-                      {index > 0 && (
-                        <Grid item xs={12}>
-                          <Button
-                            variant="outlined"
-                            onClick={() =>
-                              handleRemoveLanguageAndTemplate(index)
-                            }
-                            style={{
-                              color: "#d32f2f",
-                              borderColor: "#d32f2f",
-                              marginTop: "1px",
-                              textTransform: "none",
-                            }}
-                          >
-                            Remove
-                          </Button>
+                                Remove
+                              </Button>
+                            </Grid>
+                          )}
                         </Grid>
-                      )}
-                    </Grid>
-                  </AccordionDetails>
-                </Accordion>
-              ))
-            ): (
-              // Render a message or simply nothing if you don't want to display anything
-              <Typography></Typography>
-            )}
+                      </AccordionDetails>
+                    </Accordion>
+                  ))
+                : null}
+
               <Grid item xs={12}>
-                <Button
-                  variant="outlined"
-                  onClick={handleAddLanguageAndTemplate}
-                >
+                <Button variant="outlined" onClick={handleAddLanguageAndTemplate}>
                   Add
                 </Button>
               </Grid>
@@ -455,7 +475,6 @@ const EventFormEmailInvitation = () => {
               message={snackbarMessage}
             />
 
-            {/* Button container aligned to the right */}
             <div style={{ marginTop: "20px", textAlign: "right" }}>
               <Button
                 variant="outlined"
@@ -469,6 +488,7 @@ const EventFormEmailInvitation = () => {
               >
                 Previous
               </Button>
+
               {loading && (
                 <Box
                   sx={{
@@ -480,16 +500,15 @@ const EventFormEmailInvitation = () => {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
-                    borderRadius: "8px", // Optional: match the button's border-radius
-                    zIndex: 1, // Ensure it appears on top
+                    backgroundColor: "rgba(255, 255, 255, 0.8)",
+                    borderRadius: "8px",
+                    zIndex: 1,
                   }}
                 >
                   <CircularProgress size={40} />
                 </Box>
               )}
 
-              {/* Button */}
               <Button
                 variant="contained"
                 onClick={handleNext}
@@ -501,7 +520,7 @@ const EventFormEmailInvitation = () => {
                     backgroundColor: blue[700],
                   },
                 }}
-                disabled={loading} // Disable button while loading
+                disabled={loading}
               >
                 Next
               </Button>
@@ -511,6 +530,4 @@ const EventFormEmailInvitation = () => {
       </div>
     </div>
   );
-};
-
-export default EventFormEmailInvitation;
+}

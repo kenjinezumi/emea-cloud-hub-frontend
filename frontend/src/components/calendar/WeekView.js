@@ -10,18 +10,26 @@ import GlobalContext from "../../context/GlobalContext";
 import { Paper, Typography, Box, CircularProgress } from "@mui/material";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+
+import { useLocation } from "react-router-dom";
+
+// Components / utils
 import DayColumn from "../Day/DayColumn";
 import EventInfoPopup from "../popup/EventInfoModal";
 import { getEventData } from "../../api/getEventData";
-import { useLocation } from "react-router-dom";
 import { getEventStyleAndIcon } from "../../utils/eventStyles";
 
+// Extend dayjs with UTC if needed
 dayjs.extend(utc);
 
 export default function WeekView() {
-  const hourHeight = 90; // Define the height for each hour block
-  const startHour = 0; // Define the start hour (00:00 or 12:00 AM)
-  const endHour = 24;
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Constants & context
+  // ─────────────────────────────────────────────────────────────────────────────
+  const hourHeight = 90;  // Height for each hour row
+  const startHour = 0;    // 00:00
+  const endHour = 24;     // 24-hour format
+
   const {
     daySelected,
     setSelectedEvent,
@@ -31,56 +39,30 @@ export default function WeekView() {
     filters,
   } = useContext(GlobalContext);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Local state
+  // ─────────────────────────────────────────────────────────────────────────────
   const [currentWeek, setCurrentWeek] = useState([]);
   const [events, setEvents] = useState([]);
-  const [setFilteredEvents] = useState([]);
+  // For debugging or future usage, you can store filtered events in state:
+  // const [filteredEvents, setFilteredEvents] = useState([]);
+  // But here we do everything in a useMemo, so we won't maintain separate state.
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
+
+  const location = useLocation();
+  const weekViewRef = useRef(null);
+
+  // For user’s system time zone (optional usage)
   const userTimezone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     []
   );
-  const weekViewRef = useRef(null);
-  const location = useLocation();
-  const sortEventsByPriority = (events) => {
-    return events.sort((a, b) => {
-      // 1. Prioritize Finalized or Invite-ready statuses
-      const getStatusPriority = (event) => {
-        const applicableStatuses = [];
-        if (event.isDraft) {
-          applicableStatuses.push("Draft");
-        } else {
-          applicableStatuses.push("Finalized");
-          if (
-            event.languagesAndTemplates?.some((template) =>
-              ["Gmail", "Salesloft"].includes(template.platform)
-            )
-          ) {
-            applicableStatuses.push("Invite available");
-          }
-        }
-        if (applicableStatuses.includes("Invite available")) return 2; // Highest
-        if (applicableStatuses.includes("Finalized")) return 1; // Medium
-        return 0; // Lowest (Draft)
-      };
 
-      const statusPriorityA = getStatusPriority(a);
-      const statusPriorityB = getStatusPriority(b);
-
-      if (statusPriorityA !== statusPriorityB) {
-        return statusPriorityB - statusPriorityA; // Descending order
-      }
-
-      // 2. High Priority flag
-      if (a.isHighPriority !== b.isHighPriority) {
-        return b.isHighPriority - a.isHighPriority; // High Priority comes first
-      }
-
-      // 3. Descending by expected attendees
-      return b.expectedAttendees - a.expectedAttendees;
-    });
-  };
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Build the “currentWeek” array from the selected day
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const startOfWeek = dayjs(daySelected).startOf("week");
     const daysOfWeek = Array.from({ length: 7 }, (_, i) =>
@@ -89,11 +71,77 @@ export default function WeekView() {
     setCurrentWeek(daysOfWeek);
   }, [daySelected]);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Fetch events (similar to MonthView)
+  // ─────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const eventData = await getEventData("eventDataQuery");
+        setEvents(Array.isArray(eventData) ? eventData : []);
+      } catch (error) {
+        console.error("Error fetching event data:", error);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [location, filters]);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Helper: sortEventsByPriority
+  // ─────────────────────────────────────────────────────────────────────────────
+  const sortEventsByPriority = (events) => {
+    return events.sort((a, b) => {
+      // 1) Prioritize "Invite available" > "Finalized" > "Draft"
+      const getStatusPriority = (ev) => {
+        const statuses = [];
+        if (ev.isDraft) {
+          statuses.push("Draft");
+        } else {
+          statuses.push("Finalized");
+          const hasGmailOrSalesloft = ev.languagesAndTemplates?.some((tpl) =>
+            ["Gmail", "Salesloft"].includes(tpl.platform)
+          );
+          if (hasGmailOrSalesloft) {
+            statuses.push("Invite available");
+          }
+        }
+        // Return a numeric priority
+        if (statuses.includes("Invite available")) return 2; // highest
+        if (statuses.includes("Finalized")) return 1;
+        return 0; // draft is lowest
+      };
+
+      const statusA = getStatusPriority(a);
+      const statusB = getStatusPriority(b);
+      if (statusA !== statusB) {
+        return statusB - statusA; // descending
+      }
+
+      // 2) Next check isHighPriority
+      if (a.isHighPriority !== b.isHighPriority) {
+        return b.isHighPriority - a.isHighPriority; // true > false
+      }
+
+      // 3) Finally, descending by expectedAttendees
+      return b.expectedAttendees - a.expectedAttendees;
+    });
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // filteredEvents useMemo
+  // ─────────────────────────────────────────────────────────────────────────────
   const filteredEvents = useMemo(() => {
     if (!events || !Array.isArray(events)) {
       return [];
     }
-    const hasFiltersApplied =
+
+    // 1) If no filters are checked, return everything
+    const anyFilterChecked =
       [
         ...filters.subRegions,
         ...filters.gep,
@@ -106,310 +154,315 @@ export default function WeekView() {
         ...filters.countries,
         ...filters.programName,
         ...filters.activityType,
-      ].some((filter) => filter.checked) ||
-      filters.partnerEvent !== undefined ||
-      filters.isNewlyCreated !== undefined ||
-      filters.organisedBy !== undefined ||
-      filters.draftStatus !== undefined;
+        ...filters.partnerEvent,
+        ...filters.draftStatus,
+        ...filters.newlyCreated,
+      ].some((f) => f.checked) ||
+      (filters.organisedBy && filters.organisedBy.length > 0);
 
-    // If no filters are applied, return all events
-    if (!hasFiltersApplied) {
+    if (!anyFilterChecked) {
       return events;
     }
 
+    // 2) Otherwise, apply each filter
     return events.filter((event) => {
-      const subRegionMatch =
-        !filters.subRegions.some((subRegion) => subRegion.checked) ||
-        filters.subRegions.some(
-          (subRegion) =>
-            subRegion.checked && event.subRegion?.includes(subRegion.label)
-        );
+      try {
+        // Sub-region
+        const subRegionMatch =
+          !filters.subRegions.some((sr) => sr.checked) ||
+          filters.subRegions.some(
+            (sr) => sr.checked && event.subRegion?.includes(sr.label)
+          );
 
-      const gepMatch =
-        !filters.gep.some((gep) => gep.checked) ||
-        filters.gep.some(
-          (gep) => gep.checked && event.gep?.includes(gep.label)
-        );
+        // GEP
+        const gepMatch =
+          !filters.gep.some((g) => g.checked) ||
+          filters.gep.some((g) => g.checked && event.gep?.includes(g.label));
 
-      const buyerSegmentRollupMatch =
-        !filters.buyerSegmentRollup.some((segment) => segment.checked) ||
-        filters.buyerSegmentRollup.some(
-          (segment) =>
-            segment.checked && event.audienceSeniority?.includes(segment.label)
-        );
+        // Buyer Segment Rollup
+        const buyerSegMatch =
+          !filters.buyerSegmentRollup.some((b) => b.checked) ||
+          filters.buyerSegmentRollup.some(
+            (b) => b.checked && event.audienceSeniority?.includes(b.label)
+          );
 
-      const accountSectorMatch =
-        // Include all events if no sectors are checked
-        !filters.accountSectors.some((sector) => sector.checked) ||
-        // Check if any sector matches the event
-        filters.accountSectors.some((sector) => {
-          try {
-            if (sector.checked) {
-              // Map filter labels to keys in the event data
-              const sectorMapping = {
-                "Public Sector": "public",
-                Commercial: "commercial",
-              };
+        // Account Sector
+        const accountSectorMatch =
+          !filters.accountSectors.some((s) => s.checked) ||
+          filters.accountSectors.some((s) => {
+            if (!s.checked) return false;
+            // For example: map "Public Sector" => event.accountSectors.public
+            const sectorMap = {
+              "Public Sector": "public",
+              Commercial: "commercial",
+            };
+            const key = sectorMap[s.label];
+            return key ? event.accountSectors?.[key] === true : false;
+          });
 
-              // Find the corresponding key for the filter label
-              const sectorKey = sectorMapping[sector.label];
-              if (!sectorKey) {
-                console.warn(
-                  `No mapping found for sector label: ${sector.label}`
-                );
-                return false;
+        // Region
+        const regionMatch =
+          !filters.regions.some((r) => r.checked) ||
+          filters.regions.some((r) => r.checked && event.region?.includes(r.label));
+
+        // Country
+        const countryMatch =
+          !filters.countries.some((c) => c.checked) ||
+          filters.countries.some((c) => c.checked && event.country?.includes(c.label));
+
+        // Account Segments
+        const accountSegmentMatch =
+          !filters.accountSegments.some((seg) => seg.checked) ||
+          filters.accountSegments.some((seg) => {
+            if (!seg.checked) return false;
+            const eSeg = event.accountSegments?.[seg.label];
+            return eSeg?.selected && parseFloat(eSeg.percentage) > 0;
+          });
+
+        // Product Family
+        const productFamilyMatch =
+          !filters.productFamily.some((pf) => pf.checked) ||
+          filters.productFamily.some((pf) => {
+            if (!pf.checked) return false;
+            const alignment = event.productAlignment?.[pf.label];
+            return alignment?.selected && parseFloat(alignment.percentage) > 0;
+          });
+
+        // Industry
+        const industryMatch =
+          !filters.industry.some((ind) => ind.checked) ||
+          filters.industry.some(
+            (ind) => ind.checked && event.industry?.includes(ind.label)
+          );
+
+        // Partner Event
+        const partnerChecked = filters.partnerEvent.filter((p) => p.checked).map((p) => p.value);
+        const partnerMatch =
+          partnerChecked.length === 0 || partnerChecked.includes(event.isPartneredEvent);
+
+        // Draft Status
+        const draftStatusesChecked = filters.draftStatus
+          .filter((ds) => ds.checked)
+          .map((ds) => ds.value); // e.g. ["Draft", "Finalized", "Invite available"]
+        const draftMatch =
+          draftStatusesChecked.length === 0 ||
+          (function () {
+            // Figure out possible statuses for the event
+            const statuses = [];
+            if (event.isDraft) {
+              statuses.push("Draft");
+            } else {
+              statuses.push("Finalized");
+              const hasInvites = event.languagesAndTemplates?.some((tpl) =>
+                ["Gmail", "Salesloft"].includes(tpl.platform)
+              );
+              if (hasInvites) {
+                statuses.push("Invite available");
               }
-
-              // Check if the event matches the mapped key
-              return event.accountSectors?.[sectorKey] === true;
             }
-            return false;
-          } catch (err) {
-            console.error(
-              "Error checking accountSectors filter:",
-              err,
-              sector,
-              event
-            );
-            return false;
-          }
-        });
+            // If any of these statuses are in the user’s chosen set, pass
+            return statuses.some((st) => draftStatusesChecked.includes(st));
+          })();
 
-      const regionMatch =
-        !filters.regions.some((region) => region.checked) ||
-        filters.regions.some((region) => {
-          try {
-            return region.checked && event.region?.includes(region.label);
-          } catch (err) {
-            console.error("Error checking region filter:", err, region, event);
-            return false;
-          }
-        });
-
-      const countryMatch =
-        !filters.countries.some((country) => country.checked) ||
-        filters.countries.some((country) => {
-          try {
-            return country.checked && event.country?.includes(country.label);
-          } catch (err) {
-            console.error(
-              "Error checking country filter:",
-              err,
-              country,
-              event
-            );
-            return false;
-          }
-        });
-
-      const accountSegmentMatch =
-        !filters.accountSegments.some((segment) => segment.checked) ||
-        filters.accountSegments.some((segment) => {
-          try {
-            const accountSegment = event.accountSegments?.[segment.label];
-            return (
-              segment.checked &&
-              accountSegment?.selected && // Convert selected to a boolean
-              parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
-            );
-          } catch (err) {
-            console.error(
-              "Error checking accountSegments filter:",
-              err,
-              segment,
-              event
-            );
-            return false;
-          }
-        });
-
-      const productFamilyMatch =
-        !filters.productFamily.some((product) => product.checked) ||
-        filters.productFamily.some((product) => {
-          try {
-            const productAlignment = event.productAlignment?.[product.label];
-            return (
-              product.checked &&
-              productAlignment?.selected &&
-              parseFloat(productAlignment?.percentage) > 0
-            );
-          } catch (err) {
-            console.error("Error checking productFamily filter:", err);
-            return false;
-          }
-        });
-
-      const industryMatch =
-        !filters.industry.some((industry) => industry.checked) ||
-        filters.industry.some((industry) => {
-          try {
-            return industry.checked && event.industry?.includes(industry.label);
-          } catch (err) {
-            console.error(
-              "Error checking industry filter:",
-              err,
-              industry,
-              event
-            );
-            return false;
-          }
-        });
-
-      const selectedPartneredStatuses = Array.isArray(filters.partnerEvent)
-        ? filters.partnerEvent
-            .filter((option) => option.checked)
-            .map((option) => option.value)
-        : [];
-
-      const isPartneredEventMatch =
-        selectedPartneredStatuses.length === 0 ||
-        selectedPartneredStatuses.includes(event.isPartneredEvent);
-      const selectedDraftStatuses = Array.isArray(filters.draftStatus)
-        ? filters.draftStatus
-            .filter((option) => option.checked)
-            .map((option) => option.value)
-        : [];
-      const isDraftMatch =
-        selectedDraftStatuses.length === 0 ||
-        (() => {
-          // Initialize an array to hold applicable statuses
-          const applicableStatuses = [];
-
-          // Add "Draft" if the event is in draft mode
-          if (event.isDraft) {
-            applicableStatuses.push("Draft");
-          } else {
-            // If not a draft, add "Finalized" as a base status
-            applicableStatuses.push("Finalized");
-
-            // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
-            if (
-              !event.isDraft &&
-              event.languagesAndTemplates?.some((template) =>
-                ["Gmail", "Salesloft"].includes(template.platform)
+        // Program Name
+        const programNameMatch =
+          !filters.programName.some((pn) => pn.checked) ||
+          filters.programName.some(
+            (pn) =>
+              pn.checked &&
+              event.programName?.some((evName) =>
+                evName.toLowerCase().includes(pn.label.toLowerCase())
               )
-            ) {
-              applicableStatuses.push("Invite available");
-            }
-          }
-
-          // Check if any selectedDraftStatuses match the applicable statuses
-          return selectedDraftStatuses.some((status) =>
-            applicableStatuses.includes(status)
-          );
-        })();
-      const programNameMatch =
-        filters.programName.every((filter) => !filter.checked) ||
-        filters.programName.some((filter) => {
-          const isChecked = filter.checked;
-          const matches = event.programName?.some((name) =>
-            name.toLowerCase().includes(filter.label.toLowerCase())
           );
 
-          return isChecked && matches;
-        });
+        // Activity Type
+        const activityMatch =
+          !filters.activityType.some((a) => a.checked) ||
+          filters.activityType.some(
+            (a) =>
+              a.checked &&
+              event.eventType?.toLowerCase() === a.label.toLowerCase()
+          );
 
-      const activityTypeMatch =
-        !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
-        filters.activityType.some((activity) => {
-          try {
-            // Check if the event type matches the checked activity types
-            return (
-              activity.checked &&
-              event.eventType?.toLowerCase() === activity.label.toLowerCase() // Ensure case-insensitive comparison
-            );
-          } catch (err) {
-            console.error(
-              "Error checking activityType filter:",
-              err,
-              activity,
-              event
-            );
-            return false; // Handle errors gracefully
-          }
-        });
-
-      const isNewlyCreatedMatch =
-        !filters.newlyCreated?.some((option) => option.checked) ||
-        filters.newlyCreated?.some((option) => {
-          if (option.checked) {
+        // Newly Created (last 14 days if "Yes")
+        const newlyCreatedChecked = filters.newlyCreated.filter((nc) => nc.checked);
+        const newlyCreatedMatch =
+          newlyCreatedChecked.length === 0 ||
+          newlyCreatedChecked.some((nc) => {
             const entryCreatedDate = event.entryCreatedDate?.value
               ? dayjs(event.entryCreatedDate.value)
-              : null; // Access `value` property
-
+              : null;
             if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-              console.warn(
-                "Invalid or missing entryCreatedDate for event:",
-                event
-              );
-              return option.value === false; // Consider missing dates as "old"
+              // If missing, treat as “old” => matches only if user checked “No”
+              return nc.value === false;
             }
+            // If within 14 days => “Yes”, else “No”
+            const isWithin14Days = dayjs().diff(entryCreatedDate, "day") <= 14;
+            return nc.value === isWithin14Days;
+          });
 
-            const isWithinTwoWeeks =
-              dayjs().diff(entryCreatedDate, "day") <= 14;
-            return option.value === isWithinTwoWeeks;
-          }
-          return false;
-        });
-      const organisedByMatch = (() => {
-        // Check if no organiser filter is applied
-        if (!filters.organisedBy || filters.organisedBy.length === 0) {
-          return true; // No organiser filter applied
-        }
+        // Organised By (multi-select array)
+        const organiserMatch =
+          !filters.organisedBy || filters.organisedBy.length === 0
+            ? true
+            : filters.organisedBy.some((org) => event.organisedBy?.includes(org));
 
-        // Check if the event has no organiser data
-        if (!event.organisedBy || event.organisedBy.length === 0) {
-          return false; // Event does not have an organiser
-        }
-
-        // Check for match
-        const isMatch = filters.organisedBy.some((organiser) =>
-          event.organisedBy.includes(organiser)
+        // Combine them all:
+        return (
+          subRegionMatch &&
+          gepMatch &&
+          buyerSegMatch &&
+          accountSectorMatch &&
+          regionMatch &&
+          countryMatch &&
+          accountSegmentMatch &&
+          productFamilyMatch &&
+          industryMatch &&
+          partnerMatch &&
+          draftMatch &&
+          programNameMatch &&
+          activityMatch &&
+          newlyCreatedMatch &&
+          organiserMatch
         );
+      } catch (filterError) {
+        console.error("Error applying filters to event:", event, filterError);
+        return false;
+      }
+    });
+  }, [events, filters]);
 
-        return isMatch; // Return the match result
-      })();
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Single-day vs multi-day separation
+  // ─────────────────────────────────────────────────────────────────────────────
+  const { multiDayEvents, singleDayEvents } = useMemo(() => {
+    if (!Array.isArray(currentWeek) || currentWeek.length === 0) {
+      return { multiDayEvents: [], singleDayEvents: [] };
+    }
 
+    const sorted = sortEventsByPriority(filteredEvents);
+
+    const multi = sorted.filter((ev) => {
+      const eventStart = dayjs(ev.startDate);
+      const eventEnd = dayjs(ev.endDate);
       return (
-        subRegionMatch &&
-        gepMatch &&
-        buyerSegmentRollupMatch &&
-        accountSectorMatch &&
-        accountSegmentMatch &&
-        productFamilyMatch &&
-        industryMatch &&
-        isPartneredEventMatch &&
-        isDraftMatch &&
-        regionMatch &&
-        countryMatch &&
-        programNameMatch &&
-        activityTypeMatch &&
-        isNewlyCreatedMatch &&
-        organisedByMatch
+        eventStart.isValid() &&
+        eventEnd.isValid() &&
+        // multi-day if they are not the same day
+        !eventStart.isSame(eventEnd, "day") &&
+        // also ensure at least some overlap with the current week
+        eventStart.isBefore(currentWeek[currentWeek.length - 1].endOf("day")) &&
+        eventEnd.isAfter(currentWeek[0].startOf("day"))
       );
     });
-  }, [filters, events]);
 
-  useEffect(() => {
-    const fetchAndFilterEvents = async () => {
-      setLoading(true);
+    const single = sorted.filter((ev) => {
+      const eventStart = dayjs(ev.startDate);
+      const eventEnd = dayjs(ev.endDate);
+      return (
+        eventStart.isValid() &&
+        eventEnd.isValid() &&
+        eventStart.isSame(eventEnd, "day")
+      );
+    });
 
-      try {
-        const eventData = await getEventData("eventDataQuery");
-        setEvents(eventData);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching event data:", error);
-        setLoading(false);
-      }
+    return {
+      multiDayEvents: multi,
+      singleDayEvents: single,
     };
+  }, [filteredEvents, currentWeek]);
 
-    fetchAndFilterEvents();
-  }, [filters, location]);
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Helper to detect overlap of events
+  // ─────────────────────────────────────────────────────────────────────────────
+  const isOverlapping = (event1, event2) => {
+    const s1 = dayjs(event1.startDate);
+    const e1 = dayjs(event1.endDate);
+    const s2 = dayjs(event2.startDate);
+    const e2 = dayjs(event2.endDate);
+    return s1.isBefore(e2) && e1.isAfter(s2);
+  };
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Group multi-day events by overlap (stack them vertically)
+  // ─────────────────────────────────────────────────────────────────────────────
+  const groupMultiDayEvents = useCallback((allMultiDay) => {
+    const groups = [];
+    allMultiDay.forEach((event) => {
+      let addedToExistingGroup = false;
+      for (const group of groups) {
+        if (group.some((gEvent) => isOverlapping(gEvent, event))) {
+          group.push(event);
+          addedToExistingGroup = true;
+          break;
+        }
+      }
+      if (!addedToExistingGroup) {
+        groups.push([event]);
+      }
+    });
+    return groups;
+  }, []);
+
+  const multiDayEventGroups = useMemo(() => {
+    return groupMultiDayEvents(multiDayEvents);
+  }, [multiDayEvents, groupMultiDayEvents]);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Layout for multi-day events (left%, width%, stacking)
+  // ─────────────────────────────────────────────────────────────────────────────
+  const calculateMultiDayEventStyles = useCallback(
+    (event, groupIndex, eventIndex) => {
+      if (!currentWeek || currentWeek.length === 0) {
+        return { top: "0px", left: "0%", width: "100%" };
+      }
+
+      const eventStart = dayjs(event.startDate);
+      const eventEnd = dayjs(event.endDate);
+
+      const weekStart = currentWeek[0];
+      const weekEnd = currentWeek[currentWeek.length - 1];
+
+      // Clamp the event’s start/end if they go beyond this week
+      const startOfWeekEvent = eventStart.isBefore(weekStart)
+        ? weekStart
+        : eventStart;
+      const endOfWeekEvent = eventEnd.isAfter(weekEnd) ? weekEnd : eventEnd;
+
+      const startIndex = currentWeek.findIndex((day) =>
+        day.isSame(startOfWeekEvent, "day")
+      );
+      const endIndex = currentWeek.findIndex((day) =>
+        day.isSame(endOfWeekEvent, "day")
+      );
+
+      if (startIndex === -1 || endIndex === -1) {
+        return { top: "0px", left: "0%", width: "100%" };
+      }
+
+      const totalDays = endIndex - startIndex + 1; // how many days in this event’s range
+      const leftPercent = (startIndex / 7) * 100;
+      const widthPercent = (totalDays / 7) * 100;
+
+      // Stack by group index and event index
+      const topPosition = groupIndex * 30 + eventIndex * 30; // 30px steps
+
+      return {
+        position: "absolute",
+        top: `${topPosition}px`,
+        left: `${leftPercent}%`,
+        width: `${widthPercent}%`,
+      };
+    },
+    [currentWeek]
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Event popup triggers
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleEventClick = useCallback(
-    (event) => {
-      setSelectedEvent(event);
+    (ev) => {
+      setSelectedEvent(ev);
       setShowInfoEventModal(true);
     },
     [setSelectedEvent, setShowInfoEventModal]
@@ -420,151 +473,25 @@ export default function WeekView() {
     setSelectedEvent(null);
   }, [setShowInfoEventModal, setSelectedEvent]);
 
-  const { multiDayEvents, singleDayEvents } = useMemo(() => {
-    if (!currentWeek.length) return { multiDayEvents: [], singleDayEvents: [] };
-
-    const multiDayEvents = sortEventsByPriority(
-      filteredEvents.filter((event) => {
-        const eventStart = dayjs(event.startDate);
-        const eventEnd = dayjs(event.endDate);
-
-        return (
-          eventStart.isValid() &&
-          eventEnd.isValid() &&
-          !eventStart.isSame(eventEnd, "day") &&
-          eventStart.isBefore(
-            currentWeek[currentWeek.length - 1].endOf("day")
-          ) &&
-          eventEnd.isAfter(currentWeek[0].startOf("day"))
-        );
-      })
-    );
-
-    const singleDayEvents = sortEventsByPriority(
-      filteredEvents.filter((event) => {
-        const eventStart = dayjs(event.startDate);
-        const eventEnd = dayjs(event.endDate);
-
-        return (
-          eventStart.isSame(eventEnd, "day") &&
-          eventStart.isValid() &&
-          eventEnd.isValid()
-        );
-      })
-    );
-
-    return { multiDayEvents, singleDayEvents };
-  }, [filteredEvents, currentWeek]);
-
-  // Helper function to check event overlap
-  const isOverlapping = (event1, event2) => {
-    const event1Start = dayjs(event1.startDate);
-    const event1End = dayjs(event1.endDate);
-    const event2Start = dayjs(event2.startDate);
-    const event2End = dayjs(event2.endDate);
-
-    return event1Start.isBefore(event2End) && event1End.isAfter(event2Start);
-  };
-
-  // Group multi-day events by overlap and stack them vertically
-  // Group multi-day events by overlap and stack them vertically
-  const groupMultiDayEvents = useCallback((multiDayEvents) => {
-    const groups = [];
-
-    multiDayEvents.forEach((event) => {
-      let addedToGroup = false;
-
-      // Check each group to see if the event overlaps with any event in the group
-      for (const group of groups) {
-        const overlaps = group.some((groupEvent) =>
-          isOverlapping(event, groupEvent)
-        );
-
-        if (overlaps) {
-          group.push(event);
-          addedToGroup = true;
-          break;
-        }
-      }
-
-      // If the event doesn't overlap with any group, create a new group
-      if (!addedToGroup) {
-        groups.push([event]);
-      }
-    });
-
-    return groups;
-  }, []);
-
-  const multiDayEventGroups = useMemo(
-    () => groupMultiDayEvents(multiDayEvents),
-    [multiDayEvents, groupMultiDayEvents]
-  );
-
-  // Calculate styles for multi-day events including stacking
-  const calculateMultiDayEventStyles = (
-    event,
-    groupIndex,
-    eventIndex,
-    currentWeek
-  ) => {
-    // Defensive check to make sure currentWeek is not undefined or empty
-    if (!currentWeek || currentWeek.length === 0) {
-      return { top: "0px", left: "0%", width: "100%" }; // Default safe values
-    }
-
-    const eventStart = dayjs(event.startDate);
-    const eventEnd = dayjs(event.endDate);
-
-    // Calculate the first day of the week and the last day of the week
-    const weekStart = currentWeek[0];
-    const weekEnd = currentWeek[currentWeek.length - 1];
-
-    // Ensure the event spans across the correct number of days in the current week
-    const startOfWeekEvent = eventStart.isBefore(weekStart)
-      ? weekStart
-      : eventStart;
-    const endOfWeekEvent = eventEnd.isAfter(weekEnd) ? weekEnd : eventEnd;
-
-    const startIndex = currentWeek.findIndex((day) =>
-      day.isSame(startOfWeekEvent, "day")
-    );
-    const endIndex = currentWeek.findIndex((day) =>
-      day.isSame(endOfWeekEvent, "day")
-    );
-
-    if (startIndex === -1 || endIndex === -1) {
-      // If the event's start or end doesn't match any days in the current week, return default values
-      return { top: "0px", left: "0%", width: "100%" };
-    }
-
-    const eventSpan = endIndex - startIndex + 1; // Number of days the event spans in the current week
-    const leftPosition = (startIndex / 7) * 100; // Left position as a percentage of the week
-    const width = (eventSpan / 7) * 100; // Width as a percentage of the week
-
-    // Stack events vertically by their group and index within the group
-    const topPosition = groupIndex * 30 + eventIndex * 30; // Stack by both group and event
-
-    return {
-      top: `${topPosition}px`,
-      left: `${leftPosition}%`,
-      width: `${width}%`,
-    };
-  };
-
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Mouse hover tooltip
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleMouseEnter = (e, event) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setHoveredEvent(event);
     setTooltipPosition({
-      x: rect.left + 10, // Tooltip 10px to the right of the event
-      y: rect.top + window.scrollY - 10, // Tooltip slightly above the event
+      x: rect.left + 10,
+      y: rect.top + window.scrollY - 10,
     });
   };
 
   const handleMouseLeave = () => {
-    setHoveredEvent(null); // Hide the tooltip
+    setHoveredEvent(null);
   };
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────────
   return (
     <Paper
       sx={{
@@ -576,7 +503,6 @@ export default function WeekView() {
       }}
     >
       {loading ? (
-        /* Show spinner if loading is true */
         <Box
           sx={{
             display: "flex",
@@ -589,15 +515,14 @@ export default function WeekView() {
         </Box>
       ) : (
         <>
-          {/* Header for displaying days of the week */}
+          {/* --- Header row with days of the week --- */}
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
-              paddingBottom: "10px",
-              paddingTop: "10px",
+              paddingY: "10px",
               backgroundColor: "white",
-              borderBottom: "1px solid ",
+              borderBottom: "1px solid #ddd",
             }}
           >
             {currentWeek.map((day) => (
@@ -608,8 +533,7 @@ export default function WeekView() {
                 sx={{
                   flex: 1,
                   textAlign: "center",
-                  paddingLeft: "10px",
-                  paddingRight: "10px",
+                  paddingX: "10px",
                 }}
               >
                 {day.format("ddd, D MMM")}
@@ -617,7 +541,7 @@ export default function WeekView() {
             ))}
           </Box>
 
-          {/* Multi-day Events Section */}
+          {/* --- Multi-day events bar (stacked) --- */}
           {multiDayEventGroups.length > 0 && (
             <Box
               sx={{
@@ -626,7 +550,6 @@ export default function WeekView() {
                 overflowY: "auto",
                 padding: "15px 20px",
                 borderBottom: "1px solid #ddd",
-                paddingTop: "10px",
                 marginLeft: "60px",
                 marginTop: "20px",
                 marginBottom: "20px",
@@ -653,19 +576,17 @@ export default function WeekView() {
                   const { backgroundColor, color, icon } = getEventStyleAndIcon(
                     event.eventType
                   );
-                  const styles = calculateMultiDayEventStyles(
+                  const positionStyle = calculateMultiDayEventStyles(
                     event,
                     groupIndex,
-                    eventIndex,
-                    currentWeek
+                    eventIndex
                   );
 
                   return (
                     <div
-                      key={event.eventId}
+                      key={event.eventId || `${event.title}-${eventIndex}`}
                       style={{
-                        position: "absolute",
-                        ...styles,
+                        ...positionStyle,
                         backgroundColor,
                         color,
                         padding: "8px 12px",
@@ -714,6 +635,7 @@ export default function WeekView() {
             </Box>
           )}
 
+          {/* --- Tooltip if hovering over event --- */}
           {hoveredEvent && (
             <Box
               sx={{
@@ -737,7 +659,7 @@ export default function WeekView() {
             </Box>
           )}
 
-          {/* Scrollable Week View for Single-day Events */}
+          {/* --- Scrollable columns for single-day events --- */}
           <Box
             ref={weekViewRef}
             sx={{
@@ -774,10 +696,11 @@ export default function WeekView() {
               ))}
             </Box>
 
-            {/* Actual day columns */}
+            {/* Day columns */}
             {currentWeek.map((day, index) => {
-              const filteredEventsForDay = singleDayEvents.filter((event) =>
-                dayjs(event.startDate).isSame(day, "day")
+              // Single-day events for this day
+              const eventsForDay = singleDayEvents.filter((ev) =>
+                dayjs(ev.startDate).isSame(day, "day")
               );
 
               return (
@@ -792,7 +715,7 @@ export default function WeekView() {
                 >
                   <DayColumn
                     daySelected={day}
-                    events={filteredEventsForDay}
+                    events={eventsForDay}
                     onEventClick={handleEventClick}
                     showTimeLabels={index === 0}
                   />
@@ -801,6 +724,7 @@ export default function WeekView() {
             })}
           </Box>
 
+          {/* --- Modal popup for event details --- */}
           {showEventInfoModal && selectedEvent && (
             <EventInfoPopup event={selectedEvent} close={closeEventModal} />
           )}

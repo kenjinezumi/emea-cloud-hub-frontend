@@ -55,14 +55,13 @@ export default function Filters() {
   const [refresh, setRefresh] = useState(false);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Local storage object of “active” filter states (NOT an array)
+  // Retrieve from local storage (if exists)
   // ─────────────────────────────────────────────────────────────────────────────
   const persistedFilters =
     JSON.parse(localStorage.getItem("persistedFilters")) || {};
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // State: Named “saved filters” array
-  // (These are filter sets the user can save & reuse.)
+  // State: Named “saved filters”
   // ─────────────────────────────────────────────────────────────────────────────
   const [savedFilters, setSavedFilters] = useState([]);
 
@@ -133,6 +132,9 @@ export default function Filters() {
     persistedFilters.draftStatus || draftStatusOptions
   );
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // “Newly Created” filters (2-weeks old or not)
+  // ─────────────────────────────────────────────────────────────────────────────
   const [localNewlyCreatedOptions, setLocalNewlyCreatedOptions] = useState(
     persistedFilters.newlyCreated ||
       newlyCreatedOptions.map((option) => ({ ...option }))
@@ -144,26 +146,28 @@ export default function Filters() {
   );
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // State: Organised By
+  // Organised By: Store as an array for multi-select
   // ─────────────────────────────────────────────────────────────────────────────
-  const [organisedByOptions, setOrganisedByOptions] = useState();
-  const [selectedOrganiser, setSelectedOrganiser] = useState(
-    persistedFilters.organisedBy || null
+  const [organisedByOptions, setOrganisedByOptions] = useState([]);
+  // ADDED/RENAMED: Instead of a single “selectedOrganiser”, store an array
+  const [selectedOrganisers, setSelectedOrganisers] = useState(
+    persistedFilters.organisedBy || []
   );
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Fetch “Organised By” from the API
+  // Fetch “Organised By” from API
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchOrganisedBy = async () => {
       try {
         const data = await getOrganisedBy();
         if (Array.isArray(data)) {
-          const flattenedData = data
+          // Flatten the data if needed
+          const flattened = data
             .map((item) => item.organisedBy[0])
             .filter(Boolean)
             .sort((a, b) => a.localeCompare(b));
-          setOrganisedByOptions(flattenedData);
+          setOrganisedByOptions(flattened);
         }
       } catch (error) {
         console.error("Failed to fetch OrganisedBy options:", error);
@@ -172,13 +176,15 @@ export default function Filters() {
     fetchOrganisedBy();
   }, []);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Controlled Autocomplete for “Organised By”
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleOrganiserChange = (event, newValue) => {
-    // Set to null if no value is selected
-    setSelectedOrganiser(newValue.length ? newValue : null);
+    setSelectedOrganisers(newValue || []);
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Accordions (expansion states)
+  // Accordion expansion states
   // ─────────────────────────────────────────────────────────────────────────────
   const [isSubRegionExpanded, setIsSubRegionExpanded] = useState(false);
   const [isCustomFiltersExpanded, setIsCustomFiltersExpanded] = useState(false);
@@ -199,7 +205,7 @@ export default function Filters() {
   const [isOrganisedByExpanded, setIsOrganisedByExpanded] = useState(false);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Context: Updating filters for other components
+  // Context: inform other components
   // ─────────────────────────────────────────────────────────────────────────────
   const { updateFilters } = useContext(GlobalContext);
 
@@ -222,10 +228,9 @@ export default function Filters() {
       partnerEvent: localPartnerEventOptions,
       draftStatus: localDraftStatusOptions,
       newlyCreated: localNewlyCreatedOptions,
-      organisedBy: selectedOrganiser,
+      organisedBy: selectedOrganisers, // CHANGED: store array
     };
     localStorage.setItem("persistedFilters", JSON.stringify(filtersToPersist));
-    console.log("Saving filters to localStorage:", filtersToPersist);
   }, [
     localRegionOptions,
     localSubRegionFilters,
@@ -241,7 +246,7 @@ export default function Filters() {
     localPartnerEventOptions,
     localDraftStatusOptions,
     localNewlyCreatedOptions,
-    selectedOrganiser,
+    selectedOrganisers,
   ]);
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -250,47 +255,59 @@ export default function Filters() {
   useEffect(() => {
     const localPersisted = JSON.parse(localStorage.getItem("persistedFilters"));
     if (localPersisted) {
-      console.log("Loaded filters from localStorage:", localPersisted);
+      // region
       setLocalRegionOptions(localPersisted.regions || localRegionOptions);
-      setLocalSubRegionFilters(
-        localPersisted.subRegions || localSubRegionFilters
-      );
+      // subregion
+      setLocalSubRegionFilters(localPersisted.subRegions || localSubRegionFilters);
+      // country
       setLocalCountryOptions(localPersisted.countries || localCountryOptions);
+      // GEP
       setLocalGepOptions(localPersisted.gep || localGepOptions);
+      // Program name
       setLocalProgramNameOptions(
         localPersisted.programName || localProgramNameOptions
       );
+      // Activity type
       setLocalActivityTypeOptions(
         localPersisted.activityType || localActivityTypeOptions
       );
+      // Account Sector
       setLocalAccountSectorOptions(
         localPersisted.accountSectors || localAccountSectorOptions
       );
+      // Account Segment
       setLocalAccountSegmentOptions(
         localPersisted.accountSegments || localAccountSegmentOptions
       );
+      // Buyer Segment
       setLocalBuyerSegmentRollupOptions(
         localPersisted.buyerSegmentRollup || localBuyerSegmentRollupOptions
       );
+      // Product Family
       setLocalProductFamilyOptions(
         localPersisted.productFamily || localProductFamilyOptions
       );
+      // Industry
       setLocalIndustryOptions(localPersisted.industry || localIndustryOptions);
+      // Partner
       setLocalPartnerEventOptions(
         localPersisted.partnerEvent || localPartnerEventOptions
       );
+      // Draft status
       setLocalDraftStatusOptions(
         localPersisted.draftStatus || localDraftStatusOptions
       );
+      // Newly created
       setLocalNewlyCreatedOptions(
         localPersisted.newlyCreated || localNewlyCreatedOptions
       );
-      setSelectedOrganiser(localPersisted.organisedBy || selectedOrganiser);
+      // Organised By
+      setSelectedOrganisers(localPersisted.organisedBy || []);
     }
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Clear and select all filters
+  // Clear and select all
   // ─────────────────────────────────────────────────────────────────────────────
   const clearAllFilters = () => {
     setLocalRegionOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
@@ -301,19 +318,23 @@ export default function Filters() {
     setLocalAccountSectorOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
     setLocalActivityTypeOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
     setLocalAccountSegmentOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
-    setLocalBuyerSegmentRollupOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
+    setLocalBuyerSegmentRollupOptions((prev) =>
+      prev.map((f) => ({ ...f, checked: false }))
+    );
     setLocalProductFamilyOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
     setLocalIndustryOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
     setLocalPartnerEventOptions((prev) => prev.map((f) => ({ ...f, checked: false })));
     setLocalDraftStatusOptions((prev) =>
       prev.map((option) => {
+        // Optionally set default "Finalized"/"Invite available" = true, if desired
         if (option.label === "Finalized" || option.label === "Invite available") {
           return { ...option, checked: true };
         }
         return { ...option, checked: false };
       })
     );
-    setSelectedOrganiser(null);
+    // Clear “Organised By”
+    setSelectedOrganisers([]);
   };
 
   const selectAllFilters = () => {
@@ -332,10 +353,12 @@ export default function Filters() {
     setLocalIndustryOptions((prev) => prev.map((f) => ({ ...f, checked: true })));
     setLocalPartnerEventOptions((prev) => prev.map((f) => ({ ...f, checked: true })));
     setLocalDraftStatusOptions((prev) => prev.map((f) => ({ ...f, checked: true })));
+    // If you want to also "select all" organisers, either do that here or just leave it
+    // setSelectedOrganisers([...organisedByOptions]);
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Toggling filters
+  // Helper for toggling filter checkboxes
   // ─────────────────────────────────────────────────────────────────────────────
   const forceRefresh = () => setRefresh((prev) => !prev);
 
@@ -384,7 +407,7 @@ export default function Filters() {
       partnerEvent: localPartnerEventOptions,
       draftStatus: localDraftStatusOptions,
       newlyCreated: localNewlyCreatedOptions,
-      organisedBy: selectedOrganiser,
+      organisedBy: selectedOrganisers, // CHANGED: pass array
     });
   }, [
     localRegionOptions,
@@ -401,15 +424,13 @@ export default function Filters() {
     localPartnerEventOptions,
     localDraftStatusOptions,
     localNewlyCreatedOptions,
-    selectedOrganiser,
+    selectedOrganisers,
     updateFilters,
   ]);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Multi-select “Organised By”
+  // Render the multi-select “Organised By” section
   // ─────────────────────────────────────────────────────────────────────────────
-  const [selectedOrganisers, setSelectedOrganisers] = useState([]);
-
   const renderOrganisedBySection = (
     title,
     options = [],
@@ -429,10 +450,10 @@ export default function Filters() {
       {expanded && (
         <div className="mt-3">
           <Autocomplete
-            options={options || []}
             multiple
-            value={selectedOptions || []}
-            onChange={(event, newValue) => onOptionsChange(newValue)}
+            options={options}
+            value={selectedOptions}
+            onChange={onOptionsChange}
             renderTags={() => null}
             renderInput={(params) => (
               <TextField
@@ -452,7 +473,10 @@ export default function Filters() {
                   key={index}
                   label={organiser}
                   onDelete={() =>
-                    onOptionsChange(selectedOptions.filter((item) => item !== organiser))
+                    onOptionsChange(
+                      null,
+                      selectedOptions.filter((item) => item !== organiser)
+                    )
                   }
                   sx={{
                     backgroundColor: "#e0f7fa",
@@ -470,7 +494,7 @@ export default function Filters() {
   );
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Render Filter Section
+  // Reusable render function for standard checkbox filters
   // ─────────────────────────────────────────────────────────────────────────────
   const renderFilterSection = (
     title,
@@ -506,7 +530,7 @@ export default function Filters() {
   );
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Deleting a filter from saved filters
+  // Delete a saved filter
   // ─────────────────────────────────────────────────────────────────────────────
   const handleDeleteFilter = async (filterName) => {
     try {
@@ -521,36 +545,7 @@ export default function Filters() {
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Filter helper for “newly created”
-  // ─────────────────────────────────────────────────────────────────────────────
-  const filterByNewlyCreated = (events) => {
-    const selectedOptions = localNewlyCreatedOptions
-      .filter((option) => option.checked)
-      .map((option) => option.value);
-
-    if (selectedOptions.length === 0) return events;
-
-    return events.filter((event) => {
-      const entryCreatedDate = event.entryCreatedDate?.value
-        ? new Date(event.entryCreatedDate.value)
-        : null;
-
-      if (!entryCreatedDate) {
-        console.warn("Missing or invalid entryCreatedDate for event:", event);
-        // Treat missing dates as "not newly created"
-        return selectedOptions.includes(false);
-      }
-
-      const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-
-      const isNewlyCreated = entryCreatedDate >= twoWeeksAgo;
-      return selectedOptions.includes(isNewlyCreated);
-    });
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Retrieve LDAP from local or session storage
+  // Get user LDAP from local/session storage
   // ─────────────────────────────────────────────────────────────────────────────
   const getUserLdap = () => {
     const userData = JSON.parse(
@@ -565,7 +560,7 @@ export default function Filters() {
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Fetch list of saved filters from API on mount
+  // Fetch saved filters on mount
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchSavedFilters = async () => {
@@ -583,69 +578,77 @@ export default function Filters() {
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Save a new named filter
+  // Saving a new named filter
   // ─────────────────────────────────────────────────────────────────────────────
   const [customFilterName, setCustomFilterName] = useState("");
 
   const handleSaveFilter = () => {
     const ldap = getUserLdap();
-
     if (!customFilterName.trim()) return;
 
     const filterData = {
       ldap,
       filterName: customFilterName.trim(),
-      config:[ {
-        regions: localRegionOptions.map(({ label, checked }) => ({ label, checked })),
-        subRegions: localSubRegionFilters.map(({ label, checked }) => ({
-          label,
-          checked,
-        })),
-        countries: localCountryOptions.map(({ label, checked }) => ({ label, checked })),
-        gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
-        programName: localProgramNameOptions.map(({ label, checked }) => ({
-          label,
-          checked,
-        })),
-        accountSectors: localAccountSectorOptions.map(({ value, checked }) => ({
-          value,
-          checked,
-        })),
-        accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({
-          label,
-          checked,
-        })),
-        buyerSegmentRollup: localBuyerSegmentRollupOptions.map(
-          ({ label, checked }) => ({ label, checked })
-        ),
-        productFamily: localProductFamilyOptions.map(({ label, checked }) => ({
-          label,
-          checked,
-        })),
-        industry: localIndustryOptions.map(({ label, checked }) => ({
-          label,
-          checked,
-        })),
-        partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({
-          label,
-          checked,
-        })),
-        draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({
-          label,
-          checked,
-        })),
-        activityType: localActivityTypeOptions.map(({ label, checked }) => ({
-          label,
-          checked,
-        })),
-        organisedBy: selectedOrganiser || [],
-      }],
+      // The config is typically an array of objects in your schema
+      config: [
+        {
+          regions: localRegionOptions.map(({ label, checked }) => ({ label, checked })),
+          subRegions: localSubRegionFilters.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          countries: localCountryOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          gep: localGepOptions.map(({ label, checked }) => ({ label, checked })),
+          programName: localProgramNameOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          accountSectors: localAccountSectorOptions.map(({ value, checked }) => ({
+            label: value, // Or keep your original structure
+            checked,
+          })),
+          accountSegments: localAccountSegmentOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          buyerSegmentRollup: localBuyerSegmentRollupOptions.map(
+            ({ label, checked }) => ({
+              label,
+              checked,
+            })
+          ),
+          productFamily: localProductFamilyOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          industry: localIndustryOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          partnerEvent: localPartnerEventOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          draftStatus: localDraftStatusOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          activityType: localActivityTypeOptions.map(({ label, checked }) => ({
+            label,
+            checked,
+          })),
+          organisedBy: selectedOrganisers, // array
+        },
+      ],
     };
 
-    // Send the formatted filter data to the backend
+    // API call to store
     sendFilterDataToAPI(filterData);
 
-    // Add the filter to the “saved filters” array in state
+    // Update local state
     setSavedFilters((prev) => [
       ...prev,
       { filterName: customFilterName.trim(), config: filterData.config },
@@ -656,195 +659,165 @@ export default function Filters() {
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Apply a saved filter (re-check states from that config)
+  // Apply a saved filter
   // ─────────────────────────────────────────────────────────────────────────────
   const handleChipClick = (config) => applyFilterConfig(config);
 
   const applyFilterConfig = (config) => {
-    // Make sure config is well-formed
     if (!config || !Array.isArray(config)) {
-      console.error("applyFilterConfig: Received undefined or invalid config.");
+      console.error("applyFilterConfig: Received invalid config.");
       return;
     }
-
-    const organisedBy = config[0]?.organisedBy || null;
+    const saved = config[0] || {};
 
     // Sub-region
     const updatedSubRegionFilters = localSubRegionFilters.map((filter) => {
-      const match = config[0]?.subRegions?.find(
+      const match = saved.subRegions?.find(
         (item) =>
-          item &&
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
     // GEP
     const updatedGepOptions = localGepOptions.map((filter) => {
-      const match = config[0]?.gep?.find(
+      const match = saved.gep?.find(
         (item) =>
-          item &&
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
     // Program
     const updatedProgramNameOptions = localProgramNameOptions.map((filter) => {
-      const match = config[0]?.programName?.find(
+      const match = saved.programName?.find(
         (item) =>
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
-    // Activity type
+    // Activity
     const updatedActivityTypeOptions = localActivityTypeOptions.map((filter) => {
-      const match = config[0]?.activityType?.find(
+      const match = saved.activityType?.find(
         (item) =>
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
-    });
-
-    // Account sector
-    const updatedAccountSectorOptions = localAccountSectorOptions.map((filter) => {
-      const match = config[0]?.accountSectors?.find(
-        (item) =>
-          item &&
-          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
-      );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
     // Region
     const updatedRegionOptions = localRegionOptions.map((filter) => {
-      const match = config[0]?.regions?.find(
+      const match = saved.regions?.find(
         (item) =>
-          item &&
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
     // Country
     const updatedCountryOptions = localCountryOptions.map((filter) => {
-      const match = config[0]?.countries?.find(
+      const match = saved.countries?.find(
         (item) =>
-          item &&
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
-    // Account segment
-    const updatedAccountSegmentOptions = localAccountSegmentOptions.map(
-      (filter) => {
-        const match = config[0]?.accountSegments?.find(
-          (item) =>
-            item &&
-            item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
-        );
-        return match ? { ...filter, checked: match.checked } : filter;
-      }
-    );
-
-    // Buyer segment rollup
-    const updatedBuyerSegmentRollupOptions = localBuyerSegmentRollupOptions.map(
-      (filter) => {
-        const match = config[0]?.buyerSegmentRollup?.find(
-          (item) =>
-            item &&
-            item.label.trim().toLowerCase() ===
-              filter.label.trim().toLowerCase()
-        );
-        return match ? { ...filter, checked: match.checked } : filter;
-      }
-    );
-
-    // Product family
-    const updatedProductFamilyOptions = localProductFamilyOptions.map((filter) => {
-      const match = config[0]?.productFamily?.find(
+    // Account Sectors
+    const updatedAccountSectorOptions = localAccountSectorOptions.map((filter) => {
+      const match = saved.accountSectors?.find(
         (item) =>
-          item &&
+          // NOTE: your original structure might differ; adjust accordingly
+          item.label.trim().toLowerCase() === filter.value.trim().toLowerCase()
+      );
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
+    });
+
+    // Account Segments
+    const updatedAccountSegmentOptions = localAccountSegmentOptions.map((filter) => {
+      const match = saved.accountSegments?.find(
+        (item) =>
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
+    });
+
+    // Buyer Segment Rollup
+    const updatedBuyerSegmentRollupOptions = localBuyerSegmentRollupOptions.map(
+      (filter) => {
+        const match = saved.buyerSegmentRollup?.find(
+          (item) =>
+            item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+        );
+        return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
+      }
+    );
+
+    // Product Family
+    const updatedProductFamilyOptions = localProductFamilyOptions.map((filter) => {
+      const match = saved.productFamily?.find(
+        (item) =>
+          item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
+      );
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
     // Industry
     const updatedIndustryOptions = localIndustryOptions.map((filter) => {
-      const match = config[0]?.industry?.find(
+      const match = saved.industry?.find(
         (item) =>
-          item &&
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
-    // Partner event
+    // Partner Event
     const updatedPartnerEventOptions = localPartnerEventOptions.map((filter) => {
-      const match = config[0]?.partnerEvent?.find(
+      const match = saved.partnerEvent?.find(
         (item) =>
-          item &&
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
-    // Draft status
+    // Draft Status
     const updatedDraftStatusOptions = localDraftStatusOptions.map((filter) => {
-      const match = config[0]?.draftStatus?.find(
+      const match = saved.draftStatus?.find(
         (item) =>
-          item &&
           item.label.trim().toLowerCase() === filter.label.trim().toLowerCase()
       );
-      return match ? { ...filter, checked: match.checked } : filter;
+      return match ? { ...filter, checked: match.checked } : { ...filter, checked: false };
     });
 
-    // Update all local states
+    // Organised By (array of strings)
+    const updatedOrganisers = saved.organisedBy || [];
+
+    // Update states
     setLocalSubRegionFilters(updatedSubRegionFilters);
     setLocalGepOptions(updatedGepOptions);
     setLocalProgramNameOptions(updatedProgramNameOptions);
     setLocalActivityTypeOptions(updatedActivityTypeOptions);
-    setLocalAccountSectorOptions(updatedAccountSectorOptions);
     setLocalRegionOptions(updatedRegionOptions);
     setLocalCountryOptions(updatedCountryOptions);
+    setLocalAccountSectorOptions(updatedAccountSectorOptions);
     setLocalAccountSegmentOptions(updatedAccountSegmentOptions);
     setLocalBuyerSegmentRollupOptions(updatedBuyerSegmentRollupOptions);
     setLocalProductFamilyOptions(updatedProductFamilyOptions);
     setLocalIndustryOptions(updatedIndustryOptions);
     setLocalPartnerEventOptions(updatedPartnerEventOptions);
     setLocalDraftStatusOptions(updatedDraftStatusOptions);
-    setSelectedOrganiser(organisedBy);
+    setSelectedOrganisers(updatedOrganisers);
 
     forceRefresh();
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Final return: UI
+  // UI
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div className="mt-4">
-      {/* Example of “Select All” usage (currently commented out)
-      <div>
-        <IconButton
-          aria-label="select all"
-          onClick={selectAllFilters}
-          size="small"
-          style={{ color: "#1976d2" }}
-        >
-          <DoneAllIcon style={{ fontSize: "20px", marginLeft: "0px" }} />
-        </IconButton>
-        <button
-          style={{ fontSize: "14px", background: "none", border: "none", padding: 0, color: "inherit", cursor: "pointer" }}
-          onClick={selectAllFilters}
-        >
-          Select all filters
-        </button>
-      </div> 
-      */}
-
+      {/* Save filters */}
       <Accordion
         expanded={isCustomFiltersExpanded}
         onChange={() => setIsCustomFiltersExpanded(!isCustomFiltersExpanded)}
@@ -857,9 +830,7 @@ export default function Filters() {
         }}
       >
         <AccordionSummary
-          expandIcon={
-            <ExpandMoreIcon sx={{ color: blue[500], fontSize: "14px" }} />
-          }
+          expandIcon={<ExpandMoreIcon sx={{ color: blue[500], fontSize: "14px" }} />}
           aria-controls="custom-filters-content"
           id="custom-filters-header"
           sx={{
@@ -896,7 +867,7 @@ export default function Filters() {
         </AccordionSummary>
 
         <AccordionDetails sx={{ padding: "4px 8px" }}>
-          {/* Custom Filter Input */}
+          {/* Name Input */}
           <Box
             sx={{
               display: "flex",
@@ -957,8 +928,9 @@ export default function Filters() {
             </IconButton>
           </Box>
 
-          {/* Render saved filters (chips) */}
           <Divider sx={{ marginY: "4px" }} />
+
+          {/* Render saved filters as chips */}
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
             {savedFilters && savedFilters.length > 0 ? (
               savedFilters.map((filter, index) => (
@@ -988,7 +960,7 @@ export default function Filters() {
         </AccordionDetails>
       </Accordion>
 
-      {/* Clear all button */}
+      {/* Reset all filters */}
       <div>
         <IconButton
           aria-label="clear all"
@@ -1040,7 +1012,7 @@ export default function Filters() {
       {renderFilterSection(
         "Account Sector",
         localAccountSectorOptions,
-        (value) => handleFilterChange(setLocalAccountSectorOptions, value, true),
+        setLocalAccountSectorOptions,
         isAccountSectorExpanded,
         setIsAccountSectorExpanded
       )}
@@ -1094,14 +1066,16 @@ export default function Filters() {
         setIsActivityTypeExpanded
       )}
 
+      {/* Organised By (multi-select) */}
       {renderOrganisedBySection(
         "Organised By",
         organisedByOptions,
-        selectedOrganiser,
-        (newValue) => setSelectedOrganiser(newValue),
+        selectedOrganisers,
+        handleOrganiserChange,
         isOrganisedByExpanded,
         setIsOrganisedByExpanded
       )}
+
       {renderFilterSection(
         "Is Partner Involved?",
         localPartnerEventOptions,
@@ -1109,6 +1083,7 @@ export default function Filters() {
         isPartnerEventExpanded,
         setIsPartnerEventExpanded
       )}
+
       {renderFilterSection(
         "Is Draft?",
         localDraftStatusOptions,
@@ -1116,6 +1091,7 @@ export default function Filters() {
         isDraftStatusExpanded,
         setIsDraftStatusExpanded
       )}
+
       {renderFilterSection(
         "Is Newly Created?",
         localNewlyCreatedOptions,

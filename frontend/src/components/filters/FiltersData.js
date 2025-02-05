@@ -437,10 +437,9 @@ export const audienceRoles = [
 ];
 
 export const accountSectorOptions = [
-  { label: 'Commercial', checked: false },
-  { label: 'Public Sector', checked: false, isPublic: true },
+  { label: "Commercial", checked: false },
+  { label: "Public Sector", checked: false, isPublic: true },
 ];
-
 
 export const accountSegmentOptions = [
   { label: 'Corporate', checked: false },
@@ -506,6 +505,7 @@ export const programNameOptions = [
   "Gen AI",
   "Infrastructure Modernization",
   "Level up your security and privacy",
+  "Not Applicable (Not tied to any global campaign)",
   "Ready for Modern Threats",
   "Responsible AI",
   "Sustainability",
