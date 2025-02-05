@@ -437,10 +437,9 @@ export const audienceRoles = [
 ];
 
 export const accountSectorOptions = [
-  { label: 'Commercial', checked: false },
-  { label: 'Public Sector', checked: false, isPublic: true },
+  { label: "Commercial", checked: false },
+  { label: "Public Sector", checked: false, isPublic: true },
 ];
-
 
 export const accountSegmentOptions = [
   { label: 'Corporate', checked: false },

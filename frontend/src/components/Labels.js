@@ -1012,7 +1012,7 @@ export default function Filters() {
       {renderFilterSection(
         "Account Sector",
         localAccountSectorOptions,
-        (value) => handleFilterChange(setLocalAccountSectorOptions, value, true),
+        setLocalAccountSectorOptions,
         isAccountSectorExpanded,
         setIsAccountSectorExpanded
       )}
