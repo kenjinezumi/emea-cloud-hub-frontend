@@ -14,8 +14,6 @@ import GlobalContext from "../../context/GlobalContext";
 
 // API calls (adjust your import paths to match your project)
 import { getEventData } from "../../api/getEventData";
-// If you're not using getOrganisedBy here, remove it
-// import { getOrganisedBy } from "../../api/getOrganisedBy";
 
 // Components
 import EventPopup from "../popup/EventInfoModal";
