@@ -6,23 +6,16 @@ import React, {
   useCallback,
 } from "react";
 import dayjs from "dayjs";
-import MonthView from "./MonthView";
-import { createYearData } from "../../util";
-import GlobalContext from "../../context/GlobalContext";
-import {
-  Grid,
-  Typography,
-  Paper,
-  Box,
-  Chip,
-  Tooltip,
-  Modal
-} from "@mui/material";
-import "../styles/Yearview.css";
+import { Grid, Typography, Paper, Box, Chip, Tooltip, Modal } from "@mui/material";
 import { useLocation } from "react-router-dom";
+
+// Local imports (adjust paths as needed)
+import MonthView from "./MonthView";
+import GlobalContext from "../../context/GlobalContext";
+import { createYearData } from "../../util";
 import { getEventData } from "../../api/getEventData";
 
-// Import icons for each GEP option
+// Icons for GEP chips
 import BuildIcon from "@mui/icons-material/Build";
 import CloudIcon from "@mui/icons-material/Cloud";
 import DeveloperModeIcon from "@mui/icons-material/DeveloperMode";
@@ -33,24 +26,24 @@ import PublicIcon from "@mui/icons-material/Public";
 import SecurityIcon from "@mui/icons-material/Security";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 
+// GEP Options (for counting & showing chips)
 export const gepOptions = [
-  { label: "AI", icon: LightbulbIcon, color: "#ffc107" }, // Amber
-  { label: "Data & Analytics", icon: CloudIcon, color: "#2196f3" }, // Blue
-  { label: "Developer", icon: DeveloperModeIcon, color: "#4caf50" }, // Green
-  { label: "Google Workspace", icon: WorkspacePremiumIcon, color: "#fbc02d" }, // Yellow
+  { label: "AI", icon: LightbulbIcon, color: "#ffc107" },
+  { label: "Data & Analytics", icon: CloudIcon, color: "#2196f3" },
+  { label: "Developer", icon: DeveloperModeIcon, color: "#4caf50" },
+  { label: "Google Workspace", icon: WorkspacePremiumIcon, color: "#fbc02d" },
   {
     label: "Modern Infrastructure and Apps",
     icon: BuildIcon,
     color: "#ff5722",
-  }, // Orange
+  },
   {
     label: "Not Applicable (Not tied to Any Global Campaign)",
     icon: PublicIcon,
     color: "#607d8b",
-  }, // Grey
-  { label: "Security", icon: SecurityIcon, color: "#e91e63" }, // Pink
+  },
+  { label: "Security", icon: SecurityIcon, color: "#e91e63" },
 ];
-
 
 export default function YearView() {
   const {
@@ -60,476 +53,347 @@ export default function YearView() {
     setShowEventModal,
     filters,
   } = useContext(GlobalContext);
+
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const [selectedGepEvents, setSelectedGepEvents] = useState(null); 
-  const [selectedMonth, setSelectedMonth] = useState(null); 
+
+  // For the GEP modal:
+  const [selectedGepEvents, setSelectedGepEvents] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedGep, setSelectedGep] = useState(null);
+
   const location = useLocation();
 
+  // Generate year data from the chosen day’s year
   const year = daySelected.year();
   const yearData = useMemo(() => createYearData(year), [year]);
 
-  // Fetch and filter event data based on filters
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Fetch events
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
       try {
         const eventData = await getEventData("eventDataQuery");
-        setEvents(eventData);
+        setEvents(Array.isArray(eventData) ? eventData : []);
 
-        if (!Array.isArray(eventData)) {
-          console.error("Fetched data is not an array:", eventData);
-          return;
-        }
-
-        const filtered = await applyFilters(eventData, filters);
+        // Now apply filters
+        const filtered = applyFilters(eventData);
         setFilteredEvents(filtered);
       } catch (error) {
         console.error("Error fetching event data:", error);
+        setEvents([]);
+        setFilteredEvents([]);
       }
     };
 
     fetchAndFilterEvents();
-  }, [filters]);
+  }, [filters, location]);
 
-  // Apply filters to the events data
-  const applyFilters = useCallback(async (events, filters) => {
-    if (!Array.isArray(events)) {
-      console.error(
-        "applyFilters was called with 'events' that is not an array:",
-        events
-      );
-      return [];
-    }
+  // ─────────────────────────────────────────────────────────────────────────────
+  // applyFilters (single-pass approach)
+  // ─────────────────────────────────────────────────────────────────────────────
+  const applyFilters = useCallback(
+    (allEvents) => {
+      if (!Array.isArray(allEvents)) {
+        return [];
+      }
 
-    const hasFiltersApplied =
-      [
-        ...filters.subRegions,
-        ...filters.gep,
-        ...filters.buyerSegmentRollup,
-        ...filters.accountSectors,
-        ...filters.accountSegments,
-        ...filters.productFamily,
-        ...filters.industry,
-        ...filters.regions,
-        ...filters.countries,
-        ...filters.programName,
-      ].some((filter) => filter.checked) ||
-      filters.partnerEvent !== undefined ||
-      filters.isNewlyCreated !== undefined ||
-      filters.organisedBy !== undefined ||
-      filters.draftStatus !== undefined;
+      // 1) Check if any filter is actually checked
+      const anyFilterChecked =
+        [
+          ...filters.subRegions,
+          ...filters.gep,
+          ...filters.buyerSegmentRollup,
+          ...filters.accountSectors,
+          ...filters.accountSegments,
+          ...filters.productFamily,
+          ...filters.industry,
+          ...filters.regions,
+          ...filters.countries,
+          ...filters.programName,
+          ...filters.activityType,
+          ...filters.partnerEvent,
+          ...filters.draftStatus,
+          ...filters.newlyCreated,
+        ].some((f) => f.checked) ||
+        (filters.organisedBy && filters.organisedBy.length > 0);
 
-    // If no filters are applied, return all events
-    if (!hasFiltersApplied) {
-      return events;
-    }
+      if (!anyFilterChecked) {
+        // Return all events if no filters are selected
+        return allEvents;
+      }
 
-    const results = await Promise.all(
-      events.map(async (event) => {
+      // 2) Single pass filter
+      return allEvents.filter((event) => {
         try {
-          // Sub-region filter match
+          // Sub-region
           const subRegionMatch =
-            !filters.subRegions.some((subRegion) => subRegion.checked) ||
-            filters.subRegions.some((subRegion) => {
-              try {
-                return (
-                  subRegion.checked &&
-                  event.subRegion?.includes(subRegion.label)
-                );
-              } catch (err) {
-                console.error(
-                  "Error checking subRegion filter:",
-                  err,
-                  subRegion,
-                  event
-                );
-                return false;
-              }
-            });
-
-          // GEP filter match
-          const gepMatch =
-            !filters.gep.some((gep) => gep.checked) ||
-            filters.gep.some((gep) => {
-              try {
-                return gep.checked && event.gep?.includes(gep.label);
-              } catch (err) {
-                console.error("Error checking GEP filter:", err, gep, event);
-                return false;
-              }
-            });
-
-          // Buyer Segment Rollup filter match
-          const buyerSegmentRollupMatch =
-            !filters.buyerSegmentRollup.some((segment) => segment.checked) ||
-            filters.buyerSegmentRollup.some((segment) => {
-              try {
-                return (
-                  segment.checked &&
-                  event.audienceSeniority?.includes(segment.label)
-                );
-              } catch (err) {
-                console.error(
-                  "Error checking buyerSegmentRollup filter:",
-                  err,
-                  segment,
-                  event
-                );
-                return false;
-              }
-            });
-
-          // Account Sector filter match
-          const accountSectorMatch =
-            // Include all events if no sectors are checked
-            !filters.accountSectors.some((sector) => sector.checked) ||
-            // Check if any sector matches the event
-            filters.accountSectors.some((sector) => {
-              try {
-                if (sector.checked) {
-                  // Map filter labels to keys in the event data
-                  const sectorMapping = {
-                    "Public Sector": "public",
-                    Commercial: "commercial",
-                  };
-
-                  // Find the corresponding key for the filter label
-                  const sectorKey = sectorMapping[sector.label];
-                  if (!sectorKey) {
-                    console.warn(
-                      `No mapping found for sector label: ${sector.label}`
-                    );
-                    return false;
-                  }
-
-                  // Check if the event matches the mapped key
-                  return event.accountSectors?.[sectorKey] === true;
-                }
-                return false;
-              } catch (err) {
-                console.error(
-                  "Error checking accountSectors filter:",
-                  err,
-                  sector,
-                  event
-                );
-                return false;
-              }
-            });
-
-          // Account Segment filter match
-          const accountSegmentMatch =
-            !filters.accountSegments.some((segment) => segment.checked) ||
-            filters.accountSegments.some((segment) => {
-              try {
-                const accountSegment = event.accountSegments?.[segment.label];
-                return (
-                  segment.checked &&
-                  accountSegment?.selected && // Convert selected to a boolean
-                  parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
-                );
-              } catch (err) {
-                console.error(
-                  "Error checking accountSegments filter:",
-                  err,
-                  segment,
-                  event
-                );
-                return false;
-              }
-            });
-
-          const regionMatch =
-            !filters.regions.some((region) => region.checked) ||
-            filters.regions.some((region) => {
-              try {
-                return region.checked && event.region?.includes(region.label);
-              } catch (err) {
-                console.error(
-                  "Error checking region filter:",
-                  err,
-                  region,
-                  event
-                );
-                return false;
-              }
-            });
-
-          const countryMatch =
-            !filters.countries.some((country) => country.checked) ||
-            filters.countries.some((country) => {
-              try {
-                return (
-                  country.checked && event.country?.includes(country.label)
-                );
-              } catch (err) {
-                console.error(
-                  "Error checking country filter:",
-                  err,
-                  country,
-                  event
-                );
-                return false;
-              }
-            });
-
-          // Product Family filter match
-          const productFamilyMatch =
-            !filters.productFamily.some((product) => product.checked) ||
-            filters.productFamily.some((product) => {
-              try {
-                const productAlignment =
-                  event.productAlignment?.[product.label];
-                return (
-                  product.checked &&
-                  productAlignment?.selected && // Convert selected to a boolean
-                  parseFloat(productAlignment?.percentage) > 0 // Convert percentage to a number and ensure it's greater than 0
-                );
-              } catch (err) {
-                console.error("Error checking productFamily filter:", err);
-                return false;
-              }
-            });
-
-          // Industry filter match
-          const industryMatch =
-            !filters.industry.some((industry) => industry.checked) ||
-            filters.industry.some((industry) => {
-              try {
-                return (
-                  industry.checked && event.industry?.includes(industry.label)
-                );
-              } catch (err) {
-                console.error(
-                  "Error checking industry filter:",
-                  err,
-                  industry,
-                  event
-                );
-                return false;
-              }
-            });
-
-          // Boolean checks for isPartneredEvent and isDraft
-          const selectedPartneredStatuses = Array.isArray(filters.partnerEvent)
-            ? filters.partnerEvent
-                .filter((option) => option.checked)
-                .map((option) => option.value)
-            : [];
-
-          const isPartneredEventMatch =
-            selectedPartneredStatuses.length === 0 ||
-            selectedPartneredStatuses.includes(event.isPartneredEvent);
-          const selectedDraftStatuses = Array.isArray(filters.draftStatus)
-            ? filters.draftStatus
-                .filter((option) => option.checked)
-                .map((option) => option.value)
-            : [];
-          const isDraftMatch =
-            selectedDraftStatuses.length === 0 ||
-            (() => {
-              // Initialize an array to hold applicable statuses
-              const applicableStatuses = [];
-
-              // Add "Draft" if the event is in draft mode
-              if (event.isDraft) {
-                applicableStatuses.push("Draft");
-              } else {
-                // If not a draft, add "Finalized" as a base status
-                applicableStatuses.push("Finalized");
-
-                // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
-                if (
-                  !event.isDraft &&
-                  event.languagesAndTemplates?.some((template) =>
-                    ["Gmail", "Salesloft"].includes(template.platform)
-                  )
-                ) {
-                  applicableStatuses.push("Invite available");
-                }
-              }
-
-              // Check if any selectedDraftStatuses match the applicable statuses
-              return selectedDraftStatuses.some((status) =>
-                applicableStatuses.includes(status)
-              );
-            })();
-          const programNameMatch =
-            filters.programName.every((filter) => !filter.checked) ||
-            filters.programName.some((filter) => {
-              const isChecked = filter.checked;
-              const matches = event.programName?.some((name) =>
-                name.toLowerCase().includes(filter.label.toLowerCase())
-              );
-
-              return isChecked && matches;
-            });
-          const activityTypeMatch =
-            !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
-            filters.activityType.some((activity) => {
-              try {
-                // Check if the event type matches the checked activity types
-                return (
-                  activity.checked &&
-                  event.eventType?.toLowerCase() ===
-                    activity.label.toLowerCase() // Ensure case-insensitive comparison
-                );
-              } catch (err) {
-                console.error(
-                  "Error checking activityType filter:",
-                  err,
-                  activity,
-                  event
-                );
-                return false; // Handle errors gracefully
-              }
-            });
-
-            const isNewlyCreatedMatch =
-            !filters.newlyCreated?.some((option) => option.checked) ||
-            filters.newlyCreated?.some((option) => {
-              if (option.checked) {
-                const entryCreatedDate = event.entryCreatedDate?.value
-                  ? dayjs(event.entryCreatedDate.value)
-                  : null; // Access `value` property
-          
-                if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-                  console.warn("Invalid or missing entryCreatedDate for event:", event);
-                  return option.value === false; // Consider missing dates as "old"
-                }
-          
-                const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
-                return option.value === isWithinTwoWeeks;
-              }
-              return false;
-            });
-          
-          const organisedByMatch = (() => {
-            // Check if no organiser filter is applied
-            if (!filters.organisedBy || filters.organisedBy.length === 0) {
-              return true; // No organiser filter applied
-            }
-
-            // Check if the event has no organiser data
-            if (!event.organisedBy || event.organisedBy.length === 0) {
-              return false; // Event does not have an organiser
-            }
-
-            // Check for match
-            const isMatch = filters.organisedBy.some((organiser) =>
-              event.organisedBy.includes(organiser)
+            !filters.subRegions.some((sr) => sr.checked) ||
+            filters.subRegions.some(
+              (sr) => sr.checked && event.subRegion?.includes(sr.label)
             );
 
-            return isMatch; // Return the match result
-          })();
+          // GEP
+          const gepMatch =
+            !filters.gep.some((g) => g.checked) ||
+            filters.gep.some(
+              (g) => g.checked && event.gep?.includes(g.label)
+            );
+
+          // Buyer Segment Rollup
+          const buyerSegmentMatch =
+            !filters.buyerSegmentRollup.some((b) => b.checked) ||
+            filters.buyerSegmentRollup.some(
+              (b) => b.checked && event.audienceSeniority?.includes(b.label)
+            );
+
+          // Account Sector
+          const accountSectorMatch =
+            !filters.accountSectors.some((s) => s.checked) ||
+            filters.accountSectors.some((s) => {
+              if (!s.checked) return false;
+              const sectorMap = {
+                "Public Sector": "public",
+                Commercial: "commercial",
+              };
+              const key = sectorMap[s.label];
+              return key ? event.accountSectors?.[key] === true : false;
+            });
+
+          // Account Segment
+          const accountSegmentMatch =
+            !filters.accountSegments.some((seg) => seg.checked) ||
+            filters.accountSegments.some((seg) => {
+              if (!seg.checked) return false;
+              const eSeg = event.accountSegments?.[seg.label];
+              return eSeg?.selected && parseFloat(eSeg.percentage) > 0;
+            });
+
+          // Product Family
+          const productFamilyMatch =
+            !filters.productFamily.some((pf) => pf.checked) ||
+            filters.productFamily.some((pf) => {
+              if (!pf.checked) return false;
+              const alignment = event.productAlignment?.[pf.label];
+              return alignment?.selected && parseFloat(alignment.percentage) > 0;
+            });
+
+          // Industry
+          const industryMatch =
+            !filters.industry.some((ind) => ind.checked) ||
+            filters.industry.some(
+              (ind) => ind.checked && event.industry?.includes(ind.label)
+            );
+
+          // Region
+          const regionMatch =
+            !filters.regions.some((r) => r.checked) ||
+            filters.regions.some(
+              (r) => r.checked && event.region?.includes(r.label)
+            );
+
+          // Country
+          const countryMatch =
+            !filters.countries.some((c) => c.checked) ||
+            filters.countries.some(
+              (c) => c.checked && event.country?.includes(c.label)
+            );
+
+          // Program
+          const programNameMatch =
+            !filters.programName.some((pn) => pn.checked) ||
+            filters.programName.some(
+              (pn) =>
+                pn.checked &&
+                event.programName?.some((evName) =>
+                  evName.toLowerCase().includes(pn.label.toLowerCase())
+                )
+            );
+
+          // Activity Type
+          const activityMatch =
+            !filters.activityType.some((a) => a.checked) ||
+            filters.activityType.some(
+              (a) =>
+                a.checked &&
+                event.eventType?.toLowerCase() === a.label.toLowerCase()
+            );
+
+          // Partner Event
+          const partnerCheckedValues = filters.partnerEvent
+            .filter((pe) => pe.checked)
+            .map((pe) => pe.value); // e.g. [true, false]
+          const partnerMatch =
+            partnerCheckedValues.length === 0 ||
+            partnerCheckedValues.includes(event.isPartneredEvent);
+
+          // Draft Status
+          const draftCheckedValues = filters.draftStatus
+            .filter((ds) => ds.checked)
+            .map((ds) => ds.value); // e.g. ["Draft", "Invite available"]
+          const draftMatch =
+            draftCheckedValues.length === 0 ||
+            (function () {
+              const statuses = [];
+              if (event.isDraft) {
+                statuses.push("Draft");
+              } else {
+                statuses.push("Finalized");
+                const hasInvite = event.languagesAndTemplates?.some((t) =>
+                  ["Gmail", "Salesloft"].includes(t.platform)
+                );
+                if (hasInvite) {
+                  statuses.push("Invite available");
+                }
+              }
+              return statuses.some((st) => draftCheckedValues.includes(st));
+            })();
+
+          // Newly Created
+          const newlyCreatedFilters = filters.newlyCreated.filter((nc) => nc.checked);
+          const newlyCreatedMatch =
+            newlyCreatedFilters.length === 0 ||
+            newlyCreatedFilters.some((nc) => {
+              const createdAt = event.entryCreatedDate?.value
+                ? dayjs(event.entryCreatedDate.value)
+                : null;
+              if (!createdAt || !createdAt.isValid()) {
+                // If missing => treat as “old” => matches only if user checked “No”
+                return nc.value === false;
+              }
+              const isWithin14Days = dayjs().diff(createdAt, "day") <= 14;
+              return nc.value === isWithin14Days;
+            });
+
+          // Organised By (multi-select)
+          const organiserMatch =
+            !filters.organisedBy || filters.organisedBy.length === 0
+              ? true
+              : filters.organisedBy.some((org) =>
+                  event.organisedBy?.includes(org)
+                );
+
+          // Final check
           return (
             subRegionMatch &&
             gepMatch &&
-            buyerSegmentRollupMatch &&
+            buyerSegmentMatch &&
             accountSectorMatch &&
             accountSegmentMatch &&
             productFamilyMatch &&
             industryMatch &&
-            isPartneredEventMatch &&
-            isDraftMatch &&
             regionMatch &&
             countryMatch &&
             programNameMatch &&
-            isNewlyCreatedMatch &&
-            organisedByMatch
+            activityMatch &&
+            partnerMatch &&
+            draftMatch &&
+            newlyCreatedMatch &&
+            organiserMatch
           );
-        } catch (filterError) {
-          console.error("Error applying filters to event:", filterError, event);
+        } catch (err) {
+          console.error("Error applying filters to event:", event, err);
           return false;
         }
-      })
-    );
+      });
+    },
+    [filters]
+  );
 
-    return events.filter((_, index) => results[index]);
-  }, []);
-
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Count GEP occurrences by month
+  // ─────────────────────────────────────────────────────────────────────────────
   const gepCounts = useMemo(() => {
-    // Initialize counts for each GEP option for all 12 months
-    const counts = gepOptions.reduce((acc, gepOption) => {
-      acc[gepOption.label] = Array(12).fill(0); // One entry per month for each GEP option
+    // For each GEP label, store an array of 12 months => 0 count initially
+    const counts = gepOptions.reduce((acc, gepOpt) => {
+      acc[gepOpt.label] = Array(12).fill(0);
       return acc;
     }, {});
-  
-    // Iterate over filtered events
+
     filteredEvents.forEach((event) => {
-      if (event.startDate && event.endDate && event.gep) {
-        const startDate = dayjs(event.startDate);
-        const endDate = dayjs(event.endDate);
-  
-        // Ensure valid dates and calculate start and end months
-        if (startDate.isValid() && endDate.isValid()) {
-          const startMonth = Math.max(0, startDate.month()); // Clamp to valid month indices
-          const endMonth = Math.min(11, endDate.month()); // Clamp to valid month indices
-  
-          // If the event spans multiple months, include all months within the range
-          for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
-            const isEventInMonth =
-              (startDate.year() < year || (startDate.year() === year && startMonth <= monthIndex)) &&
-              (endDate.year() > year || (endDate.year() === year && endMonth >= monthIndex));
-  
-            if (isEventInMonth) {
-              // Increment the count for each GEP in the event
-              event.gep.forEach((gep) => {
-                if (counts[gep]) {
-                  counts[gep][monthIndex]++;
-                }
-              });
+      if (!event.startDate || !event.endDate || !Array.isArray(event.gep)) return;
+
+      const startDate = dayjs(event.startDate);
+      const endDate = dayjs(event.endDate);
+
+      if (!startDate.isValid() || !endDate.isValid()) return;
+
+      const startYear = startDate.year();
+      const endYear = endDate.year();
+      const startMonth = startDate.month(); // 0-11
+      const endMonth = endDate.month();
+
+      // We'll only increment counts if the event's year overlaps our "year"
+      // The event might span multiple months
+      for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+        // Condition: The event covers this monthIndex in the target year
+        const coversThisMonth =
+          (startYear < year || (startYear === year && startMonth <= monthIndex)) &&
+          (endYear > year || (endYear === year && endMonth >= monthIndex));
+
+        if (coversThisMonth) {
+          event.gep.forEach((g) => {
+            if (counts[g]) {
+              counts[g][monthIndex]++;
             }
-          }
+          });
         }
       }
     });
-  
+
     return counts;
   }, [filteredEvents, year]);
-  
-  
-  
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Close modals on route change
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     setShowEventModal(false);
-  }, [location]);
+  }, [location, setShowEventModal]);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Click event => go to “day” view
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleEventClick = useCallback(
     (event) => {
-      // Get the event's start date
+      // Jump to the event’s start date in day view
       const eventStartDate = dayjs(event.startDate);
-
-      // Set the daySelected to the event's start date
       setDaySelected(eventStartDate);
-
-      // Switch the current view to "day"
       setCurrentView("day");
     },
     [setDaySelected, setCurrentView]
   );
 
-  // Helper function to render GEP chips for each month
+  // ─────────────────────────────────────────────────────────────────────────────
+  // GEP Chip
+  // ─────────────────────────────────────────────────────────────────────────────
   const getGepChip = (gepLabel, count, monthIndex) => {
-    const gepOption = gepOptions.find((option) => option.label === gepLabel);
+    const gepOption = gepOptions.find((opt) => opt.label === gepLabel);
     if (!gepOption) return null;
 
-    const IconComponent = gepOption.icon;
+    const IconComp = gepOption.icon;
 
-    // Handle GEP chip click
+    // When user clicks a GEP chip for a given month, show relevant events
     const handleGepClick = () => {
-      const eventsForMonthAndGep = filteredEvents.filter((event) => {
-        const startDate = dayjs(event.startDate);
-        const endDate = dayjs(event.endDate);
+      // All events for that GEP in that month
+      const eventsForMonthAndGep = filteredEvents.filter((ev) => {
+        const sDate = dayjs(ev.startDate);
+        const eDate = dayjs(ev.endDate);
+        if (!sDate.isValid() || !eDate.isValid()) return false;
 
-        return (
-          event.gep?.includes(gepLabel) &&
-          (startDate.month() === monthIndex || endDate.month() === monthIndex)
-        );
+        const sMonth = sDate.month();
+        const eMonth = eDate.month();
+        const sYear = sDate.year();
+        const eYear = eDate.year();
+
+        const coversMonth =
+          (sYear < year || (sYear === year && sMonth <= monthIndex)) &&
+          (eYear > year || (eYear === year && eMonth >= monthIndex));
+
+        return coversMonth && ev.gep?.includes(gepLabel);
       });
 
-      // Update state to show filtered events
       setSelectedGepEvents(eventsForMonthAndGep);
       setSelectedMonth(monthIndex);
       setSelectedGep(gepLabel);
@@ -538,10 +402,10 @@ export default function YearView() {
     return (
       <Tooltip title={gepLabel} key={`${gepLabel}-${monthIndex}`}>
         <Chip
-          icon={<IconComponent style={{ color: "#FFFFFF" }} />}
+          icon={<IconComp style={{ color: "#FFFFFF" }} />}
           label={count}
           size="small"
-          onClick={handleGepClick} // Handle GEP chip click
+          onClick={handleGepClick}
           style={{
             backgroundColor: gepOption.color,
             color: "#FFFFFF",
@@ -554,12 +418,19 @@ export default function YearView() {
       </Tooltip>
     );
   };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Close the GEP events modal
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleCloseModal = () => {
     setSelectedGepEvents(null);
     setSelectedMonth(null);
     setSelectedGep(null);
   };
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -577,8 +448,9 @@ export default function YearView() {
       >
         Year Overview - {year}
       </Typography>
+
       <Grid container spacing={2}>
-        {yearData.map((month, index) => (
+        {yearData.map((monthArray, index) => (
           <Grid key={index} item xs={12} sm={6} md={4}>
             <Paper className="month-container">
               <div
@@ -591,6 +463,8 @@ export default function YearView() {
                 <Typography align="center" style={{ marginBottom: "4px" }}>
                   {dayjs(new Date(year, index)).format("MMMM")}
                 </Typography>
+
+                {/* GEP Chips for this month */}
                 <Box
                   display="flex"
                   justifyContent="center"
@@ -598,15 +472,17 @@ export default function YearView() {
                   flexWrap="wrap"
                   gap={2}
                 >
-                  {Object.entries(gepCounts).map(([gepLabel, counts]) =>
-                    getGepChip(gepLabel, counts[index], index)
+                  {Object.entries(gepCounts).map(([gLabel, counts]) =>
+                    getGepChip(gLabel, counts[index], index)
                   )}
                 </Box>
+
+                {/* The miniature MonthView inside each month cell */}
                 <div style={{ padding: "8px" }}>
                   <MonthView
-                    month={month}
+                    month={monthArray}
                     daySelected={daySelected}
-                    isYearView={true}
+                    isYearView={true} // ensures the smaller layout
                   />
                 </div>
               </div>
@@ -615,7 +491,7 @@ export default function YearView() {
         ))}
       </Grid>
 
-      {/* Modal for displaying the events filtered by GEP */}
+      {/* Modal with events for a clicked GEP & month */}
       <Modal open={!!selectedGepEvents} onClose={handleCloseModal}>
         <Paper
           style={{
@@ -624,7 +500,7 @@ export default function YearView() {
             margin: "50px auto",
             maxHeight: "80vh",
             overflowY: "auto",
-            borderRadius: "12px", // Smooth rounded edges
+            borderRadius: "12px",
           }}
         >
           <Typography
@@ -634,17 +510,19 @@ export default function YearView() {
               fontWeight: 500,
               fontSize: "18px",
               paddingBottom: "10px",
-              borderBottom: "1px solid #ddd", // A subtle separator line for the header
+              borderBottom: "1px solid #ddd",
             }}
           >
             Events for {selectedGep} in{" "}
-            {dayjs().month(selectedMonth).format("MMMM")}
+            {selectedMonth !== null
+              ? dayjs().month(selectedMonth).format("MMMM")
+              : ""}
           </Typography>
 
           {selectedGepEvents?.length ? (
             selectedGepEvents.map((event) => (
               <Box
-                key={event.eventId}
+                key={event.eventId || event.title}
                 sx={{
                   display: "flex",
                   alignItems: "center",
@@ -652,15 +530,15 @@ export default function YearView() {
                   marginBottom: "16px",
                   padding: "12px",
                   borderRadius: "8px",
-                  backgroundColor: "#ffffff", // White background for the event card
-                  boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)", // Lighter shadow for a soft look
+                  backgroundColor: "#ffffff",
+                  boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
                   cursor: "pointer",
                   "&:hover": {
                     boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
                   },
-                  border: "1px solid #e0e0e0", // Border around the card
+                  border: "1px solid #e0e0e0",
                 }}
-                onClick={() => handleEventClick(event)} // Assuming you have a click handler
+                onClick={() => handleEventClick(event)}
               >
                 <Box sx={{ flexGrow: 1 }}>
                   <Typography
@@ -682,7 +560,6 @@ export default function YearView() {
                 </Box>
 
                 <Box sx={{ marginLeft: "10px", color: "#1a73e8" }}>
-                  {/* Arrow icon for navigation */}
                   <span style={{ fontSize: "20px" }}>→</span>
                 </Box>
               </Box>
