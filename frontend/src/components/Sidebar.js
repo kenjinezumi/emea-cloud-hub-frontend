@@ -16,7 +16,7 @@ export default function Sidebar() {
     overflowY: 'auto'}}>
       <CreateEventButton />
       <SmallCalendar />
-      {currentView !== 'list' && <Labels />}
+      {<Labels />}
     </aside>
   );
 }
