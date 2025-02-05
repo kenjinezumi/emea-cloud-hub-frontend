@@ -2,18 +2,33 @@ import React, {
   useContext,
   useEffect,
   useState,
-  useCallback,
   useMemo,
+  useCallback,
 } from "react";
-import GlobalContext from "../../context/GlobalContext";
+import dayjs from "dayjs"; // Ensure dayjs is installed
+import { useLocation } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 
-import { useLocation } from "react-router-dom";
+// Context
+import GlobalContext from "../../context/GlobalContext";
+
+// API calls (adjust your import paths to match your project)
 import { getEventData } from "../../api/getEventData";
+// If you're not using getOrganisedBy here, remove it
+// import { getOrganisedBy } from "../../api/getOrganisedBy";
+
+// Components
 import EventPopup from "../popup/EventInfoModal";
 import Day from "../Day/DayMonth";
-import dayjs from "dayjs";
-import { getOrganisedBy } from "../../api/getOrganisedBy";
+
+/**
+ * MonthView
+ * Renders a month’s grid of day cells and applies filters to the events.
+ *
+ * @param {Object} props
+ * @param {Array} props.month - The days/weeks array if you’re passing in from a parent
+ * @param {boolean} props.isYearView - If true, we’re rendering a smaller “month” for a year grid
+ */
 export default function MonthView({ month, isYearView = false }) {
   const {
     daySelected,
@@ -21,18 +36,21 @@ export default function MonthView({ month, isYearView = false }) {
     setShowEventModal,
     setShowInfoEventModal,
     filters,
-    setSelectedEvent, // Assume these are coming from the GlobalContext
-    setSelectedEvents, // Assume these are coming from the GlobalContext
+    setSelectedEvent,
+    setSelectedEvents,
   } = useContext(GlobalContext);
 
+  const location = useLocation();
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const location = useLocation();
-  const [organisedByData, setOrganisedByData] = useState(null); // State to hold organisedBy data
-  const [loading, setLoading] = useState(false); // State for loading spinner
+  const [loading, setLoading] = useState(false);
 
-  function generateMonthView(month, year) {
-    const startOfMonth = dayjs(`${year}-${month + 1}-01`).startOf("month");
+  /**
+   * generateMonthView(monthIndex, year)
+   * Creates a 2D array representing the visible days for the specified month.
+   */
+  function generateMonthView(monthIndex, year) {
+    const startOfMonth = dayjs(`${year}-${monthIndex + 1}-01`).startOf("month");
     const startOfCalendar = startOfMonth.startOf("week");
     const endOfCalendar = startOfMonth.endOf("month").endOf("week");
 
@@ -42,426 +60,307 @@ export default function MonthView({ month, isYearView = false }) {
     while (currentDay.isBefore(endOfCalendar, "day")) {
       const week = [];
       for (let i = 0; i < 7; i++) {
-        week.push(currentDay.clone()); // Clone to avoid mutation
+        week.push(currentDay.clone());
         currentDay = currentDay.add(1, "day");
       }
       days.push(week);
     }
-
     return days;
   }
 
+  /**
+   * monthDays
+   * A memoized 2D array (month grid) for the currently selected day/month.
+   */
   const monthDays = useMemo(() => {
-    const year = daySelected.year(); // Extract year from the selected day
-    const month = daySelected.month(); // Extract month (0-based) from the selected day
-    return generateMonthView(month, year);
+    const year = daySelected.year();
+    const monthIndex = daySelected.month(); // dayjs months are 0-based
+    return generateMonthView(monthIndex, year);
   }, [daySelected]);
 
+  /**
+   * useEffect to fetch & filter events when daySelected or filters change
+   */
   useEffect(() => {
     const fetchAndFilterEvents = async () => {
-      setLoading(true); // Start loading spinner
-      try {
-        const eventDataRaw = await getEventData("eventDataQuery");
-        setEvents(eventDataRaw);
+      setLoading(true);
 
+      try {
+        // 1) Fetch all events
+        const eventDataRaw = await getEventData("eventDataQuery");
+
+        // Ensure we have a valid array
         if (!Array.isArray(eventDataRaw)) {
-          console.error(
-            "fetchAndFilterEvents was called with 'eventData' that is not an array:",
-            eventDataRaw
-          );
+          console.error("No valid events array returned:", eventDataRaw);
+          setEvents([]);
+          setFilteredEvents([]);
           return;
         }
-        
 
+        setEvents(eventDataRaw);
+
+        // 2) Restrict to events that occur (even partially) in the selected month
         const selectedMonthStart = daySelected.startOf("month");
         const selectedMonthEnd = daySelected.endOf("month");
 
-        // Filter events for the selected month and year
-        const filteredByDay = eventDataRaw.filter((event) => {
+        const eventsInMonth = eventDataRaw.filter((event) => {
           const eventStart = dayjs(event.startDate);
           const eventEnd = dayjs(event.endDate);
 
-          // Ensure events are within the selected month and year
-          const isWithinMonthAndYear =
+          // A simple overlap check
+          const overlapsMonth =
             eventStart.isSame(selectedMonthStart, "month") ||
             eventEnd.isSame(selectedMonthStart, "month") ||
             (eventStart.isBefore(selectedMonthEnd) &&
               eventEnd.isAfter(selectedMonthStart));
-
-          return isWithinMonthAndYear;
+          return overlapsMonth;
         });
 
-        const hasFiltersApplied =
+        // 3) Check if no filters are checked => skip
+        const anyFilterChecked =
           [
-            ...filters.subRegions,
-            ...filters.gep,
-            ...filters.buyerSegmentRollup,
-            ...filters.accountSectors,
-            ...filters.accountSegments,
-            ...filters.productFamily,
-            ...filters.industry,
             ...filters.regions,
+            ...filters.subRegions,
             ...filters.countries,
+            ...filters.gep,
             ...filters.programName,
             ...filters.activityType,
-          ].some((filter) => filter.checked) ||
-          filters.partnerEvent !== undefined ||
-          filters.organisedBy !== undefined ||
-          filters.isNewlyCreated !== undefined ||
-          filters.draftStatus !== undefined;
+            ...filters.accountSectors,
+            ...filters.accountSegments,
+            ...filters.buyerSegmentRollup,
+            ...filters.productFamily,
+            ...filters.industry,
+            ...filters.partnerEvent,
+            ...filters.draftStatus,
+            ...filters.newlyCreated,
+          ].some((f) => f.checked) ||
+          (filters.organisedBy && filters.organisedBy.length > 0);
 
-        if (!hasFiltersApplied) {
-          setEvents(filteredByDay);
-          setFilteredEvents(filteredByDay);
+        if (!anyFilterChecked) {
+          setFilteredEvents(eventsInMonth);
           return;
         }
 
-        const results = await Promise.all(
-          filteredByDay.map(async (event) => {
-            try {
-              const subRegionMatch =
-                !filters.subRegions.some((subRegion) => subRegion.checked) ||
-                filters.subRegions.some((subRegion) => {
-                  try {
-                    return (
-                      subRegion.checked &&
-                      event.subRegion?.includes(subRegion.label)
-                    );
-                  } catch (err) {
-                    console.error("Error checking subRegion filter:", err);
-                    return false;
-                  }
-                });
+        // 4) Apply filters
+        const finalFiltered = eventsInMonth.filter((event) => {
+          try {
+            // Region
+            const regionMatch =
+              !filters.regions.some((r) => r.checked) ||
+              filters.regions.some(
+                (r) => r.checked && event.region?.includes(r.label)
+              );
 
-              const gepMatch =
-                !filters.gep.some((gep) => gep.checked) ||
-                filters.gep.some((gep) => {
-                  try {
-                    return gep.checked && event.gep?.includes(gep.label);
-                  } catch (err) {
-                    console.error("Error checking GEP filter:", err);
-                    return false;
-                  }
-                });
-              const regionMatch =
-                !filters.regions.some((region) => region.checked) ||
-                filters.regions.some((region) => {
-                  try {
-                    return (
-                      region.checked && event.region?.includes(region.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking region filter:",
-                      err,
-                      region,
-                      event
-                    );
-                    return false;
-                  }
-                });
+            // Sub-region
+            const subRegionMatch =
+              !filters.subRegions.some((s) => s.checked) ||
+              filters.subRegions.some(
+                (s) => s.checked && event.subRegion?.includes(s.label)
+              );
 
-              const countryMatch =
-                !filters.countries.some((country) => country.checked) ||
-                filters.countries.some((country) => {
-                  try {
-                    return (
-                      country.checked && event.country?.includes(country.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking country filter:",
-                      err,
-                      country,
-                      event
-                    );
-                    return false;
-                  }
-                });
+            // Country
+            const countryMatch =
+              !filters.countries.some((c) => c.checked) ||
+              filters.countries.some(
+                (c) => c.checked && event.country?.includes(c.label)
+              );
 
-              const buyerSegmentRollupMatch =
-                !filters.buyerSegmentRollup.some(
-                  (segment) => segment.checked
-                ) ||
-                filters.buyerSegmentRollup.some((segment) => {
-                  try {
-                    return (
-                      segment.checked &&
-                      event.audienceSeniority?.includes(segment.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking buyerSegmentRollup filter:",
-                      err
-                    );
-                    return false;
-                  }
-                });
+            // GEP
+            const gepMatch =
+              !filters.gep.some((g) => g.checked) ||
+              filters.gep.some(
+                (g) => g.checked && event.gep?.includes(g.label)
+              );
 
-              const accountSectorMatch =
-                // Include all events if no sectors are checked
-                !filters.accountSectors.some((sector) => sector.checked) ||
-                // Check if any sector matches the event
-                filters.accountSectors.some((sector) => {
-                  try {
-                    if (sector.checked) {
-                      // Map filter labels to keys in the event data
-                      const sectorMapping = {
-                        "Public Sector": "public",
-                        Commercial: "commercial",
-                      };
+            // Program
+            const programMatch =
+              !filters.programName.some((p) => p.checked) ||
+              filters.programName.some(
+                (p) =>
+                  p.checked &&
+                  event.programName?.some((evName) =>
+                    evName.toLowerCase().includes(p.label.toLowerCase())
+                  )
+              );
 
-                      // Find the corresponding key for the filter label
-                      const sectorKey = sectorMapping[sector.label];
-                      if (!sectorKey) {
-                        console.warn(
-                          `No mapping found for sector label: ${sector.label}`
-                        );
-                        return false;
-                      }
+            // Activity Type
+            const activityMatch =
+              !filters.activityType.some((a) => a.checked) ||
+              filters.activityType.some(
+                (a) =>
+                  a.checked &&
+                  event.eventType?.toLowerCase() === a.label.toLowerCase()
+              );
 
-                      // Check if the event matches the mapped key
-                      return event.accountSectors?.[sectorKey] === true;
-                    }
-                    return false;
-                  } catch (err) {
-                    console.error(
-                      "Error checking accountSectors filter:",
-                      err,
-                      sector,
-                      event
-                    );
-                    return false;
-                  }
-                });
+            // Account Sectors
+            const accountSectorMatch =
+              !filters.accountSectors.some((s) => s.checked) ||
+              filters.accountSectors.some((s) => {
+                if (!s.checked) return false;
+                // Map label -> event data key
+                const labelKeyMap = {
+                  "Public Sector": "public",
+                  Commercial: "commercial",
+                };
+                const key = labelKeyMap[s.label] || null;
+                return key ? event.accountSectors?.[key] === true : false;
+              });
 
-              const accountSegmentMatch =
-                !filters.accountSegments.some((segment) => segment.checked) ||
-                filters.accountSegments.some((segment) => {
-                  try {
-                    const accountSegment =
-                      event.accountSegments?.[segment.label];
-                    return (
-                      segment.checked &&
-                      accountSegment?.selected && // Convert selected to a boolean
-                      parseFloat(accountSegment?.percentage) > 0 // Convert percentage to a number
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking accountSegments filter:",
-                      err,
-                      segment,
-                      event
-                    );
-                    return false;
-                  }
-                });
+            // Account Segments
+            const accountSegmentMatch =
+              !filters.accountSegments.some((seg) => seg.checked) ||
+              filters.accountSegments.some((seg) => {
+                if (!seg.checked) return false;
+                const eSeg = event.accountSegments?.[seg.label];
+                return eSeg?.selected && parseFloat(eSeg.percentage) > 0;
+              });
 
-              const productFamilyMatch =
-                !filters.productFamily.some((product) => product.checked) ||
-                filters.productFamily.some((product) => {
-                  try {
-                    const productAlignment =
-                      event.productAlignment?.[product.label];
-                    return (
-                      product.checked &&
-                      productAlignment?.selected &&
-                      parseFloat(productAlignment?.percentage) > 0
-                    );
-                  } catch (err) {
-                    console.error("Error checking productFamily filter:", err);
-                    return false;
-                  }
-                });
+            // Buyer Segment Rollup
+            const buyerSegmentRollupMatch =
+              !filters.buyerSegmentRollup.some((b) => b.checked) ||
+              filters.buyerSegmentRollup.some(
+                (b) =>
+                  b.checked &&
+                  event.audienceSeniority?.includes(b.label)
+              );
 
-              const industryMatch =
-                !filters.industry.some((industry) => industry.checked) ||
-                filters.industry.some((industry) => {
-                  try {
-                    return (
-                      industry.checked &&
-                      event.industry?.includes(industry.label)
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking industry filter:",
-                      err,
-                      industry,
-                      event
-                    );
-                    return false;
-                  }
-                });
-              const selectedPartneredStatuses = Array.isArray(
-                filters.partnerEvent
-              )
-                ? filters.partnerEvent
-                    .filter((option) => option.checked)
-                    .map((option) => option.value)
-                : [];
+            // Product Family
+            const productFamilyMatch =
+              !filters.productFamily.some((pf) => pf.checked) ||
+              filters.productFamily.some((pf) => {
+                if (!pf.checked) return false;
+                const alignment = event.productAlignment?.[pf.label];
+                return alignment?.selected && parseFloat(alignment.percentage) > 0;
+              });
 
-              const isPartneredEventMatch =
-                selectedPartneredStatuses.length === 0 ||
-                selectedPartneredStatuses.includes(event.isPartneredEvent);
-              const selectedDraftStatuses = Array.isArray(filters.draftStatus)
-                ? filters.draftStatus
-                    .filter((option) => option.checked)
-                    .map((option) => option.value)
-                : [];
-              const isDraftMatch =
-                selectedDraftStatuses.length === 0 ||
-                (() => {
-                  // Initialize an array to hold applicable statuses
-                  const applicableStatuses = [];
+            // Industry
+            const industryMatch =
+              !filters.industry.some((ind) => ind.checked) ||
+              filters.industry.some(
+                (ind) => ind.checked && event.industry?.includes(ind.label)
+              );
 
-                  // Add "Draft" if the event is in draft mode
-                  if (event.isDraft) {
-                    applicableStatuses.push("Draft");
-                  } else {
-                    // If not a draft, add "Finalized" as a base status
-                    applicableStatuses.push("Finalized");
+            // Partner Event
+            const partnerCheckedValues = filters.partnerEvent
+              .filter((pt) => pt.checked)
+              .map((pt) => pt.value); // e.g. [true or false]
+            const partnerMatch =
+              partnerCheckedValues.length === 0 ||
+              partnerCheckedValues.includes(event.isPartneredEvent);
 
-                    // Add "Invite available" if the event is not a draft and invite options (Gmail or Salesloft) are available
-                    if (
-                      !event.isDraft &&
-                      event.languagesAndTemplates?.some((template) =>
-                        ["Gmail", "Salesloft"].includes(template.platform)
-                      )
-                    ) {
-                      applicableStatuses.push("Invite available");
-                    }
-                  }
-
-                  // Check if any selectedDraftStatuses match the applicable statuses
-                  return selectedDraftStatuses.some((status) =>
-                    applicableStatuses.includes(status)
+            // Draft Status
+            const draftCheckedValues = filters.draftStatus
+              .filter((ds) => ds.checked)
+              .map((ds) => ds.value); // e.g. ["Draft", "Finalized", "Invite available"]
+            const draftMatch =
+              draftCheckedValues.length === 0 ||
+              (() => {
+                const statusesThisEventHas = [];
+                if (event.isDraft) {
+                  statusesThisEventHas.push("Draft");
+                } else {
+                  statusesThisEventHas.push("Finalized");
+                  // If not draft and has Gmail or Salesloft -> "Invite available"
+                  const hasInvites = event.languagesAndTemplates?.some((lt) =>
+                    ["Gmail", "Salesloft"].includes(lt.platform)
                   );
-                })();
-              const programNameMatch =
-                filters.programName.every((filter) => !filter.checked) ||
-                filters.programName.some((filter) => {
-                  const isChecked = filter.checked;
-                  const matches = event.programName?.some((name) =>
-                    name.toLowerCase().includes(filter.label.toLowerCase())
-                  );
-
-                  return isChecked && matches;
-                });
-
-              const activityTypeMatch =
-                !filters.activityType.some((activity) => activity.checked) || // If no activity types are checked, consider all events
-                filters.activityType.some((activity) => {
-                  try {
-                    // Check if the event type matches the checked activity types
-                    return (
-                      activity.checked &&
-                      event.eventType?.toLowerCase() ===
-                        activity.label.toLowerCase() // Ensure case-insensitive comparison
-                    );
-                  } catch (err) {
-                    console.error(
-                      "Error checking activityType filter:",
-                      err,
-                      activity,
-                      event
-                    );
-                    return false; // Handle errors gracefully
+                  if (hasInvites) {
+                    statusesThisEventHas.push("Invite available");
                   }
-                });
-
-                const isNewlyCreatedMatch =
-                !filters.newlyCreated?.some((option) => option.checked) ||
-                filters.newlyCreated?.some((option) => {
-                  if (option.checked) {
-                    const entryCreatedDate = event.entryCreatedDate?.value
-                      ? dayjs(event.entryCreatedDate.value)
-                      : null; // Access `value` property
-              
-                    if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-                      console.warn("Invalid or missing entryCreatedDate for event:", event);
-                      return option.value === false; // Consider missing dates as "old"
-                    }
-              
-                    const isWithinTwoWeeks = dayjs().diff(entryCreatedDate, "day") <= 14;
-                    return option.value === isWithinTwoWeeks;
-                  }
-                  return false;
-                });
-
-              const organisedByMatch = (() => {
-                // Check if no organiser filter is applied
-                if (!filters.organisedBy || filters.organisedBy.length === 0) {
-                  return true; // No organiser filter applied
                 }
-
-                // Check if the event has no organiser data
-                if (!event.organisedBy || event.organisedBy.length === 0) {
-                  return false; // Event does not have an organiser
-                }
-
-                // Check for match
-                const isMatch = filters.organisedBy.some((organiser) =>
-                  event.organisedBy.includes(organiser)
-                );
-
-                return isMatch; // Return the match result
+                // Does any of the statuses match the user’s chosen statuses?
+                return statusesThisEventHas.some((st) => draftCheckedValues.includes(st));
               })();
 
-              return (
-                subRegionMatch &&
-                gepMatch &&
-                buyerSegmentRollupMatch &&
-                accountSectorMatch &&
-                accountSegmentMatch &&
-                productFamilyMatch &&
-                industryMatch &&
-                isPartneredEventMatch &&
-                isDraftMatch &&
-                regionMatch &&
-                countryMatch &&
-                programNameMatch &&
-                activityTypeMatch &&
-                isNewlyCreatedMatch &&
-                organisedByMatch
-              );
-            } catch (filterError) {
-              console.error("Error applying filters to event:", filterError);
-              return false;
-            }
-          })
-        );
+            // Newly Created
+            // Filters might be an array like: [{ label: "Yes", value: true, checked: false }, { label: "No", value: false, checked: false }]
+            const newlyCreatedFilters = filters.newlyCreated.filter((nc) => nc.checked);
+            const newlyCreatedMatch =
+              newlyCreatedFilters.length === 0 ||
+              newlyCreatedFilters.some((nc) => {
+                // If event has an entryCreatedDate, we parse it
+                const createdAt = event.entryCreatedDate?.value
+                  ? dayjs(event.entryCreatedDate.value)
+                  : null;
 
-        const finalFilteredEvents = filteredByDay.filter(
-          (_, index) => results[index]
-        );
+                // If missing or invalid, treat as "not newly created"
+                if (!createdAt || !createdAt.isValid()) {
+                  return nc.value === false;
+                }
 
-        setFilteredEvents(finalFilteredEvents);
+                // Check if it’s within 14 days
+                const isWithin2Weeks = dayjs().diff(createdAt, "day") <= 14;
+                return nc.value === isWithin2Weeks;
+              });
+
+            // Organised By (multi-select)
+            const organiserFilterActive =
+              filters.organisedBy && filters.organisedBy.length > 0;
+            const organisedByMatch = !organiserFilterActive
+              ? true
+              : filters.organisedBy.some((org) =>
+                  event.organisedBy?.includes(org)
+                );
+
+            // Final combination
+            return (
+              regionMatch &&
+              subRegionMatch &&
+              countryMatch &&
+              gepMatch &&
+              programMatch &&
+              activityMatch &&
+              accountSectorMatch &&
+              accountSegmentMatch &&
+              buyerSegmentRollupMatch &&
+              productFamilyMatch &&
+              industryMatch &&
+              partnerMatch &&
+              draftMatch &&
+              newlyCreatedMatch &&
+              organisedByMatch
+            );
+          } catch (error) {
+            console.error("Error applying filters to event:", event, error);
+            return false;
+          }
+        });
+
+        setFilteredEvents(finalFiltered);
       } catch (error) {
-        console.error("Error fetching event data:", error);
-      }finally {
-        setLoading(false); // Stop loading spinner
+        console.error("Error fetching and filtering events:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchAndFilterEvents();
-  }, [location, filters, daySelected]);
+  }, [daySelected, filters, location]);
 
-  // Close modals when location changes
+  /**
+   * Close modals on route change
+   */
   useEffect(() => {
     setShowEventModal(false);
     setShowInfoEventModal(false);
   }, [location, setShowEventModal, setShowInfoEventModal]);
 
-  // Memoize the event handlers to prevent re-creation on each render
+  /**
+   * handleDayClick(day)
+   * Called when user clicks on a Day cell
+   */
   const handleDayClick = useCallback(
     (day) => {
       setDaySelected(day);
-      setSelectedEvents([]); // Ensure selectedEvents is set/reset as needed
-      setSelectedEvent(null); // Ensure selectedEvent is set/reset as needed
+      setSelectedEvents([]); // or keep if needed
+      setSelectedEvent(null); // or keep if needed
     },
     [setDaySelected, setSelectedEvents, setSelectedEvent]
   );
 
+  /**
+   * Render
+   */
   return (
     <div
       className={
@@ -470,41 +369,45 @@ export default function MonthView({ month, isYearView = false }) {
           : "flex-1 grid grid-cols-7 grid-rows-5 overflow"
       }
     >
-      {loading ? ( // Conditional rendering for loading spinner
+      {loading ? (
         <div className="flex justify-center items-center h-full">
-          <CircularProgress /> {/* Spinner from Material-UI */}
+          <CircularProgress />
         </div>
       ) : isYearView ? (
-        month.map((month, monthIdx) => (
-          <React.Fragment key={monthIdx}>
-            {month.map((day, dayIdx) => (
+        // If you’re in "year view", you might be passing in a pre-computed 'month' array
+        month.map((monthRow, rowIndex) => (
+          <React.Fragment key={rowIndex}>
+            {monthRow.map((day, dayIdx) => (
               <Day
-                key={`day-${monthIdx}-${dayIdx}`}
-                day={day} // Pass the day object
+                key={`day-${rowIndex}-${dayIdx}`}
+                day={day}
                 events={filteredEvents}
-                isYearView={isYearView}
-                month={day.month} // Use month correctly
+                isYearView={true}
+                month={day.month()}
               />
             ))}
           </React.Fragment>
         ))
       ) : (
-        monthDays.map((row, i) => (
-          <React.Fragment key={i}>
-            {row.map((day, idx) => (
+        // Default: standard month view
+        monthDays.map((weekRow, rowIndex) => (
+          <React.Fragment key={rowIndex}>
+            {weekRow.map((day, dayIdx) => (
               <Day
-                key={`day-${i}-${idx}`}
-                day={day} // Pass the updated day object
+                key={`day-${rowIndex}-${dayIdx}`}
+                day={day}
                 events={filteredEvents}
-                isYearView={isYearView}
-                month={day.month()} // Use day.month() for monthDays
+                isYearView={false}
+                month={day.month()}
+                onClickDay={() => handleDayClick(day)}
               />
             ))}
           </React.Fragment>
         ))
       )}
-      <EventPopup /> {/* Render the EventPopup component */}
+
+      {/* The Event Popup / Modal */}
+      <EventPopup />
     </div>
   );
-  
 }
