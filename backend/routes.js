@@ -329,49 +329,55 @@ function inferBigQueryType(value) {
 
   router.post("/send-gmail-invite", async (req, res) => {
     const { to, subject, body, accessToken } = req.body;
-
+  
     if (!accessToken) {
       logger.error("Access token not found.");
       return res.status(401).send("Access token not found");
     }
-
+  
     try {
       logger.info("Proceeding to create Gmail draft.");
-
-      // Use the provided access token
+  
+      // 1) Initialize OAuth2 with the provided access token
       const oauth2Client = new google.auth.OAuth2();
       oauth2Client.setCredentials({
         access_token: accessToken,
       });
-
+  
+      // 2) Create the Gmail API client
       const gmail = google.gmail({
         version: "v1",
         auth: oauth2Client,
       });
-
-      const emailBody = populateTemplate(baseTemplate, body);
-
-      // Prepare the raw email format
+  
+      // 3) MIME-encode the subject to preserve special chars
+      const encodedSubject =
+        `=?UTF-8?B?` + Buffer.from(subject, "utf-8").toString("base64") + `?=`;
+  
+      // 4) Construct the raw MIME email
+      //    - text/html + charset UTF-8
+      //    - 8bit ensures raw characters pass through unchanged
       const email = [
         `To: ${to}`,
-        "Content-Type: text/html; charset=utf-8",
         "MIME-Version: 1.0",
-        `Subject: ${subject}`,
+        "Content-Type: text/html; charset=UTF-8",
+        "Content-Transfer-Encoding: 8bit",
+        `Subject: ${encodedSubject}`,
         "",
-        emailBody,
-      ].join("\n");
-
-      const encodedMessage = Buffer.from(email)
+        // Insert your HTML body as-is (UTF-8)
+        body,
+      ].join("\r\n"); // \r\n is recommended for MIME
+  
+      // 5) Base64-URL–encode for Gmail
+      const encodedMessage = Buffer.from(email, "utf-8")
         .toString("base64")
         .replace(/\+/g, "-")
         .replace(/\//g, "_")
         .replace(/=+$/, "");
-
-      logger.info("Encoded email message prepared.", {
-        encodedMessage,
-      });
-
-      // Create Gmail draft
+  
+      logger.info("Encoded email message prepared.", { encodedMessage });
+  
+      // 6) Create the draft in Gmail
       const response = await gmail.users.drafts.create({
         userId: "me",
         requestBody: {
@@ -380,7 +386,7 @@ function inferBigQueryType(value) {
           },
         },
       });
-
+  
       if (response && response.data) {
         logger.info("Gmail draft created successfully.", {
           draftId: response.data.id,
@@ -404,6 +410,7 @@ function inferBigQueryType(value) {
       res.status(500).send("Failed to create Gmail draft due to server error");
     }
   });
+  
 
   // Route to log out the user
   router.get("/logout", (req, res, next) => {
