@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import GlobalContext from "../../context/GlobalContext";
 import { createSalesLoftEmailTemplate } from "../../api/salesloft";
 import { styled } from "@mui/system";
-import { tooltipClasses } from "@mui/material/Tooltip";
+import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
 import { duplicateEvent } from "../../api/duplicateData";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import { shareToGoogleCalendar } from "../../api/shareCalendar";
@@ -12,7 +12,6 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import {
   regionsData,
   subregionsData,
-  countriesData,
 } from "../filters/FiltersData";
 import {
   Alert,
@@ -26,7 +25,6 @@ import {
   Link as MuiLink,
   AppBar,
   Toolbar,
-  Tooltip,
   Menu,
   MenuItem,
   Box,
@@ -40,7 +38,6 @@ import {
   Radio,
   FormControlLabel,
 } from "@mui/material";
-
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -61,10 +58,37 @@ import salesloftLogo from "./logo/salesloft.png";
 import linkedInLogo from "./logo/linkedin.png";
 import { refreshAccessToken } from "../../api/refreshToken";
 
+// Define the styled CustomTooltip at the top (or anywhere before usage)
+const CustomTooltip = styled(({ className, ...props }) => (
+  <Tooltip
+    {...props}
+    classes={{ popper: className }}
+    PopperProps={{
+      disablePortal: true, // to respect parent z-index
+    }}
+  />
+))({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: "#1a73e8",
+    color: "white",
+    fontSize: "14px",
+    borderRadius: "4px",
+    padding: "8px 12px",
+    zIndex: 20000,
+  },
+  [`& .${tooltipClasses.arrow}`]: {
+    color: "#1a73e8",
+  },
+  [`& .${tooltipClasses.popper}`]: {
+    zIndex: 20000,
+  },
+});
+
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
   const { formData, selectedEvent, setShowInfoEventModal, updateFormData } =
     useContext(GlobalContext);
+
   const [currentSection, setCurrentSection] = useState("Overview");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -73,10 +97,10 @@ export default function EventInfoPopup({ event, close }) {
   const languagesAndTemplates = selectedEvent?.languagesAndTemplates || [];
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const [linkedInDialogOpen, setLinkedInDialogOpen] = useState(false);
-  const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+  const [snackbarSeverity, setSnackbarSeverity] = useState("info");
 
   const [calendarConfirmationDialogOpen, setCalendarConfirmationDialogOpen] =
-    useState(false); // State for confirmation dialog
+    useState(false);
 
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(
@@ -86,42 +110,12 @@ export default function EventInfoPopup({ event, close }) {
   );
   const hasLanguagesAndTemplates = languagesAndTemplates.length > 0;
 
-  const handleCalendarConfirmation = async () => {
-    const accessToken = localStorage.getItem("accessToken"); // Ensure token is available
-    if (!accessToken) {
-      setSnackbarMessage("Please log in to connect with Google Calendar.");
-      setSnackbarOpen(true);
-      return;
-    }
+  const nodeRef = useRef(null);
+  const [anchorEl, setAnchorEl] = useState(null);
 
-    // Check if start or end date is missing time
-
-    try {
-      const eventData = {
-        title: selectedEvent.title,
-        location: selectedEvent.locationVenue || "", // Provide fallback if no location
-        description: selectedEvent.description,
-        startDate: selectedEvent.startDate,
-        endDate: selectedEvent.endDate,
-      };
-
-      const response = await shareToGoogleCalendar(eventData, accessToken);
-
-      if (response.success) {
-        setSnackbarMessage("Event successfully added to Google Calendar!");
-      } else {
-        setSnackbarMessage(
-          "Failed to add event to Google Calendar. Try again."
-        );
-      }
-    } catch (error) {
-      console.error("Error sharing event to Google Calendar:", error);
-      setSnackbarMessage("Error occurred. Please try again.");
-    } finally {
-      setCalendarConfirmationDialogOpen(false);
-      setSnackbarOpen(true);
-    }
-  };
+  //  ───────────────────────────────────────────────────────────────────────────
+  //  Hooks
+  //  ───────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     // Pre-select English by default if available
     const englishTemplate = languagesAndTemplates.find(
@@ -133,6 +127,7 @@ export default function EventInfoPopup({ event, close }) {
       setSelectedLanguage(languagesAndTemplates[0].language);
     }
   }, [languagesAndTemplates]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -140,36 +135,56 @@ export default function EventInfoPopup({ event, close }) {
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  //  ───────────────────────────────────────────────────────────────────────────
+  //  Calendar
+  //  ───────────────────────────────────────────────────────────────────────────
+  const handleCalendarConfirmation = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) {
+      setSnackbarMessage("Please log in to connect with Google Calendar.");
+      setSnackbarOpen(true);
+      return;
+    }
 
-  const handleLanguageDialogClose = () => {
-    setLanguageDialogOpen(false);
-  };
-  const handleLanguageClick = () => {
-    setLanguageDialogOpen(true);
-  };
-  const handleLanguageSelect = (event) => {
-    setSelectedLanguage(event.target.value);
+    try {
+      const eventData = {
+        title: selectedEvent.title,
+        location: selectedEvent.locationVenue || "",
+        description: selectedEvent.description,
+        startDate: selectedEvent.startDate,
+        endDate: selectedEvent.endDate,
+      };
+
+      const response = await shareToGoogleCalendar(eventData, accessToken);
+
+      if (response.success) {
+        setSnackbarMessage("Event successfully added to Google Calendar!");
+      } else {
+        setSnackbarMessage("Failed to add event to Google Calendar. Try again.");
+      }
+    } catch (error) {
+      console.error("Error sharing event to Google Calendar:", error);
+      setSnackbarMessage("Error occurred. Please try again.");
+    } finally {
+      setCalendarConfirmationDialogOpen(false);
+      setSnackbarOpen(true);
+    }
   };
 
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const nodeRef = useRef(null);
+  const handleCloseMenu = () => setAnchorEl(null);
 
   const handleClose = () => {
     setShowInfoEventModal(false);
   };
 
-  if (!selectedEvent) {
-    return null;
-  }
+  if (!selectedEvent) return null;
 
+  //  ───────────────────────────────────────────────────────────────────────────
+  //  Top buttons logic
+  //  ───────────────────────────────────────────────────────────────────────────
   const handleShareEvent = () => {
     if (selectedEvent && selectedEvent.eventId) {
       navigate(`/event/${selectedEvent.eventId}`);
@@ -183,54 +198,75 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-  //Salesloft!!
+  const handleDuplicateEvent = () => {
+    setConfirmationDialogOpen(true);
+  };
+
+  const confirmDuplicateEvent = async () => {
+    if (selectedEvent) {
+      try {
+        await duplicateEvent(selectedEvent.eventId, selectedEvent);
+        setSnackbarMessage("Event duplicated successfully!");
+        setInfoDialogOpen(true);
+      } catch (error) {
+        console.error("Failed to duplicate event:", error);
+        setSnackbarMessage("Failed to duplicate event. Please try again.");
+      } finally {
+        setConfirmationDialogOpen(false);
+        setSnackbarOpen(true);
+      }
+    }
+  };
+
+  const handleConfirmationDialogClose = () => {
+    setConfirmationDialogOpen(false);
+  };
+
+  //  ───────────────────────────────────────────────────────────────────────────
+  //  SalesLoft
+  //  ───────────────────────────────────────────────────────────────────────────
   const handleSalesLoftInvite = () => {
     const salesLoftTemplate = languagesAndTemplates.find(
       (item) =>
         item.platform === "Salesloft" && item.language === selectedLanguage
     );
-    console.log(languagesAndTemplates)
 
     if (!salesLoftTemplate) {
       setSnackbarMessage("SalesLoft template not provided.");
       setSnackbarOpen(true);
       return;
     }
-
     if (!salesLoftTemplate.subjectLine) {
       setSnackbarMessage("SalesLoft subject line not provided.");
       setSnackbarOpen(true);
       return;
     }
-
     setDialogOpen(true);
   };
 
   const handleSalesLoftConfirmation = async () => {
-
     try {
       const salesLoftTemplate = languagesAndTemplates.find(
         (item) =>
           item.platform === "Salesloft" && item.language === selectedLanguage
       );
-
       if (!salesLoftTemplate) {
         throw new Error("SalesLoft template not found.");
       }
-
       if (!salesLoftTemplate.subjectLine || !salesLoftTemplate.template) {
         throw new Error(
           "Template data is incomplete. Missing subjectLine or template."
         );
       }
       const result = await createSalesLoftEmailTemplate({
-        title: selectedEvent.title,            
+        title: selectedEvent.title,
         subjectLine: salesLoftTemplate.subjectLine,
         template: salesLoftTemplate.template,
       });
-      
       if (result.success) {
-        setSnackbarMessage("Salesloft Cadence successfully created - Search in Salesloft by event title");
+        setSnackbarMessage(
+          "Salesloft Cadence successfully created - Search in Salesloft by event title"
+        );
         setSnackbarSeverity("success");
       } else {
         setSnackbarMessage(
@@ -240,9 +276,7 @@ export default function EventInfoPopup({ event, close }) {
       }
     } catch (error) {
       console.error("Error creating SalesLoft email template:", error);
-      setSnackbarMessage(
-        `Failed to create SalesLoft template: ${error.message}`
-      );
+      setSnackbarMessage(`Failed to create SalesLoft template: ${error.message}`);
       setSnackbarSeverity("error");
     } finally {
       setDialogOpen(false);
@@ -250,57 +284,84 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
+  //  ───────────────────────────────────────────────────────────────────────────
+  //  region & city as arrays
+  //  ───────────────────────────────────────────────────────────────────────────
+  const formatListWithSpaces = (list) => {
+    if (!list) return "";
+    if (typeof list === "string") return list.replace(/,/g, ", ");
+    if (!Array.isArray(list)) return "";
+    return list.map((item) => item.replace(/,/g, ", ")).join(", ");
+  };
+
+  // Minimal changes: If region is an array, just handle the first region if needed
   const getRegionLabel = (selectedEvent) => {
-    const { region, subRegion, country } = selectedEvent;
+    const regionList = Array.isArray(selectedEvent.region)
+      ? selectedEvent.region
+      : [];
+    const subRegionList = Array.isArray(selectedEvent.subRegion)
+      ? selectedEvent.subRegion
+      : [];
+    const countryList = Array.isArray(selectedEvent.country)
+      ? selectedEvent.country
+      : [];
 
-    // Check if region and subRegion are both selected
-    if (!region || !subRegion) return null;
-
-    const selectedRegionData = regionsData.find((r) => r.region === region);
-
-    // Check if all subregions are selected within the region
-    if (
-      selectedRegionData &&
-      selectedRegionData.subregions.every((sub) => subRegion.includes(sub))
-    ) {
-      return `All ${region}`;
+    if (regionList.length === 0 || subRegionList.length === 0) {
+      return null;
     }
 
-    // Check if all countries are selected within each selected subregion
-    const selectedSubregions = subRegion
-      .map((sub) => subregionsData.find((s) => s.subregion === sub))
-      .filter(Boolean);
+    const mainRegion = regionList[0];
+    if (!mainRegion) return null;
 
-    const allCountriesSelected = selectedSubregions.every((subregionData) =>
-      subregionData.countries.every((countryCode) =>
-        country.includes(countryCode)
-      )
+    const selectedRegionData = regionsData.find((r) => r.region === mainRegion);
+    if (!selectedRegionData) {
+      return [
+        formatListWithSpaces(regionList),
+        formatListWithSpaces(subRegionList),
+        formatListWithSpaces(countryList),
+      ]
+        .filter(Boolean)
+        .join(", ");
+    }
+
+    const allSubregionsSelected = selectedRegionData.subregions.every((sub) =>
+      subRegionList.includes(sub)
     );
 
-    if (
-      allCountriesSelected &&
-      selectedSubregions.length === selectedRegionData.subregions.length
-    ) {
-      return `All ${region}`;
+    if (allSubregionsSelected) {
+      let everyCountryInAllSubs = true;
+      selectedRegionData.subregions.forEach((sub) => {
+        const subData = subregionsData.find((s) => s.subregion === sub);
+        if (
+          !subData ||
+          !subData.countries.every((c) => countryList.includes(c))
+        ) {
+          everyCountryInAllSubs = false;
+        }
+      });
+      if (everyCountryInAllSubs) {
+        return `All ${mainRegion}`;
+      }
     }
 
-    // Default to listing subregions and countries if not all are selected
     return [
-      formatListWithSpaces(region),
-      formatListWithSpaces(subRegion),
-      formatListWithSpaces(country),
+      formatListWithSpaces(regionList),
+      formatListWithSpaces(subRegionList),
+      formatListWithSpaces(countryList),
     ]
       .filter(Boolean)
       .join(", ");
   };
 
+  //  ───────────────────────────────────────────────────────────────────────────
+  //  Gmail
+  //  ───────────────────────────────────────────────────────────────────────────
   const handleGmailInvite = async () => {
     try {
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
       let accessToken = localStorage.getItem("accessToken");
       const refreshToken = localStorage.getItem("refreshToken");
 
-      // Check if access token is missing
       if (!accessToken) {
         sessionStorage.clear();
         localStorage.clear();
@@ -326,7 +387,6 @@ export default function EventInfoPopup({ event, close }) {
       const template = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.template;
-
       const subjectLine = languagesAndTemplates.find(
         (item) => item.language === selectedLanguage
       )?.subjectLine;
@@ -349,8 +409,6 @@ export default function EventInfoPopup({ event, close }) {
         accessToken: accessToken,
       };
 
-
-
       let response = await fetch(`${apiUrl}send-gmail-invite`, {
         method: "POST",
         credentials: "include",
@@ -360,9 +418,7 @@ export default function EventInfoPopup({ event, close }) {
         body: JSON.stringify(emailDetails),
       });
 
-
       if (!response.ok) {
-        // Check if the error indicates an expired token or credential issue
         const responseText = await response.text();
         if (
           response.status === 401 ||
@@ -370,21 +426,14 @@ export default function EventInfoPopup({ event, close }) {
           responseText.includes("Invalid Credentials") ||
           responseText.includes("TokenExpired")
         ) {
-          console.warn(
-            "Access token expired or invalid. Attempting to refresh..."
-          );
-
+          console.warn("Access token expired or invalid. Attempting to refresh...");
           if (refreshToken) {
             const tokenData = await refreshAccessToken(refreshToken);
-
             if (tokenData.accessToken) {
-              // Store the new access token
               accessToken = tokenData.accessToken;
               sessionStorage.setItem("accessToken", accessToken);
               localStorage.setItem("accessToken", accessToken);
 
-
-              // Retry the request with the new access token
               emailDetails.accessToken = accessToken;
               response = await fetch(`${apiUrl}send-gmail-invite`, {
                 method: "POST",
@@ -418,9 +467,7 @@ export default function EventInfoPopup({ event, close }) {
               return;
             }
           } else {
-            console.error(
-              "No refresh token available. Redirecting to login..."
-            );
+            console.error("No refresh token available. Redirecting to login...");
             sessionStorage.clear();
             localStorage.clear();
             setSnackbarMessage("Gmail token expired. Redirecting to login...");
@@ -431,18 +478,12 @@ export default function EventInfoPopup({ event, close }) {
             return;
           }
         } else {
-          console.error(
-            "Failed to create draft. Response status:",
-            response.status
-          );
-          throw new Error(
-            `Failed to create Gmail draft: ${response.statusText}`
-          );
+          console.error("Failed to create draft. Response status:", response.status);
+          throw new Error(`Failed to create Gmail draft: ${response.statusText}`);
         }
       }
 
       const data = await response.json();
-
       if (data.success) {
         window.open(data.draftUrl, "_blank");
       } else {
@@ -453,76 +494,9 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-  const formatListWithSpaces = (list) => {
-    if (!list) return "";
-    if (typeof list === "string") return list.replace(/,/g, ", ");
-    if (!Array.isArray(list)) return "";
-    return list.map((item) => item.replace(/,/g, ", ")).join(", ");
-  };
-
-  const googleColors = [
-    "rgba(66, 133, 244, 0.6)", // Google Blue
-    "rgba(234, 67, 53, 0.6)", // Google Red
-    "rgba(251, 188, 5, 0.6)", // Google Yellow
-    "rgba(52, 168, 83, 0.6)", // Google Green
-    "rgba(255, 112, 67, 0.6)", // Deep Orange
-    "rgba(156, 39, 176, 0.6)", // Purple
-    "rgba(0, 172, 193, 0.6)", // Cyan
-    "rgba(255, 235, 59, 0.6)", // Yellow
-    "rgba(121, 85, 72, 0.6)", // Brown
-  ];
-
-  const getRandomColor = () => {
-    const index = Math.floor(Math.random() * googleColors.length);
-    return googleColors[index];
-  };
-  const CustomTooltip = styled(({ className, ...props }) => (
-    <Tooltip
-      {...props}
-      classes={{ popper: className }}
-      PopperProps={{
-        disablePortal: true, // Disable portal to respect parent z-index
-      }}
-    />
-  ))({
-    [`& .${tooltipClasses.tooltip}`]: {
-      backgroundColor: "#1a73e8",
-      color: "white",
-      fontSize: "14px",
-      borderRadius: "4px",
-      padding: "8px 12px",
-      zIndex: 20000,
-    },
-    [`& .${tooltipClasses.arrow}`]: {
-      color: "#1a73e8",
-    },
-    [`& .${tooltipClasses.popper}`]: {
-      zIndex: 20000,
-    },
-  });
-  const handleDuplicateEvent = () => {
-    setConfirmationDialogOpen(true);
-  };
-
-  const confirmDuplicateEvent = async () => {
-    if (selectedEvent) {
-      try {
-        await duplicateEvent(selectedEvent.eventId, selectedEvent);
-        setSnackbarMessage("Event duplicated successfully!");
-        setInfoDialogOpen(true);
-      } catch (error) {
-        console.error("Failed to duplicate event:", error);
-        setSnackbarMessage("Failed to duplicate event. Please try again.");
-      } finally {
-        setConfirmationDialogOpen(false); // Close confirmation dialog after approval
-        setSnackbarOpen(true); // Open snackbar to show the message
-      }
-    }
-  };
-
-  const handleConfirmationDialogClose = () => {
-    setConfirmationDialogOpen(false);
-  };
+  //  ───────────────────────────────────────────────────────────────────────────
+  //  Section Layout
+  //  ───────────────────────────────────────────────────────────────────────────
   const sections = {
     Overview: (
       <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
@@ -689,22 +663,22 @@ export default function EventInfoPopup({ event, close }) {
             <Chip label="Direct Partner" color="secondary" size="small" />
           )}
           {selectedEvent.entryCreatedDate?.value &&
-  dayjs().diff(dayjs(selectedEvent.entryCreatedDate.value), "day") <= 14 && (
-    <Tooltip
-      title={`Created on: ${dayjs(selectedEvent.entryCreatedDate.value).format(
-        "MMM D, YYYY h:mm A"
-      )}`}
-      arrow
-    >
-      <Chip
-        label="Newly Created"
-        color="success"
-        variant="outlined"
-        size="small"
-      />
-    </Tooltip>
-  )}
-
+            dayjs().diff(dayjs(selectedEvent.entryCreatedDate.value), "day") <=
+              14 && (
+              <Tooltip
+                title={`Created on: ${dayjs(
+                  selectedEvent.entryCreatedDate.value
+                ).format("MMM D, YYYY h:mm A")}`}
+                arrow
+              >
+                <Chip
+                  label="Newly Created"
+                  color="success"
+                  variant="outlined"
+                  size="small"
+                />
+              </Tooltip>
+            )}
 
           {selectedEvent.isHighPriority && (
             <Chip
@@ -743,22 +717,14 @@ export default function EventInfoPopup({ event, close }) {
         )}
 
         {selectedEvent.audiencePersona?.length > 0 && (
-          <Typography
-            variant="body2"
-            display="flex"
-            sx={{ whiteSpace: "normal" }}
-          >
+          <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
             <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
             Buyer Segment: {selectedEvent.audiencePersona.join(", ") || "N/A"}
           </Typography>
         )}
 
         {selectedEvent.industry?.length > 0 && (
-          <Typography
-            variant="body2"
-            display="flex"
-            sx={{ whiteSpace: "normal" }}
-          >
+          <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
             <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
             Industry:
             <Typography
@@ -802,11 +768,7 @@ export default function EventInfoPopup({ event, close }) {
           Object.values(selectedEvent.accountCategory).some(
             (category) => category.selected
           ) && (
-            <Typography
-              variant="body2"
-              display="flex"
-              sx={{ whiteSpace: "normal" }}
-            >
+            <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
               <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
               Account Category:{" "}
               <Typography
@@ -816,8 +778,7 @@ export default function EventInfoPopup({ event, close }) {
                 {Object.entries(selectedEvent.accountCategory)
                   .filter(([_, details]) => details.selected)
                   .map(
-                    ([category, details]) =>
-                      `${category}: ${details.percentage}%`
+                    ([category, details]) => `${category}: ${details.percentage}%`
                   )
                   .join(", ")}
               </Typography>
@@ -828,11 +789,7 @@ export default function EventInfoPopup({ event, close }) {
           Object.values(selectedEvent.accountSegments).some(
             (seg) => seg.selected
           ) && (
-            <Typography
-              variant="body2"
-              display="flex"
-              sx={{ whiteSpace: "normal" }}
-            >
+            <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
               <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
               Account Segments:{" "}
               <Typography
@@ -849,14 +806,8 @@ export default function EventInfoPopup({ event, close }) {
           )}
 
         {selectedEvent.accountType &&
-          Object.values(selectedEvent.accountType).some(
-            (type) => type.selected
-          ) && (
-            <Typography
-              variant="body2"
-              display="flex"
-              sx={{ whiteSpace: "normal" }}
-            >
+          Object.values(selectedEvent.accountType).some((type) => type.selected) && (
+            <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
               <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
               Greenfield Status:{" "}
               <Typography
@@ -874,11 +825,7 @@ export default function EventInfoPopup({ event, close }) {
           Object.values(selectedEvent.productAlignment).some(
             (product) => product.selected
           ) && (
-            <Typography
-              variant="body2"
-              display="flex"
-              sx={{ whiteSpace: "normal" }}
-            >
+            <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
               <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
               Product Family:{" "}
               <Typography
@@ -916,7 +863,6 @@ export default function EventInfoPopup({ event, close }) {
           </Typography>
         )}
 
-        {/* Program Name Section */}
         {selectedEvent.programName?.length > 0 && (
           <Typography
             variant="body2"
@@ -999,11 +945,7 @@ export default function EventInfoPopup({ event, close }) {
     Links: (
       <Stack spacing={2} sx={{ p: 3 }}>
         {selectedEvent.landingPageLinks?.length > 0 && (
-          <Typography
-            variant="body2"
-            display="flex"
-            sx={{ whiteSpace: "normal" }}
-          >
+          <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
             <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
             Landing Page Links:{" "}
             <Typography
@@ -1031,11 +973,7 @@ export default function EventInfoPopup({ event, close }) {
         )}
 
         {selectedEvent.salesKitLinks?.length > 0 && (
-          <Typography
-            variant="body2"
-            display="flex"
-            sx={{ whiteSpace: "normal" }}
-          >
+          <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
             <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
             Sales Kit Links:{" "}
             <Typography
@@ -1064,11 +1002,7 @@ export default function EventInfoPopup({ event, close }) {
         )}
 
         {selectedEvent.hailoLinks?.length > 0 && (
-          <Typography
-            variant="body2"
-            display="flex"
-            sx={{ whiteSpace: "normal" }}
-          >
+          <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
             <LinkIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
             Haiilo Links:{" "}
             <Typography
@@ -1097,11 +1031,7 @@ export default function EventInfoPopup({ event, close }) {
         )}
 
         {selectedEvent.otherDocumentsLinks?.length > 0 && (
-          <Typography
-            variant="body2"
-            display="flex"
-            sx={{ whiteSpace: "normal" }}
-          >
+          <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
             <DescriptionIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
             Other Documents:{" "}
             <Typography
@@ -1154,6 +1084,7 @@ export default function EventInfoPopup({ event, close }) {
               position: "relative",
             }}
           >
+            {/* Draggable AppBar */}
             <AppBar
               position="sticky"
               sx={{
@@ -1173,6 +1104,7 @@ export default function EventInfoPopup({ event, close }) {
               </Toolbar>
             </AppBar>
 
+            {/* Title & Draft Label */}
             <Stack
               direction="row"
               spacing={1}
@@ -1222,12 +1154,12 @@ export default function EventInfoPopup({ event, close }) {
                   <ContentCopyIcon />
                 </IconButton>
               </CustomTooltip>
+
               <CustomTooltip title="Add to Google Calendar" arrow>
                 <IconButton
                   onClick={() => {
                     const { startDate, endDate } = selectedEvent;
-
-                    // Check if start or end date is missing time
+                    // If missing time in start/end date, show error
                     if (!startDate.includes("T") || !endDate.includes("T")) {
                       setSnackbarMessage(
                         "Please add a start and end time before proceeding."
@@ -1244,7 +1176,7 @@ export default function EventInfoPopup({ event, close }) {
               </CustomTooltip>
             </Stack>
 
-            {/* Date Range with High Priority Indicator */}
+            {/* Date Range */}
             <Typography
               variant="body1"
               display="flex"
@@ -1263,15 +1195,16 @@ export default function EventInfoPopup({ event, close }) {
               {dayjs(selectedEvent.endDate).format("ddd, MMM D, YYYY h:mm A")}
             </Typography>
 
-            {[
-              selectedEvent.region,
-              selectedEvent.subRegion,
-              selectedEvent.country,
-              selectedEvent.city,
-              selectedEvent.locationVenue,
-            ]
-              .flat()
-              .filter(Boolean).length > 0 && (
+            {/* Region / Subregion / Country / City / Venue */}
+            {(
+              Array.isArray(selectedEvent.region) && selectedEvent.region.length > 0
+            ) ||
+            (Array.isArray(selectedEvent.subRegion) &&
+              selectedEvent.subRegion.length > 0) ||
+            (Array.isArray(selectedEvent.country) &&
+              selectedEvent.country.length > 0) ||
+            (Array.isArray(selectedEvent.city) && selectedEvent.city.length > 0) ||
+            selectedEvent.locationVenue ? (
               <Typography
                 variant="body2"
                 display="flex"
@@ -1291,17 +1224,17 @@ export default function EventInfoPopup({ event, close }) {
                     formatListWithSpaces(selectedEvent.region),
                     formatListWithSpaces(selectedEvent.subRegion),
                     formatListWithSpaces(selectedEvent.country),
-                    selectedEvent.city,
+                    formatListWithSpaces(selectedEvent.city),
                     selectedEvent.locationVenue,
                   ]
                     .filter(Boolean)
                     .join(", ")}
               </Typography>
-            )}
+            ) : null}
 
             <Divider sx={{ width: "100%", my: 1 }} />
 
-            {/* Buttons for Sections */}
+            {/* Section Tabs */}
             <Stack
               direction="row"
               spacing={1}
@@ -1335,10 +1268,12 @@ export default function EventInfoPopup({ event, close }) {
               ))}
             </Stack>
             <Divider sx={{ width: "100%" }} />
+            {/* Render the chosen section */}
             {sections[currentSection]}
 
-            {/* Add Buttons to Bottom */}
             <Divider sx={{ width: "100%", my: 1 }} />
+
+            {/* Bottom Buttons */}
             <Box
               sx={{
                 display: "flex",
@@ -1347,25 +1282,20 @@ export default function EventInfoPopup({ event, close }) {
                 paddingLeft: 2,
               }}
             >
+              {/* LinkedIn/Haiilo */}
               <CustomTooltip
                 title={
-                  selectedEvent.hailoLinks &&
-                  selectedEvent.hailoLinks.length > 0
+                  selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
                     ? "View Haiilo Links on LinkedIn"
                     : "No Haiilo link provided"
                 }
                 arrow
-                sx={{
-                  zIndex: 120000,
-                }}
+                sx={{ zIndex: 120000 }}
               >
                 <span>
-                  {" "}
-                  {/* Wrap IconButton in a span to ensure tooltip shows on disabled buttons */}
                   <IconButton
                     onClick={() =>
-                      selectedEvent.hailoLinks &&
-                      selectedEvent.hailoLinks.length > 0
+                      selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
                         ? setLinkedInDialogOpen(true)
                         : null
                     }
@@ -1397,6 +1327,7 @@ export default function EventInfoPopup({ event, close }) {
                 sx={{ p: 2, justifyContent: "flex-end" }}
                 alignItems="center"
               >
+                {/* Language & Invite Buttons */}
                 <div>
                   {hasLanguagesAndTemplates ? (
                     <Stack direction="row" alignItems="center" spacing={1}>
@@ -1413,7 +1344,7 @@ export default function EventInfoPopup({ event, close }) {
                       </Typography>
 
                       <CustomTooltip title="Select Language">
-                        <IconButton onClick={handleLanguageClick}>
+                        <IconButton onClick={() => setLanguageDialogOpen(true)}>
                           <LanguageIcon />
                         </IconButton>
                       </CustomTooltip>
@@ -1423,43 +1354,6 @@ export default function EventInfoPopup({ event, close }) {
                       No invite available
                     </Typography>
                   )}
-
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleCloseMenu}
-                    disablePortal
-                    transformOrigin={{
-                      vertical: "center",
-                      horizontal: "center",
-                    }}
-                    PaperProps={{
-                      sx: {
-                        zIndex: 10000,
-                        boxShadow: "0px 4px 10px rgba(0,0,0,0.5)",
-                        borderRadius: "8px",
-                        bgcolor: "background.paper",
-                        minWidth: 600,
-                        paddingBottom: "16px",
-                      },
-                    }}
-                    MenuListProps={{
-                      sx: {
-                        maxHeight: "100vh",
-                        overflowY: "auto",
-                      },
-                    }}
-                  >
-                    {languagesAndTemplates.map((item) => (
-                      <MenuItem
-                        key={item.language}
-                        selected={item.language === selectedLanguage}
-                        onClick={() => handleLanguageSelect(item.language)}
-                      >
-                        {item.language}
-                      </MenuItem>
-                    ))}
-                  </Menu>
                 </div>
 
                 <Button
@@ -1477,21 +1371,15 @@ export default function EventInfoPopup({ event, close }) {
                       backgroundColor: hasLanguagesAndTemplates
                         ? "rgba(66, 133, 244, 0.1)"
                         : "rgba(200, 200, 200, 0.5)",
-                      borderColor: hasLanguagesAndTemplates
-                        ? blue[500]
-                        : "none",
+                      borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
                     },
                   }}
-                  disabled={!hasLanguagesAndTemplates} // Disable button if no templates
+                  disabled={!hasLanguagesAndTemplates}
                   startIcon={
                     <img
                       src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
                       alt="Gmail Logo"
-                      style={{
-                        width: "24px",
-                        height: "24px",
-                        marginRight: "8px",
-                      }}
+                      style={{ width: "24px", height: "24px", marginRight: "8px" }}
                     />
                   }
                   onClick={handleGmailInvite}
@@ -1500,44 +1388,46 @@ export default function EventInfoPopup({ event, close }) {
                 </Button>
 
                 <Button
-                variant="contained"
-                sx={{
-                  backgroundColor: hasLanguagesAndTemplates
-                    ? "rgba(255, 255, 255, 0.1)"
-                    : "rgba(200, 200, 200, 0.5)",
-                  color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
-                  boxShadow: hasLanguagesAndTemplates
-                    ? "0 1px 2px 0 rgba(60,64,67,0.302)"
-                    : "none",
-                  margin: "10px",
-                  "&:hover": {
+                  variant="contained"
+                  sx={{
                     backgroundColor: hasLanguagesAndTemplates
-                      ? "rgba(66, 133, 244, 0.1)"
+                      ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(200, 200, 200, 0.5)",
-                    borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
-                  },
-                }}
-                disabled={!hasLanguagesAndTemplates} // Disable button if no templates
-                startIcon={
-                  <img
-                    src={salesloftLogo}
-                    alt="SalesLoft Logo"
-                    style={{
-                      width: "24px",
-                      height: "24px",
-                      marginRight: "8px",
-                    }}
-                  />
-                }
-                onClick={handleSalesLoftInvite}
-              >
-                SalesLoft Invite
-              </Button>
+                    color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
+                    boxShadow: hasLanguagesAndTemplates
+                      ? "0 1px 2px 0 rgba(60,64,67,0.302)"
+                      : "none",
+                    margin: "10px",
+                    "&:hover": {
+                      backgroundColor: hasLanguagesAndTemplates
+                        ? "rgba(66, 133, 244, 0.1)"
+                        : "rgba(200, 200, 200, 0.5)",
+                      borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
+                    },
+                  }}
+                  disabled={!hasLanguagesAndTemplates}
+                  startIcon={
+                    <img
+                      src={salesloftLogo}
+                      alt="SalesLoft Logo"
+                      style={{
+                        width: "24px",
+                        height: "24px",
+                        marginRight: "8px",
+                      }}
+                    />
+                  }
+                  onClick={handleSalesLoftInvite}
+                >
+                  SalesLoft Invite
+                </Button>
               </Stack>
             </Box>
           </Paper>
         </div>
       </Draggable>
+
+      {/* Calendar Confirmation Dialog */}
       <Dialog
         open={calendarConfirmationDialogOpen}
         onClose={() => setCalendarConfirmationDialogOpen(false)}
@@ -1562,6 +1452,7 @@ export default function EventInfoPopup({ event, close }) {
         </DialogActions>
       </Dialog>
 
+      {/* SalesLoft Confirmation Dialog */}
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -1580,10 +1471,11 @@ export default function EventInfoPopup({ event, close }) {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Language Dialog */}
+
+      {/* Language Select Dialog */}
       <Dialog
         open={languageDialogOpen}
-        onClose={handleLanguageDialogClose}
+        onClose={() => setLanguageDialogOpen(false)}
         maxWidth="xs"
         fullWidth
         sx={{ zIndex: 100000000 }}
@@ -1593,15 +1485,15 @@ export default function EventInfoPopup({ event, close }) {
           <FormControl component="fieldset">
             <RadioGroup
               value={selectedLanguage}
-              onChange={(event) => setSelectedLanguage(event.target.value)} // Update the selectedLanguage state
+              onChange={(event) => setSelectedLanguage(event.target.value)}
             >
               {languagesAndTemplates.length > 0 ? (
                 languagesAndTemplates.map((item) => (
                   <FormControlLabel
-                    key={`${item.platform}-${item.language}`} // Ensure unique keys
-                    value={item.language} // Radio button's value
-                    control={<Radio />} // Radio button component
-                    label={`${item.platform} - ${item.language}`} // Label for each option
+                    key={`${item.platform}-${item.language}`}
+                    value={item.language}
+                    control={<Radio />}
+                    label={`${item.platform} - ${item.language}`}
                   />
                 ))
               ) : (
@@ -1611,11 +1503,11 @@ export default function EventInfoPopup({ event, close }) {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleLanguageDialogClose} color="secondary">
+          <Button onClick={() => setLanguageDialogOpen(false)} color="secondary">
             Cancel
           </Button>
           <Button
-            onClick={handleLanguageDialogClose}
+            onClick={() => setLanguageDialogOpen(false)}
             color="primary"
             variant="contained"
           >
@@ -1623,6 +1515,8 @@ export default function EventInfoPopup({ event, close }) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* LinkedIn / Haiilo Dialog */}
       <Dialog
         open={linkedInDialogOpen}
         onClose={() => setLinkedInDialogOpen(false)}
@@ -1650,7 +1544,7 @@ export default function EventInfoPopup({ event, close }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{
-                    color: "#1a73e8", // Google blue
+                    color: "#1a73e8",
                     textDecoration: "underline",
                     maxWidth: "85%",
                     overflow: "hidden",
@@ -1663,7 +1557,7 @@ export default function EventInfoPopup({ event, close }) {
                 <IconButton
                   onClick={() => window.open(link, "_blank")}
                   size="small"
-                  sx={{ color: "#1a73e8" }} // Google blue
+                  sx={{ color: "#1a73e8" }}
                 >
                   <ArrowForwardIcon />
                 </IconButton>
@@ -1683,6 +1577,7 @@ export default function EventInfoPopup({ event, close }) {
         </DialogActions>
       </Dialog>
 
+      {/* Confirmation dialog for duplicating event */}
       <Dialog
         open={confirmationDialogOpen}
         onClose={handleConfirmationDialogClose}
@@ -1695,10 +1590,7 @@ export default function EventInfoPopup({ event, close }) {
           Are you sure you want to duplicate this event?
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => setConfirmationDialogOpen(false)}
-            color="secondary"
-          >
+          <Button onClick={handleConfirmationDialogClose} color="secondary">
             No
           </Button>
           <Button onClick={confirmDuplicateEvent} color="primary">
@@ -1707,21 +1599,21 @@ export default function EventInfoPopup({ event, close }) {
         </DialogActions>
       </Dialog>
 
-          <Snackbar
-      open={snackbarOpen}
-      autoHideDuration={6000}
-      onClose={() => setSnackbarOpen(false)}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Optional: Positioning
-    >
-      <Alert
+      {/* Snackbar for messages */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
         onClose={() => setSnackbarOpen(false)}
-        severity={snackbarSeverity}
-        sx={{ width: '100%' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        {snackbarMessage}
-      </Alert>
-</Snackbar>
-
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

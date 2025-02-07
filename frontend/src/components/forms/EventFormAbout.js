@@ -419,7 +419,7 @@ const EventForm = () => {
     const draftData = {
       eventId,
       title,
-      description,
+      description, 
       emoji,
       organisedBy,
       marketingActivityType,
