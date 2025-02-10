@@ -11,6 +11,11 @@ const dummyOrganisedData = [
     },
     {
         "organisedBy": [
+            "Gengis Khan"
+        ]
+    },
+    {
+        "organisedBy": [
             "Napoleon"
         ]
     },
