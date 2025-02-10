@@ -11,11 +11,10 @@ export async function getOrganisedBy() {
       headers: {
         'Content-Type': 'text/plain',
       },
-      body: JSON.stringify(
-        { queryName: 'getOrganisers',
-        message: 'get-organisers', 
-    }
-),
+      body: JSON.stringify({
+        queryName: 'getOrganisers',
+        message: 'get-organisers',
+      }),
     });
 
     if (!response.ok) {
@@ -23,13 +22,26 @@ export async function getOrganisedBy() {
     }
 
     const data = await response.json();
-    console.log(data.data);    
-    return data.data;
-// console.log("Returning dummyOrganisedData:", dummyOrganisedData); // Debugging
 
-// return dummyOrganisedData;
+    const uniqueData = [
+      ...new Map(
+        data.data.map((item) => [JSON.stringify(item.organisedBy), item])
+      ).values(),
+    ];
+
+    return uniqueData;
+
+    // ----- OR, if you just want to use dummyOrganisedData, for example: -----
+    /*
+    const uniqueDummy = [
+      ...new Map(
+        dummyOrganisedData.map((item) => [JSON.stringify(item.organisedBy), item])
+      ).values(),
+    ];
+    console.log("Unique dummy data:", uniqueDummy);
+    return uniqueDummy;
+    */
     
-
   } catch (error) {
     console.error("Error fetching data from the server:", error);
     throw error;

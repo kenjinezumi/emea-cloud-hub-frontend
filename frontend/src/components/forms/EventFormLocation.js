@@ -120,16 +120,42 @@ export default function LocationFormPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   // Region multi-select changes
   // ─────────────────────────────────────────────────────────────────────────────
-  const handleRegionChange = (e) => {
-    const selectedRegions = e.target.value;
-    setRegion(typeof selectedRegions === "string" ? selectedRegions.split(",") : selectedRegions);
+// ─────────────────────────────────────────────────────────────────────────────
+// Region multi-select changes
+// ─────────────────────────────────────────────────────────────────────────────
+const handleRegionChange = (e) => {
+  const selectedRegions = e.target.value; // an array of regions
+  setRegion(
+    typeof selectedRegions === "string"
+      ? selectedRegions.split(",")
+      : selectedRegions
+  );
 
-    // Clear subRegion + country if region changes
-    setSubRegion([]);
-    setCountry([]);
-    setAvailableSubregions([]);
-    setAvailableCountries([]);
-  };
+  // Clear subRegion & country when the region(s) change
+  setSubRegion([]);
+  setCountry([]);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  //  Get ALL subregions from each selected region
+  // ─────────────────────────────────────────────────────────────────────────────
+  const allSubregions = selectedRegions.flatMap((selectedReg) => {
+    // Look up this region in your `regionsData` array
+    const regionObj = regionsData.find((rd) => rd.region === selectedReg);
+    // If found, return its subregions array, otherwise empty
+    return regionObj ? regionObj.subregions : [];
+  });
+
+  // Remove duplicates, if any, using a Set
+  const uniqueSubregions = [...new Set(allSubregions)];
+
+  // Update state
+  setAvailableSubregions(uniqueSubregions);
+
+  // Reset availableCountries to empty for now, 
+  // user must then pick subregions => updates countries
+  setAvailableCountries([]);
+};
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Sub-region changes => update countries
