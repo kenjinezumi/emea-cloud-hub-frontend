@@ -71,19 +71,19 @@ export default function ExtraDetailsForm() {
 
   const [isProgramError, setIsProgramError] = useState(false);
 
-  const [okrSelections, setOkrSelections] = useState(() => {
-    const dataSource = formData || selectedEvent;
-    return okrOptions.reduce((acc, option) => {
-      const okrItem = dataSource?.okr?.find(
-        (item) => item.type === option.label
-      );
-      acc[option.label] = {
-        selected: !!okrItem && okrItem.percentage !== "",
-        percentage: okrItem ? okrItem.percentage : "",
-      };
-      return acc;
-    }, {});
-  });
+  // const [okrSelections, setOkrSelections] = useState(() => {
+  //   const dataSource = formData || selectedEvent;
+  //   return okrOptions.reduce((acc, option) => {
+  //     const okrItem = dataSource?.okr?.find(
+  //       (item) => item.type === option.label
+  //     );
+  //     acc[option.label] = {
+  //       selected: !!okrItem && okrItem.percentage !== "",
+  //       percentage: okrItem ? okrItem.percentage : "",
+  //     };
+  //     return acc;
+  //   }, {});
+  // });
 
   const [gep, setGep] = useState(
     (Array.isArray(formData?.gep)
@@ -100,42 +100,41 @@ export default function ExtraDetailsForm() {
     formData?.partnerRole || selectedEvent?.partnerRole || ""
   );
 
-  const [isCustomerUseError, setIsCustomerUseError] = useState(false);
   const [isGepError, setIsGepError] = useState(false);
 
-  const handleToggleOkr = (label) => {
-    setOkrSelections((prev) => ({
-      ...prev,
-      [label]: {
-        ...prev[label],
-        selected: !prev[label].selected,
-      },
-    }));
-  };
+  // const handleToggleOkr = (label) => {
+  //   setOkrSelections((prev) => ({
+  //     ...prev,
+  //     [label]: {
+  //       ...prev[label],
+  //       selected: !prev[label].selected,
+  //     },
+  //   }));
+  // };
   const handleProgramChange = (event) => {
     setProgram(event.target.value);
     setIsProgramError(false);
   };
 
-  const handlePercentageChange = (label, value) => {
-    setOkrSelections((prev) => ({
-      ...prev,
-      [label]: {
-        ...prev[label],
-        percentage: value,
-      },
-    }));
-  };
+  // const handlePercentageChange = (label, value) => {
+  //   setOkrSelections((prev) => ({
+  //     ...prev,
+  //     [label]: {
+  //       ...prev[label],
+  //       percentage: value,
+  //     },
+  //   }));
+  // };
   useEffect(() => {
     const updatedFormData = {
       ...formData,
       // isApprovedForCustomerUse: customerUse === "yes" ? true : false,
       programName: program,
       isApprovedForCustomerUse: null,
-      okr: Object.keys(okrSelections).map((label) => ({
-        type: label,
-        percentage: okrSelections[label].percentage,
-      })),
+      // okr: Object.keys(okrSelections).map((label) => ({
+      //   type: label,
+      //   percentage: okrSelections[label].percentage,
+      // })),
       gep,
       isPartneredEvent,
       partnerRole,
@@ -148,7 +147,7 @@ export default function ExtraDetailsForm() {
   }, [
     program,
     customerUse,
-    okrSelections,
+    // okrSelections,
     gep,
     isPartneredEvent,
     partnerRole,
@@ -159,16 +158,16 @@ export default function ExtraDetailsForm() {
   const saveAndNavigate = useFormNavigation();
 
   const handlePrevious = () => {
-    const selectedOkrs = Object.keys(okrSelections)
-      .filter((key) => okrSelections[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: okrSelections[key].percentage,
-      }));
+    // const selectedOkrs = Object.keys(okrSelections)
+    //   .filter((key) => okrSelections[key].selected)
+    //   .map((key) => ({
+    //     type: key,
+    //     percentage: okrSelections[key].percentage,
+    //   }));
 
     saveAndNavigate(
       {
-        okr: selectedOkrs,
+        // okr: selectedOkrs,
         gep,
         program,
         isPartneredEvent: isPartneredEvent === true,
@@ -208,37 +207,37 @@ export default function ExtraDetailsForm() {
       return;
     }
 
-    const selectedOkrs = Object.keys(okrSelections)
-      .filter((key) => okrSelections[key].selected)
-      .map((key) => ({
-        type: key,
-        percentage: okrSelections[key].percentage,
-      }));
+    // const selectedOkrs = Object.keys(okrSelections)
+    //   .filter((key) => okrSelections[key].selected)
+    //   .map((key) => ({
+    //     type: key,
+    //     percentage: okrSelections[key].percentage,
+    //   }));
 
-    if (selectedOkrs.length > 0) {
-      const okrTotalPercentage = selectedOkrs.reduce(
-        (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
-        0
-      );
+    // if (selectedOkrs.length > 0) {
+    //   const okrTotalPercentage = selectedOkrs.reduce(
+    //     (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
+    //     0
+    //   );
 
-      if (okrTotalPercentage > 100) {
-        setSnackbarMessage("Total OKR percentage cannot exceed 100%");
-        setLoading(false);
-        setSnackbarOpen(true);
-        return;
-      }
+      // if (okrTotalPercentage > 100) {
+      //   setSnackbarMessage("Total OKR percentage cannot exceed 100%");
+      //   setLoading(false);
+      //   setSnackbarOpen(true);
+      //   return;
+      // }
 
-      if (okrTotalPercentage !== 100) {
-        setSnackbarMessage("Total OKR percentage must equal 100%");
-        setLoading(false);
-        setSnackbarOpen(true);
-        return;
-      }
-    }
+      // if (okrTotalPercentage !== 100) {
+      //   setSnackbarMessage("Total OKR percentage must equal 100%");
+      //   setLoading(false);
+      //   setSnackbarOpen(true);
+      //   return;
+      // }
+    // }
 
     const updatedFormData = {
       ...formData,
-      okr: selectedOkrs,
+      // okr: selectedOkrs,
       gep,
       programName: program,
       isPartneredEvent: isPartneredEvent === true,
@@ -292,7 +291,7 @@ export default function ExtraDetailsForm() {
           <Grid container spacing={2}>
             
             {/* OKR Selection as Expandable Accordion */}
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <Accordion>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
@@ -335,7 +334,7 @@ export default function ExtraDetailsForm() {
                   ))}
                 </AccordionDetails>
               </Accordion>
-            </Grid>
+            </Grid> */}
 
             <Grid item xs={12}>
               <FormControl fullWidth error={isGepError}>
