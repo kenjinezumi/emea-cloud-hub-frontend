@@ -35,8 +35,8 @@ export default function Day({ day, events, isYearView, month }) {
         }else {
           // Multi-day event
           return (
-            eventStart.isBefore(currentDay.endOf("day")) &&
-            eventEnd.isAfter(currentDay.startOf("day"))
+            eventStart.format("YYYY-MM-DD") <= day.format("YYYY-MM-DD") &&
+  eventEnd.format("YYYY-MM-DD") >= day.format("YYYY-MM-DD")
           );
         }
         
