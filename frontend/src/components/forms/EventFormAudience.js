@@ -43,11 +43,11 @@ const SELECT_ALL_LABEL = "Select all";
  * 2) Your existing audienceRoles (strings)
  * 3) audienceSeniorityOptions mapped to their .label
  */
-const allBuyerSegments = [
-  SELECT_ALL_LABEL,
-  ...audienceRoles, // e.g. ["HR", "IT Decision Maker", ...]
-  ...audienceSeniorityOptions.map((o) => o.label),
-];
+// const allBuyerSegments = [
+//   SELECT_ALL_LABEL,
+//   ...audienceRoles, // e.g. ["HR", "IT Decision Maker", ...]
+//   ...audienceSeniorityOptions.map((o) => o.label),
+// ];
 
 export default function AudiencePersonaForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
@@ -67,13 +67,13 @@ export default function AudiencePersonaForm() {
   /**
    * For "Buyer Segment" we store in audiencePersona
    */
-  const [audiencePersona, setAudiencePersona] = useState(
-    Array.isArray(formData?.audiencePersona) && formData.audiencePersona.length > 0
-      ? formData.audiencePersona
-      : Array.isArray(selectedEvent?.audiencePersona) && selectedEvent.audiencePersona.length > 0
-      ? selectedEvent.audiencePersona
-      : []
-  );
+  // const [audiencePersona, setAudiencePersona] = useState(
+  //   Array.isArray(formData?.audiencePersona) && formData.audiencePersona.length > 0
+  //     ? formData.audiencePersona
+  //     : Array.isArray(selectedEvent?.audiencePersona) && selectedEvent.audiencePersona.length > 0
+  //     ? selectedEvent.audiencePersona
+  //     : []
+  // );
 
   const [industry, setIndustry] = useState(
     Array.isArray(formData?.industry) && formData.industry.length > 0
@@ -147,7 +147,7 @@ export default function AudiencePersonaForm() {
   );
 
   // Validation flags
-  const [isAudiencePersonaError, setIsAudiencePersonaError] = useState(false);
+  // const [isAudiencePersonaError, setIsAudiencePersonaError] = useState(false);
   const [isAudienceSeniorityError, setIsAudienceSeniorityError] = useState(false);
   const [isAccountSegmentsError, setIsAccountSegmentsError] = useState(false);
   const [isAccountCategoryError, setIsAccountCategoryError] = useState(false);
@@ -159,7 +159,7 @@ export default function AudiencePersonaForm() {
 
   useEffect(() => {
     const currentFormData = {
-      audiencePersona,
+      // audiencePersona,
       audienceSeniority,
       accountSectors,
       maxEventCapacity,
@@ -176,7 +176,7 @@ export default function AudiencePersonaForm() {
       updateFormData(currentFormData);
     }
   }, [
-    audiencePersona,
+    // audiencePersona,
     audienceSeniority,
     accountSectors,
     maxEventCapacity,
@@ -245,11 +245,11 @@ export default function AudiencePersonaForm() {
   };
 
   // For removing buyer segment items individually
-  const handleAudiencePersonaDelete = (personaToDelete) => {
-    setAudiencePersona((currentPersonas) =>
-      currentPersonas.filter((persona) => persona !== personaToDelete)
-    );
-  };
+  // const handleAudiencePersonaDelete = (personaToDelete) => {
+  //   setAudiencePersona((currentPersonas) =>
+  //     currentPersonas.filter((persona) => persona !== personaToDelete)
+  //   );
+  // };
 
   // For removing buyer segment rollup items individually
   const handleAudienceSeniorityDelete = (seniorityToDelete) => {
@@ -401,7 +401,7 @@ export default function AudiencePersonaForm() {
     }
 
     // 5) Basic checks
-    const isAudiencePersonaValid = audiencePersona.length > 0;
+    // const isAudiencePersonaValid = audiencePersona.length > 0;
     const isAudienceSeniorityValid = audienceSeniority.length > 0;
     const isAccountSegmentsValid = selectedSegments.length > 0;
     const isAccountCategoryValid = selectedCategories.length > 0;
@@ -411,7 +411,7 @@ export default function AudiencePersonaForm() {
     const isIndustryValid = industry.length > 0;
     const isAccountSectorsValid = accountSectors.commercial || accountSectors.public;
 
-    setIsAudiencePersonaError(!isAudiencePersonaValid);
+    // setIsAudiencePersonaError(!isAudiencePersonaValid);
     setIsAudienceSeniorityError(!isAudienceSeniorityValid);
     setIsAccountSegmentsError(!isAccountSegmentsValid);
     setIsAccountCategoryError(!isAccountCategoryValid);
@@ -422,7 +422,7 @@ export default function AudiencePersonaForm() {
     setIsAccountSectorsError(!isAccountSectorsValid);
 
     const formIsValid =
-      isAudiencePersonaValid &&
+      // isAudiencePersonaValid &&
       isAudienceSeniorityValid &&
       isAccountSegmentsValid &&
       isAccountCategoryValid &&
@@ -443,7 +443,7 @@ export default function AudiencePersonaForm() {
 
     // 6) Prepare final data
     const draftData = {
-      audiencePersona,
+      // audiencePersona,
       audienceSeniority,
       accountSectors,
       maxEventCapacity,
@@ -487,7 +487,7 @@ export default function AudiencePersonaForm() {
   // “Previous” button
   const handlePrevious = () => {
     const currentFormData = {
-      audiencePersona,
+      // audiencePersona,
       audienceSeniority,
       accountSectors,
       maxEventCapacity,
@@ -503,12 +503,7 @@ export default function AudiencePersonaForm() {
     saveAndNavigate(currentFormData, "/email-invitation");
   };
 
-  // “Save as Draft” logic (if you have a separate button somewhere)
-  const handleSaveAsDraft = async () => {
-    // The same validation as in handleNext
-    // ... omitted for brevity in this example
-    // In real code, you'd do the same checks or factor them out into a function
-  };
+
 
   return (
     <div
@@ -574,7 +569,7 @@ export default function AudiencePersonaForm() {
             Buyer Segment (audiencePersona) with "Select all"
             ============================================
           */}
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <Typography variant="subtitle1">Buyer Segment *</Typography>
             <FormControl fullWidth error={isAudiencePersonaError}>
               <Select
@@ -643,7 +638,7 @@ export default function AudiencePersonaForm() {
                 </Typography>
               )}
             </FormControl>
-          </Grid>
+          </Grid> */}
 
           {/*
             ============================================
