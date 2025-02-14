@@ -14,7 +14,7 @@ import {
   Avatar,
   Popover,
   Button,
-  Box
+  Box,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import GlobalContext from "../../context/GlobalContext";
@@ -90,7 +90,6 @@ export default function CalendarHeader() {
     setMonthIndex(newDate.month());
   }
 
-  
   function handlePrev() {
     let newDaySelected;
     switch (view) {
@@ -101,9 +100,10 @@ export default function CalendarHeader() {
         newDaySelected = daySelected.subtract(1, "week");
         break;
       case "month":
-        newDaySelected = monthIndex === 0
-          ? daySelected.subtract(1, "year").month(11)
-          : daySelected.subtract(1, "month");
+        newDaySelected =
+          monthIndex === 0
+            ? daySelected.subtract(1, "year").month(11)
+            : daySelected.subtract(1, "month");
         break;
       case "year":
         newDaySelected = daySelected.subtract(1, "year");
@@ -114,8 +114,6 @@ export default function CalendarHeader() {
     setDaySelected(newDaySelected);
     setMonthIndex(newDaySelected.month());
   }
-  
-  
 
   function handleNext() {
     let newDaySelected;
@@ -127,28 +125,26 @@ export default function CalendarHeader() {
         newDaySelected = daySelected.add(1, "week");
         break;
       case "month":
-        newDaySelected = monthIndex === 11
-          ? daySelected.add(1, "year").month(0)
-          : daySelected.add(1, "month");
+        newDaySelected =
+          monthIndex === 11
+            ? daySelected.add(1, "year").month(0)
+            : daySelected.add(1, "month");
         break;
       case "year":
         newDaySelected = daySelected.add(1, "year");
         break;
       default:
         return;
-    }  
+    }
 
     setDaySelected(newDaySelected);
     setMonthIndex(newDaySelected.month());
-
   }
-  
-  
+
   const handleYearChange = (newYear) => {
     setDaySelected(daySelected.year(newYear)); // Change year
   };
 
-  
   function handleReset() {
     const today = dayjs();
     setDaySelected(today);
@@ -344,9 +340,7 @@ export default function CalendarHeader() {
                   <Button
                     variant="text"
                     color="primary"
-                    onClick={() =>
-                      window.open("http://go/playbook", "_blank")
-                    }
+                    onClick={() => window.open("http://go/playbook", "_blank")}
                     sx={{
                       justifyContent: "space-between",
                       width: "100%",
@@ -363,6 +357,21 @@ export default function CalendarHeader() {
                     onClick={handleLogout}
                   >
                     Logout
+                  </Button>
+                  <Button
+                    variant="text"
+                    color="primary"
+                    onClick={() => {
+                      handlePopoverClose(); // optional: close popover first
+                      navigate("/data-extract"); // go to the route
+                    }}
+                    sx={{
+                      justifyContent: "space-between",
+                      width: "100%",
+                    }}
+                  >
+                    Data Extract
+                    <span className="material-icons">chevron_right</span>
                   </Button>
                 </div>
               </div>
