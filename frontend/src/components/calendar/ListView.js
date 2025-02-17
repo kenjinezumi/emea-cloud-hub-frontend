@@ -21,8 +21,7 @@ import GlobalContext from "../../context/GlobalContext";
 import { getEventData } from "../../api/getEventData";
 import EventInfoPopup from "../popup/EventInfoModal";
 
-// A helper map of region -> subregions used by your code
-// (Adjust these if your real data differs)
+
 const REGION_SUBREGION_MAP = {
   EMEA: [
     "Alps", "Benelux", "CEE", "France", "Germany", "Iberia",
@@ -33,10 +32,6 @@ const REGION_SUBREGION_MAP = {
   ],
   LATAM: [
     "Brazil", "MCO", "Mexico",
-  ],
-  GLOBAL: [
-    "Alps", "Benelux", "CEE", "France", "Germany", "Iberia",
-    "Israel", "Italy", "MEA", "Nordics", "UK/IE",
   ],
 };
 
