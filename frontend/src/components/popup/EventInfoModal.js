@@ -139,6 +139,17 @@ export default function EventInfoPopup({ event, close }) {
   }, []);
 
   //  ───────────────────────────────────────────────────────────────────────────
+  //  Check for valid templates for the selected language/platform
+  //  ───────────────────────────────────────────────────────────────────────────
+  const salesLoftTemplateForSelectedLanguage = languagesAndTemplates.find(
+    (item) => item.platform === "Salesloft" && item.language === selectedLanguage
+  );
+
+  const gmailTemplateForSelectedLanguage = languagesAndTemplates.find(
+    (item) => item.platform === "Gmail" && item.language === selectedLanguage
+  );
+
+  //  ───────────────────────────────────────────────────────────────────────────
   //  Calendar
   //  ───────────────────────────────────────────────────────────────────────────
   const handleCalendarConfirmation = async () => {
@@ -226,30 +237,18 @@ export default function EventInfoPopup({ event, close }) {
   //  SalesLoft
   //  ───────────────────────────────────────────────────────────────────────────
   const handleSalesLoftInvite = () => {
-    const salesLoftTemplate = languagesAndTemplates.find(
-      (item) =>
-        item.platform === "Salesloft" && item.language === selectedLanguage
-    );
-
-    if (!salesLoftTemplate) {
-      setSnackbarMessage("SalesLoft template not provided.");
+    if (!salesLoftTemplateForSelectedLanguage) {
+      setSnackbarMessage("No valid SalesLoft template for the selected language.");
       setSnackbarOpen(true);
       return;
     }
-    if (!salesLoftTemplate.subjectLine) {
-      setSnackbarMessage("SalesLoft subject line not provided.");
-      setSnackbarOpen(true);
-      return;
-    }
+    // If there's a valid SalesLoft template, open confirmation
     setDialogOpen(true);
   };
 
   const handleSalesLoftConfirmation = async () => {
     try {
-      const salesLoftTemplate = languagesAndTemplates.find(
-        (item) =>
-          item.platform === "Salesloft" && item.language === selectedLanguage
-      );
+      const salesLoftTemplate = salesLoftTemplateForSelectedLanguage;
       if (!salesLoftTemplate) {
         throw new Error("SalesLoft template not found.");
       }
@@ -358,6 +357,12 @@ export default function EventInfoPopup({ event, close }) {
   //  ───────────────────────────────────────────────────────────────────────────
   const handleGmailInvite = async () => {
     try {
+      if (!gmailTemplateForSelectedLanguage) {
+        setSnackbarMessage("No valid Gmail template for the selected language.");
+        setSnackbarOpen(true);
+        return;
+      }
+
       const apiUrl = `https://backend-dot-cloudhub.googleplex.com/`;
       let accessToken = localStorage.getItem("accessToken");
       const refreshToken = localStorage.getItem("refreshToken");
@@ -384,12 +389,8 @@ export default function EventInfoPopup({ event, close }) {
         return;
       }
 
-      const template = languagesAndTemplates.find(
-        (item) => item.language === selectedLanguage
-      )?.template;
-      const subjectLine = languagesAndTemplates.find(
-        (item) => item.language === selectedLanguage
-      )?.subjectLine;
+      const template = gmailTemplateForSelectedLanguage.template;
+      const subjectLine = gmailTemplateForSelectedLanguage.subjectLine;
 
       if (!template) {
         console.error("No template found for the selected language.");
@@ -1356,25 +1357,28 @@ export default function EventInfoPopup({ event, close }) {
                   )}
                 </div>
 
+                {/* Gmail Invite Button */}
                 <Button
                   variant="contained"
                   sx={{
-                    backgroundColor: hasLanguagesAndTemplates
+                    backgroundColor: gmailTemplateForSelectedLanguage
                       ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(200, 200, 200, 0.5)",
-                    color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
-                    boxShadow: hasLanguagesAndTemplates
+                    color: gmailTemplateForSelectedLanguage ? "#5f6368" : "#bdbdbd",
+                    boxShadow: gmailTemplateForSelectedLanguage
                       ? "0 1px 2px 0 rgba(60,64,67,0.302)"
                       : "none",
                     margin: "10px",
                     "&:hover": {
-                      backgroundColor: hasLanguagesAndTemplates
+                      backgroundColor: gmailTemplateForSelectedLanguage
                         ? "rgba(66, 133, 244, 0.1)"
                         : "rgba(200, 200, 200, 0.5)",
-                      borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
+                      borderColor: gmailTemplateForSelectedLanguage
+                        ? blue[500]
+                        : "none",
                     },
                   }}
-                  disabled={!hasLanguagesAndTemplates}
+                  disabled={!gmailTemplateForSelectedLanguage}
                   startIcon={
                     <img
                       src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
@@ -1387,25 +1391,28 @@ export default function EventInfoPopup({ event, close }) {
                   Gmail Invite
                 </Button>
 
+                {/* SalesLoft Invite Button */}
                 <Button
                   variant="contained"
                   sx={{
-                    backgroundColor: hasLanguagesAndTemplates
+                    backgroundColor: salesLoftTemplateForSelectedLanguage
                       ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(200, 200, 200, 0.5)",
-                    color: hasLanguagesAndTemplates ? "#5f6368" : "#bdbdbd",
-                    boxShadow: hasLanguagesAndTemplates
+                    color: salesLoftTemplateForSelectedLanguage ? "#5f6368" : "#bdbdbd",
+                    boxShadow: salesLoftTemplateForSelectedLanguage
                       ? "0 1px 2px 0 rgba(60,64,67,0.302)"
                       : "none",
                     margin: "10px",
                     "&:hover": {
-                      backgroundColor: hasLanguagesAndTemplates
+                      backgroundColor: salesLoftTemplateForSelectedLanguage
                         ? "rgba(66, 133, 244, 0.1)"
                         : "rgba(200, 200, 200, 0.5)",
-                      borderColor: hasLanguagesAndTemplates ? blue[500] : "none",
+                      borderColor: salesLoftTemplateForSelectedLanguage
+                        ? blue[500]
+                        : "none",
                     },
                   }}
-                  disabled={!hasLanguagesAndTemplates}
+                  disabled={!salesLoftTemplateForSelectedLanguage}
                   startIcon={
                     <img
                       src={salesloftLogo}
@@ -1488,9 +1495,9 @@ export default function EventInfoPopup({ event, close }) {
               onChange={(event) => setSelectedLanguage(event.target.value)}
             >
               {languagesAndTemplates.length > 0 ? (
-                languagesAndTemplates.map((item) => (
+                languagesAndTemplates.map((item, idx) => (
                   <FormControlLabel
-                    key={`${item.platform}-${item.language}`}
+                    key={`${item.platform}-${item.language}-${idx}`}
                     value={item.language}
                     control={<Radio />}
                     label={`${item.platform} - ${item.language}`}
