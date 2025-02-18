@@ -23,13 +23,7 @@ export async function getOrganisedBy() {
 
     const data = await response.json();
 
-    const uniqueData = [
-      ...new Map(
-        data.data.map((item) => [JSON.stringify(item.organisedBy), item])
-      ).values(),
-    ];
-
-    return uniqueData;
+    return data.data;
 
     // ----- OR, if you just want to use dummyOrganisedData, for example: -----
     /*
