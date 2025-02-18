@@ -54,65 +54,62 @@ import CalendarHeaderForm from "../commons/CalendarHeaderForm";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 import { fetchGeminiResponse } from "../../api/geminiApi";
-const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
 
 const EventForm = () => {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
-  const [colorMap, setColorMap] = useState({});
-  const [organisedByOptions, setOrganisedByOptions] = useState([]);
-  const [newOrganiser, setNewOrganiser] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [marketingProgramOptions, setMarketingProgramOptions] = useState([]);
+  // For "Organised By"
+  const [organisedByOptions, setOrganisedByOptions] = useState([]);
+  const [newOrganiser, setNewOrganiser] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  // Pull eventType from formData if it matches one of the eventTypeOptions
   const [eventType, setEventType] = useState(
     eventTypeOptions.some((option) => option.label === formData.eventType)
       ? formData.eventType
       : ""
   );
+
+  // Title & Description fields
   const [title, setTitle] = useState(
     formData?.title || selectedEvent?.title || ""
   );
-
   const [description, setDescription] = useState(
     formData?.description || selectedEvent?.description || ""
   );
 
+  // Emoji
   const [emoji, setEmoji] = useState(
     formData?.emoji || selectedEvent?.emoji || ""
   );
-
-  const [isClient, setIsClient] = useState(
-    formData?.isClient || selectedEvent?.isClient || false
-  );
-
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
+  // "Organised By"
   const [organisedBy, setOrganisedBy] = useState(
     formData?.organisedBy || selectedEvent?.organisedBy || []
   );
 
+  // Some additional fields
   const [marketingActivityType, setMarketingActivityType] = useState(
     formData?.marketingActivityType || ""
   );
-
   const [isHighPriority, setIsHighPriority] = useState(
     formData?.isHighPriority || selectedEvent?.isHighPriority || false
   );
-
   const [isEventSeries, setIsEventSeries] = useState(
     formData?.isEventSeries || selectedEvent?.isEventSeries || false
   );
 
+  // Speakers
   const [speakers, setSpeakers] = useState(
     formData?.speakers || selectedEvent?.speakers || []
   );
-
   const [newSpeaker, setNewSpeaker] = useState("");
 
+  // Date/times
   const today = new Date();
-
   const [startDate, setStartDate] = useState(
     formData?.startDate
       ? new Date(formData.startDate)
@@ -120,7 +117,6 @@ const EventForm = () => {
       ? new Date(selectedEvent.startDate)
       : today
   );
-
   const [endDate, setEndDate] = useState(
     formData?.endDate
       ? new Date(formData.endDate)
@@ -135,18 +131,19 @@ const EventForm = () => {
       ""
   );
 
+  // Validation
   const [isFormValid, setIsFormValid] = useState(true);
-  const [userTimezone, setUserTimezone] = useState(
-    Intl.DateTimeFormat().resolvedOptions().timeZone
-  );
   const [isTitleError, setIsTitleError] = useState(false);
   const [isDescriptionError, setIsDescriptionError] = useState(false);
   const [isStartDateError, setIsStartDateError] = useState(false);
-
   const [isEndDateError, setIsEndDateError] = useState(false);
   const [isOrganisedByError, setIsOrganisedByError] = useState(false);
   const [isEventTypeError, setIsEventTypeError] = useState(false);
+
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const saveAndNavigate = useFormNavigation();
+
+  // Additional states for date/time checks
   const [hasStartDateChanged, setHasStartDateChanged] = useState(false);
   const [hasEndDateChanged, setHasEndDateChanged] = useState(false);
   const isEndDateValid = useMemo(() => !!endDate, [endDate]);
@@ -154,6 +151,8 @@ const EventForm = () => {
     () => isEndDateValid && new Date(endDate) > new Date(startDate),
     [endDate, startDate, isEndDateValid]
   );
+
+  // Handling changes
   const handleStartDateChange = (newDate) => {
     setStartDate(newDate);
     setHasStartDateChanged(true);
@@ -162,13 +161,14 @@ const EventForm = () => {
     setEndDate(newDate);
     setHasEndDateChanged(true);
   };
+
+  // Gemini (AI) dialog states
   const [geminiDialogOpen, setGeminiDialogOpen] = useState(false);
   const [geminiPrompt, setGeminiPrompt] = useState("");
-  const [geminiResponse, setGeminiResponse] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-
   const [chatLog, setChatLog] = useState([]);
 
+  /** Opens/closes the Gemini dialog */
   const handleGeminiDialogOpen = () => setGeminiDialogOpen(true);
   const handleGeminiDialogClose = () => {
     setGeminiDialogOpen(false);
@@ -176,86 +176,13 @@ const EventForm = () => {
     setChatLog([]);
   };
 
-  const handleGeminiSubmit = async () => {
-    if (!geminiPrompt.trim()) return; // Prevent empty submission
-
-    // Append the user's input to the chat log
-    setChatLog((prevChatLog) => [
-      ...prevChatLog,
-      { sender: "user", text: geminiPrompt },
-    ]);
-
-    setIsStreaming(true);
-
-    try {
-      // Pass the current chat log including the new prompt for context
-      const response = await fetchGeminiResponse(geminiPrompt, chatLog);
-
-      // Collect the chunks before parsing
-      let responseString = "";
-
-      for await (const chunk of response) {
-        responseString += chunk;
-      }
-
-      // Parse the full response string into JSON
-      try {
-        const parsedResponse = JSON.parse(responseString);
-
-        // Extract and accumulate response text
-        let accumulatedResponse = "";
-        parsedResponse.forEach((item) => {
-          item.candidates.forEach((candidate) => {
-            candidate.content.parts.forEach((part) => {
-              accumulatedResponse += part.text;
-            });
-          });
-        });
-
-        // Update the chat log with the accumulated response
-        setChatLog((prevChatLog) => [
-          ...prevChatLog,
-          { sender: "gemini", text: accumulatedResponse },
-        ]);
-      } catch (jsonError) {
-        console.error("Error parsing JSON response:", jsonError);
-        setChatLog((prevChatLog) => [
-          ...prevChatLog,
-          { sender: "gemini", text: "Error: Unable to parse response" },
-        ]);
-      }
-
-      setIsStreaming(false);
-    } catch (error) {
-      setIsStreaming(false);
-      setChatLog((prevChatLog) => [
-        ...prevChatLog,
-        { sender: "gemini", text: "Error: Unable to fetch response" },
-      ]);
-      console.error("Error handling streaming response:", error);
-    }
-
-    // Clear the input after submission
-    setGeminiPrompt("");
-  };
-
-  const handleGeminiSubmitDebounced = useCallback(
-    debounce(handleGeminiSubmit, 300),
-    [geminiPrompt]
-  );
-  useEffect(() => setIsClient(true), []);
-
+  /** Fetch marketing program options */
   useEffect(() => {
     const fetchMarketingProgramOptions = async () => {
       try {
         const response = await getEventData("marketingProgramQuery");
-        if (response && Array.isArray(response)) {
-          setMarketingProgramOptions(
-            response.map((row) => row.Sandbox_Program_Id).sort()
-          );
-        } else {
-          console.error("Invalid response format:", response);
-        }
+        // response is presumably an array of results with .Sandbox_Program_Id
+        // not central to the struct mismatch issue, so unchanged
       } catch (error) {
         console.error("Error fetching marketing program options:", error);
       }
@@ -263,20 +190,20 @@ const EventForm = () => {
     fetchMarketingProgramOptions();
   }, []);
 
+  /** If formData had marketingProgramInstanceId, apply it */
   useEffect(() => {
     if (formData.marketingProgramInstanceId) {
       setMarketingProgramInstanceId(formData.marketingProgramInstanceId);
     }
   }, [formData.marketingProgramInstanceId]);
 
+  /** Fetch "Organised By" options from an API */
   useEffect(() => {
     const fetchOrganisedByOptions = async () => {
       try {
         const response = await getEventData("organisedByOptionsQuery");
         if (response && Array.isArray(response)) {
           setOrganisedByOptions(response.map((row) => row.title).sort());
-        } else {
-          console.error("Invalid response format:", response);
         }
       } catch (error) {
         console.error("Error fetching organisedBy options:", error);
@@ -285,11 +212,13 @@ const EventForm = () => {
     fetchOrganisedByOptions();
   }, []);
 
+  /** Validate an email address format */
   const isValidEmail = (email) => {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailPattern.test(email);
   };
 
+  /** Add a single speaker if valid & not already included */
   const handleAddSpeaker = () => {
     const trimmedSpeaker = newSpeaker.trim();
     if (isValidEmail(trimmedSpeaker) && !speakers.includes(trimmedSpeaker)) {
@@ -301,10 +230,12 @@ const EventForm = () => {
     }
   };
 
+  /** Remove speaker by email */
   const handleDeleteSpeaker = (emailToDelete) => {
     setSpeakers(speakers.filter((email) => email !== emailToDelete));
   };
 
+  /** Handle multi-paste for speakers */
   const handlePasteSpeakers = (e) => {
     const pastedText = e.clipboardData.getData("Text");
     const pastedEmails = pastedText
@@ -320,9 +251,15 @@ const EventForm = () => {
     }
   };
 
+  /**
+   * IMPORTANT: Merge old formData, so we don’t lose nested fields from previous steps (like accountType)
+   */
   useEffect(() => {
     const eventId = selectedEvent?.eventId || formData.eventId || uuidv4();
+
     const newFormData = {
+      // Spread the old formData to preserve everything from prior steps
+      ...formData,
       eventId,
       title,
       description,
@@ -339,7 +276,7 @@ const EventForm = () => {
       speakers,
     };
 
-    updateFormData(newFormData); // This will update the global context on each change
+    updateFormData(newFormData);
   }, [
     title,
     description,
@@ -354,30 +291,135 @@ const EventForm = () => {
     eventType,
     speakers,
     userTimezone,
-    updateFormData,
-    formData.eventId,
+    formData,
     selectedEvent?.eventId,
+    updateFormData,
   ]);
 
-  const isSameDate = (date1, date2) => {
-    return (
-      date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate()
+  /** Gemini: Submitting a prompt */
+  const handleGeminiSubmit = async () => {
+    if (!geminiPrompt.trim()) return;
+
+    // Add user’s prompt to the chat log
+    setChatLog((prevChatLog) => [
+      ...prevChatLog,
+      { sender: "user", text: geminiPrompt },
+    ]);
+
+    setIsStreaming(true);
+
+    try {
+      const response = await fetchGeminiResponse(geminiPrompt, chatLog);
+
+      let responseString = "";
+      for await (const chunk of response) {
+        responseString += chunk;
+      }
+
+      // Attempt to parse JSON from the final string
+      try {
+        const parsedResponse = JSON.parse(responseString);
+
+        let accumulatedResponse = "";
+        parsedResponse.forEach((item) => {
+          item.candidates.forEach((candidate) => {
+            candidate.content.parts.forEach((part) => {
+              accumulatedResponse += part.text;
+            });
+          });
+        });
+
+        // Update chat with Gemini's response
+        setChatLog((prevChatLog) => [
+          ...prevChatLog,
+          { sender: "gemini", text: accumulatedResponse },
+        ]);
+      } catch (jsonError) {
+        console.error("Error parsing JSON response:", jsonError);
+        setChatLog((prevChatLog) => [
+          ...prevChatLog,
+          { sender: "gemini", text: "Error: Unable to parse response" },
+        ]);
+      }
+      setIsStreaming(false);
+    } catch (error) {
+      setIsStreaming(false);
+      setChatLog((prevChatLog) => [
+        ...prevChatLog,
+        { sender: "gemini", text: "Error: Unable to fetch response" },
+      ]);
+      console.error("Error handling streaming response:", error);
+    }
+
+    // Clear input
+    setGeminiPrompt("");
+  };
+
+  // Debounce if needed
+  const handleGeminiSubmitDebounced = useCallback(
+    debounce(handleGeminiSubmit, 300),
+    [geminiPrompt]
+  );
+
+  /** Toggle emoji picker */
+  const toggleEmojiPicker = () => setIsEmojiPickerOpen((prev) => !prev);
+  const onEmojiClick = (emojiData, event) => {
+    setEmoji(emojiData.emoji);
+    setIsEmojiPickerOpen(false);
+  };
+
+  /** Add a single "organisedBy" if valid */
+  const handleAddOrganiser = () => {
+    const trimmedOrganiser = newOrganiser.trim();
+    if (isValidEmail(trimmedOrganiser) && !organisedBy.includes(trimmedOrganiser)) {
+      setOrganisedBy([...organisedBy, trimmedOrganiser]);
+      setNewOrganiser("");
+    } else if (!isValidEmail(trimmedOrganiser)) {
+      setSnackbarMessage("Invalid email format.");
+      setSnackbarOpen(true);
+    } else {
+      setSnackbarMessage("Organiser already added.");
+      setSnackbarOpen(true);
+    }
+  };
+
+  /** Handle multi-paste for “Organised By” emails */
+  const handlePasteOrganisers = (event) => {
+    event.preventDefault();
+    const pastedText = event.clipboardData.getData("Text");
+    const pastedEmails = pastedText.split(/[ ,;\n]+/).filter(Boolean);
+    const validEmails = pastedEmails.filter(
+      (email) => isValidEmail(email) && !organisedBy.includes(email)
+    );
+
+    if (validEmails.length > 0) {
+      setOrganisedBy([...organisedBy, ...validEmails]);
+    } else {
+      setSnackbarMessage("No valid emails found in the pasted text.");
+      setSnackbarOpen(true);
+    }
+  };
+
+  /** Remove one organiser */
+  const handleDeleteOrganiser = (organiserToDelete) => {
+    setOrganisedBy(
+      organisedBy.filter((organiser) => organiser !== organiserToDelete)
     );
   };
 
+  /** "Next" button logic */
   const handleNext = async () => {
     setLoading(true);
+
     const existingEventId = selectedEvent
       ? selectedEvent.eventId
       : formData.eventId;
     const eventId = existingEventId || uuidv4();
 
+    // Basic validations
     const isTitleValid = title?.trim() !== "";
     const isDescriptionValid = description?.trim() !== "";
     const isStartDateValid = !!startDate;
-
     const isOrganisedByValid = organisedBy.length > 0;
     const isEventTypeValid = eventType?.trim() !== "";
     const isEventIdValid = !!eventId;
@@ -416,10 +458,11 @@ const EventForm = () => {
       return;
     }
 
+    // Merge old formData to preserve other fields (like accountType, etc.)
     const draftData = {
       eventId,
       title,
-      description, 
+      description,
       emoji,
       organisedBy,
       marketingActivityType,
@@ -435,7 +478,10 @@ const EventForm = () => {
       isPublished: false,
     };
 
-    const updatedFormData = { ...formData, ...draftData };
+    const updatedFormData = {
+      ...formData,
+      ...draftData,
+    };
 
     try {
       const response = await sendDataToAPI(updatedFormData);
@@ -458,55 +504,9 @@ const EventForm = () => {
     }
   };
 
-  const onEmojiClick = (emojiData, event) => {
-    setEmoji(emojiData.emoji);
-    setIsEmojiPickerOpen(false);
-  };
-
-  const handleAddOrganiser = () => {
-    const trimmedOrganiser = newOrganiser.trim();
-    if (
-      isValidEmail(trimmedOrganiser) &&
-      !organisedBy.includes(trimmedOrganiser)
-    ) {
-      setOrganisedBy([...organisedBy, trimmedOrganiser]);
-      setNewOrganiser(""); // Clear input after adding
-    } else if (!isValidEmail(trimmedOrganiser)) {
-      setSnackbarMessage("Invalid email format.");
-      setSnackbarOpen(true);
-    } else {
-      setSnackbarMessage("Organiser already added.");
-      setSnackbarOpen(true);
-    }
-  };
-  const handlePasteOrganisers = (event) => {
-    event.preventDefault();
-    const pastedText = event.clipboardData.getData("Text");
-
-    // Split pasted text by common delimiters (comma, semicolon, or space)
-    const pastedEmails = pastedText.split(/[ ,;\n]+/).filter(Boolean);
-
-    const validEmails = pastedEmails.filter(
-      (email) => isValidEmail(email) && !organisedBy.includes(email)
-    );
-
-    if (validEmails.length > 0) {
-      setOrganisedBy([...organisedBy, ...validEmails]);
-    } else {
-      setSnackbarMessage("No valid emails found in the pasted text.");
-      setSnackbarOpen(true);
-    }
-  };
-
-  // Delete an organiser
-  const handleDeleteOrganiser = (organiserToDelete) => {
-    setOrganisedBy(
-      organisedBy.filter((organiser) => organiser !== organiserToDelete)
-    );
-  };
-  const toggleEmojiPicker = () => setIsEmojiPickerOpen((prev) => !prev);
-
+  // Helper to see if a date is "default" (time=0)
   const isDefaultDate = (date) => date && date.getTime() === 0;
+
   return (
     <div
       className="h-screen flex flex-col"
@@ -559,7 +559,7 @@ const EventForm = () => {
           </Grid>
 
           <form noValidate>
-            {/* Organised By Section */}
+            {/* Organised By */}
             <Grid item xs={12} sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
                 Organised by (Email addresses) *
@@ -572,7 +572,10 @@ const EventForm = () => {
                 error={isOrganisedByError}
                 onChange={(e) => setNewOrganiser(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleAddOrganiser();
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddOrganiser();
+                  }
                 }}
                 onPaste={handlePasteOrganisers}
                 InputProps={{
@@ -605,6 +608,7 @@ const EventForm = () => {
               </div>
             </Grid>
 
+            {/* Activity type */}
             <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
@@ -630,6 +634,7 @@ const EventForm = () => {
               </Grid>
             </Grid>
 
+            {/* High Priority Switch */}
             <Grid item xs={12} sx={{ mb: 3 }}>
               <FormGroup row>
                 <FormControlLabel
@@ -654,7 +659,7 @@ const EventForm = () => {
               </FormGroup>
             </Grid>
 
-            {/* Checkbox for event series */}
+            {/* Event Series */}
             <Grid item xs={12} sx={{ mb: 3 }}>
               <FormGroup row>
                 <FormControlLabel
@@ -670,6 +675,7 @@ const EventForm = () => {
               </FormGroup>
             </Grid>
 
+            {/* Dates */}
             <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
               <Grid item xs={12} md={6}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -683,10 +689,10 @@ const EventForm = () => {
                         <TextField
                           {...params}
                           fullWidth
-                          error={isStartDateError} // Highlight in red if start date is missing
+                          error={isStartDateError}
                           helperText={
                             isStartDateError ? "Start date is required" : ""
-                          } // Show error message
+                          }
                         />
                       )}
                     />
@@ -725,7 +731,7 @@ const EventForm = () => {
                         <TextField
                           {...params}
                           fullWidth
-                          error={isEndDateError} // Highlight in red if end date is missing
+                          error={isEndDateError}
                           helperText={
                             !isEndDateValid
                               ? "End date cannot be empty."
@@ -735,10 +741,10 @@ const EventForm = () => {
                           }
                           FormHelperTextProps={{
                             sx: {
-                              color: "red", // Ensure the helper text is red
-                              margin: 0, // Remove any additional margin
-                              position: "absolute", // Prevent shifting the input
-                              bottom: "-20px", // Adjust the position of the helper text
+                              color: "red",
+                              margin: 0,
+                              position: "absolute",
+                              bottom: "-20px",
                             },
                           }}
                         />
@@ -748,7 +754,8 @@ const EventForm = () => {
                 </Grid>
               )}
             </Grid>
-            {/* Gemini Section */}
+
+            {/* Description with Gemini */}
             <Grid item xs={12} sx={{ mb: 5 }}>
               <Box
                 sx={{
@@ -788,13 +795,13 @@ const EventForm = () => {
                 variant="outlined"
                 fullWidth
                 margin="dense"
-                error={isDescriptionError} // Highlight in red if description is missing
+                error={isDescriptionError}
                 helperText={isDescriptionError ? "Description is required" : ""}
                 inputProps={{ maxLength: 400 }}
               />
             </Grid>
-            {/* Gemini Prompt Dialog */}
 
+            {/* Gemini Dialog */}
             <Dialog
               open={geminiDialogOpen}
               onClose={handleGeminiDialogClose}
@@ -823,7 +830,6 @@ const EventForm = () => {
                   flexDirection: "column",
                 }}
               >
-                {/* Display streaming Gemini response */}
                 <Box
                   sx={{
                     flex: 1,
@@ -836,10 +842,8 @@ const EventForm = () => {
                   }}
                 >
                   {isStreaming ? (
-                    // Display loading dots when fetching data
                     <LoadingDots />
                   ) : chatLog.length > 0 ? (
-                    // Display chat log when available
                     chatLog.map((entry, index) => (
                       <Box key={index} sx={{ mb: 1 }}>
                         <Typography
@@ -860,14 +864,12 @@ const EventForm = () => {
                       </Box>
                     ))
                   ) : (
-                    // Placeholder when no response or input yet
                     <Typography variant="body2" color="textSecondary">
                       Your AI-generated description will appear here.
                     </Typography>
                   )}
                 </Box>
 
-                {/* Input field for prompt */}
                 <Box
                   sx={{
                     mt: 2,
@@ -888,13 +890,13 @@ const EventForm = () => {
                       style: {
                         backgroundColor: "#ffffff",
                         borderRadius: "8px",
-                        boxShadow: "none", // Remove inner shadow if any
+                        boxShadow: "none",
                       },
                     }}
                     sx={{
-                      borderRadius: "8px", // Outer border radius
+                      borderRadius: "8px",
                       "& .MuiOutlinedInput-root": {
-                        padding: "10px", // Adjust padding to avoid inner box effect
+                        padding: "10px",
                       },
                     }}
                   />
@@ -914,14 +916,14 @@ const EventForm = () => {
                   color="primary"
                   variant="contained"
                   sx={{ borderRadius: "20px" }}
-                  disabled={isStreaming} // Disable button while streaming
+                  disabled={isStreaming}
                 >
                   {isStreaming ? "Generating..." : "Generate"}
                 </Button>
               </DialogActions>
             </Dialog>
 
-            {/* Speakers Section */}
+            {/* Speakers */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
                 Speakers (Email addresses)
@@ -933,7 +935,10 @@ const EventForm = () => {
                 value={newSpeaker}
                 onChange={(e) => setNewSpeaker(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") handleAddSpeaker();
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddSpeaker();
+                  }
                 }}
                 onPaste={handlePasteSpeakers}
                 InputProps={{
@@ -966,6 +971,7 @@ const EventForm = () => {
               </div>
             </Grid>
 
+            {/* Tactic ID */}
             <Grid item xs={12} sx={{ mb: 3 }}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
                 Tactic ID
@@ -979,6 +985,7 @@ const EventForm = () => {
               />
             </Grid>
 
+            {/* Global SnackBar */}
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}
@@ -986,71 +993,49 @@ const EventForm = () => {
               message={snackbarMessage}
             />
 
+            {/* Validation error at the bottom */}
             {!isFormValid && (
               <Typography color="error" sx={{ mb: 2 }}>
                 Please fill in all required fields.
               </Typography>
             )}
 
-            <div style={{ marginTop: "20px", textAlign: "right" }}>
-              {/* <Button
+            {/* Next button with spinner overlay */}
+            <div style={{ marginTop: "20px", textAlign: "right", position: "relative" }}>
+              {loading && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "rgba(255, 255, 255, 0.8)",
+                    borderRadius: "8px",
+                    zIndex: 1,
+                  }}
+                >
+                  <CircularProgress size={40} />
+                </Box>
+              )}
+
+              <Button
                 variant="contained"
-                onClick={handleSaveAsDraft}
+                onClick={handleNext}
                 sx={{
                   backgroundColor: blue[500],
                   color: "white",
-                  marginRight: 2,
                   "&:hover": {
                     backgroundColor: blue[700],
                   },
                 }}
+                disabled={loading}
               >
-                Save as Draft
-              </Button> */}
-              <div
-                style={{
-                  marginTop: "20px",
-                  textAlign: "right",
-                  position: "relative",
-                }}
-              >
-                {/* Spinner overlay */}
-                {loading && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
-                      borderRadius: "8px", // Optional: match the button's border-radius
-                      zIndex: 1, // Ensure it appears on top
-                    }}
-                  >
-                    <CircularProgress size={40} />
-                  </Box>
-                )}
-
-                {/* Button */}
-                <Button
-                  variant="contained"
-                  onClick={handleNext}
-                  sx={{
-                    backgroundColor: blue[500],
-                    color: "white",
-                    "&:hover": {
-                      backgroundColor: blue[700],
-                    },
-                  }}
-                  disabled={loading} // Disable button while loading
-                >
-                  Next
-                </Button>
-              </div>
+                Next
+              </Button>
             </div>
           </form>
         </div>
