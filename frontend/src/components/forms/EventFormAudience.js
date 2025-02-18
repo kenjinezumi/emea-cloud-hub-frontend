@@ -23,7 +23,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PeopleIcon from "@mui/icons-material/People";
 import { blue } from "@mui/material/colors";
 import {
-  audienceRoles,
   audienceSeniorityOptions,
   industryOptions,
 } from "../filters/FiltersData";
@@ -31,123 +30,199 @@ import { sendDataToAPI } from "../../api/pushData";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 
-/**
- * “Select all” label for the Buyer Segment multi-select
+/** 
+ * Helper for any object that needs { selected: boolean, percentage: string }
  */
-const SELECT_ALL_LABEL = "Select all";
+function ensureSelectedPercentage(obj) {
+  return {
+    selected: !!(obj && obj.selected),
+    percentage: obj && typeof obj.percentage === "string" ? obj.percentage : "",
+  };
+}
 
 /**
- * Combined list for Buyer Segment field:
- * 
- * 1) "Select all" as a special item on top
- * 2) Your existing audienceRoles (strings)
- * 3) audienceSeniorityOptions mapped to their .label
+ * Create a "safe" accountSegments object
  */
-// const allBuyerSegments = [
-//   SELECT_ALL_LABEL,
-//   ...audienceRoles, // e.g. ["HR", "IT Decision Maker", ...]
-//   ...audienceSeniorityOptions.map((o) => o.label),
-// ];
+function getSafeAccountSegments(raw) {
+  if (!raw || typeof raw !== "object") {
+    return {
+      Corporate: { selected: false, percentage: "" },
+      SMB: { selected: false, percentage: "" },
+      Select: { selected: false, percentage: "" },
+      Enterprise: { selected: false, percentage: "" },
+      Startup: { selected: false, percentage: "" },
+    };
+  }
+  return {
+    Corporate: ensureSelectedPercentage(raw.Corporate),
+    SMB: ensureSelectedPercentage(raw.SMB),
+    Select: ensureSelectedPercentage(raw.Select),
+    Enterprise: ensureSelectedPercentage(raw.Enterprise),
+    Startup: ensureSelectedPercentage(raw.Startup),
+  };
+}
+
+/**
+ * Create a "safe" accountCategory object
+ */
+function getSafeAccountCategory(raw) {
+  if (!raw || typeof raw !== "object") {
+    return {
+      "Digital Native": { selected: false, percentage: "" },
+      Traditional: { selected: false, percentage: "" },
+    };
+  }
+  return {
+    "Digital Native": ensureSelectedPercentage(raw["Digital Native"]),
+    Traditional: ensureSelectedPercentage(raw.Traditional),
+  };
+}
+
+/**
+ * Create a "safe" accountType object
+ */
+function getSafeAccountType(raw) {
+  if (!raw || typeof raw !== "object") {
+    return {
+      Greenfield: { selected: false, percentage: "" },
+      "Existing Customer": { selected: false, percentage: "" },
+    };
+  }
+  return {
+    Greenfield: ensureSelectedPercentage(raw.Greenfield),
+    "Existing Customer": ensureSelectedPercentage(raw["Existing Customer"]),
+  };
+}
+
+/**
+ * Create a "safe" productAlignment object
+ */
+function getSafeProductAlignment(raw) {
+  if (!raw || typeof raw !== "object") {
+    return {
+      GCP: { selected: false, percentage: "" },
+      GWS: { selected: false, percentage: "" },
+    };
+  }
+  return {
+    GCP: ensureSelectedPercentage(raw.GCP),
+    GWS: ensureSelectedPercentage(raw.GWS),
+  };
+}
 
 export default function AudiencePersonaForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [loading, setLoading] = useState(false);
 
-  /**
-   * For "Buyer Segment Rollup" we store in audienceSeniority
-   */
-  const [audienceSeniority, setAudienceSeniority] = useState(
-    Array.isArray(formData?.audienceSeniority) && formData.audienceSeniority.length > 0
-      ? formData.audienceSeniority.filter((value) => value)
-      : Array.isArray(selectedEvent?.audienceSeniority) && selectedEvent.audienceSeniority.length > 0
-      ? selectedEvent.audienceSeniority.filter((value) => value)
-      : []
-  );
+  // Buyer segment rollup: audienceSeniority
+  const [audienceSeniority, setAudienceSeniority] = useState(() => {
+    const fromFormData = Array.isArray(formData?.audienceSeniority)
+      ? formData.audienceSeniority
+      : [];
+    const fromSelectedEvent = Array.isArray(selectedEvent?.audienceSeniority)
+      ? selectedEvent.audienceSeniority
+      : [];
+    return fromFormData.length > 0 ? fromFormData : fromSelectedEvent;
+  });
 
-  /**
-   * For "Buyer Segment" we store in audiencePersona
-   */
-  // const [audiencePersona, setAudiencePersona] = useState(
-  //   Array.isArray(formData?.audiencePersona) && formData.audiencePersona.length > 0
-  //     ? formData.audiencePersona
-  //     : Array.isArray(selectedEvent?.audiencePersona) && selectedEvent.audiencePersona.length > 0
-  //     ? selectedEvent.audiencePersona
-  //     : []
-  // );
+  // Industry
+  const [industry, setIndustry] = useState(() => {
+    const fromFormData = Array.isArray(formData?.industry)
+      ? formData.industry
+      : [];
+    const fromSelectedEvent = Array.isArray(selectedEvent?.industry)
+      ? selectedEvent.industry
+      : [];
+    return fromFormData.length > 0 ? fromFormData : fromSelectedEvent;
+  });
 
-  const [industry, setIndustry] = useState(
-    Array.isArray(formData?.industry) && formData.industry.length > 0
-      ? formData.industry.filter((value) => value)
-      : Array.isArray(selectedEvent?.industry) && selectedEvent.industry.length > 0
-      ? selectedEvent.industry.filter((value) => value)
-      : []
-  );
+  // Account Sectors (just booleans, no percentage)
+  const [accountSectors, setAccountSectors] = useState(() => {
+    const fromFormData = formData?.accountSectors;
+    const fromSelectedEvent = selectedEvent?.accountSectors;
+    return (
+      fromFormData ??
+      fromSelectedEvent ?? {
+        commercial: false,
+        public: false,
+      }
+    );
+  });
 
-  const [accountSectors, setAccountSectors] = useState(
-    formData?.accountSectors && typeof formData.accountSectors === "object"
-      ? { ...formData.accountSectors }
-      : selectedEvent?.accountSectors && typeof selectedEvent.accountSectors === "object"
-      ? { ...selectedEvent.accountSectors }
-      : { commercial: false, public: false }
-  );
+  // Account Segments (with { selected, percentage })
+  const [accountSegments, setAccountSegments] = useState(() => {
+    // If formData has it, use that; otherwise use selectedEvent
+    if (formData?.accountSegments) {
+      return getSafeAccountSegments(formData.accountSegments);
+    } else if (selectedEvent?.accountSegments) {
+      return getSafeAccountSegments(selectedEvent.accountSegments);
+    }
+    return getSafeAccountSegments(null);
+  });
 
-  const [accountSegments, setAccountSegments] = useState(
-    formData?.accountSegments && typeof formData.accountSegments === "object"
-      ? { ...formData.accountSegments }
-      : selectedEvent?.accountSegments && typeof selectedEvent.accountSegments === "object"
-      ? { ...selectedEvent.accountSegments }
-      : {
-          Corporate: { selected: false, percentage: "" },
-          SMB: { selected: false, percentage: "" },
-          Select: { selected: false, percentage: "" },
-          Enterprise: { selected: false, percentage: "" },
-          Startup: { selected: false, percentage: "" },
-        }
-  );
+  // Account Category (with { selected, percentage })
+  const [accountCategory, setAccountCategory] = useState(() => {
+    if (formData?.accountCategory) {
+      return getSafeAccountCategory(formData.accountCategory);
+    } else if (selectedEvent?.accountCategory) {
+      return getSafeAccountCategory(selectedEvent.accountCategory);
+    }
+    return getSafeAccountCategory(null);
+  });
 
-  const [accountCategory, setAccountCategory] = useState(
-    formData?.accountCategory && typeof formData.accountCategory === "object"
-      ? { ...formData.accountCategory }
-      : selectedEvent?.accountCategory && typeof selectedEvent.accountCategory === "object"
-      ? { ...selectedEvent.accountCategory }
-      : {
-          "Digital Native": { selected: false, percentage: "" },
-          Traditional: { selected: false, percentage: "" },
-        }
-  );
+  // Account Type (with { selected, percentage })
+  const [accountType, setAccountType] = useState(() => {
+    if (formData?.accountType) {
+      return getSafeAccountType(formData.accountType);
+    } else if (selectedEvent?.accountType) {
+      return getSafeAccountType(selectedEvent.accountType);
+    }
+    return getSafeAccountType(null);
+  });
 
-  const [accountType, setAccountType] = useState(
-    formData?.accountType && typeof formData.accountType === "object"
-      ? { ...formData.accountType }
-      : selectedEvent?.accountType && typeof selectedEvent.accountType === "object"
-      ? { ...selectedEvent.accountType }
-      : {
-          Greenfield: { selected: false, percentage: "" },
-          "Existing Customer": { selected: false, percentage: "" },
-        }
-  );
+  // Product Alignment (with { selected, percentage })
+  const [productAlignment, setProductAlignment] = useState(() => {
+    if (formData?.productAlignment) {
+      return getSafeProductAlignment(formData.productAlignment);
+    } else if (selectedEvent?.productAlignment) {
+      return getSafeProductAlignment(selectedEvent.productAlignment);
+    }
+    return getSafeProductAlignment(null);
+  });
 
-  const [productAlignment, setProductAlignment] = useState(
-    formData?.productAlignment && typeof formData.productAlignment === "object"
-      ? { ...formData.productAlignment }
-      : selectedEvent?.productAlignment && typeof selectedEvent.productAlignment === "object"
-      ? { ...selectedEvent.productAlignment }
-      : {
-          GCP: { selected: false, percentage: "" },
-          GWS: { selected: false, percentage: "" },
-        }
-  );
-
+  // AI vs Core
   const [aiVsCore, setAiVsCore] = useState(
-    formData?.aiVsCore || selectedEvent?.aiVsCore || ""
+    formData?.aiVsCore ?? selectedEvent?.aiVsCore ?? ""
   );
 
+  // Max Event Capacity
   const [maxEventCapacity, setMaxEventCapacity] = useState(
-    formData?.maxEventCapacity || selectedEvent?.maxEventCapacity || ""
+    formData?.maxEventCapacity ?? selectedEvent?.maxEventCapacity ?? ""
   );
+
+  // People Meeting Criteria
+  const [peopleMeetingCriteria, setPeopleMeetingCriteria] = useState(() => {
+    if (selectedEvent) {
+      return selectedEvent.peopleMeetingCriteria ?? formData.peopleMeetingCriteria ?? "";
+    }
+    return formData.peopleMeetingCriteria ?? "";
+  });
+
+  const [isFormValid, setIsFormValid] = useState(true);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  // Expandable sections
+  const [expanded, setExpanded] = useState({
+    accountSegments: false,
+    accountCategory: false,
+    accountType: false,
+    productAlignment: false,
+    accountSectors: false,
+    aiVsCore: false,
+  });
 
   // Validation flags
-  // const [isAudiencePersonaError, setIsAudiencePersonaError] = useState(false);
   const [isAudienceSeniorityError, setIsAudienceSeniorityError] = useState(false);
   const [isAccountSegmentsError, setIsAccountSegmentsError] = useState(false);
   const [isAccountCategoryError, setIsAccountCategoryError] = useState(false);
@@ -157,12 +232,17 @@ export default function AudiencePersonaForm() {
   const [isIndustryError, setIsIndustryError] = useState(false);
   const [isAccountSectorsError, setIsAccountSectorsError] = useState(false);
 
+  const saveAndNavigate = useFormNavigation();
+
+  /**
+   * Keep formData updated as user changes fields
+   */
   useEffect(() => {
     const currentFormData = {
-      // audiencePersona,
       audienceSeniority,
       accountSectors,
       maxEventCapacity,
+      peopleMeetingCriteria,
       accountSegments,
       accountCategory,
       accountType,
@@ -170,16 +250,15 @@ export default function AudiencePersonaForm() {
       aiVsCore,
       industry,
     };
-
-    // Update formData in the context only if there are changes
+    // Only update if changed
     if (JSON.stringify(formData) !== JSON.stringify(currentFormData)) {
       updateFormData(currentFormData);
     }
   }, [
-    // audiencePersona,
     audienceSeniority,
     accountSectors,
     maxEventCapacity,
+    peopleMeetingCriteria,
     accountSegments,
     accountCategory,
     accountType,
@@ -190,74 +269,19 @@ export default function AudiencePersonaForm() {
     updateFormData,
   ]);
 
-  const [peopleMeetingCriteria, setPeopleMeetingCriteria] = useState(
-    selectedEvent
-      ? selectedEvent.peopleMeetingCriteria
-      : formData.peopleMeetingCriteria || ""
-  );
-  const [isFormValid, setIsFormValid] = useState(true);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [expanded, setExpanded] = useState({
-    accountSegments: false,
-    accountCategory: false,
-    accountType: false,
-    productAlignment: false,
-    accountSectors: false,
-    aiVsCore: false,
-  });
-
-  const saveAndNavigate = useFormNavigation();
-
-  useEffect(() => {
-    if (selectedEvent) {
-      const eventSegments = selectedEvent.accountSegments || {};
-      setAccountSegments({
-        Corporate: {
-          selected: !!eventSegments.Corporate,
-          percentage: eventSegments.Corporate?.percentage || "",
-        },
-        SMB: {
-          selected: !!eventSegments.SMB,
-          percentage: eventSegments.SMB?.percentage || "",
-        },
-        Select: {
-          selected: !!eventSegments.Select,
-          percentage: eventSegments.Select?.percentage || "",
-        },
-        Enterprise: {
-          selected: !!eventSegments.Enterprise,
-          percentage: eventSegments.Enterprise?.percentage || "",
-        },
-        Startup: {
-          selected: !!eventSegments.Startup,
-          percentage: eventSegments.Startup?.percentage || "",
-        },
-      });
-    }
-  }, [selectedEvent]);
-
+  // Handle toggling of the expand/accordion
   const handleToggleSection = (section) => {
-    setExpanded((prevExpanded) => ({
-      ...prevExpanded,
-      [section]: !prevExpanded[section],
-    }));
+    setExpanded((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // For removing buyer segment items individually
-  // const handleAudiencePersonaDelete = (personaToDelete) => {
-  //   setAudiencePersona((currentPersonas) =>
-  //     currentPersonas.filter((persona) => persona !== personaToDelete)
-  //   );
-  // };
-
-  // For removing buyer segment rollup items individually
+  // Handle removing one audience seniority item
   const handleAudienceSeniorityDelete = (seniorityToDelete) => {
-    setAudienceSeniority((currentSeniorities) =>
-      currentSeniorities.filter((seniority) => seniority !== seniorityToDelete)
+    setAudienceSeniority((current) =>
+      current.filter((item) => item !== seniorityToDelete)
     );
   };
 
+  // Generic toggler for accountSegments / accountCategory / accountType / productAlignment
   const handleToggleSegment = (segment, setStateFunc) => {
     setStateFunc((prev) => ({
       ...prev,
@@ -268,6 +292,7 @@ export default function AudiencePersonaForm() {
     }));
   };
 
+  // Generic percentage changer
   const handlePercentageChange = (segment, value, setStateFunc) => {
     setStateFunc((prev) => ({
       ...prev,
@@ -278,43 +303,67 @@ export default function AudiencePersonaForm() {
     }));
   };
 
+  // AccountSectors are just booleans
   const handleCheckboxChangeAccountSectors = (event) => {
     const { name, checked } = event.target;
-    setAccountSectors((prevSectors) => ({
-      ...prevSectors,
+    setAccountSectors((prev) => ({
+      ...prev,
       [name]: checked,
     }));
   };
 
+  // “Calculate Audience” button (currently just a placeholder)
   const handleCalculateAudience = () => {
-    setSnackbarMessage("No data in the backend yet!!!!");
+    setSnackbarMessage("No data in the backend yet! (Placeholder)");
     setSnackbarOpen(true);
+  };
+
+  // “Previous” button
+  const handlePrevious = () => {
+    // Build partial formData to save
+    const currentFormData = {
+      audienceSeniority,
+      accountSectors,
+      maxEventCapacity,
+      peopleMeetingCriteria,
+      accountSegments,
+      accountCategory,
+      accountType,
+      productAlignment,
+      aiVsCore,
+      industry,
+      isDraft: true,
+      isPublished: false,
+    };
+    saveAndNavigate(currentFormData, "/email-invitation");
   };
 
   // “Next” button
   const handleNext = async () => {
     setLoading(true);
 
-    // 1) Validate selectedSegments
+    // 1) Validate if percentages are up to 100 for each grouping
+
+    // Gather selectedSegments for accountSegments
     const selectedSegments = Object.keys(accountSegments)
       .filter((key) => accountSegments[key].selected)
       .map((key) => ({
         type: key,
         percentage: accountSegments[key].percentage,
       }));
-
+    // Sum their percentages
     if (selectedSegments.length > 0) {
-      const segmentTotalPercentage = selectedSegments.reduce(
-        (sum, segment) => sum + (parseFloat(segment.percentage) || 0),
+      const sum = selectedSegments.reduce(
+        (acc, item) => acc + parseFloat(item.percentage || "0"),
         0
       );
-      if (segmentTotalPercentage > 100) {
+      if (sum > 100) {
         setSnackbarMessage("Total percentage for Account Segments cannot exceed 100%");
         setSnackbarOpen(true);
         setLoading(false);
         return;
       }
-      if (segmentTotalPercentage !== 100) {
+      if (sum !== 100) {
         setSnackbarMessage("Total percentage for Account Segments must equal 100%");
         setSnackbarOpen(true);
         setLoading(false);
@@ -322,7 +371,7 @@ export default function AudiencePersonaForm() {
       }
     }
 
-    // 2) Validate Account Category
+    // 2) Validate accountCategory
     const selectedCategories = Object.keys(accountCategory)
       .filter((key) => accountCategory[key].selected)
       .map((key) => ({
@@ -330,17 +379,17 @@ export default function AudiencePersonaForm() {
         percentage: accountCategory[key].percentage,
       }));
     if (selectedCategories.length > 0) {
-      const categoryTotalPercentage = selectedCategories.reduce(
-        (sum, category) => sum + (parseFloat(category.percentage) || 0),
+      const sum = selectedCategories.reduce(
+        (acc, item) => acc + parseFloat(item.percentage || "0"),
         0
       );
-      if (categoryTotalPercentage > 100) {
+      if (sum > 100) {
         setSnackbarMessage("Total percentage for Account Category cannot exceed 100%");
         setSnackbarOpen(true);
         setLoading(false);
         return;
       }
-      if (categoryTotalPercentage !== 100) {
+      if (sum !== 100) {
         setSnackbarMessage("Total percentage for Account Category must equal 100%");
         setSnackbarOpen(true);
         setLoading(false);
@@ -348,7 +397,7 @@ export default function AudiencePersonaForm() {
       }
     }
 
-    // 3) Validate Account Type
+    // 3) Validate accountType
     const selectedTypes = Object.keys(accountType)
       .filter((key) => accountType[key].selected)
       .map((key) => ({
@@ -356,17 +405,17 @@ export default function AudiencePersonaForm() {
         percentage: accountType[key].percentage,
       }));
     if (selectedTypes.length > 0) {
-      const typeTotalPercentage = selectedTypes.reduce(
-        (sum, type) => sum + (parseFloat(type.percentage) || 0),
+      const sum = selectedTypes.reduce(
+        (acc, item) => acc + parseFloat(item.percentage || "0"),
         0
       );
-      if (typeTotalPercentage > 100) {
+      if (sum > 100) {
         setSnackbarMessage("Total percentage for Account Type cannot exceed 100%");
         setSnackbarOpen(true);
         setLoading(false);
         return;
       }
-      if (typeTotalPercentage !== 100) {
+      if (sum !== 100) {
         setSnackbarMessage("Total percentage for Account Type must equal 100%");
         setSnackbarOpen(true);
         setLoading(false);
@@ -374,7 +423,7 @@ export default function AudiencePersonaForm() {
       }
     }
 
-    // 4) Validate Product Alignment
+    // 4) Validate productAlignment
     const selectedAlignments = Object.keys(productAlignment)
       .filter((key) => productAlignment[key].selected)
       .map((key) => ({
@@ -382,17 +431,17 @@ export default function AudiencePersonaForm() {
         percentage: productAlignment[key].percentage,
       }));
     if (selectedAlignments.length > 0) {
-      const alignmentTotalPercentage = selectedAlignments.reduce(
-        (sum, alignment) => sum + (parseFloat(alignment.percentage) || 0),
+      const sum = selectedAlignments.reduce(
+        (acc, item) => acc + parseFloat(item.percentage || "0"),
         0
       );
-      if (alignmentTotalPercentage > 100) {
+      if (sum > 100) {
         setSnackbarMessage("Total percentage for Product Alignment cannot exceed 100%");
         setSnackbarOpen(true);
         setLoading(false);
         return;
       }
-      if (alignmentTotalPercentage !== 100) {
+      if (sum !== 100) {
         setSnackbarMessage("Total percentage for Product Alignment must equal 100%");
         setSnackbarOpen(true);
         setLoading(false);
@@ -400,37 +449,34 @@ export default function AudiencePersonaForm() {
       }
     }
 
-    // 5) Basic checks
-    // const isAudiencePersonaValid = audiencePersona.length > 0;
+    // 5) Basic required checks
     const isAudienceSeniorityValid = audienceSeniority.length > 0;
-    const isAccountSegmentsValid = selectedSegments.length > 0;
+    const isIndustryValid = industry.length > 0;
+    const isAccountSectorsValid = accountSectors.commercial || accountSectors.public;
+    const isAccountSegmentsValid = selectedSegments.length > 0; 
     const isAccountCategoryValid = selectedCategories.length > 0;
     const isAccountTypeValid = selectedTypes.length > 0;
     const isProductAlignmentValid = selectedAlignments.length > 0;
-    const isAiVsCoreValid = aiVsCore !== null && aiVsCore !== "";
-    const isIndustryValid = industry.length > 0;
-    const isAccountSectorsValid = accountSectors.commercial || accountSectors.public;
+    const isAiVsCoreValid = aiVsCore !== "";
 
-    // setIsAudiencePersonaError(!isAudiencePersonaValid);
     setIsAudienceSeniorityError(!isAudienceSeniorityValid);
+    setIsIndustryError(!isIndustryValid);
+    setIsAccountSectorsError(!isAccountSectorsValid);
     setIsAccountSegmentsError(!isAccountSegmentsValid);
     setIsAccountCategoryError(!isAccountCategoryValid);
     setIsAccountTypeError(!isAccountTypeValid);
     setIsProductAlignmentError(!isProductAlignmentValid);
     setIsAiVsCoreError(!isAiVsCoreValid);
-    setIsIndustryError(!isIndustryValid);
-    setIsAccountSectorsError(!isAccountSectorsValid);
 
     const formIsValid =
-      // isAudiencePersonaValid &&
       isAudienceSeniorityValid &&
+      isIndustryValid &&
+      isAccountSectorsValid &&
       isAccountSegmentsValid &&
       isAccountCategoryValid &&
       isAccountTypeValid &&
       isProductAlignmentValid &&
-      isAiVsCoreValid &&
-      isIndustryValid &&
-      isAccountSectorsValid;
+      isAiVsCoreValid;
 
     setIsFormValid(formIsValid);
 
@@ -443,7 +489,6 @@ export default function AudiencePersonaForm() {
 
     // 6) Prepare final data
     const draftData = {
-      // audiencePersona,
       audienceSeniority,
       accountSectors,
       maxEventCapacity,
@@ -458,13 +503,12 @@ export default function AudiencePersonaForm() {
       isPublished: false,
     };
 
-    setIsFormValid(true);
-    updateFormData(draftData);
-    const updatedFormData = { ...formData, ...draftData };
-
-    // 7) Save
+    // 7) Save (API call)
     try {
+      updateFormData(draftData); // update context
+      const updatedFormData = { ...formData, ...draftData };
       const response = await sendDataToAPI(updatedFormData);
+
       if (response.success) {
         setSnackbarMessage("Draft saved successfully!");
         setSnackbarOpen(true);
@@ -483,27 +527,6 @@ export default function AudiencePersonaForm() {
       setLoading(false);
     }
   };
-
-  // “Previous” button
-  const handlePrevious = () => {
-    const currentFormData = {
-      // audiencePersona,
-      audienceSeniority,
-      accountSectors,
-      maxEventCapacity,
-      peopleMeetingCriteria,
-      accountSegments,
-      accountCategory,
-      accountType,
-      productAlignment,
-      aiVsCore,
-      isDraft: true,
-      isPublished: false,
-    };
-    saveAndNavigate(currentFormData, "/email-invitation");
-  };
-
-
 
   return (
     <div
@@ -526,11 +549,7 @@ export default function AudiencePersonaForm() {
             </span>
           </Typography>
 
-          {/*
-            ============================================
-            Buyer Segment Rollup (audienceSeniority)
-            ============================================
-          */}
+          {/* Buyer Segment Rollup */}
           <Grid item xs={12}>
             <Typography variant="subtitle1">Buyer Segment Rollup *</Typography>
             <FormControl fullWidth error={isAudienceSeniorityError}>
@@ -564,88 +583,8 @@ export default function AudiencePersonaForm() {
             </FormControl>
           </Grid>
 
-          {/*
-            ============================================
-            Buyer Segment (audiencePersona) with "Select all"
-            ============================================
-          */}
-          {/* <Grid item xs={12}>
-            <Typography variant="subtitle1">Buyer Segment *</Typography>
-            <FormControl fullWidth error={isAudiencePersonaError}>
-              <Select
-                multiple
-                value={audiencePersona} // your existing state
-                onChange={(e) => {
-                  const selectedValues = e.target.value;
-
-                  // If user selects "Select all"
-                  if (selectedValues.includes(SELECT_ALL_LABEL)) {
-                    // figure out if they already have all items
-                    const realItems = allBuyerSegments.filter(
-                      (item) => item !== SELECT_ALL_LABEL
-                    );
-                    const alreadyHasAll = realItems.every((item) =>
-                      selectedValues.includes(item)
-                    );
-
-                    setAudiencePersona(alreadyHasAll ? [] : realItems);
-                  } else {
-                    // Normal multi-select
-                    setAudiencePersona(selectedValues);
-                  }
-                }}
-                renderValue={(selected) => (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-                    {selected.map((persona) => (
-                      <Chip
-                        key={persona}
-                        label={persona}
-                        onDelete={() => handleAudiencePersonaDelete(persona)}
-                      />
-                    ))}
-                  </div>
-                )}
-              >
-                {allBuyerSegments.map((option, idx) => {
-                  if (option === SELECT_ALL_LABEL) {
-                    // Are all real items selected?
-                    const realItems = allBuyerSegments.filter(
-                      (item) => item !== SELECT_ALL_LABEL
-                    );
-                    const alreadyHasAll = realItems.every((v) =>
-                      audiencePersona.includes(v)
-                    );
-
-                    return (
-                      <MenuItem key="select-all" value={SELECT_ALL_LABEL}>
-                        <Checkbox checked={alreadyHasAll} />
-                        {SELECT_ALL_LABEL}
-                      </MenuItem>
-                    );
-                  }
-                  const isChecked = audiencePersona.includes(option);
-                  return (
-                    <MenuItem key={idx} value={option}>
-                      <Checkbox checked={isChecked} />
-                      {option}
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-              {isAudiencePersonaError && (
-                <Typography variant="body2" color="error">
-                  Please select at least one buyer segment.
-                </Typography>
-              )}
-            </FormControl>
-          </Grid> */}
-
-          {/*
-            ============================================
-            Industry Multi-Select
-            ============================================
-          */}
-          <Grid item xs={12}>
+          {/* Industry */}
+          <Grid item xs={12} style={{ marginTop: 16 }}>
             <Typography variant="subtitle1">Industry *</Typography>
             <FormControl fullWidth error={isIndustryError}>
               <Select
@@ -660,10 +599,10 @@ export default function AudiencePersonaForm() {
                   </div>
                 )}
               >
-                {industryOptions.map((industryOption, idx) => (
-                  <MenuItem key={idx} value={industryOption}>
-                    <Checkbox checked={industry.indexOf(industryOption) > -1} />
-                    {industryOption}
+                {industryOptions.map((option, idx) => (
+                  <MenuItem key={idx} value={option}>
+                    <Checkbox checked={industry.indexOf(option) > -1} />
+                    {option}
                   </MenuItem>
                 ))}
               </Select>
@@ -675,12 +614,8 @@ export default function AudiencePersonaForm() {
             </FormControl>
           </Grid>
 
-          {/*
-            ============================================
-            Account Sectors
-            ============================================
-          */}
-          <Grid item xs={12} sx={{ mb: 2 }}>
+          {/* Account Sectors */}
+          <Grid item xs={12} sx={{ mt: 2, mb: 2 }}>
             <Accordion
               expanded={expanded.accountSectors}
               onChange={() => handleToggleSection("accountSectors")}
@@ -726,11 +661,7 @@ export default function AudiencePersonaForm() {
             </Accordion>
           </Grid>
 
-          {/*
-            ============================================
-            Account Segments
-            ============================================
-          */}
+          {/* Account Segments */}
           <Grid item xs={12} sx={{ mb: 2 }}>
             <Accordion
               expanded={expanded.accountSegments}
@@ -787,11 +718,7 @@ export default function AudiencePersonaForm() {
             </Accordion>
           </Grid>
 
-          {/*
-            ============================================
-            Account Category
-            ============================================
-          */}
+          {/* Account Category */}
           <Grid item xs={12} sx={{ mb: 2 }}>
             <Accordion
               expanded={expanded.accountCategory}
@@ -848,11 +775,7 @@ export default function AudiencePersonaForm() {
             </Accordion>
           </Grid>
 
-          {/*
-            ============================================
-            Account Type
-            ============================================
-          */}
+          {/* Account Type */}
           <Grid item xs={12} sx={{ mb: 2 }}>
             <Accordion
               expanded={expanded.accountType}
@@ -903,11 +826,7 @@ export default function AudiencePersonaForm() {
             </Accordion>
           </Grid>
 
-          {/*
-            ============================================
-            Product Alignment
-            ============================================
-          */}
+          {/* Product Alignment */}
           <Grid item xs={12} sx={{ mb: 2 }}>
             <Accordion
               expanded={expanded.productAlignment}
@@ -969,11 +888,7 @@ export default function AudiencePersonaForm() {
             </Accordion>
           </Grid>
 
-          {/*
-            ============================================
-            AI vs Core
-            ============================================
-          */}
+          {/* AI vs Core */}
           <Grid item xs={12} sx={{ mb: 2 }}>
             <Accordion
               expanded={expanded.aiVsCore}
@@ -988,7 +903,10 @@ export default function AudiencePersonaForm() {
               </AccordionSummary>
               <AccordionDetails>
                 <FormControl fullWidth error={isAiVsCoreError}>
-                  <Select value={aiVsCore} onChange={(e) => setAiVsCore(e.target.value)}>
+                  <Select
+                    value={aiVsCore}
+                    onChange={(e) => setAiVsCore(e.target.value)}
+                  >
                     <MenuItem value="AI">AI</MenuItem>
                     <MenuItem value="Core">Core</MenuItem>
                   </Select>
@@ -1002,11 +920,7 @@ export default function AudiencePersonaForm() {
             </Accordion>
           </Grid>
 
-          {/*
-            ============================================
-            Max Event Capacity
-            ============================================
-          */}
+          {/* Max Event Capacity */}
           <Grid item xs={12}>
             <Typography variant="subtitle1">Maximum Event Capacity</Typography>
             <TextField
@@ -1017,16 +931,11 @@ export default function AudiencePersonaForm() {
             />
           </Grid>
 
-          {/*
-            ============================================
-            People Meeting Criteria
-            ============================================
-          */}
+          {/* People Meeting Criteria */}
           <Grid item xs={12}>
             <Typography variant="subtitle1">
               People Meeting the Audience Criteria
             </Typography>
-
             <TextField
               type="number"
               value={peopleMeetingCriteria}
@@ -1035,7 +944,7 @@ export default function AudiencePersonaForm() {
               disabled
               InputProps={{
                 style: {
-                  backgroundColor: "#e0e0e0", // Light grey background color for disabled state
+                  backgroundColor: "#e0e0e0", // Light grey to signify disabled
                 },
               }}
             />
@@ -1053,12 +962,14 @@ export default function AudiencePersonaForm() {
             </Button>
           </Grid>
 
+          {/* Form Error Prompt */}
           {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>
               Please fill in all required fields.
             </Typography>
           )}
 
+          {/* Previous / Next Buttons */}
           <div style={{ marginTop: "20px", float: "right" }}>
             <Button
               variant="outlined"
