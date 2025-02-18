@@ -58,6 +58,30 @@ import salesloftLogo from "./logo/salesloft.png";
 import linkedInLogo from "./logo/linkedin.png";
 import { refreshAccessToken } from "../../api/refreshToken";
 
+// ───────────────────────────────────────────────────────────────────────────
+// Helper functions to validate templates
+// ───────────────────────────────────────────────────────────────────────────
+function isValidGmailTemplate(gmailTemplate) {
+  // Must exist
+  if (!gmailTemplate) return false;
+  // Must have a language
+  if (!gmailTemplate.language) return false;
+  // Must have a non-empty template body
+  if (!gmailTemplate.template || !gmailTemplate.template.trim()) return false;
+  // If you also want to ensure non-empty subject line, uncomment:
+  // if (!gmailTemplate.subjectLine || !gmailTemplate.subjectLine.trim()) return false;
+  return true;
+}
+
+function isValidSalesLoftTemplate(salesLoftTemplate) {
+  if (!salesLoftTemplate) return false;
+  if (!salesLoftTemplate.language) return false;
+  if (!salesLoftTemplate.template || !salesLoftTemplate.template.trim()) return false;
+  // If you also want to ensure non-empty subject line, uncomment:
+  // if (!salesLoftTemplate.subjectLine || !salesLoftTemplate.subjectLine.trim()) return false;
+  return true;
+}
+
 // Define the styled CustomTooltip at the top (or anywhere before usage)
 const CustomTooltip = styled(({ className, ...props }) => (
   <Tooltip
@@ -113,11 +137,11 @@ export default function EventInfoPopup({ event, close }) {
   const nodeRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  //  ───────────────────────────────────────────────────────────────────────────
-  //  Hooks
-  //  ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+  // Hooks
+  // ───────────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    // Pre-select English by default if available
+    // Pre-select English if available
     const englishTemplate = languagesAndTemplates.find(
       (item) => item.language === "English"
     );
@@ -138,20 +162,23 @@ export default function EventInfoPopup({ event, close }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  //  ───────────────────────────────────────────────────────────────────────────
-  //  Check for valid templates for the selected language/platform
-  //  ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+  // Validate if there's a valid template for the selected language
+  // ───────────────────────────────────────────────────────────────────────────
   const salesLoftTemplateForSelectedLanguage = languagesAndTemplates.find(
     (item) => item.platform === "Salesloft" && item.language === selectedLanguage
   );
-
   const gmailTemplateForSelectedLanguage = languagesAndTemplates.find(
     (item) => item.platform === "Gmail" && item.language === selectedLanguage
   );
 
-  //  ───────────────────────────────────────────────────────────────────────────
-  //  Calendar
-  //  ───────────────────────────────────────────────────────────────────────────
+  // Check if each template is valid based on the user’s custom logic
+  const canUseGmail = isValidGmailTemplate(gmailTemplateForSelectedLanguage);
+  const canUseSalesLoft = isValidSalesLoftTemplate(salesLoftTemplateForSelectedLanguage);
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Calendar
+  // ───────────────────────────────────────────────────────────────────────────
   const handleCalendarConfirmation = async () => {
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
@@ -193,9 +220,9 @@ export default function EventInfoPopup({ event, close }) {
 
   if (!selectedEvent) return null;
 
-  //  ───────────────────────────────────────────────────────────────────────────
-  //  Top buttons logic
-  //  ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+  // Top buttons logic
+  // ───────────────────────────────────────────────────────────────────────────
   const handleShareEvent = () => {
     if (selectedEvent && selectedEvent.eventId) {
       navigate(`/event/${selectedEvent.eventId}`);
@@ -233,16 +260,15 @@ export default function EventInfoPopup({ event, close }) {
     setConfirmationDialogOpen(false);
   };
 
-  //  ───────────────────────────────────────────────────────────────────────────
-  //  SalesLoft
-  //  ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+  // SalesLoft
+  // ───────────────────────────────────────────────────────────────────────────
   const handleSalesLoftInvite = () => {
-    if (!salesLoftTemplateForSelectedLanguage) {
-      setSnackbarMessage("No valid SalesLoft template for the selected language.");
+    if (!canUseSalesLoft) {
+      setSnackbarMessage("No valid SalesLoft template available.");
       setSnackbarOpen(true);
       return;
     }
-    // If there's a valid SalesLoft template, open confirmation
     setDialogOpen(true);
   };
 
@@ -283,9 +309,9 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-  //  ───────────────────────────────────────────────────────────────────────────
-  //  region & city as arrays
-  //  ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+  // region & city as arrays
+  // ───────────────────────────────────────────────────────────────────────────
   const formatListWithSpaces = (list) => {
     if (!list) return "";
     if (typeof list === "string") return list.replace(/,/g, ", ");
@@ -293,7 +319,6 @@ export default function EventInfoPopup({ event, close }) {
     return list.map((item) => item.replace(/,/g, ", ")).join(", ");
   };
 
-  // Minimal changes: If region is an array, just handle the first region if needed
   const getRegionLabel = (selectedEvent) => {
     const regionList = Array.isArray(selectedEvent.region)
       ? selectedEvent.region
@@ -352,13 +377,13 @@ export default function EventInfoPopup({ event, close }) {
       .join(", ");
   };
 
-  //  ───────────────────────────────────────────────────────────────────────────
-  //  Gmail
-  //  ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+  // Gmail
+  // ───────────────────────────────────────────────────────────────────────────
   const handleGmailInvite = async () => {
     try {
-      if (!gmailTemplateForSelectedLanguage) {
-        setSnackbarMessage("No valid Gmail template for the selected language.");
+      if (!canUseGmail) {
+        setSnackbarMessage("No valid Gmail template available.");
         setSnackbarOpen(true);
         return;
       }
@@ -393,8 +418,8 @@ export default function EventInfoPopup({ event, close }) {
       const subjectLine = gmailTemplateForSelectedLanguage.subjectLine;
 
       if (!template) {
-        console.error("No template found for the selected language.");
-        alert("No template found for the selected language.");
+        console.error("No template body found for the selected language.");
+        alert("No template body found for the selected language.");
         return;
       }
       if (!subjectLine) {
@@ -495,9 +520,9 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-  //  ───────────────────────────────────────────────────────────────────────────
-  //  Section Layout
-  //  ───────────────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────────────
+  // Section Layout
+  // ───────────────────────────────────────────────────────────────────────────
   const sections = {
     Overview: (
       <Stack spacing={2} sx={{ pt: 2, pb: 2 }}>
@@ -1361,24 +1386,22 @@ export default function EventInfoPopup({ event, close }) {
                 <Button
                   variant="contained"
                   sx={{
-                    backgroundColor: gmailTemplateForSelectedLanguage
+                    backgroundColor: canUseGmail
                       ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(200, 200, 200, 0.5)",
-                    color: gmailTemplateForSelectedLanguage ? "#5f6368" : "#bdbdbd",
-                    boxShadow: gmailTemplateForSelectedLanguage
+                    color: canUseGmail ? "#5f6368" : "#bdbdbd",
+                    boxShadow: canUseGmail
                       ? "0 1px 2px 0 rgba(60,64,67,0.302)"
                       : "none",
                     margin: "10px",
                     "&:hover": {
-                      backgroundColor: gmailTemplateForSelectedLanguage
+                      backgroundColor: canUseGmail
                         ? "rgba(66, 133, 244, 0.1)"
                         : "rgba(200, 200, 200, 0.5)",
-                      borderColor: gmailTemplateForSelectedLanguage
-                        ? blue[500]
-                        : "none",
+                      borderColor: canUseGmail ? blue[500] : "none",
                     },
                   }}
-                  disabled={!gmailTemplateForSelectedLanguage}
+                  disabled={!canUseGmail}
                   startIcon={
                     <img
                       src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico"
@@ -1395,24 +1418,22 @@ export default function EventInfoPopup({ event, close }) {
                 <Button
                   variant="contained"
                   sx={{
-                    backgroundColor: salesLoftTemplateForSelectedLanguage
+                    backgroundColor: canUseSalesLoft
                       ? "rgba(255, 255, 255, 0.1)"
                       : "rgba(200, 200, 200, 0.5)",
-                    color: salesLoftTemplateForSelectedLanguage ? "#5f6368" : "#bdbdbd",
-                    boxShadow: salesLoftTemplateForSelectedLanguage
+                    color: canUseSalesLoft ? "#5f6368" : "#bdbdbd",
+                    boxShadow: canUseSalesLoft
                       ? "0 1px 2px 0 rgba(60,64,67,0.302)"
                       : "none",
                     margin: "10px",
                     "&:hover": {
-                      backgroundColor: salesLoftTemplateForSelectedLanguage
+                      backgroundColor: canUseSalesLoft
                         ? "rgba(66, 133, 244, 0.1)"
                         : "rgba(200, 200, 200, 0.5)",
-                      borderColor: salesLoftTemplateForSelectedLanguage
-                        ? blue[500]
-                        : "none",
+                      borderColor: canUseSalesLoft ? blue[500] : "none",
                     },
                   }}
-                  disabled={!salesLoftTemplateForSelectedLanguage}
+                  disabled={!canUseSalesLoft}
                   startIcon={
                     <img
                       src={salesloftLogo}
