@@ -21,7 +21,15 @@ import GlobalContext from "../../context/GlobalContext";
 import { getEventData } from "../../api/getEventData";
 import EventInfoPopup from "../popup/EventInfoModal";
 
+// ICONS for alignment with Day.jsx coloring logic
+import LanguageIcon from "@mui/icons-material/Language";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import EventIcon from "@mui/icons-material/Event";
+import ArticleIcon from "@mui/icons-material/Article";
 
+// ---------------------------------------------------------------------------
+// Same subregion logic as before
+// ---------------------------------------------------------------------------
 const REGION_SUBREGION_MAP = {
   EMEA: [
     "Alps", "Benelux", "CEE", "France", "Germany", "Iberia",
@@ -35,32 +43,26 @@ const REGION_SUBREGION_MAP = {
   ],
 };
 
-// Utility to figure out if an event’s subRegions cover *all* subregions in that region
 function getDisplayedSubregions(event) {
   const { region = [], subRegion = [] } = event;
   if (!Array.isArray(region) || region.length === 0) return "No region";
 
-  // We'll build strings like "All EMEA" or "EMEA: Alps, CEE" etc.
   const displayPieces = [];
 
   region.forEach((r) => {
     const standardSubs = REGION_SUBREGION_MAP[r] || [];
-    // Filter the event’s subRegion to only the ones belonging to region `r`.
     const subRegionForThisRegion = subRegion.filter((sr) =>
       standardSubs.includes(sr)
     );
 
-    // If the event doesn't have any subregion from region r, skip
     if (subRegionForThisRegion.length === 0) return;
 
-    // If the event covers *all* subregions for `r`, display "All EMEA" etc.
     if (
       subRegionForThisRegion.length === standardSubs.length &&
       standardSubs.length > 0
     ) {
       displayPieces.push(`All ${r}`);
     } else {
-      // Partial coverage -> show them individually
       displayPieces.push(`${r}: ${subRegionForThisRegion.join(", ")}`);
     }
   });
@@ -69,16 +71,17 @@ function getDisplayedSubregions(event) {
     return "No subregions selected";
   }
 
-  // Join them with a separator if the event has multiple regions
   return displayPieces.join(" | ");
 }
 
-// Utility to determine the event's "draft status" chip
+// ---------------------------------------------------------------------------
+// Draft status logic
+// ---------------------------------------------------------------------------
 function getDraftStatus(event) {
   if (event.isDraft) {
     return "Draft";
   }
-  // Check if there is at least one invite on "Gmail" or "Salesloft"
+  // Check if there is at least one invite (Gmail or Salesloft)
   const hasInvites = event.languagesAndTemplates?.some((lt) =>
     ["Gmail", "Salesloft"].includes(lt.platform)
   );
@@ -88,7 +91,9 @@ function getDraftStatus(event) {
   return "Finalized";
 }
 
-// Utility to check if event is newly created (within last 14 days)
+// ---------------------------------------------------------------------------
+// Newly created check
+// ---------------------------------------------------------------------------
 function isNewlyCreated(event) {
   const createdValue = event?.entryCreatedDate?.value;
   if (!createdValue) return false;
@@ -99,10 +104,54 @@ function isNewlyCreated(event) {
   return dayjs().diff(createdAt, "day") <= 14;
 }
 
+// ---------------------------------------------------------------------------
+// Color & Icon Logic Mirroring "Day.jsx"
+// ---------------------------------------------------------------------------
+function getEventStyleAndIcon(eventType) {
+  switch (eventType) {
+    case "Online Event":
+      return {
+        backgroundColor: "#e3f2fd",
+        color: "#1a73e8",
+        icon: <LanguageIcon fontSize="small" style={{ marginRight: "5px" }} />,
+      };
+    case "Physical Event":
+      return {
+        backgroundColor: "#fce4ec",
+        color: "#d32f2f",
+        icon: <LocationOnIcon fontSize="small" style={{ marginRight: "5px" }} />,
+      };
+    case "Hybrid Event":
+      return {
+        backgroundColor: "#f3e5f5",
+        color: "#6a1b9a",
+        icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+      };
+    case "Customer Story":
+      return {
+        backgroundColor: "#e8f5e9",
+        color: "#2e7d32",
+        icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+      };
+    case "Blog Post":
+      return {
+        backgroundColor: "#fffde7",
+        color: "#f57f17",
+        icon: <ArticleIcon fontSize="small" style={{ marginRight: "5px" }} />,
+      };
+    default:
+      return {
+        backgroundColor: "#e3f2fd",
+        color: "#1a73e8",
+        icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+      };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main Component
+// ---------------------------------------------------------------------------
 export default function ListView() {
-  // ---------------------------------------------------------------------------
-  // State
-  // ---------------------------------------------------------------------------
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -118,9 +167,9 @@ export default function ListView() {
 
   const location = useLocation();
 
-  // ---------------------------------------------------------------------------
-  // 1) Fetch events on location change
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Fetch all events when location changes
+  // -------------------------------------------------------------------------
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -140,17 +189,15 @@ export default function ListView() {
     setShowInfoEventModal(false);
   }, [location, setShowEventModal, setShowInfoEventModal]);
 
-  // ---------------------------------------------------------------------------
-  // 2) Apply advanced filters + search text
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Filter events based on advanced filters + search text
+  // -------------------------------------------------------------------------
   useEffect(() => {
-    // If no events yet, skip
-    if (!events || !Array.isArray(events)) {
+    if (!Array.isArray(events) || events.length === 0) {
       setFilteredEvents([]);
       return;
     }
 
-    // (A) Check if any advanced filter is actually checked
     const anyFilterChecked =
       [
         ...filters.regions,
@@ -170,42 +217,32 @@ export default function ListView() {
       ].some((f) => f.checked) ||
       (filters.organisedBy && filters.organisedBy.length > 0);
 
-    // (B) Lowercase the search text for case-insensitive matching
     const lowercasedSearchText = (searchText || "").toLowerCase();
 
-    // (C) Single pass filter
+    // Single pass filter
     const final = events.filter((event) => {
       try {
-        // 1) If advanced filters are not set, everything passes
-        //    Otherwise, do the advanced filter checks:
+        // If no advanced filters are checked, skip advanced check
         if (anyFilterChecked) {
           // Region
           const regionMatch =
             !filters.regions.some((r) => r.checked) ||
-            filters.regions.some(
-              (r) => r.checked && event.region?.includes(r.label)
-            );
+            filters.regions.some((r) => r.checked && event.region?.includes(r.label));
 
           // Sub-region
           const subRegionMatch =
             !filters.subRegions.some((s) => s.checked) ||
-            filters.subRegions.some(
-              (s) => s.checked && event.subRegion?.includes(s.label)
-            );
+            filters.subRegions.some((s) => s.checked && event.subRegion?.includes(s.label));
 
           // Countries
           const countryMatch =
             !filters.countries.some((c) => c.checked) ||
-            filters.countries.some(
-              (c) => c.checked && event.country?.includes(c.label)
-            );
+            filters.countries.some((c) => c.checked && event.country?.includes(c.label));
 
           // GEP
           const gepMatch =
             !filters.gep.some((g) => g.checked) ||
-            filters.gep.some(
-              (g) => g.checked && event.gep?.includes(g.label)
-            );
+            filters.gep.some((g) => g.checked && event.gep?.includes(g.label));
 
           // Program
           const programMatch =
@@ -218,13 +255,11 @@ export default function ListView() {
                 )
             );
 
-          // Activity Type
+          // Activity type
           const activityMatch =
             !filters.activityType.some((a) => a.checked) ||
             filters.activityType.some(
-              (a) =>
-                a.checked &&
-                event.eventType?.toLowerCase() === a.label.toLowerCase()
+              (a) => a.checked && event.eventType?.toLowerCase() === a.label.toLowerCase()
             );
 
           // Account Sectors
@@ -249,7 +284,7 @@ export default function ListView() {
               return eSeg?.selected && parseFloat(eSeg.percentage) > 0;
             });
 
-          // Buyer Segment
+          // Buyer Segment Rollup
           const buyerSegmentRollupMatch =
             !filters.buyerSegmentRollup.some((b) => b.checked) ||
             filters.buyerSegmentRollup.some(
@@ -287,7 +322,6 @@ export default function ListView() {
           const draftMatch =
             draftCheckedValues.length === 0 ||
             (() => {
-              // Build the event’s *effective* status
               const statuses = [];
               if (event.isDraft) {
                 statuses.push("Draft");
@@ -302,9 +336,7 @@ export default function ListView() {
             })();
 
           // Newly Created
-          const newlyCreatedFilters = filters.newlyCreated.filter(
-            (nc) => nc.checked
-          );
+          const newlyCreatedFilters = filters.newlyCreated.filter((nc) => nc.checked);
           const newlyCreatedMatch =
             newlyCreatedFilters.length === 0 ||
             newlyCreatedFilters.some((nc) => {
@@ -319,13 +351,11 @@ export default function ListView() {
             });
 
           // OrganisedBy
-          const organiserActive =
-            filters.organisedBy && filters.organisedBy.length > 0;
+          const organiserActive = filters.organisedBy && filters.organisedBy.length > 0;
           const organiserMatch =
             !organiserActive ||
             filters.organisedBy.some((org) => event.organisedBy?.includes(org));
 
-          // If ANY advanced filter fails, exclude this event
           if (
             !(
               regionMatch &&
@@ -349,35 +379,34 @@ export default function ListView() {
           }
         }
 
-        // 2) Check the user’s search text (title/description)
+        // Search text check (title/description)
         if (lowercasedSearchText) {
           const title = event.title?.toLowerCase() || "";
           const description = event.description?.toLowerCase() || "";
-          const matchesText =
-            title.includes(lowercasedSearchText) ||
-            description.includes(lowercasedSearchText);
-          if (!matchesText) {
+          if (
+            !title.includes(lowercasedSearchText) &&
+            !description.includes(lowercasedSearchText)
+          ) {
             return false;
           }
         }
 
-        return true; // Passed all checks
+        return true;
       } catch (error) {
         console.error("Error filtering event:", event, error);
         return false;
       }
     });
 
-    // (D) Sort final results by startDate ascending
+    // Sort the final list by startDate ascending
     final.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-    // (E) Set the filtered array
     setFilteredEvents(final);
   }, [events, filters, searchText]);
 
-  // ---------------------------------------------------------------------------
-  // Handle event click -> show info modal
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Event click -> show info popup
+  // -------------------------------------------------------------------------
   const handleEventClick = useCallback(
     (eventData) => {
       setSelectedEvent(eventData);
@@ -386,9 +415,9 @@ export default function ListView() {
     [setSelectedEvent, setShowInfoEventModal]
   );
 
-  // ---------------------------------------------------------------------------
-  // Dynamically color the left border
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  // For left border color behind entire ListItem
+  // -------------------------------------------------------------------------
   const getBorderColor = (eventType) => {
     switch (eventType) {
       case "Online Event":
@@ -398,17 +427,17 @@ export default function ListView() {
       case "Hybrid Event":
         return "#0F9D58";
       case "Customer Story":
-        return "#F4B400";
+        return "#2e7d32";
       case "Blog Post":
-        return "#AB47BC";
+        return "#F4B400";
       default:
         return "#e3f2fd";
     }
   };
 
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
   // Render
-  // ---------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
   return (
     <Paper sx={{ margin: 2, padding: 2, width: "90%", overflowY: "auto" }}>
       {loading ? (
@@ -461,23 +490,37 @@ export default function ListView() {
 
                         {/* Chips row */}
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                          {/* Subregions */}
+                          {/* Subregions chip */}
                           <Chip
                             label={getDisplayedSubregions(event)}
                             color="primary"
                             variant="outlined"
                           />
 
-                          {/* Activity Type / eventType */}
-                          {event.eventType && (
-                            <Chip
-                              label={event.eventType}
-                              color="secondary"
-                              variant="outlined"
-                            />
-                          )}
+                          {/* EventType chip with color logic from Day.jsx */}
+                          {event.eventType && (() => {
+                            const { backgroundColor, color, icon } =
+                              getEventStyleAndIcon(event.eventType);
 
-                          {/* Organised By => possibly multiple */}
+                            return (
+                              <Chip
+                                label={
+                                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                                    {icon}
+                                    {event.eventType}
+                                  </Box>
+                                }
+                                sx={{
+                                  backgroundColor,
+                                  color,
+                                  // Some small styling to match chips
+                                  border: `1px solid ${color}`,
+                                }}
+                              />
+                            );
+                          })()}
+
+                          {/* OrganisedBy */}
                           {(event.organisedBy || []).map((org) => (
                             <Chip
                               key={org}
@@ -487,14 +530,14 @@ export default function ListView() {
                             />
                           ))}
 
-                          {/* Draft Status */}
+                          {/* Draft status */}
                           <Chip
                             label={getDraftStatus(event)}
                             color="info"
                             variant="outlined"
                           />
 
-                          {/* Newly Created? */}
+                          {/* Newly Created */}
                           {isNewlyCreated(event) && (
                             <Chip
                               label="Newly Created"
