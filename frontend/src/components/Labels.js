@@ -162,11 +162,12 @@ export default function Filters() {
       try {
         const data = await getOrganisedBy();
         if (Array.isArray(data)) {
-          // Flatten the data if needed
+          // Flatten all sub-arrays into one array
           const flattened = data
-            .map((item) => item.organisedBy[0])
-            .filter(Boolean)
-            .sort((a, b) => a.localeCompare(b));
+            .flatMap((item) => item.organisedBy) // merges each 'organisedBy' array
+            .filter(Boolean) // remove any empty or falsy values
+            .sort((a, b) => a.localeCompare(b)); // sort alphabetically
+  
           setOrganisedByOptions(flattened);
         }
       } catch (error) {
@@ -175,6 +176,7 @@ export default function Filters() {
     };
     fetchOrganisedBy();
   }, []);
+  
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Controlled Autocomplete for “Organised By”
