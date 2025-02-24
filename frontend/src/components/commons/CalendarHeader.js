@@ -45,7 +45,6 @@ export default function CalendarHeader() {
   useEffect(() => {
     // Fetch user data from localStorage
     const storedUser = JSON.parse(localStorage.getItem("user"));
-
     if (storedUser) {
       setUser(storedUser);
     }
@@ -74,7 +73,6 @@ export default function CalendarHeader() {
 
   const handleSearchSubmit = async () => {
     await fetchData();
-
     if (searchText) {
       handleSearchAction(searchText);
     }
@@ -142,7 +140,7 @@ export default function CalendarHeader() {
   }
 
   const handleYearChange = (newYear) => {
-    setDaySelected(daySelected.year(newYear)); // Change year
+    setDaySelected(daySelected.year(newYear));
   };
 
   function handleReset() {
@@ -171,8 +169,13 @@ export default function CalendarHeader() {
     setAnchorEl(null);
   };
 
+  // "Clear the cache" button
+  const handleClearCache = () => {
+    localStorage.removeItem("persistedFilters");
+  };
+
+  // Logout
   const handleLogout = () => {
-    // Clear local storage and redirect to login page
     localStorage.removeItem("user");
     localStorage.removeItem("accessToken");
     navigate("/login");
@@ -278,9 +281,9 @@ export default function CalendarHeader() {
                     height: 40,
                     backgroundColor: blue[500],
                     color: "white",
-                  }} // Optional: customize circle and text color
+                  }}
                 >
-                  {/* Fallback to first letter of first name */}
+                  {/* Fallback: First letter of first name */}
                   {!user.photos || user.photos.length === 0
                     ? user.name.givenName[0]
                     : null}
@@ -305,6 +308,7 @@ export default function CalendarHeader() {
                 <Typography variant="caption" color="textSecondary">
                   {user.emails[0].value}
                 </Typography>
+
                 {/* Feedback and TVC Access buttons */}
                 <Box style={{ marginTop: "10px" }}>
                   <Button
@@ -346,24 +350,33 @@ export default function CalendarHeader() {
                       width: "100%",
                     }}
                   >
-                    Playboook & Enablement
+                    Playboook &amp; Enablement
                     <span className="material-icons">chevron_right</span>
                   </Button>
                 </Box>
+
+                {/* Our new "Clear the cache" button, followed by Logout */}
                 <div style={{ marginTop: "10px" }}>
                   <Button
                     variant="contained"
-                    color="primary"
-                    onClick={handleLogout}
+                    color="error"
+                    onClick={handleClearCache}
+                    sx={{ marginRight: 1 }}
                   >
+                    Clear the cache
+                  </Button>
+                  <Button variant="contained" color="primary" onClick={handleLogout}>
                     Logout
                   </Button>
+                </div>
+
+                {/* <div style={{ marginTop: "10px" }}>
                   <Button
                     variant="text"
                     color="primary"
                     onClick={() => {
-                      handlePopoverClose(); // optional: close popover first
-                      navigate("/data-extract"); // go to the route
+                      handlePopoverClose();
+                      navigate("/data-extract");
                     }}
                     sx={{
                       justifyContent: "space-between",
@@ -373,7 +386,7 @@ export default function CalendarHeader() {
                     Data Extract
                     <span className="material-icons">chevron_right</span>
                   </Button>
-                </div>
+                </div> */}
               </div>
             </Popover>
           </>
