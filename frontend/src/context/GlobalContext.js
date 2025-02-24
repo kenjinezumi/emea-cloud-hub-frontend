@@ -36,6 +36,7 @@ const GlobalContext = createContext({
     productFamily: [],
     industry: [],
     activityType: [],
+    partyType: [],
     isPartneredEvent: '',
     isNewlyCreated: [
       { label: 'Yes', value: true, checked: false },
@@ -87,6 +88,7 @@ export const GlobalProvider = ({ children }) => {
     accountSegments: [],
     productFamily: [],
     activityType: [],
+    partyType: [],
     industry: [],
     isPartneredEvent: [
       { label: 'Yes', value: true, checked: false },

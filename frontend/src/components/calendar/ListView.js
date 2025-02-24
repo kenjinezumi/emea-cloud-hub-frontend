@@ -20,19 +20,17 @@ import GlobalContext from "../../context/GlobalContext";
 import { getEventData } from "../../api/getEventData";
 import EventInfoPopup from "../popup/EventInfoModal";
 
-// Import your data arrays
-import { regionsData } from "../filters/FiltersData"; // or wherever your `regionsData` is
+// For region/subregion logic
+import { regionsData } from "../filters/FiltersData"; 
 // For eventType color logic
 import LanguageIcon from "@mui/icons-material/Language";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import EventIcon from "@mui/icons-material/Event";
 import ArticleIcon from "@mui/icons-material/Article";
 
-/** Determine how the subregions should be displayed for each event */
 function getDisplayedSubregions(event) {
   let { region = [], subRegion = [] } = event;
-
-  // Deduplicate to avoid repeated "EMEA EMEA"
+  // Deduplicate
   const dedupRegion = [...new Set(region)];
   const dedupSubRegion = [...new Set(subRegion)];
 
@@ -41,24 +39,16 @@ function getDisplayedSubregions(event) {
   const displayPieces = [];
 
   dedupRegion.forEach((r) => {
-    // Look up this region in regionsData
     const regionObj = regionsData.find((rd) => rd.region === r);
-
-    // If we have no info for this region (e.g. NORTHAM), just display the region name
     if (!regionObj) {
+      // e.g. region = "NORTHAM"
       displayPieces.push(r);
       return;
     }
-
-    // Otherwise gather its known subregions
     const knownSubs = regionObj.subregions || [];
-    // Filter out subregions that belong to *this* region
     const relevantSubs = dedupSubRegion.filter((sr) => knownSubs.includes(sr));
-
-    // If no relevant subregions chosen, skip
     if (relevantSubs.length === 0) return;
 
-    // If user selected "all" subregions for that region, display "All EMEA" etc.
     if (relevantSubs.length === knownSubs.length && knownSubs.length > 0) {
       displayPieces.push(`All ${r}`);
     } else {
@@ -70,18 +60,14 @@ function getDisplayedSubregions(event) {
   return displayPieces.join(" | ");
 }
 
-/** Return draft status text: "Draft", "Invite available", "Finalized" */
 function getDraftStatus(event) {
   if (event.isDraft) return "Draft";
-
-  // If at least one invite exists (Gmail or SalesLoft) => "Invite available"
   const hasInvites = event.languagesAndTemplates?.some((lt) =>
     ["Gmail", "Salesloft"].includes(lt.platform)
   );
   return hasInvites ? "Invite available" : "Finalized";
 }
 
-/** Check if event was created in the last 14 days */
 function isNewlyCreated(event) {
   const createdValue = event?.entryCreatedDate?.value;
   if (!createdValue) return false;
@@ -89,7 +75,6 @@ function isNewlyCreated(event) {
   return createdAt.isValid() && dayjs().diff(createdAt, "day") <= 14;
 }
 
-/** For coloring chips based on event type. Add the new 'Prospecting Sprint'. */
 function getEventStyleAndIcon(eventType) {
   switch (eventType) {
     case "Online Event":
@@ -137,7 +122,6 @@ function getEventStyleAndIcon(eventType) {
   }
 }
 
-/** Provide a left border color on the entire ListItem by event type. */
 function getBorderColor(eventType) {
   switch (eventType) {
     case "Online Event":
@@ -173,9 +157,9 @@ export default function ListView() {
 
   const location = useLocation();
 
-  // -------------------------------------------------------------------------
-  // Fetch all events whenever route/location changes
-  // -------------------------------------------------------------------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Fetch all events when location changes
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -195,42 +179,233 @@ export default function ListView() {
     setShowInfoEventModal(false);
   }, [location, setShowEventModal, setShowInfoEventModal]);
 
-  // -------------------------------------------------------------------------
-  // Filtering logic (unchanged from your original, just omitted for brevity)
-  // -------------------------------------------------------------------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Filter events based on filters + search text
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!Array.isArray(events) || events.length === 0) {
       setFilteredEvents([]);
       return;
     }
 
-    // Example only: search text filter
+    // Check if ANY advanced filter is checked
+    const anyFilterChecked =
+      [
+        ...filters.regions,
+        ...filters.subRegions,
+        ...filters.countries,
+        ...filters.gep,
+        ...filters.programName,
+        ...filters.activityType,
+        ...filters.accountSectors,
+        ...filters.accountSegments,
+        ...filters.buyerSegmentRollup,
+        ...filters.productFamily,
+        ...filters.industry,
+        ...filters.partnerEvent,
+        ...filters.draftStatus,
+        ...filters.newlyCreated,
+        // NEW: spread in partyType
+        ...(filters.partyType || []),
+      ].some((f) => f.checked) ||
+      (filters.organisedBy && filters.organisedBy.length > 0);
+
     const lowercasedSearchText = (searchText || "").toLowerCase();
 
     const final = events.filter((event) => {
-      // 1) Optional advanced filters
-      // ...
-      // 2) Simple search text match
-      if (lowercasedSearchText) {
-        const title = event.title?.toLowerCase() || "";
-        const description = event.description?.toLowerCase() || "";
-        if (
-          !title.includes(lowercasedSearchText) &&
-          !description.includes(lowercasedSearchText)
-        ) {
-          return false;
+      try {
+        // If advanced filters are in use, check them
+        if (anyFilterChecked) {
+          // Region
+          const regionMatch =
+            !filters.regions.some((r) => r.checked) ||
+            filters.regions.some((r) => r.checked && event.region?.includes(r.label));
+
+          // Subregion
+          const subRegionMatch =
+            !filters.subRegions.some((s) => s.checked) ||
+            filters.subRegions.some((s) => s.checked && event.subRegion?.includes(s.label));
+
+          // Countries
+          const countryMatch =
+            !filters.countries.some((c) => c.checked) ||
+            filters.countries.some((c) => c.checked && event.country?.includes(c.label));
+
+          // GEP
+          const gepMatch =
+            !filters.gep.some((g) => g.checked) ||
+            filters.gep.some((g) => g.checked && event.gep?.includes(g.label));
+
+          // Program
+          const programMatch =
+            !filters.programName.some((p) => p.checked) ||
+            filters.programName.some(
+              (p) =>
+                p.checked &&
+                event.programName?.some((evName) =>
+                  evName.toLowerCase().includes(p.label.toLowerCase())
+                )
+            );
+
+          // Activity type
+          const activityMatch =
+            !filters.activityType.some((a) => a.checked) ||
+            filters.activityType.some(
+              (a) => a.checked && event.eventType?.toLowerCase() === a.label.toLowerCase()
+            );
+
+          // Account Sectors
+          const accountSectorMatch =
+            !filters.accountSectors.some((s) => s.checked) ||
+            filters.accountSectors.some((s) => {
+              if (!s.checked) return false;
+              const labelKeyMap = {
+                "Public Sector": "public",
+                Commercial: "commercial",
+              };
+              const key = labelKeyMap[s.label];
+              return key ? event.accountSectors?.[key] === true : false;
+            });
+
+          // Account Segments
+          const accountSegmentMatch =
+            !filters.accountSegments.some((seg) => seg.checked) ||
+            filters.accountSegments.some((seg) => {
+              if (!seg.checked) return false;
+              const eSeg = event.accountSegments?.[seg.label];
+              return eSeg?.selected && parseFloat(eSeg.percentage) > 0;
+            });
+
+          // Buyer Segment Rollup
+          const buyerSegmentRollupMatch =
+            !filters.buyerSegmentRollup.some((b) => b.checked) ||
+            filters.buyerSegmentRollup.some(
+              (b) => b.checked && event.audienceSeniority?.includes(b.label)
+            );
+
+          // Product Family
+          const productFamilyMatch =
+            !filters.productFamily.some((pf) => pf.checked) ||
+            filters.productFamily.some((pf) => {
+              if (!pf.checked) return false;
+              const alignment = event.productAlignment?.[pf.label];
+              return alignment?.selected && parseFloat(alignment.percentage) > 0;
+            });
+
+          // Industry
+          const industryMatch =
+            !filters.industry.some((ind) => ind.checked) ||
+            filters.industry.some(
+              (ind) => ind.checked && event.industry?.includes(ind.label)
+            );
+
+          // Partner Event
+          const partnerCheckedValues = filters.partnerEvent
+            .filter((pt) => pt.checked)
+            .map((pt) => pt.value);
+          const partnerMatch =
+            partnerCheckedValues.length === 0 ||
+            partnerCheckedValues.includes(event.isPartneredEvent);
+
+          // Draft Status
+          const draftCheckedValues = filters.draftStatus
+            .filter((ds) => ds.checked)
+            .map((ds) => ds.value);
+          const draftMatch =
+            draftCheckedValues.length === 0 ||
+            (() => {
+              const statuses = [];
+              if (event.isDraft) {
+                statuses.push("Draft");
+              } else {
+                statuses.push("Finalized");
+                const hasInvites = event.languagesAndTemplates?.some((lt) =>
+                  ["Gmail", "Salesloft"].includes(lt.platform)
+                );
+                if (hasInvites) statuses.push("Invite available");
+              }
+              return statuses.some((st) => draftCheckedValues.includes(st));
+            })();
+
+          // Newly Created
+          const newlyCreatedFilters = filters.newlyCreated.filter((nc) => nc.checked);
+          const newlyCreatedMatch =
+            newlyCreatedFilters.length === 0 ||
+            newlyCreatedFilters.some((nc) => {
+              const createdAt = event.entryCreatedDate?.value
+                ? dayjs(event.entryCreatedDate.value)
+                : null;
+              if (!createdAt || !createdAt.isValid()) {
+                return nc.value === false;
+              }
+              return dayjs().diff(createdAt, "day") <= 14 === nc.value;
+            });
+
+          // OrganisedBy
+          const organiserActive = filters.organisedBy && filters.organisedBy.length > 0;
+          const organiserMatch =
+            !organiserActive ||
+            filters.organisedBy.some((org) => event.organisedBy?.includes(org));
+
+          // NEW: Party Type
+          const partyTypeChecked = filters.partyType
+            ? filters.partyType.filter((pt) => pt.checked).map((pt) => pt.label)
+            : [];
+          const partyTypeMatch =
+            partyTypeChecked.length === 0 ||
+            partyTypeChecked.includes(event.partyType);
+
+          // Combine
+          if (
+            !(
+              regionMatch &&
+              subRegionMatch &&
+              countryMatch &&
+              gepMatch &&
+              programMatch &&
+              activityMatch &&
+              accountSectorMatch &&
+              accountSegmentMatch &&
+              buyerSegmentRollupMatch &&
+              productFamilyMatch &&
+              industryMatch &&
+              partnerMatch &&
+              draftMatch &&
+              newlyCreatedMatch &&
+              organiserMatch &&
+              partyTypeMatch
+            )
+          ) {
+            return false;
+          }
         }
+
+        // Also apply search text check (title/description)
+        if (lowercasedSearchText) {
+          const title = event.title?.toLowerCase() || "";
+          const description = event.description?.toLowerCase() || "";
+          if (
+            !title.includes(lowercasedSearchText) &&
+            !description.includes(lowercasedSearchText)
+          ) {
+            return false;
+          }
+        }
+
+        return true;
+      } catch (error) {
+        console.error("Error filtering event:", event, error);
+        return false;
       }
-      return true;
     });
 
-    // sort ascending by start date
+    // sort ascending by startDate
     final.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
     setFilteredEvents(final);
   }, [events, filters, searchText]);
 
   // -------------------------------------------------------------------------
-  // Show event info modal
+  // Event click -> show info popup
   // -------------------------------------------------------------------------
   const handleEventClick = useCallback(
     (eventData) => {
@@ -247,22 +422,29 @@ export default function ListView() {
     <Paper sx={{ margin: 2, padding: 2, width: "90%", overflowY: "auto" }}>
       {loading ? (
         <Box
-          sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+          }}
         >
           <CircularProgress />
         </Box>
       ) : (
         <>
           <List>
-            {filteredEvents.map((event, idx) => {
+            {filteredEvents.map((event, index) => {
               const borderColor = getBorderColor(event.eventType);
 
               return (
                 <ListItem
-                  key={idx}
+                  key={index}
                   divider
                   sx={{
-                    "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+                    "&:hover": {
+                      backgroundColor: "rgba(0, 0, 0, 0.04)",
+                    },
                     cursor: "pointer",
                     margin: "4px 0",
                     padding: "10px",
@@ -280,7 +462,7 @@ export default function ListView() {
                     }
                     secondary={
                       <>
-                        {/* Show date */}
+                        {/* Date line */}
                         <Typography variant="body2" sx={{ mb: 1 }}>
                           Start Date:{" "}
                           {dayjs(event.startDate).format("dddd, MMMM D, YYYY")}
@@ -288,7 +470,7 @@ export default function ListView() {
 
                         {/* Chips row */}
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                          {/* Region/Subregion */}
+                          {/* Region/Subregion chip */}
                           <Chip
                             label={getDisplayedSubregions(event)}
                             sx={{
@@ -298,10 +480,11 @@ export default function ListView() {
                             }}
                           />
 
-                          {/* EventType color-coded chip */}
+                          {/* EventType chip with color logic */}
                           {event.eventType && (() => {
                             const { backgroundColor, color, icon } =
                               getEventStyleAndIcon(event.eventType);
+
                             return (
                               <Chip
                                 label={
@@ -315,12 +498,11 @@ export default function ListView() {
                                   color,
                                   border: `1px solid ${color}`,
                                 }}
-                                size="small"
                               />
                             );
                           })()}
 
-                          {/* OrganisedBy => same style as subregion chip */}
+                          {/* OrganisedBy */}
                           {(event.organisedBy || []).map((org) => (
                             <Chip
                               key={org}
@@ -330,34 +512,27 @@ export default function ListView() {
                                 color: "#fff",
                                 border: "1px solid rgba(255,255,255,0.3)",
                               }}
-                              size="small"
                             />
                           ))}
 
-                          {/* Draft status => match popup style */}
-                          {getDraftStatus(event) === "Draft" && (
-                            <Chip label="Draft" color="warning" size="small" />
-                          )}
-                          {getDraftStatus(event) === "Invite available" && (
-                            <Chip label="Invite available" color="primary" size="small" />
-                          )}
-                          {getDraftStatus(event) === "Finalized" && (
-                            <Chip
-                              label="Finalized"
-                              color="success"
-                              size="small"
-                              variant="outlined"
-                            />
-                          )}
+                          {/* Draft status */}
+                          <Chip
+                            label={getDraftStatus(event)}
+                            color={
+                              getDraftStatus(event) === "Draft"
+                                ? "warning"
+                                : getDraftStatus(event) === "Invite available"
+                                ? "primary"
+                                : "success"
+                            }
+                            variant={
+                              getDraftStatus(event) === "Finalized" ? "outlined" : "filled"
+                            }
+                          />
 
-                          {/* Newly Created => color="success" variant="outlined" */}
+                          {/* Newly Created */}
                           {isNewlyCreated(event) && (
-                            <Chip
-                              label="Newly Created"
-                              color="success"
-                              variant="outlined"
-                              size="small"
-                            />
+                            <Chip label="Newly Created" color="success" variant="outlined" />
                           )}
                         </Box>
                       </>

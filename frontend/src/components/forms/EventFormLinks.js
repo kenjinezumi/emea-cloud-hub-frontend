@@ -182,6 +182,7 @@ export default function LinksForm() {
     // Minimal checks for required fields
     const requiredFields = {
       organisedBy: formData.organisedBy,
+      partyType: formData.partyType,
       title: formData.title,
       description: formData.description,
       startDate: formData.startDate,
@@ -262,6 +263,7 @@ export default function LinksForm() {
       organisedBy: formData.organisedBy,
       title: formData.title,
       description: formData.description,
+      partyType: formData.partyType,
       startDate: formData.startDate,
       endDate: formData.endDate,
       eventId: formData.eventId,

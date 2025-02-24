@@ -15,6 +15,7 @@ import {
   programNameOptions,
   eventTypeOptions,
   newlyCreatedOptions,
+  partyTypeOptions
 } from "./filters/FiltersData";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
@@ -103,6 +104,18 @@ export default function Filters() {
         checked: option.checked || false,
       }))
   );
+
+
+const [localPartyTypeOptions, setLocalPartyTypeOptions] = useState(
+  persistedFilters.partyType ||
+    partyTypeOptions.map((option) => ({
+      label: option.label, // or just `option`
+      checked: false,
+    }))
+);
+
+const [isPartyTypeExpanded, setIsPartyTypeExpanded] = useState(false);
+
 
   const [localAccountSegmentOptions, setLocalAccountSegmentOptions] = useState(
     persistedFilters.accountSegments || accountSegmentOptions
@@ -230,7 +243,9 @@ export default function Filters() {
       partnerEvent: localPartnerEventOptions,
       draftStatus: localDraftStatusOptions,
       newlyCreated: localNewlyCreatedOptions,
-      organisedBy: selectedOrganisers, // CHANGED: store array
+      organisedBy: selectedOrganisers, 
+      partyType: localPartyTypeOptions,
+
     };
     localStorage.setItem("persistedFilters", JSON.stringify(filtersToPersist));
   }, [
@@ -248,6 +263,7 @@ export default function Filters() {
     localPartnerEventOptions,
     localDraftStatusOptions,
     localNewlyCreatedOptions,
+    localPartyTypeOptions,
     selectedOrganisers,
   ]);
 
@@ -305,6 +321,9 @@ export default function Filters() {
       );
       // Organised By
       setSelectedOrganisers(localPersisted.organisedBy || []);
+      // Party type 
+      setLocalPartyTypeOptions(localPersisted.partyType || localPartyTypeOptions);
+
     }
   }, []);
 
@@ -409,7 +428,9 @@ export default function Filters() {
       partnerEvent: localPartnerEventOptions,
       draftStatus: localDraftStatusOptions,
       newlyCreated: localNewlyCreatedOptions,
-      organisedBy: selectedOrganisers, // CHANGED: pass array
+      organisedBy: selectedOrganisers,
+      partyType: localPartyTypeOptions,
+
     });
   }, [
     localRegionOptions,
@@ -427,6 +448,8 @@ export default function Filters() {
     localDraftStatusOptions,
     localNewlyCreatedOptions,
     selectedOrganisers,
+    localPartyTypeOptions,
+
     updateFilters,
   ]);
 
@@ -1066,6 +1089,13 @@ export default function Filters() {
         setLocalActivityTypeOptions,
         isActivityTypeExpanded,
         setIsActivityTypeExpanded
+      )}
+      {renderFilterSection(
+        "1st vs 3rd Party",
+        localPartyTypeOptions,
+        setLocalPartyTypeOptions,
+        isPartyTypeExpanded,
+        setIsPartyTypeExpanded
       )}
 
       {/* Organised By (multi-select) */}

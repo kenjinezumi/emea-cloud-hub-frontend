@@ -114,6 +114,8 @@ export default function YearView() {
         ...filters.regions,
         ...filters.countries,
         ...filters.programName,
+        ...(filters.partyType || []),
+
       ].some((filter) => filter.checked) ||
       filters.partnerEvent !== undefined ||
       filters.isNewlyCreated !== undefined ||
@@ -423,6 +425,14 @@ export default function YearView() {
 
             return isMatch; // Return the match result
           })();
+
+          const partyTypeChecked = filters.partyType
+            ? filters.partyType.filter((pt) => pt.checked).map((pt) => pt.label)
+            : [];
+          const partyTypeMatch =
+            partyTypeChecked.length === 0 ||
+            partyTypeChecked.includes(event.partyType);
+
           return (
             subRegionMatch &&
             gepMatch &&
@@ -437,7 +447,9 @@ export default function YearView() {
             countryMatch &&
             programNameMatch &&
             isNewlyCreatedMatch &&
-            organisedByMatch
+            organisedByMatch && 
+            partyTypeMatch
+
           );
         } catch (filterError) {
           console.error("Error applying filters to event:", filterError, event);

@@ -44,9 +44,6 @@ export default function WeekView() {
   // ─────────────────────────────────────────────────────────────────────────────
   const [currentWeek, setCurrentWeek] = useState([]);
   const [events, setEvents] = useState([]);
-  // For debugging or future usage, you can store filtered events in state:
-  // const [filteredEvents, setFilteredEvents] = useState([]);
-  // But here we do everything in a useMemo, so we won't maintain separate state.
   const [hoveredEvent, setHoveredEvent] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [loading, setLoading] = useState(false);
@@ -54,7 +51,7 @@ export default function WeekView() {
   const location = useLocation();
   const weekViewRef = useRef(null);
 
-  // For user’s system time zone (optional usage)
+  // Optional: user’s system time zone
   const userTimezone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     []
@@ -94,8 +91,8 @@ export default function WeekView() {
   // ─────────────────────────────────────────────────────────────────────────────
   // Helper: sortEventsByPriority
   // ─────────────────────────────────────────────────────────────────────────────
-  const sortEventsByPriority = (events) => {
-    return events.sort((a, b) => {
+  const sortEventsByPriority = (eventsList) => {
+    return eventsList.sort((a, b) => {
       // 1) Prioritize "Invite available" > "Finalized" > "Draft"
       const getStatusPriority = (ev) => {
         const statuses = [];
@@ -103,17 +100,16 @@ export default function WeekView() {
           statuses.push("Draft");
         } else {
           statuses.push("Finalized");
-          const hasGmailOrSalesloft = ev.languagesAndTemplates?.some((tpl) =>
+          const hasInvites = ev.languagesAndTemplates?.some((tpl) =>
             ["Gmail", "Salesloft"].includes(tpl.platform)
           );
-          if (hasGmailOrSalesloft) {
+          if (hasInvites) {
             statuses.push("Invite available");
           }
         }
-        // Return a numeric priority
         if (statuses.includes("Invite available")) return 2; // highest
-        if (statuses.includes("Finalized")) return 1;
-        return 0; // draft is lowest
+        if (statuses.includes("Finalized")) return 1;        // next
+        return 0;                                           // draft
       };
 
       const statusA = getStatusPriority(a);
@@ -127,18 +123,16 @@ export default function WeekView() {
         return b.isHighPriority - a.isHighPriority; // true > false
       }
 
-      // 3) Finally, descending by expectedAttendees
-      return b.expectedAttendees - a.expectedAttendees;
+      // 3) Finally, you could do other sorting logic
+      return 0;
     });
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // filteredEvents useMemo
+  // Filtered events
   // ─────────────────────────────────────────────────────────────────────────────
   const filteredEvents = useMemo(() => {
-    if (!events || !Array.isArray(events)) {
-      return [];
-    }
+    if (!events || !Array.isArray(events)) return [];
 
     // 1) If no filters are checked, return everything
     const anyFilterChecked =
@@ -157,6 +151,8 @@ export default function WeekView() {
         ...filters.partnerEvent,
         ...filters.draftStatus,
         ...filters.newlyCreated,
+        // NEW: include partyType in this logic
+        ...(filters.partyType || []),
       ].some((f) => f.checked) ||
       (filters.organisedBy && filters.organisedBy.length > 0);
 
@@ -164,53 +160,54 @@ export default function WeekView() {
       return events;
     }
 
-    // 2) Otherwise, apply each filter
     return events.filter((event) => {
       try {
-        // Sub-region
+        // 1) Region
+        const regionMatch =
+          !filters.regions.some((r) => r.checked) ||
+          filters.regions.some(
+            (r) => r.checked && event.region?.includes(r.label)
+          );
+
+        // 2) Sub-region
         const subRegionMatch =
           !filters.subRegions.some((sr) => sr.checked) ||
           filters.subRegions.some(
             (sr) => sr.checked && event.subRegion?.includes(sr.label)
           );
 
-        // GEP
+        // 3) Country
+        const countryMatch =
+          !filters.countries.some((c) => c.checked) ||
+          filters.countries.some(
+            (c) => c.checked && event.country?.includes(c.label)
+          );
+
+        // 4) GEP
         const gepMatch =
           !filters.gep.some((g) => g.checked) ||
-          filters.gep.some((g) => g.checked && event.gep?.includes(g.label));
+          filters.gep.some(
+            (g) => g.checked && event.gep?.includes(g.label)
+          );
 
-        // Buyer Segment Rollup
+        // 5) Buyer Segment Rollup
         const buyerSegMatch =
           !filters.buyerSegmentRollup.some((b) => b.checked) ||
           filters.buyerSegmentRollup.some(
             (b) => b.checked && event.audienceSeniority?.includes(b.label)
           );
 
-        // Account Sector
+        // 6) Account Sectors
         const accountSectorMatch =
           !filters.accountSectors.some((s) => s.checked) ||
           filters.accountSectors.some((s) => {
             if (!s.checked) return false;
-            // For example: map "Public Sector" => event.accountSectors.public
-            const sectorMap = {
-              "Public Sector": "public",
-              Commercial: "commercial",
-            };
+            const sectorMap = { "Public Sector": "public", Commercial: "commercial" };
             const key = sectorMap[s.label];
             return key ? event.accountSectors?.[key] === true : false;
           });
 
-        // Region
-        const regionMatch =
-          !filters.regions.some((r) => r.checked) ||
-          filters.regions.some((r) => r.checked && event.region?.includes(r.label));
-
-        // Country
-        const countryMatch =
-          !filters.countries.some((c) => c.checked) ||
-          filters.countries.some((c) => c.checked && event.country?.includes(c.label));
-
-        // Account Segments
+        // 7) Account Segments
         const accountSegmentMatch =
           !filters.accountSegments.some((seg) => seg.checked) ||
           filters.accountSegments.some((seg) => {
@@ -219,7 +216,7 @@ export default function WeekView() {
             return eSeg?.selected && parseFloat(eSeg.percentage) > 0;
           });
 
-        // Product Family
+        // 8) Product Family
         const productFamilyMatch =
           !filters.productFamily.some((pf) => pf.checked) ||
           filters.productFamily.some((pf) => {
@@ -228,26 +225,28 @@ export default function WeekView() {
             return alignment?.selected && parseFloat(alignment.percentage) > 0;
           });
 
-        // Industry
+        // 9) Industry
         const industryMatch =
           !filters.industry.some((ind) => ind.checked) ||
           filters.industry.some(
             (ind) => ind.checked && event.industry?.includes(ind.label)
           );
 
-        // Partner Event
-        const partnerChecked = filters.partnerEvent.filter((p) => p.checked).map((p) => p.value);
+        // 10) Partner Event
+        const partnerChecked = filters.partnerEvent
+          .filter((p) => p.checked)
+          .map((p) => p.value); // e.g. [true, false]
         const partnerMatch =
-          partnerChecked.length === 0 || partnerChecked.includes(event.isPartneredEvent);
+          partnerChecked.length === 0 ||
+          partnerChecked.includes(event.isPartneredEvent);
 
-        // Draft Status
+        // 11) Draft Status
         const draftStatusesChecked = filters.draftStatus
           .filter((ds) => ds.checked)
-          .map((ds) => ds.value); // e.g. ["Draft", "Finalized", "Invite available"]
+          .map((ds) => ds.value); // ["Draft", "Finalized", "Invite available"]
         const draftMatch =
           draftStatusesChecked.length === 0 ||
-          (function () {
-            // Figure out possible statuses for the event
+          (() => {
             const statuses = [];
             if (event.isDraft) {
               statuses.push("Draft");
@@ -260,11 +259,10 @@ export default function WeekView() {
                 statuses.push("Invite available");
               }
             }
-            // If any of these statuses are in the user’s chosen set, pass
             return statuses.some((st) => draftStatusesChecked.includes(st));
           })();
 
-        // Program Name
+        // 12) Program Name
         const programNameMatch =
           !filters.programName.some((pn) => pn.checked) ||
           filters.programName.some(
@@ -275,7 +273,7 @@ export default function WeekView() {
               )
           );
 
-        // Activity Type
+        // 13) Activity Type
         const activityMatch =
           !filters.activityType.some((a) => a.checked) ||
           filters.activityType.some(
@@ -284,7 +282,7 @@ export default function WeekView() {
               event.eventType?.toLowerCase() === a.label.toLowerCase()
           );
 
-        // Newly Created (last 14 days if "Yes")
+        // 14) Newly Created
         const newlyCreatedChecked = filters.newlyCreated.filter((nc) => nc.checked);
         const newlyCreatedMatch =
           newlyCreatedChecked.length === 0 ||
@@ -293,28 +291,36 @@ export default function WeekView() {
               ? dayjs(event.entryCreatedDate.value)
               : null;
             if (!entryCreatedDate || !entryCreatedDate.isValid()) {
-              // If missing, treat as “old” => matches only if user checked “No”
+              // missing date => treat as "No"
               return nc.value === false;
             }
-            // If within 14 days => “Yes”, else “No”
             const isWithin14Days = dayjs().diff(entryCreatedDate, "day") <= 14;
             return nc.value === isWithin14Days;
           });
 
-        // Organised By (multi-select array)
-        const organiserMatch =
-          !filters.organisedBy || filters.organisedBy.length === 0
-            ? true
-            : filters.organisedBy.some((org) => event.organisedBy?.includes(org));
+        // 15) Organised By
+        const orgFilterActive =
+          filters.organisedBy && filters.organisedBy.length > 0;
+        const organisedByMatch =
+          !orgFilterActive ||
+          filters.organisedBy.some((org) => event.organisedBy?.includes(org));
 
-        // Combine them all:
+        // NEW 16) Party Type
+        const partyTypeChecked = filters.partyType
+          ? filters.partyType.filter((pt) => pt.checked).map((pt) => pt.label)
+          : [];
+        const partyTypeMatch =
+          partyTypeChecked.length === 0 ||
+          partyTypeChecked.includes(event.partyType);
+
+        // Combine them
         return (
+          regionMatch &&
           subRegionMatch &&
+          countryMatch &&
           gepMatch &&
           buyerSegMatch &&
           accountSectorMatch &&
-          regionMatch &&
-          countryMatch &&
           accountSegmentMatch &&
           productFamilyMatch &&
           industryMatch &&
@@ -323,10 +329,12 @@ export default function WeekView() {
           programNameMatch &&
           activityMatch &&
           newlyCreatedMatch &&
-          organiserMatch
+          organisedByMatch &&
+          // NEW line
+          partyTypeMatch
         );
-      } catch (filterError) {
-        console.error("Error applying filters to event:", event, filterError);
+      } catch (err) {
+        console.error("Filter error:", event, err);
         return false;
       }
     });
@@ -373,7 +381,7 @@ export default function WeekView() {
   }, [filteredEvents, currentWeek]);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Helper to detect overlap of events
+  // Overlap logic for multi-day events (existing code)
   // ─────────────────────────────────────────────────────────────────────────────
   const isOverlapping = (event1, event2) => {
     const s1 = dayjs(event1.startDate);
@@ -383,9 +391,6 @@ export default function WeekView() {
     return s1.isBefore(e2) && e1.isAfter(s2);
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Group multi-day events by overlap (stack them vertically)
-  // ─────────────────────────────────────────────────────────────────────────────
   const groupMultiDayEvents = useCallback((allMultiDay) => {
     const groups = [];
     allMultiDay.forEach((event) => {
@@ -408,9 +413,6 @@ export default function WeekView() {
     return groupMultiDayEvents(multiDayEvents);
   }, [multiDayEvents, groupMultiDayEvents]);
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // Layout for multi-day events (left%, width%, stacking)
-  // ─────────────────────────────────────────────────────────────────────────────
   const calculateMultiDayEventStyles = useCallback(
     (event, groupIndex, eventIndex) => {
       if (!currentWeek || currentWeek.length === 0) {
@@ -419,11 +421,9 @@ export default function WeekView() {
 
       const eventStart = dayjs(event.startDate);
       const eventEnd = dayjs(event.endDate);
-
       const weekStart = currentWeek[0];
       const weekEnd = currentWeek[currentWeek.length - 1];
 
-      // Clamp the event’s start/end if they go beyond this week
       const startOfWeekEvent = eventStart.isBefore(weekStart)
         ? weekStart
         : eventStart;
@@ -440,12 +440,10 @@ export default function WeekView() {
         return { top: "0px", left: "0%", width: "100%" };
       }
 
-      const totalDays = endIndex - startIndex + 1; // how many days in this event’s range
+      const totalDays = endIndex - startIndex + 1; 
       const leftPercent = (startIndex / 7) * 100;
       const widthPercent = (totalDays / 7) * 100;
-
-      // Stack by group index and event index
-      const topPosition = groupIndex * 30 + eventIndex * 30; // 30px steps
+      const topPosition = groupIndex * 30 + eventIndex * 30; // 30px stacking
 
       return {
         position: "absolute",

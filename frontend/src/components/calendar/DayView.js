@@ -103,6 +103,7 @@ export default function DayView() {
             ...filters.partnerEvent,
             ...filters.draftStatus,
             ...filters.newlyCreated,
+            ...(filters.partyType || []),
           ].some((f) => f.checked) ||
           (filters.organisedBy && filters.organisedBy.length > 0);
 
@@ -130,6 +131,7 @@ export default function DayView() {
               draftStatus,
               newlyCreated,
               organisedBy,
+              partyType,
             } = filters;
 
             // Region
@@ -221,6 +223,13 @@ export default function DayView() {
                   event.eventType?.toLowerCase() === a.label.toLowerCase()
               );
 
+            const partyTypeChecked = partyType
+              ? partyType.filter((pt) => pt.checked).map((pt) => pt.label)
+              : [];
+            const partyTypeMatch =
+              partyTypeChecked.length === 0 ||
+              partyTypeChecked.includes(event.partyType);
+
             // Partner Event
             const partnerChecked = partnerEvent
               .filter((pe) => pe.checked)
@@ -288,7 +297,9 @@ export default function DayView() {
               partnerMatch &&
               draftMatch &&
               newlyMatch &&
-              orgMatch
+              orgMatch && 
+              partyTypeMatch
+
             );
           } catch (err) {
             console.error("Error applying filters to event:", event, err);
