@@ -6,6 +6,11 @@ export const eventTypeOptions = [
 
 ];
 
+export const partyTypeOptions = [
+  { label: "1st Party", checked: false },
+  { label: "3rd Party", checked: false },
+];
+
 export const regionFilters = [
   { label: 'EMEA', checked: true },
   { label: 'LATAM', checked: true },

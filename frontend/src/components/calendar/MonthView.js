@@ -114,7 +114,7 @@ export default function MonthView({ month, isYearView = false }) {
           return overlapsMonth;
         });
 
-        // 3) Check if no filters are checked => skip
+        // 3) Check if no filters are checked => skip advanced filtering
         const anyFilterChecked =
           [
             ...filters.regions,
@@ -131,6 +131,8 @@ export default function MonthView({ month, isYearView = false }) {
             ...filters.partnerEvent,
             ...filters.draftStatus,
             ...filters.newlyCreated,
+            // NEW: partyType
+            ...(filters.partyType || []),
           ].some((f) => f.checked) ||
           (filters.organisedBy && filters.organisedBy.length > 0);
 
@@ -267,16 +269,17 @@ export default function MonthView({ month, isYearView = false }) {
                   }
                 }
                 // Does any of the statuses match the user’s chosen statuses?
-                return statusesThisEventHas.some((st) => draftCheckedValues.includes(st));
+                return statusesThisEventHas.some((st) =>
+                  draftCheckedValues.includes(st)
+                );
               })();
 
             // Newly Created
-            // Filters might be an array like: [{ label: "Yes", value: true, checked: false }, { label: "No", value: false, checked: false }]
             const newlyCreatedFilters = filters.newlyCreated.filter((nc) => nc.checked);
             const newlyCreatedMatch =
               newlyCreatedFilters.length === 0 ||
               newlyCreatedFilters.some((nc) => {
-                // If event has an entryCreatedDate, we parse it
+                // If event has an entryCreatedDate, parse it
                 const createdAt = event.entryCreatedDate?.value
                   ? dayjs(event.entryCreatedDate.value)
                   : null;
@@ -300,6 +303,16 @@ export default function MonthView({ month, isYearView = false }) {
                   event.organisedBy?.includes(org)
                 );
 
+            // NEW: Party Type
+            // 1) Grab any checked partyType labels
+            const partyTypeChecked = filters.partyType
+              ? filters.partyType.filter((p) => p.checked).map((p) => p.label)
+              : [];
+            // 2) If none are checked, skip filter. If some are checked, event must match
+            const partyTypeMatch =
+              partyTypeChecked.length === 0 ||
+              partyTypeChecked.includes(event.partyType);
+
             // Final combination
             return (
               regionMatch &&
@@ -316,7 +329,9 @@ export default function MonthView({ month, isYearView = false }) {
               partnerMatch &&
               draftMatch &&
               newlyCreatedMatch &&
-              organisedByMatch
+              organisedByMatch &&
+              // NEW line
+              partyTypeMatch
             );
           } catch (error) {
             console.error("Error applying filters to event:", event, error);

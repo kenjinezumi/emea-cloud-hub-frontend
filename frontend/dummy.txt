@@ -12,7 +12,7 @@
     "marketingProgramInstanceId": "sdfdsfd",
     "eventType": "Online Event",
     "region": [
-      "GLOBAL"
+      "EMEA"
     ],
     "subRegion": [
       "Benelux"
@@ -67,7 +67,7 @@
     "marketingProgramInstanceId": "abcdefg",
     "eventType": "Physical Event",
     "region": [
-      "GLOBAL"
+      "EMEA"
     ],
     "subRegion": [
       "Alps",

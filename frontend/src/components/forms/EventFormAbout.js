@@ -55,7 +55,13 @@ import { useFormNavigation } from "../../hooks/useFormNavigation";
 import "../styles/Forms.css";
 import { fetchGeminiResponse } from "../../api/geminiApi";
 
-const EventForm = () => {
+/** 
+ * If the Activity Type is one of these, 
+ * then "Party Type" is required.
+ */
+const REQUIRES_PARTY_TYPE = ["Online Event", "Physical Event", "Hybrid Event"];
+
+export default function EventForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [loading, setLoading] = useState(false);
 
@@ -91,7 +97,7 @@ const EventForm = () => {
     formData?.organisedBy || selectedEvent?.organisedBy || []
   );
 
-  // Some additional fields
+  // Additional fields
   const [marketingActivityType, setMarketingActivityType] = useState(
     formData?.marketingActivityType || ""
   );
@@ -108,7 +114,7 @@ const EventForm = () => {
   );
   const [newSpeaker, setNewSpeaker] = useState("");
 
-  // Date/times
+  // Dates
   const today = new Date();
   const [startDate, setStartDate] = useState(
     formData?.startDate
@@ -131,6 +137,12 @@ const EventForm = () => {
       ""
   );
 
+  // NEW: Party type (e.g. "1st Party" / "3rd Party"), plus error state
+  const [partyType, setPartyType] = useState(
+    formData?.partyType || "" // if it was stored before
+  );
+  const [isPartyTypeError, setIsPartyTypeError] = useState(false);
+
   // Validation
   const [isFormValid, setIsFormValid] = useState(true);
   const [isTitleError, setIsTitleError] = useState(false);
@@ -140,27 +152,18 @@ const EventForm = () => {
   const [isOrganisedByError, setIsOrganisedByError] = useState(false);
   const [isEventTypeError, setIsEventTypeError] = useState(false);
 
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const saveAndNavigate = useFormNavigation();
-
-  // Additional states for date/time checks
+  // Additional date/time checks
   const [hasStartDateChanged, setHasStartDateChanged] = useState(false);
   const [hasEndDateChanged, setHasEndDateChanged] = useState(false);
+
   const isEndDateValid = useMemo(() => !!endDate, [endDate]);
   const isEndDateLater = useMemo(
     () => isEndDateValid && new Date(endDate) > new Date(startDate),
     [endDate, startDate, isEndDateValid]
   );
 
-  // Handling changes
-  const handleStartDateChange = (newDate) => {
-    setStartDate(newDate);
-    setHasStartDateChanged(true);
-  };
-  const handleEndDateChange = (newDate) => {
-    setEndDate(newDate);
-    setHasEndDateChanged(true);
-  };
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const saveAndNavigate = useFormNavigation();
 
   // Gemini (AI) dialog states
   const [geminiDialogOpen, setGeminiDialogOpen] = useState(false);
@@ -168,7 +171,9 @@ const EventForm = () => {
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatLog, setChatLog] = useState([]);
 
-  /** Opens/closes the Gemini dialog */
+  /** 
+   * OPEN/CLOSE Gemini
+   */
   const handleGeminiDialogOpen = () => setGeminiDialogOpen(true);
   const handleGeminiDialogClose = () => {
     setGeminiDialogOpen(false);
@@ -176,13 +181,14 @@ const EventForm = () => {
     setChatLog([]);
   };
 
-  /** Fetch marketing program options */
+  /** 
+   * Fetch marketing program options (not central)
+   */
   useEffect(() => {
     const fetchMarketingProgramOptions = async () => {
       try {
-        const response = await getEventData("marketingProgramQuery");
-        // response is presumably an array of results with .Sandbox_Program_Id
-        // not central to the struct mismatch issue, so unchanged
+        const resp = await getEventData("marketingProgramQuery");
+        // ...
       } catch (error) {
         console.error("Error fetching marketing program options:", error);
       }
@@ -190,14 +196,18 @@ const EventForm = () => {
     fetchMarketingProgramOptions();
   }, []);
 
-  /** If formData had marketingProgramInstanceId, apply it */
+  /**
+   * If formData had marketingProgramInstanceId, apply it
+   */
   useEffect(() => {
     if (formData.marketingProgramInstanceId) {
       setMarketingProgramInstanceId(formData.marketingProgramInstanceId);
     }
   }, [formData.marketingProgramInstanceId]);
 
-  /** Fetch "Organised By" options from an API */
+  /**
+   * Fetch "Organised By" options from an API
+   */
   useEffect(() => {
     const fetchOrganisedByOptions = async () => {
       try {
@@ -212,13 +222,26 @@ const EventForm = () => {
     fetchOrganisedByOptions();
   }, []);
 
-  /** Validate an email address format */
+  /**
+   * Validate an email address format
+   */
   const isValidEmail = (email) => {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailPattern.test(email);
   };
 
-  /** Add a single speaker if valid & not already included */
+   // Handling changes
+   const handleStartDateChange = (newDate) => {
+    setStartDate(newDate);
+    setHasStartDateChanged(true);
+  };
+  const handleEndDateChange = (newDate) => {
+    setEndDate(newDate);
+    setHasEndDateChanged(true);
+  };
+  /**
+   * Add a single speaker if valid & not already included
+   */
   const handleAddSpeaker = () => {
     const trimmedSpeaker = newSpeaker.trim();
     if (isValidEmail(trimmedSpeaker) && !speakers.includes(trimmedSpeaker)) {
@@ -230,12 +253,16 @@ const EventForm = () => {
     }
   };
 
-  /** Remove speaker by email */
+  /** 
+   * Remove speaker by email 
+   */
   const handleDeleteSpeaker = (emailToDelete) => {
     setSpeakers(speakers.filter((email) => email !== emailToDelete));
   };
 
-  /** Handle multi-paste for speakers */
+  /** 
+   * Handle multi-paste for speakers 
+   */
   const handlePasteSpeakers = (e) => {
     const pastedText = e.clipboardData.getData("Text");
     const pastedEmails = pastedText
@@ -252,13 +279,12 @@ const EventForm = () => {
   };
 
   /**
-   * IMPORTANT: Merge old formData, so we don’t lose nested fields from previous steps (like accountType)
+   * Merge old formData so we don’t lose nested fields from previous steps
    */
   useEffect(() => {
     const eventId = selectedEvent?.eventId || formData.eventId || uuidv4();
 
     const newFormData = {
-      // Spread the old formData to preserve everything from prior steps
       ...formData,
       eventId,
       title,
@@ -272,6 +298,8 @@ const EventForm = () => {
       endDate,
       marketingProgramInstanceId,
       eventType,
+      /** Insert partyType in formData: */
+      partyType,
       userTimezone,
       speakers,
     };
@@ -289,6 +317,8 @@ const EventForm = () => {
     endDate,
     marketingProgramInstanceId,
     eventType,
+    /** watch for partyType changes: */
+    partyType,
     speakers,
     userTimezone,
     formData,
@@ -296,7 +326,9 @@ const EventForm = () => {
     updateFormData,
   ]);
 
-  /** Gemini: Submitting a prompt */
+  /**
+   * Gemini: Submitting a prompt
+   */
   const handleGeminiSubmit = async () => {
     if (!geminiPrompt.trim()) return;
 
@@ -310,7 +342,6 @@ const EventForm = () => {
 
     try {
       const response = await fetchGeminiResponse(geminiPrompt, chatLog);
-
       let responseString = "";
       for await (const chunk of response) {
         responseString += chunk;
@@ -368,7 +399,9 @@ const EventForm = () => {
     setIsEmojiPickerOpen(false);
   };
 
-  /** Add a single "organisedBy" if valid */
+  /** 
+   * Add a single "organisedBy" if valid 
+   */
   const handleAddOrganiser = () => {
     const trimmedOrganiser = newOrganiser.trim();
     if (isValidEmail(trimmedOrganiser) && !organisedBy.includes(trimmedOrganiser)) {
@@ -383,7 +416,9 @@ const EventForm = () => {
     }
   };
 
-  /** Handle multi-paste for “Organised By” emails */
+  /** 
+   * Handle multi-paste for “Organised By” emails 
+   */
   const handlePasteOrganisers = (event) => {
     event.preventDefault();
     const pastedText = event.clipboardData.getData("Text");
@@ -400,14 +435,21 @@ const EventForm = () => {
     }
   };
 
-  /** Remove one organiser */
+  /** 
+   * Remove one organiser 
+   */
   const handleDeleteOrganiser = (organiserToDelete) => {
     setOrganisedBy(
       organisedBy.filter((organiser) => organiser !== organiserToDelete)
     );
   };
 
-  /** "Next" button logic */
+  // **Party type** is required if eventType is in REQUIRES_PARTY_TYPE
+  const shouldShowPartyType = REQUIRES_PARTY_TYPE.includes(eventType);
+
+  /** 
+   * "Next" button logic 
+   */
   const handleNext = async () => {
     setLoading(true);
 
@@ -424,6 +466,10 @@ const EventForm = () => {
     const isEventTypeValid = eventType?.trim() !== "";
     const isEventIdValid = !!eventId;
 
+    // NEW: check if user must fill "Party Type" but left it blank
+    const isPartyTypeValid = !shouldShowPartyType || partyType.trim() !== "";
+    setIsPartyTypeError(shouldShowPartyType && !isPartyTypeValid);
+
     setIsTitleError(!isTitleValid);
     setIsDescriptionError(!isDescriptionValid);
     setIsStartDateError(!isStartDateValid);
@@ -431,7 +477,7 @@ const EventForm = () => {
     setIsOrganisedByError(!isOrganisedByValid);
     setIsEventTypeError(!isEventTypeValid);
 
-    const formIsValid =
+    let formIsValid =
       isTitleValid &&
       isDescriptionValid &&
       isStartDateValid &&
@@ -439,7 +485,8 @@ const EventForm = () => {
       isEndDateLater &&
       isOrganisedByValid &&
       isEventTypeValid &&
-      isEventIdValid;
+      isEventIdValid &&
+      isPartyTypeValid;
 
     setIsFormValid(formIsValid);
 
@@ -472,6 +519,8 @@ const EventForm = () => {
       endDate,
       marketingProgramInstanceId,
       eventType,
+      /** include partyType in final data */
+      partyType,
       userTimezone,
       speakers,
       isDraft: true,
@@ -632,6 +681,29 @@ const EventForm = () => {
                   )}
                 </FormControl>
               </Grid>
+
+              {/* NEW: Show "Party Type" if user selected Physical/Hybrid/Online */}
+              {shouldShowPartyType && (
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                    Party Type *
+                  </Typography>
+                  <FormControl fullWidth error={isPartyTypeError}>
+                    <Select
+                      value={partyType}
+                      onChange={(e) => setPartyType(e.target.value)}
+                    >
+                      <MenuItem value="1st Party (Google Owned">1st Party</MenuItem>
+                      <MenuItem value="3rd Party">3rd Party</MenuItem>
+                    </Select>
+                    {isPartyTypeError && (
+                      <Typography variant="body2" color="error">
+                        Party Type is required
+                      </Typography>
+                    )}
+                  </FormControl>
+                </Grid>
+              )}
             </Grid>
 
             {/* High Priority Switch */}
@@ -1001,7 +1073,9 @@ const EventForm = () => {
             )}
 
             {/* Next button with spinner overlay */}
-            <div style={{ marginTop: "20px", textAlign: "right", position: "relative" }}>
+            <div
+              style={{ marginTop: "20px", textAlign: "right", position: "relative" }}
+            >
               {loading && (
                 <Box
                   sx={{
@@ -1042,6 +1116,4 @@ const EventForm = () => {
       </div>
     </div>
   );
-};
-
-export default EventForm;
+}

@@ -16,141 +16,131 @@ import {
   Chip,
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
-
 import GlobalContext from "../../context/GlobalContext";
 import { getEventData } from "../../api/getEventData";
 import EventInfoPopup from "../popup/EventInfoModal";
 
-// ICONS for alignment with Day.jsx coloring logic
+// For region/subregion logic
+import { regionsData } from "../filters/FiltersData"; 
+// For eventType color logic
 import LanguageIcon from "@mui/icons-material/Language";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import EventIcon from "@mui/icons-material/Event";
 import ArticleIcon from "@mui/icons-material/Article";
 
-// ---------------------------------------------------------------------------
-// Same subregion logic as before
-// ---------------------------------------------------------------------------
-const REGION_SUBREGION_MAP = {
-  EMEA: [
-    "Alps", "Benelux", "CEE", "France", "Germany", "Iberia",
-    "Israel", "Italy", "MEA", "Nordics", "UK/IE",
-  ],
-  JAPAC: [
-    "AuNZ", "Greater China", "India", "Japan", "Korea", "SEA",
-  ],
-  LATAM: [
-    "Brazil", "MCO", "Mexico",
-  ],
-};
-
 function getDisplayedSubregions(event) {
-  const { region = [], subRegion = [] } = event;
-  if (!Array.isArray(region) || region.length === 0) return "No region";
+  let { region = [], subRegion = [] } = event;
+  // Deduplicate
+  const dedupRegion = [...new Set(region)];
+  const dedupSubRegion = [...new Set(subRegion)];
+
+  if (dedupRegion.length === 0) return "No region";
 
   const displayPieces = [];
 
-  region.forEach((r) => {
-    const standardSubs = REGION_SUBREGION_MAP[r] || [];
-    const subRegionForThisRegion = subRegion.filter((sr) =>
-      standardSubs.includes(sr)
-    );
+  dedupRegion.forEach((r) => {
+    const regionObj = regionsData.find((rd) => rd.region === r);
+    if (!regionObj) {
+      // e.g. region = "NORTHAM"
+      displayPieces.push(r);
+      return;
+    }
+    const knownSubs = regionObj.subregions || [];
+    const relevantSubs = dedupSubRegion.filter((sr) => knownSubs.includes(sr));
+    if (relevantSubs.length === 0) return;
 
-    if (subRegionForThisRegion.length === 0) return;
-
-    if (
-      subRegionForThisRegion.length === standardSubs.length &&
-      standardSubs.length > 0
-    ) {
+    if (relevantSubs.length === knownSubs.length && knownSubs.length > 0) {
       displayPieces.push(`All ${r}`);
     } else {
-      displayPieces.push(`${r}: ${subRegionForThisRegion.join(", ")}`);
+      displayPieces.push(`${r}: ${relevantSubs.join(", ")}`);
     }
   });
 
-  if (displayPieces.length === 0) {
-    return "No subregions selected";
-  }
-
+  if (displayPieces.length === 0) return "No subregions selected";
   return displayPieces.join(" | ");
 }
 
-// ---------------------------------------------------------------------------
-// Draft status logic
-// ---------------------------------------------------------------------------
 function getDraftStatus(event) {
-  if (event.isDraft) {
-    return "Draft";
-  }
-  // Check if there is at least one invite (Gmail or Salesloft)
+  if (event.isDraft) return "Draft";
   const hasInvites = event.languagesAndTemplates?.some((lt) =>
     ["Gmail", "Salesloft"].includes(lt.platform)
   );
-  if (hasInvites) {
-    return "Invite available";
-  }
-  return "Finalized";
+  return hasInvites ? "Invite available" : "Finalized";
 }
 
-// ---------------------------------------------------------------------------
-// Newly created check
-// ---------------------------------------------------------------------------
 function isNewlyCreated(event) {
   const createdValue = event?.entryCreatedDate?.value;
   if (!createdValue) return false;
-
   const createdAt = dayjs(createdValue);
-  if (!createdAt.isValid()) return false;
-
-  return dayjs().diff(createdAt, "day") <= 14;
+  return createdAt.isValid() && dayjs().diff(createdAt, "day") <= 14;
 }
 
-// ---------------------------------------------------------------------------
-// Color & Icon Logic Mirroring "Day.jsx"
-// ---------------------------------------------------------------------------
 function getEventStyleAndIcon(eventType) {
   switch (eventType) {
     case "Online Event":
       return {
         backgroundColor: "#e3f2fd",
         color: "#1a73e8",
-        icon: <LanguageIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        icon: <LanguageIcon fontSize="small" style={{ marginRight: 5 }} />,
       };
     case "Physical Event":
       return {
         backgroundColor: "#fce4ec",
         color: "#d32f2f",
-        icon: <LocationOnIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        icon: <LocationOnIcon fontSize="small" style={{ marginRight: 5 }} />,
       };
     case "Hybrid Event":
       return {
         backgroundColor: "#f3e5f5",
         color: "#6a1b9a",
-        icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        icon: <EventIcon fontSize="small" style={{ marginRight: 5 }} />,
+      };
+    case "Prospecting Sprint":
+      return {
+        backgroundColor: "#fffde7",
+        color: "#ff9800",
+        icon: <EventIcon fontSize="small" style={{ marginRight: 5 }} />,
       };
     case "Customer Story":
       return {
         backgroundColor: "#e8f5e9",
         color: "#2e7d32",
-        icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        icon: <EventIcon fontSize="small" style={{ marginRight: 5 }} />,
       };
     case "Blog Post":
       return {
         backgroundColor: "#fffde7",
         color: "#f57f17",
-        icon: <ArticleIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        icon: <ArticleIcon fontSize="small" style={{ marginRight: 5 }} />,
       };
     default:
       return {
         backgroundColor: "#e3f2fd",
         color: "#1a73e8",
-        icon: <EventIcon fontSize="small" style={{ marginRight: "5px" }} />,
+        icon: <EventIcon fontSize="small" style={{ marginRight: 5 }} />,
       };
   }
 }
 
-// ---------------------------------------------------------------------------
-// Main Component
-// ---------------------------------------------------------------------------
+function getBorderColor(eventType) {
+  switch (eventType) {
+    case "Online Event":
+      return "#4285F4";
+    case "Physical Event":
+      return "#DB4437";
+    case "Hybrid Event":
+      return "#0F9D58";
+    case "Customer Story":
+      return "#2e7d32";
+    case "Blog Post":
+      return "#F4B400";
+    case "Prospecting Sprint":
+      return "#FFA726";
+    default:
+      return "#e3f2fd";
+  }
+}
+
 export default function ListView() {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -167,9 +157,9 @@ export default function ListView() {
 
   const location = useLocation();
 
-  // -------------------------------------------------------------------------
+  // ─────────────────────────────────────────────────────────────────────────────
   // Fetch all events when location changes
-  // -------------------------------------------------------------------------
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -189,15 +179,16 @@ export default function ListView() {
     setShowInfoEventModal(false);
   }, [location, setShowEventModal, setShowInfoEventModal]);
 
-  // -------------------------------------------------------------------------
-  // Filter events based on advanced filters + search text
-  // -------------------------------------------------------------------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Filter events based on filters + search text
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!Array.isArray(events) || events.length === 0) {
       setFilteredEvents([]);
       return;
     }
 
+    // Check if ANY advanced filter is checked
     const anyFilterChecked =
       [
         ...filters.regions,
@@ -214,22 +205,23 @@ export default function ListView() {
         ...filters.partnerEvent,
         ...filters.draftStatus,
         ...filters.newlyCreated,
+        // NEW: spread in partyType
+        ...(filters.partyType || []),
       ].some((f) => f.checked) ||
       (filters.organisedBy && filters.organisedBy.length > 0);
 
     const lowercasedSearchText = (searchText || "").toLowerCase();
 
-    // Single pass filter
     const final = events.filter((event) => {
       try {
-        // If no advanced filters are checked, skip advanced check
+        // If advanced filters are in use, check them
         if (anyFilterChecked) {
           // Region
           const regionMatch =
             !filters.regions.some((r) => r.checked) ||
             filters.regions.some((r) => r.checked && event.region?.includes(r.label));
 
-          // Sub-region
+          // Subregion
           const subRegionMatch =
             !filters.subRegions.some((s) => s.checked) ||
             filters.subRegions.some((s) => s.checked && event.subRegion?.includes(s.label));
@@ -346,8 +338,7 @@ export default function ListView() {
               if (!createdAt || !createdAt.isValid()) {
                 return nc.value === false;
               }
-              const isWithin14Days = dayjs().diff(createdAt, "day") <= 14;
-              return nc.value === isWithin14Days;
+              return dayjs().diff(createdAt, "day") <= 14 === nc.value;
             });
 
           // OrganisedBy
@@ -356,6 +347,15 @@ export default function ListView() {
             !organiserActive ||
             filters.organisedBy.some((org) => event.organisedBy?.includes(org));
 
+          // NEW: Party Type
+          const partyTypeChecked = filters.partyType
+            ? filters.partyType.filter((pt) => pt.checked).map((pt) => pt.label)
+            : [];
+          const partyTypeMatch =
+            partyTypeChecked.length === 0 ||
+            partyTypeChecked.includes(event.partyType);
+
+          // Combine
           if (
             !(
               regionMatch &&
@@ -372,14 +372,15 @@ export default function ListView() {
               partnerMatch &&
               draftMatch &&
               newlyCreatedMatch &&
-              organiserMatch
+              organiserMatch &&
+              partyTypeMatch
             )
           ) {
             return false;
           }
         }
 
-        // Search text check (title/description)
+        // Also apply search text check (title/description)
         if (lowercasedSearchText) {
           const title = event.title?.toLowerCase() || "";
           const description = event.description?.toLowerCase() || "";
@@ -398,9 +399,8 @@ export default function ListView() {
       }
     });
 
-    // Sort the final list by startDate ascending
+    // sort ascending by startDate
     final.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
     setFilteredEvents(final);
   }, [events, filters, searchText]);
 
@@ -414,26 +414,6 @@ export default function ListView() {
     },
     [setSelectedEvent, setShowInfoEventModal]
   );
-
-  // -------------------------------------------------------------------------
-  // For left border color behind entire ListItem
-  // -------------------------------------------------------------------------
-  const getBorderColor = (eventType) => {
-    switch (eventType) {
-      case "Online Event":
-        return "#4285F4";
-      case "Physical Event":
-        return "#DB4437";
-      case "Hybrid Event":
-        return "#0F9D58";
-      case "Customer Story":
-        return "#2e7d32";
-      case "Blog Post":
-        return "#F4B400";
-      default:
-        return "#e3f2fd";
-    }
-  };
 
   // -------------------------------------------------------------------------
   // Render
@@ -490,14 +470,17 @@ export default function ListView() {
 
                         {/* Chips row */}
                         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                          {/* Subregions chip */}
+                          {/* Region/Subregion chip */}
                           <Chip
                             label={getDisplayedSubregions(event)}
-                            color="primary"
-                            variant="outlined"
+                            sx={{
+                              backgroundColor: "#4285F4",
+                              color: "#fff",
+                              border: "1px solid rgba(255,255,255,0.3)",
+                            }}
                           />
 
-                          {/* EventType chip with color logic from Day.jsx */}
+                          {/* EventType chip with color logic */}
                           {event.eventType && (() => {
                             const { backgroundColor, color, icon } =
                               getEventStyleAndIcon(event.eventType);
@@ -513,7 +496,6 @@ export default function ListView() {
                                 sx={{
                                   backgroundColor,
                                   color,
-                                  // Some small styling to match chips
                                   border: `1px solid ${color}`,
                                 }}
                               />
@@ -525,25 +507,32 @@ export default function ListView() {
                             <Chip
                               key={org}
                               label={`Organised by: ${org}`}
-                              color="success"
-                              variant="outlined"
+                              sx={{
+                                backgroundColor: "#4285F4",
+                                color: "#fff",
+                                border: "1px solid rgba(255,255,255,0.3)",
+                              }}
                             />
                           ))}
 
                           {/* Draft status */}
                           <Chip
                             label={getDraftStatus(event)}
-                            color="info"
-                            variant="outlined"
+                            color={
+                              getDraftStatus(event) === "Draft"
+                                ? "warning"
+                                : getDraftStatus(event) === "Invite available"
+                                ? "primary"
+                                : "success"
+                            }
+                            variant={
+                              getDraftStatus(event) === "Finalized" ? "outlined" : "filled"
+                            }
                           />
 
                           {/* Newly Created */}
                           {isNewlyCreated(event) && (
-                            <Chip
-                              label="Newly Created"
-                              color="warning"
-                              variant="outlined"
-                            />
+                            <Chip label="Newly Created" color="success" variant="outlined" />
                           )}
                         </Box>
                       </>
