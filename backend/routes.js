@@ -775,6 +775,19 @@ WHERE eventId = @eventId;
         logger.info("SAVE-FILTER: Received config", {
           config: JSON.stringify(config, null, 2),
         });
+
+        if (Array.isArray(config)) {
+          config.forEach((item) => {
+            Object.entries(item).forEach(([fieldName, fieldValue]) => {
+              // If the field is an array and it's completely empty
+              if (Array.isArray(fieldValue) && fieldValue.length === 0) {
+                // set it to null so BigQuery won't complain
+                item[fieldName] = null;
+              }
+            });
+          });
+        }
+        
         const insertQuery = `
           INSERT INTO \`google.com:cloudhub.data.filters_config\`
             (id, ldap, filterName, config)
@@ -967,6 +980,8 @@ WHERE eventId = @eventId;
           params: JSON.stringify(options.params),
           types: JSON.stringify(options.types),
         });
+
+        
 
         await bigquery.query(options);
 
