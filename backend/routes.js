@@ -854,7 +854,6 @@ WHERE eventId = @eventId;
                   arrayType: {
                     type: "STRUCT",
                     fields: {
-                      label: "STRING",
                       checked: "BOOL",
                     },
                   },
