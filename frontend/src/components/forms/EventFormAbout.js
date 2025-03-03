@@ -143,6 +143,11 @@ export default function EventForm() {
   );
   const [isPartyTypeError, setIsPartyTypeError] = useState(false);
 
+  // NEW: isPublished toggle
+  const [isPublished, setIsPublished] = useState(
+    formData?.isPublished || false
+  );
+
   // Validation
   const [isFormValid, setIsFormValid] = useState(true);
   const [isTitleError, setIsTitleError] = useState(false);
@@ -230,8 +235,8 @@ export default function EventForm() {
     return emailPattern.test(email);
   };
 
-   // Handling changes
-   const handleStartDateChange = (newDate) => {
+  // Handling changes
+  const handleStartDateChange = (newDate) => {
     setStartDate(newDate);
     setHasStartDateChanged(true);
   };
@@ -239,6 +244,7 @@ export default function EventForm() {
     setEndDate(newDate);
     setHasEndDateChanged(true);
   };
+
   /**
    * Add a single speaker if valid & not already included
    */
@@ -298,8 +304,9 @@ export default function EventForm() {
       endDate,
       marketingProgramInstanceId,
       eventType,
-      /** Insert partyType in formData: */
+      /** Insert partyType and isPublished in formData: */
       partyType,
+      isPublished,
       userTimezone,
       speakers,
     };
@@ -317,8 +324,8 @@ export default function EventForm() {
     endDate,
     marketingProgramInstanceId,
     eventType,
-    /** watch for partyType changes: */
     partyType,
+    isPublished,
     speakers,
     userTimezone,
     formData,
@@ -404,7 +411,10 @@ export default function EventForm() {
    */
   const handleAddOrganiser = () => {
     const trimmedOrganiser = newOrganiser.trim();
-    if (isValidEmail(trimmedOrganiser) && !organisedBy.includes(trimmedOrganiser)) {
+    if (
+      isValidEmail(trimmedOrganiser) &&
+      !organisedBy.includes(trimmedOrganiser)
+    ) {
       setOrganisedBy([...organisedBy, trimmedOrganiser]);
       setNewOrganiser("");
     } else if (!isValidEmail(trimmedOrganiser)) {
@@ -505,7 +515,7 @@ export default function EventForm() {
       return;
     }
 
-    // Merge old formData to preserve other fields (like accountType, etc.)
+    // Decide if it's a draft or final based on isPublished
     const draftData = {
       eventId,
       title,
@@ -519,12 +529,11 @@ export default function EventForm() {
       endDate,
       marketingProgramInstanceId,
       eventType,
-      /** include partyType in final data */
       partyType,
       userTimezone,
       speakers,
-      isDraft: true,
-      isPublished: false,
+      isDraft: !isPublished, // If it's not published, it's a draft
+      isPublished: isPublished,
     };
 
     const updatedFormData = {
@@ -535,19 +544,23 @@ export default function EventForm() {
     try {
       const response = await sendDataToAPI(updatedFormData);
       if (response.success) {
-        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarMessage(
+          isPublished
+            ? "Event published successfully!"
+            : "Draft saved successfully!"
+        );
         setSnackbarOpen(true);
         setTimeout(() => {
           saveAndNavigate(updatedFormData, "/location");
           setLoading(false);
         }, 1500);
       } else {
-        setSnackbarMessage("Failed to save draft.");
+        setSnackbarMessage("Failed to save or publish event.");
         setSnackbarOpen(true);
         setLoading(false);
       }
     } catch (error) {
-      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarMessage("An error occurred while saving the event.");
       setSnackbarOpen(true);
       setLoading(false);
     }
@@ -693,7 +706,9 @@ export default function EventForm() {
                       value={partyType}
                       onChange={(e) => setPartyType(e.target.value)}
                     >
-                      <MenuItem value="1st Party (Google Owned">1st Party</MenuItem>
+                      <MenuItem value="1st Party (Google Owned)">
+                        1st Party
+                      </MenuItem>
                       <MenuItem value="3rd Party">3rd Party</MenuItem>
                     </Select>
                     {isPartyTypeError && (
@@ -1055,6 +1070,30 @@ export default function EventForm() {
                 fullWidth
                 margin="dense"
               />
+            </Grid>
+
+            {/* NEW: isPublished Switch */}
+            <Grid item xs={12} sx={{ mb: 3 }}>
+              <FormGroup row>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isPublished}
+                      onChange={(e) => setIsPublished(e.target.checked)}
+                      name="isPublished"
+                      color="primary"
+                    />
+                  }
+                  label={
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ display: "flex", alignItems: "center" }}
+                    >
+                      Publish this event?
+                    </Typography>
+                  }
+                />
+              </FormGroup>
             </Grid>
 
             {/* Global SnackBar */}

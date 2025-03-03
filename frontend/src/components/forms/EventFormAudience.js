@@ -18,6 +18,8 @@ import {
   TextField,
   CircularProgress,
   Box,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PeopleIcon from "@mui/icons-material/People";
@@ -114,6 +116,11 @@ export default function AudiencePersonaForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
   const [loading, setLoading] = useState(false);
 
+  // NEW: Toggle for publish/draft
+  const [isPublished, setIsPublished] = useState(
+    formData?.isPublished || false
+  );
+
   // Buyer segment rollup: audienceSeniority
   const [audienceSeniority, setAudienceSeniority] = useState(() => {
     const fromFormData = Array.isArray(formData?.audienceSeniority)
@@ -151,7 +158,6 @@ export default function AudiencePersonaForm() {
 
   // Account Segments (with { selected, percentage })
   const [accountSegments, setAccountSegments] = useState(() => {
-    // If formData has it, use that; otherwise use selectedEvent
     if (formData?.accountSegments) {
       return getSafeAccountSegments(formData.accountSegments);
     } else if (selectedEvent?.accountSegments) {
@@ -203,7 +209,11 @@ export default function AudiencePersonaForm() {
   // People Meeting Criteria
   const [peopleMeetingCriteria, setPeopleMeetingCriteria] = useState(() => {
     if (selectedEvent) {
-      return selectedEvent.peopleMeetingCriteria ?? formData.peopleMeetingCriteria ?? "";
+      return (
+        selectedEvent.peopleMeetingCriteria ??
+        formData.peopleMeetingCriteria ??
+        ""
+      );
     }
     return formData.peopleMeetingCriteria ?? "";
   });
@@ -223,7 +233,8 @@ export default function AudiencePersonaForm() {
   });
 
   // Validation flags
-  const [isAudienceSeniorityError, setIsAudienceSeniorityError] = useState(false);
+  const [isAudienceSeniorityError, setIsAudienceSeniorityError] =
+    useState(false);
   const [isAccountSegmentsError, setIsAccountSegmentsError] = useState(false);
   const [isAccountCategoryError, setIsAccountCategoryError] = useState(false);
   const [isAccountTypeError, setIsAccountTypeError] = useState(false);
@@ -249,11 +260,11 @@ export default function AudiencePersonaForm() {
       productAlignment,
       aiVsCore,
       industry,
+      // Keep track of isPublished so we remember user’s choice
+      isPublished,
     };
-    // Only update if changed
-    if (JSON.stringify(formData) !== JSON.stringify(currentFormData)) {
-      updateFormData(currentFormData);
-    }
+
+    updateFormData(currentFormData);
   }, [
     audienceSeniority,
     accountSectors,
@@ -265,7 +276,7 @@ export default function AudiencePersonaForm() {
     productAlignment,
     aiVsCore,
     industry,
-    formData,
+    isPublished,
     updateFormData,
   ]);
 
@@ -312,7 +323,7 @@ export default function AudiencePersonaForm() {
     }));
   };
 
-  // “Calculate Audience” button (currently just a placeholder)
+  // “Calculate Audience” button (placeholder)
   const handleCalculateAudience = () => {
     setSnackbarMessage("No data in the backend yet! (Placeholder)");
     setSnackbarOpen(true);
@@ -320,7 +331,6 @@ export default function AudiencePersonaForm() {
 
   // “Previous” button
   const handlePrevious = () => {
-    // Build partial formData to save
     const currentFormData = {
       audienceSeniority,
       accountSectors,
@@ -358,13 +368,17 @@ export default function AudiencePersonaForm() {
         0
       );
       if (sum > 100) {
-        setSnackbarMessage("Total percentage for Account Segments cannot exceed 100%");
+        setSnackbarMessage(
+          "Total percentage for Account Segments cannot exceed 100%"
+        );
         setSnackbarOpen(true);
         setLoading(false);
         return;
       }
       if (sum !== 100) {
-        setSnackbarMessage("Total percentage for Account Segments must equal 100%");
+        setSnackbarMessage(
+          "Total percentage for Account Segments must equal 100%"
+        );
         setSnackbarOpen(true);
         setLoading(false);
         return;
@@ -384,13 +398,17 @@ export default function AudiencePersonaForm() {
         0
       );
       if (sum > 100) {
-        setSnackbarMessage("Total percentage for Account Category cannot exceed 100%");
+        setSnackbarMessage(
+          "Total percentage for Account Category cannot exceed 100%"
+        );
         setSnackbarOpen(true);
         setLoading(false);
         return;
       }
       if (sum !== 100) {
-        setSnackbarMessage("Total percentage for Account Category must equal 100%");
+        setSnackbarMessage(
+          "Total percentage for Account Category must equal 100%"
+        );
         setSnackbarOpen(true);
         setLoading(false);
         return;
@@ -410,13 +428,17 @@ export default function AudiencePersonaForm() {
         0
       );
       if (sum > 100) {
-        setSnackbarMessage("Total percentage for Account Type cannot exceed 100%");
+        setSnackbarMessage(
+          "Total percentage for Account Type cannot exceed 100%"
+        );
         setSnackbarOpen(true);
         setLoading(false);
         return;
       }
       if (sum !== 100) {
-        setSnackbarMessage("Total percentage for Account Type must equal 100%");
+        setSnackbarMessage(
+          "Total percentage for Account Type must equal 100%"
+        );
         setSnackbarOpen(true);
         setLoading(false);
         return;
@@ -436,13 +458,17 @@ export default function AudiencePersonaForm() {
         0
       );
       if (sum > 100) {
-        setSnackbarMessage("Total percentage for Product Alignment cannot exceed 100%");
+        setSnackbarMessage(
+          "Total percentage for Product Alignment cannot exceed 100%"
+        );
         setSnackbarOpen(true);
         setLoading(false);
         return;
       }
       if (sum !== 100) {
-        setSnackbarMessage("Total percentage for Product Alignment must equal 100%");
+        setSnackbarMessage(
+          "Total percentage for Product Alignment must equal 100%"
+        );
         setSnackbarOpen(true);
         setLoading(false);
         return;
@@ -499,8 +525,9 @@ export default function AudiencePersonaForm() {
       productAlignment,
       aiVsCore,
       industry,
-      isDraft: true,
-      isPublished: false,
+      // Decide if published or draft
+      isDraft: !isPublished,
+      isPublished: isPublished,
     };
 
     // 7) Save (API call)
@@ -510,19 +537,23 @@ export default function AudiencePersonaForm() {
       const response = await sendDataToAPI(updatedFormData);
 
       if (response.success) {
-        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarMessage(
+          isPublished
+            ? "Event published successfully!"
+            : "Draft saved successfully!"
+        );
         setSnackbarOpen(true);
         setTimeout(() => {
           setLoading(false);
           saveAndNavigate(updatedFormData, "/links");
         }, 1500);
       } else {
-        setSnackbarMessage("Failed to save draft.");
+        setSnackbarMessage("Failed to save draft or publish.");
         setSnackbarOpen(true);
         setLoading(false);
       }
     } catch (error) {
-      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarMessage("An error occurred while saving.");
       setSnackbarOpen(true);
       setLoading(false);
     }
@@ -534,6 +565,7 @@ export default function AudiencePersonaForm() {
       style={{ overscrollBehavior: "contain" }}
     >
       <CalendarHeaderForm />
+
       <div className="form-container" style={{ overscrollBehavior: "contain" }}>
         <div className="event-form">
           <Typography
@@ -794,7 +826,9 @@ export default function AudiencePersonaForm() {
                     <Grid item xs={1}>
                       <Checkbox
                         checked={accountType[type].selected}
-                        onChange={() => handleToggleSegment(type, setAccountType)}
+                        onChange={() =>
+                          handleToggleSegment(type, setAccountType)
+                        }
                       />
                     </Grid>
                     <Grid item xs={7}>
@@ -962,6 +996,21 @@ export default function AudiencePersonaForm() {
             </Button>
           </Grid>
 
+          {/* NEW: Publish toggle */}
+          <Grid item xs={12} sx={{ mt: 3 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isPublished}
+                  onChange={(e) => setIsPublished(e.target.checked)}
+                  name="isPublished"
+                  color="primary"
+                />
+              }
+              label={<Typography>Publish this event?</Typography>}
+            />
+          </Grid>
+
           {/* Form Error Prompt */}
           {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>
@@ -970,7 +1019,7 @@ export default function AudiencePersonaForm() {
           )}
 
           {/* Previous / Next Buttons */}
-          <div style={{ marginTop: "20px", float: "right" }}>
+          <div style={{ marginTop: "20px", float: "right", position: "relative" }}>
             <Button
               variant="outlined"
               onClick={handlePrevious}

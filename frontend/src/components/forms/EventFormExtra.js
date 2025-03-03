@@ -14,10 +14,6 @@ import {
   MenuItem,
   Typography,
   Grid,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  TextField,
   Chip,
   Accordion,
   AccordionSummary,
@@ -27,11 +23,12 @@ import {
   Switch,
   CircularProgress,
   Box,
+  FormControlLabel,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import "../styles/Forms.css";
 import InfoIcon from "@mui/icons-material/Info";
-import { blue, grey } from "@mui/material/colors";
+import { blue } from "@mui/material/colors";
 import { sendDataToAPI } from "../../api/pushData";
 import { useFormNavigation } from "../../hooks/useFormNavigation";
 
@@ -48,10 +45,18 @@ const partnerRoleOptions = [
 
 export default function ExtraDetailsForm() {
   const { formData, updateFormData, selectedEvent } = useContext(GlobalContext);
+
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(true);
+
+  // NEW: Toggle for publish/draft
+  const [isPublished, setIsPublished] = useState(
+    formData?.isPublished || false
+  );
+
+  // Customer Use
   const [customerUse, setCustomerUse] = useState(
     formData?.isApprovedForCustomerUse !== undefined
       ? formData.isApprovedForCustomerUse
@@ -63,126 +68,83 @@ export default function ExtraDetailsForm() {
         : "no"
       : ""
   );
+
+  // Program
   const [program, setProgram] = useState(
     Array.isArray(formData?.programName)
       ? formData.programName
       : selectedEvent?.programName || []
   );
-
   const [isProgramError, setIsProgramError] = useState(false);
 
-  // const [okrSelections, setOkrSelections] = useState(() => {
-  //   const dataSource = formData || selectedEvent;
-  //   return okrOptions.reduce((acc, option) => {
-  //     const okrItem = dataSource?.okr?.find(
-  //       (item) => item.type === option.label
-  //     );
-  //     acc[option.label] = {
-  //       selected: !!okrItem && okrItem.percentage !== "",
-  //       percentage: okrItem ? okrItem.percentage : "",
-  //     };
-  //     return acc;
-  //   }, {});
-  // });
-
+  // GEP
   const [gep, setGep] = useState(
     (Array.isArray(formData?.gep)
       ? formData.gep
       : selectedEvent?.gep || []
     ).filter(Boolean)
   );
+  const [isGepError, setIsGepError] = useState(false);
 
+  // Partners
   const [isPartneredEvent, setIsPartneredEvent] = useState(
     formData?.isPartneredEvent || selectedEvent?.isPartneredEvent || false
   );
-
   const [partnerRole, setPartnerRole] = useState(
     formData?.partnerRole || selectedEvent?.partnerRole || ""
   );
 
-  const [isGepError, setIsGepError] = useState(false);
+  const saveAndNavigate = useFormNavigation();
 
-  // const handleToggleOkr = (label) => {
-  //   setOkrSelections((prev) => ({
-  //     ...prev,
-  //     [label]: {
-  //       ...prev[label],
-  //       selected: !prev[label].selected,
-  //     },
-  //   }));
-  // };
+  /**
+   * Keep formData updated as user changes fields
+   */
+  useEffect(() => {
+    const updatedFormData = {
+      ...formData,
+      // Convert "yes"/"no" to boolean
+      isApprovedForCustomerUse: customerUse === "yes",
+      programName: program,
+      gep,
+      isPartneredEvent,
+      partnerRole,
+      isPublished, // Remember the user's choice
+    };
+
+    // Update only if something changed
+    if (JSON.stringify(updatedFormData) !== JSON.stringify(formData)) {
+      updateFormData(updatedFormData);
+    }
+  }, [
+    formData,
+    program,
+    customerUse,
+    gep,
+    isPartneredEvent,
+    partnerRole,
+    isPublished,
+    updateFormData,
+  ]);
+
+  /**
+   * Handle Program selection
+   */
   const handleProgramChange = (event) => {
     setProgram(event.target.value);
     setIsProgramError(false);
   };
 
-  // const handlePercentageChange = (label, value) => {
-  //   setOkrSelections((prev) => ({
-  //     ...prev,
-  //     [label]: {
-  //       ...prev[label],
-  //       percentage: value,
-  //     },
-  //   }));
-  // };
-  useEffect(() => {
-    const updatedFormData = {
-      ...formData,
-      // isApprovedForCustomerUse: customerUse === "yes" ? true : false,
-      programName: program,
-      isApprovedForCustomerUse: null,
-      // okr: Object.keys(okrSelections).map((label) => ({
-      //   type: label,
-      //   percentage: okrSelections[label].percentage,
-      // })),
-      gep,
-      isPartneredEvent,
-      partnerRole,
-    };
-
-    // Only update the form if the data has changed
-    if (JSON.stringify(updatedFormData) !== JSON.stringify(formData)) {
-      updateFormData(updatedFormData);
-    }
-  }, [
-    program,
-    customerUse,
-    // okrSelections,
-    gep,
-    isPartneredEvent,
-    partnerRole,
-    updateFormData,
-    formData,
-  ]);
-
-  const saveAndNavigate = useFormNavigation();
-
-  const handlePrevious = () => {
-    // const selectedOkrs = Object.keys(okrSelections)
-    //   .filter((key) => okrSelections[key].selected)
-    //   .map((key) => ({
-    //     type: key,
-    //     percentage: okrSelections[key].percentage,
-    //   }));
-
-    saveAndNavigate(
-      {
-        // okr: selectedOkrs,
-        gep,
-        program,
-        isPartneredEvent: isPartneredEvent === true,
-        isApprovedForCustomerUse: customerUse === "yes",
-        partnerRole,
-      },
-      "/email-invitation"
-    );
-  };
-
+  /**
+   * Delete a GEP item
+   */
   const handleGepDelete = (gepToDelete) => (event) => {
     event.stopPropagation();
-    setGep((currentGep) => currentGep.filter((gep) => gep !== gepToDelete));
+    setGep((currentGep) => currentGep.filter((g) => g !== gepToDelete));
   };
 
+  /**
+   * Delete a Program item
+   */
   const handleProgramDelete = (programToDelete) => (event) => {
     event.stopPropagation();
     setProgram((currentProgram) =>
@@ -190,12 +152,33 @@ export default function ExtraDetailsForm() {
     );
   };
 
+  /**
+   * Previous step
+   */
+  const handlePrevious = () => {
+    saveAndNavigate(
+      {
+        gep,
+        programName: program,
+        isPartneredEvent,
+        isApprovedForCustomerUse: customerUse === "yes",
+        partnerRole,
+        isPublished,
+      },
+      "/email-invitation"
+    );
+  };
+
+  /**
+   * Next step
+   */
   const handleNext = async () => {
     setLoading(true);
+
+    // Validate fields
     const isGepValid = gep.length > 0;
     const isProgramValid = program.length > 0;
 
-    // setIsCustomerUseError(!isCustomerUseValid);
     setIsGepError(!isGepValid);
     setIsProgramError(!isProgramValid);
 
@@ -207,61 +190,40 @@ export default function ExtraDetailsForm() {
       return;
     }
 
-    // const selectedOkrs = Object.keys(okrSelections)
-    //   .filter((key) => okrSelections[key].selected)
-    //   .map((key) => ({
-    //     type: key,
-    //     percentage: okrSelections[key].percentage,
-    //   }));
-
-    // if (selectedOkrs.length > 0) {
-    //   const okrTotalPercentage = selectedOkrs.reduce(
-    //     (sum, okr) => sum + (parseFloat(okr.percentage) || 0),
-    //     0
-    //   );
-
-      // if (okrTotalPercentage > 100) {
-      //   setSnackbarMessage("Total OKR percentage cannot exceed 100%");
-      //   setLoading(false);
-      //   setSnackbarOpen(true);
-      //   return;
-      // }
-
-      // if (okrTotalPercentage !== 100) {
-      //   setSnackbarMessage("Total OKR percentage must equal 100%");
-      //   setLoading(false);
-      //   setSnackbarOpen(true);
-      //   return;
-      // }
-    // }
-
+    // Merge final data
     const updatedFormData = {
       ...formData,
-      // okr: selectedOkrs,
       gep,
       programName: program,
-      isPartneredEvent: isPartneredEvent === true,
+      isPartneredEvent,
       isApprovedForCustomerUse: customerUse === "yes",
       partnerRole,
-      isDraft: true,
-      isPublished: false,
+      // Decide if published or draft
+      isDraft: !isPublished,
+      isPublished: isPublished,
     };
+
     try {
       const response = await sendDataToAPI(updatedFormData, "draft");
       if (response.success) {
-        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarMessage(
+          isPublished
+            ? "Event published successfully!"
+            : "Draft saved successfully!"
+        );
         setSnackbarOpen(true);
+
         setTimeout(() => {
           setLoading(false);
           saveAndNavigate(updatedFormData, "/email-invitation");
         }, 1500);
       } else {
-        setSnackbarMessage("Failed to save draft.");
+        setSnackbarMessage("Failed to save or publish.");
         setLoading(false);
         setSnackbarOpen(true);
       }
     } catch (error) {
-      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarMessage("An error occurred while saving.");
       setLoading(false);
       setSnackbarOpen(true);
     }
@@ -270,6 +232,7 @@ export default function ExtraDetailsForm() {
   return (
     <div className="h-screen flex flex-col">
       <CalendarHeaderForm />
+
       <div className="form-container">
         <div className="event-form scrollable-form">
           <Typography
@@ -288,54 +251,9 @@ export default function ExtraDetailsForm() {
               Extra details
             </span>
           </Typography>
-          <Grid container spacing={2}>
-            
-            {/* OKR Selection as Expandable Accordion */}
-            {/* <Grid item xs={12}>
-              <Accordion>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="panel-content"
-                  id="panel-header"
-                >
-                  <Typography>OKR Selection *</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  {Object.keys(okrSelections).map((label) => (
-                    <Grid container alignItems="center" key={label}>
-                      <Grid item xs={1}>
-                        <Checkbox
-                          checked={okrSelections[label].selected}
-                          onChange={() => handleToggleOkr(label)}
-                        />
-                      </Grid>
-                      <Grid item xs={7}>
-                        <Typography variant="body2">{label}</Typography>
-                      </Grid>
-                      <Grid item xs={4}>
-                        <Input
-                          type="number"
-                          value={okrSelections[label].percentage}
-                          onChange={(e) =>
-                            handlePercentageChange(label, e.target.value)
-                          }
-                          onWheel={(e) => e.target.blur()}
-                          placeholder="Percentage"
-                          sx={{ width: "80%" }}
-                          inputProps={{
-                            min: 0,
-                            max: 100,
-                            step: 1,
-                          }}
-                          disabled={!okrSelections[label].selected}
-                        />
-                      </Grid>
-                    </Grid>
-                  ))}
-                </AccordionDetails>
-              </Accordion>
-            </Grid> */}
 
+          <Grid container spacing={2}>
+            {/* Solutions (GEP) */}
             <Grid item xs={12}>
               <FormControl fullWidth error={isGepError}>
                 <Typography variant="subtitle1">Solution *</Typography>
@@ -344,9 +262,7 @@ export default function ExtraDetailsForm() {
                   value={gep}
                   onChange={(e) => setGep(e.target.value)}
                   renderValue={(selected) => (
-                    <div
-                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
-                    >
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
                       {selected.map((gepItem) => (
                         <Chip
                           key={gepItem}
@@ -372,7 +288,7 @@ export default function ExtraDetailsForm() {
               </FormControl>
             </Grid>
 
-            {/* New Program Field */}
+            {/* Program */}
             <Grid item xs={12}>
               <FormControl fullWidth error={isProgramError}>
                 <Typography variant="subtitle1">Program *</Typography>
@@ -381,9 +297,7 @@ export default function ExtraDetailsForm() {
                   value={program}
                   onChange={handleProgramChange}
                   renderValue={(selected) => (
-                    <div
-                      style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}
-                    >
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
                       {selected.map((programItem) => (
                         <Chip
                           key={programItem}
@@ -409,14 +323,11 @@ export default function ExtraDetailsForm() {
               </FormControl>
             </Grid>
 
+            {/* Partner */}
             <Grid item xs={12}>
-              <Typography
-                variant="subtitle1"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
+              <Typography variant="subtitle1" sx={{ display: "flex", alignItems: "center" }}>
                 Are Partner(s) involved?
               </Typography>
-
               <FormControlLabel
                 control={
                   <Switch
@@ -426,10 +337,11 @@ export default function ExtraDetailsForm() {
                     color="primary"
                   />
                 }
+                label=""
               />
             </Grid>
 
-            {/* Partner Role Dropdown */}
+            {/* Partner Role */}
             {isPartneredEvent && (
               <Grid item xs={12}>
                 <FormControl fullWidth>
@@ -447,13 +359,32 @@ export default function ExtraDetailsForm() {
                 </FormControl>
               </Grid>
             )}
+
+            {/* Publish Toggle */}
+            <Grid item xs={12} sx={{ mt: 3 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isPublished}
+                    onChange={(e) => setIsPublished(e.target.checked)}
+                    name="isPublished"
+                    color="primary"
+                  />
+                }
+                label={<Typography>Publish this event?</Typography>}
+              />
+            </Grid>
           </Grid>
-          {/* {!isFormValid && (
+
+          {/* Validation error */}
+          {!isFormValid && (
             <Typography color="error" style={{ marginBottom: "10px" }}>
               Please fill in all required fields.
             </Typography>
-          )} */}
-          <div style={{ marginTop: "20px", float: "right" }}>
+          )}
+
+          {/* Bottom Buttons */}
+          <div style={{ marginTop: "20px", float: "right", position: "relative" }}>
             <Button
               variant="outlined"
               onClick={handlePrevious}
@@ -468,6 +399,7 @@ export default function ExtraDetailsForm() {
             >
               Previous
             </Button>
+
             {loading && (
               <Box
                 sx={{
@@ -479,16 +411,15 @@ export default function ExtraDetailsForm() {
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent background
-                  borderRadius: "8px", // Optional: match the button's border-radius
-                  zIndex: 1, // Ensure it appears on top
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  borderRadius: "8px",
+                  zIndex: 1,
                 }}
               >
                 <CircularProgress size={40} />
               </Box>
             )}
 
-            {/* Button */}
             <Button
               variant="contained"
               onClick={handleNext}
@@ -500,7 +431,7 @@ export default function ExtraDetailsForm() {
                   backgroundColor: blue[700],
                 },
               }}
-              disabled={loading} // Disable button while loading
+              disabled={loading}
             >
               Next
             </Button>

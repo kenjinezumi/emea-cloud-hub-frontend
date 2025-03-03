@@ -16,6 +16,8 @@ import {
   MenuItem,
   CircularProgress,
   Box,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EmailIcon from "@mui/icons-material/Email";
@@ -55,7 +57,13 @@ export default function EventFormEmailInvitation() {
   const [loading, setLoading] = useState(false);
   const [isFormValid, setIsFormValid] = useState(true);
 
-  // “languagesAndTemplates” is an array of objects: [{ platform, language, subjectLine, template }]
+  // NEW: Toggle for publish/draft
+  const [isPublished, setIsPublished] = useState(
+    formData?.isPublished || false
+  );
+
+  // “languagesAndTemplates” is an array of objects: 
+  // [{ platform, language, subjectLine, template }]
   const [languagesAndTemplates, setLanguagesAndTemplates] = useState(
     formData?.languagesAndTemplates?.length > 0
       ? formData.languagesAndTemplates
@@ -67,17 +75,21 @@ export default function EventFormEmailInvitation() {
   const saveAndNavigate = useFormNavigation();
   const quillRefs = useRef([]); // Refs for each ReactQuill instance
 
-  // Whenever “languagesAndTemplates” changes, update formData
+  /**
+   * Keep formData updated as user changes fields
+   */
   useEffect(() => {
     const oldTemplates = formData?.languagesAndTemplates ?? [];
     if (JSON.stringify(oldTemplates) !== JSON.stringify(languagesAndTemplates)) {
       updateFormData({
         ...formData,
         languagesAndTemplates,
+        // Also store isPublished so we remember user's choice
+        isPublished,
       });
     }
-    // If you have more fields in formData, you can update them similarly
-  }, [languagesAndTemplates, formData, updateFormData]);
+    // If you have more fields in formData, include them as well
+  }, [languagesAndTemplates, isPublished, formData, updateFormData]);
 
   // Add a new item to languagesAndTemplates
   const handleAddLanguageAndTemplate = () => {
@@ -98,63 +110,58 @@ export default function EventFormEmailInvitation() {
     }
   };
 
-  // Called when user picks a platform (Gmail / Salesloft)
+  // Platform change (Gmail / Salesloft)
   const handlePlatformChange = (value, index) => {
     setLanguagesAndTemplates((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, platform: value } : item
-      )
+      prev.map((item, i) => (i === index ? { ...item, platform: value } : item))
     );
   };
 
-  // Called when user picks a language from Autocomplete
+  // Language change
   const handleLanguageChange = (value, index) => {
     setLanguagesAndTemplates((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, language: value } : item
-      )
+      prev.map((item, i) => (i === index ? { ...item, language: value } : item))
     );
   };
 
-  // Called when user modifies the Quill editor or text field for template
+  // Editor change
   const handleEditorChange = (content, index) => {
     setLanguagesAndTemplates((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, template: content } : item
-      )
+      prev.map((item, i) => (i === index ? { ...item, template: content } : item))
     );
   };
 
-  // Called when user modifies the subject line
+  // Subject line change
   const handleSubjectLineChange = (value, index) => {
     setLanguagesAndTemplates((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, subjectLine: value } : item
-      )
+      prev.map((item, i) => (i === index ? { ...item, subjectLine: value } : item))
     );
   };
 
-  // Insert personalization token into the Quill editor
+  // Insert a personalization token into the Quill editor
   const handlePersonalizationInsert = (token, index) => {
     const quillEditor = quillRefs.current[index]?.getEditor();
     if (!quillEditor) return;
 
     quillEditor.focus();
     const selection = quillEditor.getSelection();
-
     if (selection && selection.index != null) {
       const cursorPosition = selection.index;
       quillEditor.insertText(cursorPosition, token);
-      // Move cursor after inserted token
       quillEditor.setSelection(cursorPosition + token.length);
     } else {
-      // Append token to the end if no selection
+      // Append token to the end if no cursor position
       const currentContent = quillEditor.getText();
       quillEditor.setText(`${currentContent.trim()} ${token}`);
     }
   };
 
-  // “Next” button
+  // Previous step
+  const handlePrevious = () => {
+    saveAndNavigate({ languagesAndTemplates, isPublished }, "/extra");
+  };
+
+  // Next step
   const handleNext = async () => {
     setLoading(true);
 
@@ -166,60 +173,59 @@ export default function EventFormEmailInvitation() {
       return item;
     });
 
-    // 2) Overwrite your local state with the corrected array
-    setLanguagesAndTemplates(corrected);
-
-    // 3) Now validate
+    // 2) Validate presence of language, subject line, and template
     const formIsValid = corrected.every(
       (item) =>
         item.language.trim() !== "" &&
-        item.template.trim() !== "" &&
-        item.subjectLine.trim() !== ""
+        item.subjectLine.trim() !== "" &&
+        item.template.trim() !== ""
     );
     setIsFormValid(formIsValid);
 
-    // 4) If valid, attempt to save as a draft
-    const updatedFormData = {
-      ...formData,
-      languagesAndTemplates: corrected,
-      isDraft: true,
-      isPublished: false,
-    };
-    updateFormData(updatedFormData);
-
     if (!formIsValid) {
       setSnackbarMessage(
-        "Please ensure each platform entry has a language, subject line, and template."
+        "Please ensure each entry has a language, subject line, and template."
       );
       setSnackbarOpen(true);
       setLoading(false);
       return;
     }
 
+    // 3) Prepare final data (decide if draft or published)
+    const updatedFormData = {
+      ...formData,
+      languagesAndTemplates: corrected,
+      isDraft: !isPublished,     // If not published, it's a draft
+      isPublished: isPublished,  // True if published, false otherwise
+    };
+
+    updateFormData(updatedFormData);
+
+    // 4) Send to API
     try {
       const response = await sendDataToAPI(updatedFormData, "draft");
       if (response.success) {
-        setSnackbarMessage("Draft saved successfully!");
+        setSnackbarMessage(
+          isPublished
+            ? "Event published successfully!"
+            : "Draft saved successfully!"
+        );
         setSnackbarOpen(true);
+
         setTimeout(() => {
           setLoading(false);
           saveAndNavigate(updatedFormData, "/audience");
         }, 1500);
       } else {
-        setSnackbarMessage("Failed to save draft.");
+        setSnackbarMessage("Failed to save or publish.");
         setSnackbarOpen(true);
         setLoading(false);
       }
     } catch (error) {
-      setSnackbarMessage("An error occurred while saving the draft.");
+      setSnackbarMessage("An error occurred while saving.");
       setSnackbarOpen(true);
       setLoading(false);
     }
-  };
-
-  // “Previous” button
-  const handlePrevious = () => {
-    saveAndNavigate({ languagesAndTemplates }, "/extra");
   };
 
   return (
@@ -254,7 +260,7 @@ export default function EventFormEmailInvitation() {
                   }}
                 />
                 <span className="mr-1 text-xl text-black cursor-pointer">
-                  Email invitation
+                  Email Invitation
                 </span>
               </Typography>
             </Grid>
@@ -262,198 +268,201 @@ export default function EventFormEmailInvitation() {
 
           <form noValidate>
             <Grid container spacing={2} sx={{ mb: 3 }}>
-              {languagesAndTemplates.length > 0
-                ? languagesAndTemplates.map((item, index) => (
-                    <Accordion
-                      key={index}
-                      sx={{ width: "100%", marginBottom: "8px" }}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMoreIcon />}
-                        aria-controls={`panel-content-${index}`}
-                        id={`panel-header-${index}`}
-                      >
-                        <Typography>
-                          {item.platform
-                            ? // If a platform is selected
-                              `${item.platform}${
-                                item.language ? ` - ${item.language}` : ""
-                              }`
-                            : // If no platform is selected, display "Add"
-                              "Add"}
-                        </Typography>
-                      </AccordionSummary>
+              {languagesAndTemplates.map((item, index) => (
+                <Accordion
+                  key={index}
+                  sx={{ width: "100%", marginBottom: "8px" }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls={`panel-content-${index}`}
+                    id={`panel-header-${index}`}
+                  >
+                    <Typography>
+                      {item.platform
+                        ? `${item.platform}${item.language ? ` - ${item.language}` : ""}`
+                        : "Add"}
+                    </Typography>
+                  </AccordionSummary>
 
-                      <AccordionDetails>
-                        <Grid container spacing={2}>
-                          <Grid item xs={12}>
-                            <FormControl fullWidth>
-                              <Typography variant="subtitle1">Platform</Typography>
-                              <Select
-                                value={item.platform}
-                                onChange={(e) =>
-                                  handlePlatformChange(e.target.value, index)
-                                }
-                                fullWidth
-                              >
-                                {platformOptions.map((platform) => (
-                                  <MenuItem key={platform} value={platform}>
-                                    {platform}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
+                  <AccordionDetails>
+                    <Grid container spacing={2}>
+                      {/* Platform */}
+                      <Grid item xs={12}>
+                        <FormControl fullWidth>
+                          <Typography variant="subtitle1">Platform</Typography>
+                          <Select
+                            value={item.platform}
+                            onChange={(e) =>
+                              handlePlatformChange(e.target.value, index)
+                            }
+                            fullWidth
+                          >
+                            {platformOptions.map((platform) => (
+                              <MenuItem key={platform} value={platform}>
+                                {platform}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
 
-                          <Grid item xs={12}>
-                            <FormControl fullWidth>
-                              <Typography variant="subtitle1">
-                                Email Language
-                              </Typography>
-                              <Autocomplete
-                                value={item.language || ""}
-                                onChange={(event, newValue) => {
-                                  handleLanguageChange(newValue, index);
-                                }}
-                                freeSolo
-                                options={languageOptions.filter(
-                                  (language) =>
-                                    // Disallow duplicates for the same platform
-                                    !languagesAndTemplates.some(
-                                      (other, idx2) =>
-                                        other.language === language &&
-                                        other.platform === item.platform &&
-                                        idx2 !== index
-                                    )
-                                )}
-                                renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    label="Select Language"
-                                    variant="outlined"
-                                  />
-                                )}
-                              />
-                            </FormControl>
-                          </Grid>
-
-                          <Grid item xs={12}>
-                            <Typography variant="subtitle1">
-                              Email Subject Line
-                            </Typography>
-                            <TextField
-                              value={item.subjectLine || ""}
-                              onChange={(e) =>
-                                handleSubjectLineChange(e.target.value, index)
-                              }
-                              variant="outlined"
-                              fullWidth
-                            />
-                          </Grid>
-
-                          <Grid item xs={12}>
-                            <Typography variant="subtitle1">Email Body</Typography>
-                            {item.platform === "Salesloft" ? (
-                              <>
-                                <ReactQuill
-                                  ref={(el) => (quillRefs.current[index] = el)}
-                                  value={item.template || ""}
-                                  onChange={(content) =>
-                                    handleEditorChange(content, index)
-                                  }
-                                  style={{
-                                    height: "300px",
-                                    maxHeight: "400px",
-                                    marginBottom: "20px",
-                                  }}
-                                  modules={{
-                                    toolbar: [
-                                      [
-                                        { header: "1" },
-                                        { header: "2" },
-                                        { font: [] },
-                                      ],
-                                      [{ list: "ordered" }, { list: "bullet" }],
-                                      ["bold", "italic", "underline"],
-                                      ["link", "image"],
-                                      ["clean"],
-                                    ],
-                                  }}
-                                />
-
-                                <div style={{ marginTop: "20px", pt: "40px" }}>
-                                  <Typography
-                                    variant="subtitle1"
-                                    style={{ marginTop: "50px" }}
-                                  >
-                                    Insert Personalisation Tokens:
-                                  </Typography>
-                                  {personalizationOptions.map((token, idx) => (
-                                    <Button
-                                      key={idx}
-                                      variant="outlined"
-                                      size="small"
-                                      onClick={() =>
-                                        handlePersonalizationInsert(token, index)
-                                      }
-                                      sx={{ margin: "5px" }}
-                                    >
-                                      {token}
-                                    </Button>
-                                  ))}
-                                </div>
-                              </>
-                            ) : (
-                              <ReactQuill
-                                value={item.template || ""}
-                                onChange={(content) =>
-                                  handleEditorChange(content, index)
-                                }
-                                style={{
-                                  height: "300px",
-                                  maxHeight: "400px",
-                                  marginBottom: "20px",
-                                }}
-                                modules={{
-                                  toolbar: [
-                                    [
-                                      { header: "1" },
-                                      { header: "2" },
-                                      { font: [] },
-                                    ],
-                                    [{ list: "ordered" }, { list: "bullet" }],
-                                    ["bold", "italic", "underline"],
-                                    ["link", "image"],
-                                    ["clean"],
-                                  ],
-                                }}
+                      {/* Language */}
+                      <Grid item xs={12}>
+                        <FormControl fullWidth>
+                          <Typography variant="subtitle1">
+                            Email Language
+                          </Typography>
+                          <Autocomplete
+                            value={item.language || ""}
+                            onChange={(event, newValue) => {
+                              handleLanguageChange(newValue, index);
+                            }}
+                            freeSolo
+                            options={languageOptions.filter(
+                              (language) =>
+                                // Disallow duplicates for the same platform
+                                !languagesAndTemplates.some(
+                                  (other, idx2) =>
+                                    other.language === language &&
+                                    other.platform === item.platform &&
+                                    idx2 !== index
+                                )
+                            )}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Select Language"
+                                variant="outlined"
                               />
                             )}
-                          </Grid>
+                          />
+                        </FormControl>
+                      </Grid>
 
-                          {index > 0 && (
-                            <Grid item xs={12}>
-                              <Button
-                                variant="outlined"
-                                onClick={() =>
-                                  handleRemoveLanguageAndTemplate(index)
-                                }
-                                sx={{
-                                  color: "#d32f2f",
-                                  borderColor: "#d32f2f",
-                                  marginTop: "1px",
-                                  textTransform: "none",
-                                }}
+                      {/* Subject Line */}
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1">
+                          Email Subject Line
+                        </Typography>
+                        <TextField
+                          value={item.subjectLine || ""}
+                          onChange={(e) =>
+                            handleSubjectLineChange(e.target.value, index)
+                          }
+                          variant="outlined"
+                          fullWidth
+                        />
+                      </Grid>
+
+                      {/* Email Body */}
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1">Email Body</Typography>
+                        {item.platform === "Salesloft" ? (
+                          <>
+                            <ReactQuill
+                              ref={(el) => (quillRefs.current[index] = el)}
+                              value={item.template || ""}
+                              onChange={(content) =>
+                                handleEditorChange(content, index)
+                              }
+                              style={{
+                                height: "300px",
+                                maxHeight: "400px",
+                                marginBottom: "20px",
+                              }}
+                              modules={{
+                                toolbar: [
+                                  [
+                                    { header: "1" },
+                                    { header: "2" },
+                                    { font: [] },
+                                  ],
+                                  [
+                                    { list: "ordered" },
+                                    { list: "bullet" },
+                                  ],
+                                  ["bold", "italic", "underline"],
+                                  ["link", "image"],
+                                  ["clean"],
+                                ],
+                              }}
+                            />
+
+                            <div style={{ marginTop: "20px", pt: "40px" }}>
+                              <Typography
+                                variant="subtitle1"
+                                style={{ marginTop: "50px" }}
                               >
-                                Remove
-                              </Button>
-                            </Grid>
-                          )}
+                                Insert Personalization Tokens:
+                              </Typography>
+                              {personalizationOptions.map((token, idx) => (
+                                <Button
+                                  key={idx}
+                                  variant="outlined"
+                                  size="small"
+                                  onClick={() =>
+                                    handlePersonalizationInsert(token, index)
+                                  }
+                                  sx={{ margin: "5px" }}
+                                >
+                                  {token}
+                                </Button>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <ReactQuill
+                            value={item.template || ""}
+                            onChange={(content) =>
+                              handleEditorChange(content, index)
+                            }
+                            style={{
+                              height: "300px",
+                              maxHeight: "400px",
+                              marginBottom: "20px",
+                            }}
+                            modules={{
+                              toolbar: [
+                                [
+                                  { header: "1" },
+                                  { header: "2" },
+                                  { font: [] },
+                                ],
+                                [
+                                  { list: "ordered" },
+                                  { list: "bullet" },
+                                ],
+                                ["bold", "italic", "underline"],
+                                ["link", "image"],
+                                ["clean"],
+                              ],
+                            }}
+                          />
+                        )}
+                      </Grid>
+
+                      {/* Remove button if not the first item */}
+                      {index > 0 && (
+                        <Grid item xs={12}>
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleRemoveLanguageAndTemplate(index)}
+                            sx={{
+                              color: "#d32f2f",
+                              borderColor: "#d32f2f",
+                              marginTop: "1px",
+                              textTransform: "none",
+                            }}
+                          >
+                            Remove
+                          </Button>
                         </Grid>
-                      </AccordionDetails>
-                    </Accordion>
-                  ))
-                : null}
+                      )}
+                    </Grid>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
 
               <Grid item xs={12}>
                 <Button variant="outlined" onClick={handleAddLanguageAndTemplate}>
@@ -462,12 +471,29 @@ export default function EventFormEmailInvitation() {
               </Grid>
             </Grid>
 
+            {/* Publish toggle */}
+            <Grid item xs={12} sx={{ mt: 3 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isPublished}
+                    onChange={(e) => setIsPublished(e.target.checked)}
+                    name="isPublished"
+                    color="primary"
+                  />
+                }
+                label={<Typography>Publish this event?</Typography>}
+              />
+            </Grid>
+
+            {/* Validation error */}
             {!isFormValid && (
-              <Typography color="error" sx={{ mb: 2 }}>
+              <Typography color="error" sx={{ mt: 2 }}>
                 Please fill in all required fields.
               </Typography>
             )}
 
+            {/* Snackbar */}
             <Snackbar
               open={snackbarOpen}
               autoHideDuration={6000}
@@ -475,7 +501,8 @@ export default function EventFormEmailInvitation() {
               message={snackbarMessage}
             />
 
-            <div style={{ marginTop: "20px", textAlign: "right" }}>
+            {/* Navigation buttons */}
+            <div style={{ marginTop: "20px", textAlign: "right", position: "relative" }}>
               <Button
                 variant="outlined"
                 onClick={handlePrevious}
