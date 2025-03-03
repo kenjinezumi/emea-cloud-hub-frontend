@@ -757,7 +757,7 @@ WHERE eventId = @eventId;
           message: "Failed to delete event. Please try again later.",
         });
       }
-    }else if (message === "save-filter") {
+    }} else if (message === "save-filter") {
       // Save filter logic
       const { ldap, filterName, config } = data;
     
@@ -770,180 +770,177 @@ WHERE eventId = @eventId;
       }
     
       try {
-        // For a table schema:
-        // id (STRING, REQUIRED)
-        // ldap (STRING, REQUIRED)
-        // filterName (STRING, REQUIRED)
-        // config (STRUCT<..., repeated subfields...>, NULLABLE)
-        // the query references (id, ldap, filterName, config) only.
+        // Because your schema is now config: ARRAY<STRUCT<...>>,
+        // define config in code as an array, not a single struct.
         const insertQuery = `
-          INSERT INTO \`google.com:cloudhub.data.filters_config\` (id, ldap, filterName, config)
-          VALUES (GENERATE_UUID(), @ldap, @filterName, @config);
+          INSERT INTO \`google.com:cloudhub.data.filters_config\`
+            (id, ldap, filterName, config)
+          VALUES
+            (GENERATE_UUID(), @ldap, @filterName, @config);
         `;
     
-        // IMPORTANT: config is a single STRUCT, *not* an array of STRUCT.
-        // Each subfield (e.g. regions) is repeated (ARRAY<STRUCT<...>>).
+        // IMPORTANT: config is an ARRAY of STRUCT, *not* just one STRUCT
         const types = {
           ldap: "STRING",
           filterName: "STRING",
           config: {
-            type: "STRUCT",
-            fields: {
-              regions: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+            type: "ARRAY",            // <-- This is the key change
+            arrayType: {
+              type: "STRUCT",
+              fields: {
+                regions: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              subRegions: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                subRegions: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              countries: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                countries: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              gep: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                gep: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              programName: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                programName: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              activityType: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                activityType: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              accountSectors: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    // If your code stores { label, checked }, or { value, checked },
-                    // adapt accordingly. This example uses label/checked:
-                    label: "STRING",
-                    checked: "BOOL",
+                accountSectors: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              accountSegments: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                accountSegments: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              buyerSegmentRollup: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                buyerSegmentRollup: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              productFamily: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                productFamily: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              industry: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                industry: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              partnerEvent: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                partnerEvent: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              draftStatus: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                draftStatus: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              newlyCreated: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    value: "BOOL",
-                    checked: "BOOL",
+                newlyCreated: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      value: "BOOL",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-              organisedBy: {
-                // If your code sends an array of strings for 'organisedBy':
-                type: "ARRAY",
-                arrayType: "STRING",
-              },
-              partyType: {
-                type: "ARRAY",
-                arrayType: {
-                  type: "STRUCT",
-                  fields: {
-                    label: "STRING",
-                    checked: "BOOL",
+                organisedBy: {
+                  type: "ARRAY",
+                  arrayType: "STRING", // array of strings
+                },
+                partyType: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
               },
@@ -959,7 +956,7 @@ WHERE eventId = @eventId;
             filterName,
             config,
           },
-          types, // Pass the types object with a single STRUCT for `config`
+          types,
         };
     
         await bigquery.query(options);
@@ -977,6 +974,7 @@ WHERE eventId = @eventId;
         });
       }
     }
+    
     
      else if (message === "get-filters") {
       // Get filters logic
