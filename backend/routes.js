@@ -757,34 +757,35 @@ WHERE eventId = @eventId;
           message: "Failed to delete event. Please try again later.",
         });
       }
-    }} else if (message === "save-filter") {
+    } else if (message === "save-filter") {
       // Save filter logic
       const { ldap, filterName, config } = data;
-    
+
       if (!ldap || !filterName || !config) {
-        logger.warn("POST /: LDAP, filter name, and config are required for saving filter.");
+        logger.warn(
+          "POST /: LDAP, filter name, and config are required for saving filter."
+        );
         return res.status(400).json({
           success: false,
           message: "LDAP, filter name, and config are required for saving filter.",
         });
       }
-    
+
       try {
-        // Because your schema is now config: ARRAY<STRUCT<...>>,
-        // define config in code as an array, not a single struct.
         const insertQuery = `
           INSERT INTO \`google.com:cloudhub.data.filters_config\`
             (id, ldap, filterName, config)
           VALUES
             (GENERATE_UUID(), @ldap, @filterName, @config);
         `;
-    
-        // IMPORTANT: config is an ARRAY of STRUCT, *not* just one STRUCT
+
+        // Because your schema is now config: ARRAY<STRUCT<...>>,
+        // define config in code as an array, not a single struct.
         const types = {
           ldap: "STRING",
           filterName: "STRING",
           config: {
-            type: "ARRAY",            // <-- This is the key change
+            type: "ARRAY",
             arrayType: {
               type: "STRUCT",
               fields: {
@@ -931,7 +932,7 @@ WHERE eventId = @eventId;
                 },
                 organisedBy: {
                   type: "ARRAY",
-                  arrayType: "STRING", // array of strings
+                  arrayType: "STRING",
                 },
                 partyType: {
                   type: "ARRAY",
@@ -947,7 +948,7 @@ WHERE eventId = @eventId;
             },
           },
         };
-    
+
         const options = {
           query: insertQuery,
           location: "US",
@@ -958,9 +959,9 @@ WHERE eventId = @eventId;
           },
           types,
         };
-    
+
         await bigquery.query(options);
-    
+
         logger.info("POST /: Filter configuration saved successfully.", { ldap });
         res.status(200).json({
           success: true,
@@ -974,7 +975,7 @@ WHERE eventId = @eventId;
         });
       }
     }
-    
+
     
      else if (message === "get-filters") {
       // Get filters logic
