@@ -699,7 +699,7 @@ export default function EventForm() {
               {shouldShowPartyType && (
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                    Party Type *
+                    1st vs 3rd Party  *
                   </Typography>
                   <FormControl fullWidth error={isPartyTypeError}>
                     <Select
