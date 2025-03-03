@@ -772,6 +772,9 @@ WHERE eventId = @eventId;
       }
 
       try {
+        logger.info("SAVE-FILTER: Received config", {
+          config: JSON.stringify(config, null, 2),
+        });
         const insertQuery = `
           INSERT INTO \`google.com:cloudhub.data.filters_config\`
             (id, ldap, filterName, config)
@@ -958,6 +961,12 @@ WHERE eventId = @eventId;
           },
           types,
         };
+
+        logger.info("SAVE-FILTER: About to run BigQuery query with options:", {
+          query,
+          params: JSON.stringify(options.params),
+          types: JSON.stringify(options.types),
+        });
 
         await bigquery.query(options);
 
