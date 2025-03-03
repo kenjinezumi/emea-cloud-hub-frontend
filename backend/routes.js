@@ -963,7 +963,7 @@ WHERE eventId = @eventId;
         };
 
         logger.info("SAVE-FILTER: About to run BigQuery query with options:", {
-          query,
+          insertQuery,
           params: JSON.stringify(options.params),
           types: JSON.stringify(options.types),
         });
