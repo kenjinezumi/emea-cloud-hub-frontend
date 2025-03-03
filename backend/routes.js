@@ -760,209 +760,191 @@ WHERE eventId = @eventId;
     } else if (message === "save-filter") {
       // Save filter logic
       const { ldap, filterName, config } = data;
-
+    
       if (!ldap || !filterName || !config) {
-        logger.warn("POST /: Incomplete data for saving filter.");
+        logger.warn("POST /: LDAP, filter name, and config are required for saving filter.");
         return res.status(400).json({
           success: false,
           message: "LDAP, filter name, and config are required for saving filter.",
         });
       }
-
+    
       try {
-        // 1) Build the insertQuery, same as before
-          const insertQuery = `
+        // Because config is an ARRAY with a single STRUCT inside, we define it like this:
+        const insertQuery = `
           INSERT INTO \`google.com:cloudhub.data.filters_config\` (id, ldap, filterName, config)
           VALUES (GENERATE_UUID(), @ldap, @filterName, @config);
         `;
-
-        // 2) Dynamically generate the parameter types for `config`
-        const configType = inferBigQueryType(config);
-
-        // 3) Build the entire `types` object for your parameters
+    
+        // Top-level config is an ARRAY -> arrayType is a STRUCT of sub-fields
         const types = {
-          ldap: 'STRING',
-          filterName: 'STRING',
+          ldap: "STRING",
+          filterName: "STRING",
           config: {
-            type: 'STRUCT',
-            fields: {
-              // For "regions": array of { label: STRING, checked: BOOL }
-              regions: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+            type: "ARRAY",
+            arrayType: {
+              type: "STRUCT",
+              fields: {
+                regions: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              // For "subRegions": same shape as regions
-              subRegions: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                subRegions: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              // Countries, same shape again
-              countries: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                countries: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              // GEP also has { label, checked }
-              gep: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                gep: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              programName: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                programName: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              activityType: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                activityType: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              // accountSectors has { label: "Commercial", checked: false }
-              // (You might also see it spelled "value" instead of "label", double-check your code.)
-              accountSectors: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                accountSectors: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING", // or "value" if your code uses that
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              accountSegments: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                accountSegments: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              buyerSegmentRollup: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                buyerSegmentRollup: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              productFamily: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                productFamily: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              industry: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    checked: 'BOOL',
+                industry: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              // For partnerEvent, you have { label, value, checked }
-              partnerEvent: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    value: 'BOOL',
-                    checked: 'BOOL',
+                partnerEvent: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              // For draftStatus, you have { label, value, checked } where 'value' is a STRING
-              draftStatus: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    value: 'STRING',
-                    checked: 'BOOL',
+                draftStatus: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              // For newlyCreated, it's { label, value: BOOL, checked: BOOL }
-              newlyCreated: {
-                type: 'ARRAY',
-                arrayType: {
-                  type: 'STRUCT',
-                  fields: {
-                    label: 'STRING',
-                    value: 'BOOL',
-                    checked: 'BOOL',
+                newlyCreated: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      value: "BOOL",
+                      checked: "BOOL",
+                    },
                   },
                 },
-              },
-    
-              // organisedBy can be null or an array of strings
-              organisedBy: {
-                type: 'ARRAY',
-                arrayType: 'STRING',
+                organisedBy: {
+                  type: "ARRAY",
+                  arrayType: "STRING", // or { type: 'STRUCT' } if you store objects
+                },
+                partyType: {
+                  type: "ARRAY",
+                  arrayType: {
+                    type: "STRUCT",
+                    fields: {
+                      label: "STRING",
+                      checked: "BOOL",
+                    },
+                  },
+                },
               },
             },
           },
         };
     
-
-        // 4) Add `types` to the query options
         const options = {
           query: insertQuery,
           location: "US",
@@ -971,29 +953,24 @@ WHERE eventId = @eventId;
             filterName,
             config,
           },
-          types,
+          types, // Pass the types object here
         };
-
-  // 5) Run the query
-  await bigquery.query(options);
-        logger.info("POST /: Filter configuration saved successfully.", {
-          ldap,
-        });
+    
+        await bigquery.query(options);
+        logger.info("Filter configuration saved successfully.", { ldap });
         res.status(200).json({
           success: true,
           message: "Filter configuration saved successfully.",
         });
       } catch (error) {
-        logger.error("POST /: Error saving filter configuration.", {
-          error,
-        });
-        res.status(500).json({
+        logger.error("Error saving filter configuration:", { error });
+        return res.status(500).json({
           success: false,
-          message:
-            "Failed to save filter configuration. Please try again later.",
+          message: "Failed to save filter configuration. Please try again later.",
         });
       }
-    } else if (message === "get-filters") {
+    }
+     else if (message === "get-filters") {
       // Get filters logic
       const { ldap } = data;
 
