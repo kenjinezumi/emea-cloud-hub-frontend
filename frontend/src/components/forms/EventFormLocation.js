@@ -1,9 +1,9 @@
 import React, { useEffect, useContext, useState } from "react";
 import GlobalContext from "../../context/GlobalContext";
 import {
-  regionOptions,
-  regionsData,
-  subregionsData,
+  regionOptions,   // e.g. ["EMEA", "LATAM", "NORTHAM", "JAPAC"]
+  regionsData,     // defines region => subregions
+  subregionsData,  // defines subregion => countries
 } from "../filters/FiltersData";
 import Snackbar from "@mui/material/Snackbar";
 import {
@@ -40,14 +40,13 @@ export default function LocationFormPage() {
   const { formData, updateFormData, selectedEvent, setCurrentView } =
     useContext(GlobalContext);
 
+  // Loading spinner
   const [loading, setLoading] = useState(false);
 
-  // NEW: Toggle for publish/draft
-  const [isPublished, setIsPublished] = useState(
-    formData?.isPublished || false
-  );
+  // Publish or Draft toggle
+  const [isPublished, setIsPublished] = useState(formData?.isPublished || false);
 
-  // 1) Region, SubRegion, Country
+  // Region, Subregion, Country arrays
   const [region, setRegion] = useState(
     Array.isArray(formData?.region)
       ? formData.region
@@ -70,7 +69,7 @@ export default function LocationFormPage() {
       : []
   );
 
-  // 2) City => an array of strings
+  // City => array of strings
   const [city, setCity] = useState(
     Array.isArray(formData?.city)
       ? formData.city
@@ -80,107 +79,130 @@ export default function LocationFormPage() {
   );
   const [newCity, setNewCity] = useState("");
 
+  // Location Venue
   const [locationVenue, setLocationVenue] = useState(
     formData?.locationVenue || selectedEvent?.locationVenue || ""
   );
 
-  // Lists of subregions/countries to pick from
+  // Subregion & Countries we can pick from
   const [availableSubregions, setAvailableSubregions] = useState([]);
   const [availableCountries, setAvailableCountries] = useState([]);
 
-  // UI states
+  // Snackbar feedback
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [isError, setIsError] = useState(false);
 
-  // Confirmation dialog for publishing
+  // Dialog for publish confirmation
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const saveAndNavigate = useFormNavigation();
 
-  /**
-   * Keep formData updated as user changes region/subRegion/country/city
-   */
+  // ------------------------------------------------------------
+  // Merge changes into formData so context is always current
+  // ------------------------------------------------------------
   useEffect(() => {
-    const currentFormData = {
+    const updated = {
       ...formData,
       region,
       subRegion,
       country,
       city,
       locationVenue,
-      // Also remember user’s publishing choice
       isPublished,
     };
-    updateFormData(currentFormData);
+    updateFormData(updated);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [region, subRegion, country, city, locationVenue, isPublished]);
 
-  /**
-   * On mount (and if selectedEvent changes), fill subregions/countries
-   */
+  // ------------------------------------------------------------
+  // If editing an existing event => build initial sub/countries
+  // ------------------------------------------------------------
   useEffect(() => {
     if (selectedEvent && Array.isArray(selectedEvent.region)) {
-      // Build subregions from all selected regions
-      const allSubregions = selectedEvent.region.flatMap((selectedReg) => {
-        const regionObj = regionsData.find((rd) => rd.region === selectedReg);
+      // Build subregions from chosen region(s)
+      const allSubs = selectedEvent.region.flatMap((r) => {
+        const regionObj = regionsData.find((rd) => rd.region === r);
         return regionObj ? regionObj.subregions : [];
       });
-      setAvailableSubregions([...new Set(allSubregions)]);
+      setAvailableSubregions([...new Set(allSubs)]);
 
-      // Then do the same for subRegion => countries
       if (Array.isArray(selectedEvent.subRegion)) {
-        const countriesForSubregions = selectedEvent.subRegion.flatMap(
-          (selectedSubregion) =>
-            subregionsData.find((data) => data.subregion === selectedSubregion)
-              ?.countries || []
-        );
-        setAvailableCountries(countriesForSubregions);
+        // Build countries from chosen subregion(s)
+        const allCountries = selectedEvent.subRegion.flatMap((sr) => {
+          const srObj = subregionsData.find((sd) => sd.subregion === sr);
+          return srObj ? srObj.countries : [];
+        });
+        setAvailableCountries([...new Set(allCountries)]);
       }
     }
   }, [selectedEvent]);
 
-  // -----------------------------
-  // Region changes => reset others
-  // -----------------------------
+  // ------------------------------------------------------------
+  // handleRegionChange => auto-select all subregions + countries
+  // ------------------------------------------------------------
   const handleRegionChange = (e) => {
-    const selectedRegions = e.target.value;
-    setRegion(
-      typeof selectedRegions === "string"
-        ? selectedRegions.split(",")
-        : selectedRegions
-    );
-    // Clear subRegion & country
-    setSubRegion([]);
-    setCountry([]);
+    const newRegions = Array.isArray(e.target.value)
+      ? e.target.value
+      : [e.target.value];
 
-    const allSubregions = selectedRegions.flatMap((selectedReg) => {
-      const regionObj = regionsData.find((rd) => rd.region === selectedReg);
-      return regionObj ? regionObj.subregions : [];
-    });
-    setAvailableSubregions([...new Set(allSubregions)]);
-    setAvailableCountries([]);
+    setRegion(newRegions);
+
+    // Build subregions from those region(s)
+    const subSet = new Set();
+    for (const reg of newRegions) {
+      const regionObj = regionsData.find((rd) => rd.region === reg);
+      if (regionObj && regionObj.subregions) {
+        regionObj.subregions.forEach((sr) => subSet.add(sr));
+      }
+    }
+    const allSubs = [...subSet];
+    setAvailableSubregions(allSubs);
+
+    // Auto-select all those subregions
+    setSubRegion(allSubs);
+
+    // Next => auto build the full union of countries from those subregions
+    const countrySet = new Set();
+    for (const sr of allSubs) {
+      const srObj = subregionsData.find((srd) => srd.subregion === sr);
+      if (srObj && srObj.countries) {
+        srObj.countries.forEach((c) => countrySet.add(c));
+      }
+    }
+    const allCountries = [...countrySet];
+    setAvailableCountries(allCountries);
+    // Auto-select all countries
+    setCountry(allCountries);
   };
 
-  // -----------------------------
-  // Subregion changes => update countries
-  // -----------------------------
+  // ------------------------------------------------------------
+  // handleSubRegionChange => user might unselect some subregions
+  // => auto update countries
+  // ------------------------------------------------------------
   const handleSubRegionChange = (e) => {
-    const selectedSubregions = e.target.value;
-    setSubRegion(selectedSubregions);
+    const newSubRegions = Array.isArray(e.target.value)
+      ? e.target.value
+      : [e.target.value];
 
-    const countriesForSubregions = selectedSubregions.flatMap((sr) => {
-      return (
-        subregionsData.find((data) => data.subregion === sr)?.countries || []
-      );
-    });
-    setAvailableCountries(countriesForSubregions);
-    setCountry([]); // reset
+    setSubRegion(newSubRegions);
+
+    // Build union of countries from the newly selected subregions
+    const countrySet = new Set();
+    for (const sr of newSubRegions) {
+      const srObj = subregionsData.find((srd) => srd.subregion === sr);
+      if (srObj && srObj.countries) {
+        srObj.countries.forEach((c) => countrySet.add(c));
+      }
+    }
+    const allCountries = [...countrySet];
+    setAvailableCountries(allCountries);
+    setCountry(allCountries); // auto-select them all
   };
 
-  // -----------------------------
-  // City handling
-  // -----------------------------
+  // ------------------------------------------------------------
+  // City => user can type in or paste multiple
+  // ------------------------------------------------------------
   const handleAddCity = () => {
     const trimmed = newCity.trim();
     if (trimmed && !city.includes(trimmed)) {
@@ -192,9 +214,11 @@ export default function LocationFormPage() {
       setSnackbarOpen(true);
     }
   };
+
   const handleCityDelete = (cityToDelete) => {
     setCity((prev) => prev.filter((c) => c !== cityToDelete));
   };
+
   const handlePasteCities = (e) => {
     e.preventDefault();
     const pastedText = e.clipboardData.getData("Text");
@@ -212,27 +236,24 @@ export default function LocationFormPage() {
     }
   };
 
-  // -----------------------------
-  // “Previous” => go back
-  // -----------------------------
+  // ------------------------------------------------------------
+  // Buttons: Previous, Next
+  // ------------------------------------------------------------
   const handlePrevious = () => {
     saveAndNavigate({ region, subRegion, country, city }, "/create-event");
   };
 
-  // -----------------------------
-  // Single "Next" button
-  // If isPublished = false => save draft
-  // If isPublished = true => confirm & publish
-  // -----------------------------
   const handleNext = () => {
     if (isPublished) {
-      setDialogOpen(true); // confirm
+      setDialogOpen(true);
     } else {
       handleSaveDraft();
     }
   };
 
-  // Actually do the draft saving
+  // ------------------------------------------------------------
+  // Save Draft
+  // ------------------------------------------------------------
   const handleSaveDraft = async () => {
     setLoading(true);
     const draftData = {
@@ -267,22 +288,14 @@ export default function LocationFormPage() {
     }
   };
 
-  // On confirm => validate & publish
+  // ------------------------------------------------------------
+  // Confirm publish
+  // ------------------------------------------------------------
   const handleConfirmPublish = async () => {
     setLoading(true);
 
-    // Minimal required fields check
-    const isRegionValid = region.length > 0;
-    const isSubRegionValid = subRegion.length > 0;
-    const isCountryValid = country.length > 0;
-    const isCityValid = city.length > 0;
-
-    if (
-      !isRegionValid ||
-      !isSubRegionValid ||
-      !isCountryValid ||
-      !isCityValid
-    ) {
+    // Basic required fields check
+    if (!region.length || !subRegion.length || !country.length || !city.length) {
       setSnackbarMessage(
         "All required fields (Regions, Sub-Regions, Countries, Cities) must be filled."
       );
@@ -293,7 +306,6 @@ export default function LocationFormPage() {
       return;
     }
 
-    // Now publish
     const publishedData = {
       ...formData,
       region,
@@ -313,7 +325,7 @@ export default function LocationFormPage() {
         setIsError(false);
         setSnackbarOpen(true);
         setCurrentView("month");
-        // Navigate back to main or next route
+        // navigate somewhere if needed
         saveAndNavigate({}, "/");
       } else {
         setSnackbarMessage("Failed to save and publish location data.");
@@ -333,6 +345,9 @@ export default function LocationFormPage() {
   const handleCloseDialog = () => setDialogOpen(false);
   const handleCloseSnackbar = () => setSnackbarOpen(false);
 
+  // ------------------------------------------------------------
+  // RENDER
+  // ------------------------------------------------------------
   return (
     <div className="h-screen flex flex-col">
       <CalendarHeaderForm />
@@ -353,7 +368,7 @@ export default function LocationFormPage() {
           </Typography>
 
           <Grid container spacing={3} className="form-grid">
-            {/* REGION MULTI-SELECT */}
+            {/* Region MULTI-SELECT */}
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
@@ -372,8 +387,8 @@ export default function LocationFormPage() {
                     </Box>
                   )}
                 >
-                  {regionOptions.map((reg, idx) => (
-                    <MenuItem key={idx} value={reg}>
+                  {regionOptions.map((reg) => (
+                    <MenuItem key={reg} value={reg}>
                       {reg}
                     </MenuItem>
                   ))}
@@ -381,7 +396,7 @@ export default function LocationFormPage() {
               </FormControl>
             </Grid>
 
-            {/* SUB-REGION MULTI-SELECT */}
+            {/* Subregion MULTI-SELECT */}
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
@@ -395,17 +410,13 @@ export default function LocationFormPage() {
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {selected.map((sr) => (
-                        <Chip
-                          key={sr}
-                          label={sr}
-                          onMouseDown={(e) => e.stopPropagation()}
-                        />
+                        <Chip key={sr} label={sr} />
                       ))}
                     </Box>
                   )}
                 >
-                  {availableSubregions.map((sr, idx) => (
-                    <MenuItem key={idx} value={sr}>
+                  {availableSubregions.map((sr) => (
+                    <MenuItem key={sr} value={sr}>
                       {sr}
                     </MenuItem>
                   ))}
@@ -413,7 +424,7 @@ export default function LocationFormPage() {
               </FormControl>
             </Grid>
 
-            {/* COUNTRY MULTI-SELECT */}
+            {/* Country MULTI-SELECT */}
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
@@ -427,17 +438,13 @@ export default function LocationFormPage() {
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {selected.map((c) => (
-                        <Chip
-                          key={c}
-                          label={c}
-                          onMouseDown={(e) => e.stopPropagation()}
-                        />
+                        <Chip key={c} label={c} />
                       ))}
                     </Box>
                   )}
                 >
-                  {availableCountries.map((c, idx) => (
-                    <MenuItem key={idx} value={c}>
+                  {availableCountries.map((c) => (
+                    <MenuItem key={c} value={c}>
                       {c}
                     </MenuItem>
                   ))}
@@ -445,7 +452,7 @@ export default function LocationFormPage() {
               </FormControl>
             </Grid>
 
-            {/* CITY as an array with text+chips */}
+            {/* City as an array with text+chips */}
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ mb: 1 }}>
                 Cities *
@@ -568,11 +575,11 @@ export default function LocationFormPage() {
         </div>
       </div>
 
-      {/* Global SnackBar */}
+      {/* Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
+        onClose={() => setSnackbarOpen(false)}
         message={snackbarMessage}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         ContentProps={{
@@ -580,14 +587,16 @@ export default function LocationFormPage() {
         }}
       />
 
-      {/* Confirmation Dialog for Publish */}
+      {/* Confirm Publish Dialog */}
       <Dialog
         open={dialogOpen}
         onClose={handleCloseDialog}
         aria-labelledby="confirm-publish-title"
         aria-describedby="confirm-publish-description"
       >
-        <DialogTitle id="confirm-publish-title">Confirm Save and Publish</DialogTitle>
+        <DialogTitle id="confirm-publish-title">
+          Confirm Save and Publish
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="confirm-publish-description">
             Please ensure the location fields are accurate. Once published,
