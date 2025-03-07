@@ -70,6 +70,15 @@ const isValidLdap = (ldapString) => {
   return !ldapString.includes("@");
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// GA4 HELPER: Safely send an event
+// ─────────────────────────────────────────────────────────────────────────────
+const sendGAEvent = (eventName, params = {}) => {
+  if (window && window.gtag) {
+    window.gtag("event", eventName, params);
+  }
+};
+
 export default function EventForm() {
   const { formData, selectedEvent, updateFormData } = useContext(GlobalContext);
   const [loading, setLoading] = useState(false);
@@ -81,7 +90,7 @@ export default function EventForm() {
   // Snackbar states
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [isError, setIsError] = useState(false); // NEW: track if it's an error
+  const [isError, setIsError] = useState(false);
 
   // Pull eventType from formData if it matches one of the eventTypeOptions
   const [eventType, setEventType] = useState(
@@ -90,7 +99,7 @@ export default function EventForm() {
       : ""
   );
 
-  // Title & Description fields
+  // Title & Description
   const [title, setTitle] = useState(
     formData?.title || selectedEvent?.title || ""
   );
@@ -187,9 +196,9 @@ export default function EventForm() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [chatLog, setChatLog] = useState([]);
 
-  // ---------------
-  // Data fetching
-  // ---------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // FETCHes & EFFECTS
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchMarketingProgramOptions = async () => {
       try {
@@ -228,23 +237,37 @@ export default function EventForm() {
     return emailPattern.test(email);
   };
 
-  // ---------------
-  // Date changes
-  // ---------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // DATE CHANGE HANDLERS
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleStartDateChange = (newDate) => {
+    sendGAEvent("start_date_changed", {
+      event_category: "EventForm",
+      new_date: newDate?.toISOString() || "(none)",
+    });
     setStartDate(newDate);
     setHasStartDateChanged(true);
   };
+
   const handleEndDateChange = (newDate) => {
+    sendGAEvent("end_date_changed", {
+      event_category: "EventForm",
+      new_date: newDate?.toISOString() || "(none)",
+    });
     setEndDate(newDate);
     setHasEndDateChanged(true);
   };
 
-  // ---------------
-  // Speakers
-  // ---------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // SPEAKERS
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleAddSpeaker = () => {
     const trimmedSpeaker = newSpeaker.trim();
+    sendGAEvent("add_speaker_click", {
+      event_category: "EventForm",
+      speaker_email: trimmedSpeaker,
+    });
+
     if (isValidEmail(trimmedSpeaker) && !speakers.includes(trimmedSpeaker)) {
       setSpeakers([...speakers, trimmedSpeaker]);
       setNewSpeaker("");
@@ -254,9 +277,15 @@ export default function EventForm() {
       setSnackbarOpen(true);
     }
   };
+
   const handleDeleteSpeaker = (emailToDelete) => {
+    sendGAEvent("delete_speaker_click", {
+      event_category: "EventForm",
+      speaker_email: emailToDelete,
+    });
     setSpeakers(speakers.filter((email) => email !== emailToDelete));
   };
+
   const handlePasteSpeakers = (e) => {
     const pastedText = e.clipboardData.getData("Text");
     const pastedEmails = pastedText
@@ -264,6 +293,10 @@ export default function EventForm() {
       .filter((email) => isValidEmail(email) && !speakers.includes(email));
 
     if (pastedEmails.length > 0) {
+      sendGAEvent("paste_speakers", {
+        event_category: "EventForm",
+        count: pastedEmails.length,
+      });
       setSpeakers([...speakers, ...pastedEmails]);
       e.preventDefault();
     } else {
@@ -273,11 +306,16 @@ export default function EventForm() {
     }
   };
 
-  // ---------------
-  // Organized by (LDAP)
-  // ---------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ORGANIZED BY (LDAP)
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleAddOrganiser = () => {
     const trimmedOrganiser = newOrganiser.trim();
+    sendGAEvent("add_organiser_click", {
+      event_category: "EventForm",
+      organiser_ldap: trimmedOrganiser,
+    });
+
     if (isValidLdap(trimmedOrganiser) && !organisedBy.includes(trimmedOrganiser)) {
       setOrganisedBy([...organisedBy, trimmedOrganiser]);
       setNewOrganiser("");
@@ -305,6 +343,10 @@ export default function EventForm() {
     );
 
     if (validLdaps.length > 0) {
+      sendGAEvent("paste_organisers", {
+        event_category: "EventForm",
+        count: validLdaps.length,
+      });
       setOrganisedBy([...organisedBy, ...validLdaps]);
     }
     if (invalidLdaps.length > 0) {
@@ -315,12 +357,16 @@ export default function EventForm() {
   };
 
   const handleDeleteOrganiser = (ldapToDelete) => {
+    sendGAEvent("delete_organiser_click", {
+      event_category: "EventForm",
+      organiser_ldap: ldapToDelete,
+    });
     setOrganisedBy(organisedBy.filter((org) => org !== ldapToDelete));
   };
 
-  // ---------------
-  // Merge formData
-  // ---------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // MERGE formData
+  // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     const eventId = selectedEvent?.eventId || formData.eventId || uuidv4();
 
@@ -366,11 +412,19 @@ export default function EventForm() {
     updateFormData,
   ]);
 
-  // ---------------
-  // Gemini logic
-  // ---------------
-  const handleGeminiDialogOpen = () => setGeminiDialogOpen(true);
+  // ─────────────────────────────────────────────────────────────────────────────
+  // GEMINI (AI)
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleGeminiDialogOpen = () => {
+    sendGAEvent("open_gemini_dialog", {
+      event_category: "EventForm",
+    });
+    setGeminiDialogOpen(true);
+  };
   const handleGeminiDialogClose = () => {
+    sendGAEvent("close_gemini_dialog", {
+      event_category: "EventForm",
+    });
     setGeminiDialogOpen(false);
     setGeminiPrompt("");
     setChatLog([]);
@@ -379,6 +433,10 @@ export default function EventForm() {
   const handleGeminiSubmit = async () => {
     if (!geminiPrompt.trim()) return;
 
+    sendGAEvent("gemini_submit_prompt", {
+      event_category: "EventForm",
+      prompt_text: geminiPrompt,
+    });
     setChatLog((prevChatLog) => [
       ...prevChatLog,
       { sender: "user", text: geminiPrompt },
@@ -432,24 +490,37 @@ export default function EventForm() {
     [geminiPrompt]
   );
 
-  // ---------------
-  // Emoji logic
-  // ---------------
-  const toggleEmojiPicker = () => setIsEmojiPickerOpen((prev) => !prev);
+  // ─────────────────────────────────────────────────────────────────────────────
+  // EMOJI
+  // ─────────────────────────────────────────────────────────────────────────────
+  const toggleEmojiPicker = () => {
+    sendGAEvent("toggle_emoji_picker", {
+      event_category: "EventForm",
+    });
+    setIsEmojiPickerOpen((prev) => !prev);
+  };
   const onEmojiClick = (emojiData, event) => {
+    sendGAEvent("pick_emoji", {
+      event_category: "EventForm",
+      emoji: emojiData.emoji,
+    });
     setEmoji(emojiData.emoji);
     setIsEmojiPickerOpen(false);
   };
 
-  // ---------------
-  // Date helper
-  // ---------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // DATE HELPER
+  // ─────────────────────────────────────────────────────────────────────────────
   const isDefaultDate = (date) => date && date.getTime() === 0;
 
-  // ---------------
-  // Next button
-  // ---------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // NEXT BUTTON
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleNext = async () => {
+    sendGAEvent("next_button_click", {
+      event_category: "EventForm",
+      is_published: isPublished,
+    });
     setLoading(true);
 
     const existingEventId = selectedEvent
@@ -538,6 +609,11 @@ export default function EventForm() {
     try {
       const response = await sendDataToAPI(updatedFormData);
       if (response.success) {
+        sendGAEvent("event_form_saved", {
+          event_category: "EventForm",
+          is_published: isPublished,
+          event_id: eventId,
+        });
         setSnackbarMessage(
           isPublished
             ? "Event published successfully!"
@@ -550,12 +626,20 @@ export default function EventForm() {
           setLoading(false);
         }, 1500);
       } else {
+        sendGAEvent("event_form_save_failed", {
+          event_category: "EventForm",
+          error_message: "Response not successful",
+        });
         setSnackbarMessage("Failed to save or publish event.");
         setIsError(true);
         setSnackbarOpen(true);
         setLoading(false);
       }
     } catch (error) {
+      sendGAEvent("event_form_save_failed", {
+        event_category: "EventForm",
+        error_message: error?.message || "Unknown error",
+      });
       setSnackbarMessage("An error occurred while saving the event.");
       setIsError(true);
       setSnackbarOpen(true);
@@ -563,9 +647,9 @@ export default function EventForm() {
     }
   };
 
-  // ---------------
-  // Close snackbar
-  // ---------------
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CLOSE SNACKBAR
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleCloseSnackbar = () => {
     setSnackbarOpen(false);
   };
@@ -673,7 +757,13 @@ export default function EventForm() {
                 <FormControl fullWidth error={isEventTypeError}>
                   <Select
                     value={eventType}
-                    onChange={(e) => setEventType(e.target.value)}
+                    onChange={(e) => {
+                      sendGAEvent("activity_type_change", {
+                        event_category: "EventForm",
+                        new_type: e.target.value,
+                      });
+                      setEventType(e.target.value);
+                    }}
                   >
                     {eventTypeOptions.map((option) => (
                       <MenuItem key={option.label} value={option.label}>
@@ -698,7 +788,13 @@ export default function EventForm() {
                   <FormControl fullWidth error={isPartyTypeError}>
                     <Select
                       value={partyType}
-                      onChange={(e) => setPartyType(e.target.value)}
+                      onChange={(e) => {
+                        sendGAEvent("party_type_change", {
+                          event_category: "EventForm",
+                          new_type: e.target.value,
+                        });
+                        setPartyType(e.target.value);
+                      }}
                     >
                       <MenuItem value="1st Party (Google Owned)">1st Party</MenuItem>
                       <MenuItem value="3rd Party">3rd Party</MenuItem>
@@ -720,7 +816,13 @@ export default function EventForm() {
                   control={
                     <Switch
                       checked={isHighPriority}
-                      onChange={() => setIsHighPriority(!isHighPriority)}
+                      onChange={() => {
+                        sendGAEvent("toggle_high_priority", {
+                          event_category: "EventForm",
+                          new_value: !isHighPriority,
+                        });
+                        setIsHighPriority(!isHighPriority);
+                      }}
                       name="highPriority"
                       color="primary"
                     />
@@ -745,7 +847,13 @@ export default function EventForm() {
                   control={
                     <Checkbox
                       checked={isEventSeries}
-                      onChange={(e) => setIsEventSeries(e.target.checked)}
+                      onChange={(e) => {
+                        sendGAEvent("toggle_event_series", {
+                          event_category: "EventForm",
+                          new_value: e.target.checked,
+                        });
+                        setIsEventSeries(e.target.checked);
+                      }}
                       color="primary"
                     />
                   }
@@ -1046,7 +1154,13 @@ export default function EventForm() {
               </Typography>
               <TextField
                 value={marketingProgramInstanceId}
-                onChange={(e) => setMarketingProgramInstanceId(e.target.value)}
+                onChange={(e) => {
+                  sendGAEvent("tactic_id_changed", {
+                    event_category: "EventForm",
+                    new_value: e.target.value,
+                  });
+                  setMarketingProgramInstanceId(e.target.value);
+                }}
                 variant="outlined"
                 fullWidth
                 margin="dense"
@@ -1060,7 +1174,13 @@ export default function EventForm() {
                   control={
                     <Switch
                       checked={isPublished}
-                      onChange={(e) => setIsPublished(e.target.checked)}
+                      onChange={(e) => {
+                        sendGAEvent("toggle_is_published", {
+                          event_category: "EventForm",
+                          new_value: e.target.checked,
+                        });
+                        setIsPublished(e.target.checked);
+                      }}
                       name="isPublished"
                       color="primary"
                     />
