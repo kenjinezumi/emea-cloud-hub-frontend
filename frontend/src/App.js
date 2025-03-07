@@ -20,6 +20,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import Login from "./components/forms/Login";
 import EventFormEmailInvitation from "./components/forms/EventFormEmailInvitation";
 import AuthSuccess from './components/forms/AuthSuccess';
+import DataExtractView from "./components/calendar/ExportView";
 
 function App() {
   const { sidebarOpen, currentView, monthIndex, showEventModal, setCurrentView } = useContext(GlobalContext);
@@ -81,7 +82,7 @@ function App() {
         <Route path="/auth/success" element={<AuthSuccess />} />
 
         {/* Protected Routes */}
-        <Route element={<PrivateRoute />}>
+        {/* <Route element={<PrivateRoute />}> */}
           <Route path="/" element={<RenderCalendarView />} />
           <Route path="/create-event" element={<EventForm />} />
           <Route path="/location" element={<EventFormLocation />} />
@@ -90,7 +91,9 @@ function App() {
           <Route path="/audience" element={<EventFormAudience />} />
           <Route path="/links" element={<EventFormLinks />} />
           <Route path="/event/:eventId" element={<EventSharePage />} />
-        </Route>
+          <Route path="/data-extract" element={<DataExtractView />} />
+
+        {/* </Route> */}
         {/* Fallback Route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

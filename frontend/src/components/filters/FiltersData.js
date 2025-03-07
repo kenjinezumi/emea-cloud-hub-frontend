@@ -7,7 +7,7 @@ export const eventTypeOptions = [
 ];
 
 export const partyTypeOptions = [
-  { label: "1st Party", checked: false },
+  { label: "1st Party (Google Owned)", checked: false },
   { label: "3rd Party", checked: false },
 ];
 

@@ -59,17 +59,22 @@ import linkedInLogo from "./logo/linkedin.png";
 import { refreshAccessToken } from "../../api/refreshToken";
 
 // ───────────────────────────────────────────────────────────────────────────
-// Helper functions to validate templates
+// 1. GA4 Helper: Send GA event if gtag exists
+// ───────────────────────────────────────────────────────────────────────────
+const sendGAEvent = (eventName, params = {}) => {
+  if (window && window.gtag) {
+    window.gtag("event", eventName, params);
+  }
+};
+
+// ───────────────────────────────────────────────────────────────────────────
+// 2. Helper functions to validate templates
 // ───────────────────────────────────────────────────────────────────────────
 function isValidGmailTemplate(gmailTemplate) {
-  // Must exist
   if (!gmailTemplate) return false;
-  // Must have a language
   if (!gmailTemplate.language) return false;
-  // Must have a non-empty template body
   if (!gmailTemplate.template || !gmailTemplate.template.trim()) return false;
-  // If you also want to ensure non-empty subject line, uncomment:
-  // if (!gmailTemplate.subjectLine || !gmailTemplate.subjectLine.trim()) return false;
+  // if (!gmailTemplate.subjectLine || !gmailTemplate.subjectLine.trim()) return false; 
   return true;
 }
 
@@ -77,12 +82,13 @@ function isValidSalesLoftTemplate(salesLoftTemplate) {
   if (!salesLoftTemplate) return false;
   if (!salesLoftTemplate.language) return false;
   if (!salesLoftTemplate.template || !salesLoftTemplate.template.trim()) return false;
-  // If you also want to ensure non-empty subject line, uncomment:
-  // if (!salesLoftTemplate.subjectLine || !salesLoftTemplate.subjectLine.trim()) return false;
+  // if (!salesLoftTemplate.subjectLine || !salesLoftTemplate.subjectLine.trim()) return false; 
   return true;
 }
 
-// Define the styled CustomTooltip at the top (or anywhere before usage)
+// ───────────────────────────────────────────────────────────────────────────
+// 3. Custom Tooltip
+// ───────────────────────────────────────────────────────────────────────────
 const CustomTooltip = styled(({ className, ...props }) => (
   <Tooltip
     {...props}
@@ -108,6 +114,9 @@ const CustomTooltip = styled(({ className, ...props }) => (
   },
 });
 
+// ───────────────────────────────────────────────────────────────────────────
+// 4. EventInfoPopup Component
+// ───────────────────────────────────────────────────────────────────────────
 export default function EventInfoPopup({ event, close }) {
   const navigate = useNavigate();
   const { formData, selectedEvent, setShowInfoEventModal, updateFormData } =
@@ -137,9 +146,6 @@ export default function EventInfoPopup({ event, close }) {
   const nodeRef = useRef(null);
   const [anchorEl, setAnchorEl] = useState(null);
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Hooks
-  // ───────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     // Pre-select English if available
     const englishTemplate = languagesAndTemplates.find(
@@ -152,6 +158,7 @@ export default function EventInfoPopup({ event, close }) {
     }
   }, [languagesAndTemplates]);
 
+  // Close on "Escape"
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -162,9 +169,7 @@ export default function EventInfoPopup({ event, close }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // ───────────────────────────────────────────────────────────────────────────
-  // Validate if there's a valid template for the selected language
-  // ───────────────────────────────────────────────────────────────────────────
+  // Validate templates
   const salesLoftTemplateForSelectedLanguage = languagesAndTemplates.find(
     (item) => item.platform === "Salesloft" && item.language === selectedLanguage
   );
@@ -172,14 +177,98 @@ export default function EventInfoPopup({ event, close }) {
     (item) => item.platform === "Gmail" && item.language === selectedLanguage
   );
 
-  // Check if each template is valid based on the user’s custom logic
   const canUseGmail = isValidGmailTemplate(gmailTemplateForSelectedLanguage);
-  const canUseSalesLoft = isValidSalesLoftTemplate(salesLoftTemplateForSelectedLanguage);
+  const canUseSalesLoft = isValidSalesLoftTemplate(
+    salesLoftTemplateForSelectedLanguage
+  );
 
   // ───────────────────────────────────────────────────────────────────────────
-  // Calendar
+  // A. Close everything
+  // ───────────────────────────────────────────────────────────────────────────
+  const handleCloseMenu = () => setAnchorEl(null);
+  const handleClose = () => {
+    sendGAEvent("close_event_info", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent?.title || "(no title)",
+    });
+    setShowInfoEventModal(false);
+  };
+
+  if (!selectedEvent) return null;
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // B. Top Buttons
+  // ───────────────────────────────────────────────────────────────────────────
+  const handleShareEvent = () => {
+    console.log("window.gtag:", window.gtag); // TEMP debug
+
+    sendGAEvent("share_event", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent.title,
+      event_id: selectedEvent.eventId,
+    });
+    if (selectedEvent.eventId) {
+      navigate(`/event/${selectedEvent.eventId}`);
+    }
+  };
+
+  const handleEditEvent = () => {
+    sendGAEvent("edit_event", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent.title,
+      event_id: selectedEvent.eventId,
+    });
+    if (selectedEvent) {
+      updateFormData({ ...formData, ...selectedEvent });
+      navigate("/create-event");
+    }
+  };
+
+  const handleDuplicateEvent = () => {
+    sendGAEvent("attempt_duplicate_event", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent.title,
+      event_id: selectedEvent.eventId,
+    });
+    setConfirmationDialogOpen(true);
+  };
+
+  const confirmDuplicateEvent = async () => {
+    sendGAEvent("confirm_duplicate_event", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent.title,
+      event_id: selectedEvent.eventId,
+    });
+
+    if (selectedEvent) {
+      try {
+        await duplicateEvent(selectedEvent.eventId, selectedEvent);
+        setSnackbarMessage("Event duplicated successfully!");
+        setInfoDialogOpen(true);
+      } catch (error) {
+        console.error("Failed to duplicate event:", error);
+        setSnackbarMessage("Failed to duplicate event. Please try again.");
+      } finally {
+        setConfirmationDialogOpen(false);
+        setSnackbarOpen(true);
+      }
+    }
+  };
+
+  const handleConfirmationDialogClose = () => {
+    setConfirmationDialogOpen(false);
+  };
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // C. Calendar
   // ───────────────────────────────────────────────────────────────────────────
   const handleCalendarConfirmation = async () => {
+    sendGAEvent("add_to_google_calendar", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent.title,
+      event_id: selectedEvent.eventId,
+    });
+
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
       setSnackbarMessage("Please log in to connect with Google Calendar.");
@@ -212,58 +301,16 @@ export default function EventInfoPopup({ event, close }) {
     }
   };
 
-  const handleCloseMenu = () => setAnchorEl(null);
-
-  const handleClose = () => {
-    setShowInfoEventModal(false);
-  };
-
-  if (!selectedEvent) return null;
-
   // ───────────────────────────────────────────────────────────────────────────
-  // Top buttons logic
-  // ───────────────────────────────────────────────────────────────────────────
-  const handleShareEvent = () => {
-    if (selectedEvent && selectedEvent.eventId) {
-      navigate(`/event/${selectedEvent.eventId}`);
-    }
-  };
-
-  const handleEditEvent = () => {
-    if (selectedEvent) {
-      updateFormData({ ...formData, ...selectedEvent });
-      navigate("/create-event");
-    }
-  };
-
-  const handleDuplicateEvent = () => {
-    setConfirmationDialogOpen(true);
-  };
-
-  const confirmDuplicateEvent = async () => {
-    if (selectedEvent) {
-      try {
-        await duplicateEvent(selectedEvent.eventId, selectedEvent);
-        setSnackbarMessage("Event duplicated successfully!");
-        setInfoDialogOpen(true);
-      } catch (error) {
-        console.error("Failed to duplicate event:", error);
-        setSnackbarMessage("Failed to duplicate event. Please try again.");
-      } finally {
-        setConfirmationDialogOpen(false);
-        setSnackbarOpen(true);
-      }
-    }
-  };
-
-  const handleConfirmationDialogClose = () => {
-    setConfirmationDialogOpen(false);
-  };
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // SalesLoft
+  // D. SalesLoft
   // ───────────────────────────────────────────────────────────────────────────
   const handleSalesLoftInvite = () => {
+    sendGAEvent("salesloft_invite", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent.title,
+      can_use_salesloft: canUseSalesLoft,
+    });
+
     if (!canUseSalesLoft) {
       setSnackbarMessage("No valid SalesLoft template available.");
       setSnackbarOpen(true);
@@ -273,6 +320,12 @@ export default function EventInfoPopup({ event, close }) {
   };
 
   const handleSalesLoftConfirmation = async () => {
+    sendGAEvent("confirm_salesloft_invite", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent.title,
+      selected_language: selectedLanguage,
+    });
+
     try {
       const salesLoftTemplate = salesLoftTemplateForSelectedLanguage;
       if (!salesLoftTemplate) {
@@ -310,77 +363,16 @@ export default function EventInfoPopup({ event, close }) {
   };
 
   // ───────────────────────────────────────────────────────────────────────────
-  // region & city as arrays
-  // ───────────────────────────────────────────────────────────────────────────
-  const formatListWithSpaces = (list) => {
-    if (!list) return "";
-    if (typeof list === "string") return list.replace(/,/g, ", ");
-    if (!Array.isArray(list)) return "";
-    return list.map((item) => item.replace(/,/g, ", ")).join(", ");
-  };
-
-  const getRegionLabel = (selectedEvent) => {
-    const regionList = Array.isArray(selectedEvent.region)
-      ? selectedEvent.region
-      : [];
-    const subRegionList = Array.isArray(selectedEvent.subRegion)
-      ? selectedEvent.subRegion
-      : [];
-    const countryList = Array.isArray(selectedEvent.country)
-      ? selectedEvent.country
-      : [];
-
-    if (regionList.length === 0 || subRegionList.length === 0) {
-      return null;
-    }
-
-    const mainRegion = regionList[0];
-    if (!mainRegion) return null;
-
-    const selectedRegionData = regionsData.find((r) => r.region === mainRegion);
-    if (!selectedRegionData) {
-      return [
-        formatListWithSpaces(regionList),
-        formatListWithSpaces(subRegionList),
-        formatListWithSpaces(countryList),
-      ]
-        .filter(Boolean)
-        .join(", ");
-    }
-
-    const allSubregionsSelected = selectedRegionData.subregions.every((sub) =>
-      subRegionList.includes(sub)
-    );
-
-    if (allSubregionsSelected) {
-      let everyCountryInAllSubs = true;
-      selectedRegionData.subregions.forEach((sub) => {
-        const subData = subregionsData.find((s) => s.subregion === sub);
-        if (
-          !subData ||
-          !subData.countries.every((c) => countryList.includes(c))
-        ) {
-          everyCountryInAllSubs = false;
-        }
-      });
-      if (everyCountryInAllSubs) {
-        return `All ${mainRegion}`;
-      }
-    }
-
-    return [
-      formatListWithSpaces(regionList),
-      formatListWithSpaces(subRegionList),
-      formatListWithSpaces(countryList),
-    ]
-      .filter(Boolean)
-      .join(", ");
-  };
-
-  // ───────────────────────────────────────────────────────────────────────────
-  // Gmail
+  // E. Gmail
   // ───────────────────────────────────────────────────────────────────────────
   const handleGmailInvite = async () => {
+    sendGAEvent("gmail_invite", {
+      event_category: "EventInfoPopup",
+      event_label: selectedEvent.title,
+      can_use_gmail: canUseGmail,
+      selected_language: selectedLanguage,
+    });
+
     try {
       if (!canUseGmail) {
         setSnackbarMessage("No valid Gmail template available.");
@@ -407,9 +399,7 @@ export default function EventInfoPopup({ event, close }) {
       const email = user?.emails?.[0]?.value;
 
       if (!email || !selectedLanguage) {
-        console.error(
-          "No email or selected language found. Aborting draft creation."
-        );
+        console.error("No email or selected language found. Aborting draft creation.");
         alert("No email or template selected.");
         return;
       }
@@ -521,7 +511,75 @@ export default function EventInfoPopup({ event, close }) {
   };
 
   // ───────────────────────────────────────────────────────────────────────────
-  // Section Layout
+  // F. Format region and city arrays
+  // ───────────────────────────────────────────────────────────────────────────
+  const formatListWithSpaces = (list) => {
+    if (!list) return "";
+    if (typeof list === "string") return list.replace(/,/g, ", ");
+    if (!Array.isArray(list)) return "";
+    return list.map((item) => item.replace(/,/g, ", ")).join(", ");
+  };
+
+  const getRegionLabel = (selectedEvent) => {
+    const regionList = Array.isArray(selectedEvent.region)
+      ? selectedEvent.region
+      : [];
+    const subRegionList = Array.isArray(selectedEvent.subRegion)
+      ? selectedEvent.subRegion
+      : [];
+    const countryList = Array.isArray(selectedEvent.country)
+      ? selectedEvent.country
+      : [];
+
+    if (regionList.length === 0 || subRegionList.length === 0) {
+      return null;
+    }
+
+    const mainRegion = regionList[0];
+    if (!mainRegion) return null;
+
+    const selectedRegionData = regionsData.find((r) => r.region === mainRegion);
+    if (!selectedRegionData) {
+      return [
+        formatListWithSpaces(regionList),
+        formatListWithSpaces(subRegionList),
+        formatListWithSpaces(countryList),
+      ]
+        .filter(Boolean)
+        .join(", ");
+    }
+
+    const allSubregionsSelected = selectedRegionData.subregions.every((sub) =>
+      subRegionList.includes(sub)
+    );
+
+    if (allSubregionsSelected) {
+      let everyCountryInAllSubs = true;
+      selectedRegionData.subregions.forEach((sub) => {
+        const subData = subregionsData.find((s) => s.subregion === sub);
+        if (
+          !subData ||
+          !subData.countries.every((c) => countryList.includes(c))
+        ) {
+          everyCountryInAllSubs = false;
+        }
+      });
+      if (everyCountryInAllSubs) {
+        return `All ${mainRegion}`;
+      }
+    }
+
+    return [
+      formatListWithSpaces(regionList),
+      formatListWithSpaces(subRegionList),
+      formatListWithSpaces(countryList),
+    ]
+      .filter(Boolean)
+      .join(", ");
+  };
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // G. Sections Layout
   // ───────────────────────────────────────────────────────────────────────────
   const sections = {
     Overview: (
@@ -679,11 +737,7 @@ export default function EventInfoPopup({ event, close }) {
 
         <Stack direction="row" spacing={1} sx={{ pl: 2, pr: 2, mt: 1 }}>
           {selectedEvent.eventType && (
-            <Chip
-              label={selectedEvent.eventType}
-              color="primary"
-              size="small"
-            />
+            <Chip label={selectedEvent.eventType} color="primary" size="small" />
           )}
           {selectedEvent.isDirectPartner && (
             <Chip label="Direct Partner" color="secondary" size="small" />
@@ -743,14 +797,22 @@ export default function EventInfoPopup({ event, close }) {
         )}
 
         {selectedEvent.audiencePersona?.length > 0 && (
-          <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
+          <Typography
+            variant="body2"
+            display="flex"
+            sx={{ whiteSpace: "normal" }}
+          >
             <PeopleIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
             Buyer Segment: {selectedEvent.audiencePersona.join(", ") || "N/A"}
           </Typography>
         )}
 
         {selectedEvent.industry?.length > 0 && (
-          <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
+          <Typography
+            variant="body2"
+            display="flex"
+            sx={{ whiteSpace: "normal" }}
+          >
             <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
             Industry:
             <Typography
@@ -794,7 +856,11 @@ export default function EventInfoPopup({ event, close }) {
           Object.values(selectedEvent.accountCategory).some(
             (category) => category.selected
           ) && (
-            <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
+            <Typography
+              variant="body2"
+              display="flex"
+              sx={{ whiteSpace: "normal" }}
+            >
               <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
               Account Category:{" "}
               <Typography
@@ -815,7 +881,11 @@ export default function EventInfoPopup({ event, close }) {
           Object.values(selectedEvent.accountSegments).some(
             (seg) => seg.selected
           ) && (
-            <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
+            <Typography
+              variant="body2"
+              display="flex"
+              sx={{ whiteSpace: "normal" }}
+            >
               <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
               Account Segments:{" "}
               <Typography
@@ -833,7 +903,11 @@ export default function EventInfoPopup({ event, close }) {
 
         {selectedEvent.accountType &&
           Object.values(selectedEvent.accountType).some((type) => type.selected) && (
-            <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
+            <Typography
+              variant="body2"
+              display="flex"
+              sx={{ whiteSpace: "normal" }}
+            >
               <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
               Greenfield Status:{" "}
               <Typography
@@ -851,7 +925,11 @@ export default function EventInfoPopup({ event, close }) {
           Object.values(selectedEvent.productAlignment).some(
             (product) => product.selected
           ) && (
-            <Typography variant="body2" display="flex" sx={{ whiteSpace: "normal" }}>
+            <Typography
+              variant="body2"
+              display="flex"
+              sx={{ whiteSpace: "normal" }}
+            >
               <LabelIcon style={{ marginRight: "5px", color: "#1a73e8" }} />
               Product Family:{" "}
               <Typography
@@ -1088,6 +1166,9 @@ export default function EventInfoPopup({ event, close }) {
     ),
   };
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // Render
+  // ───────────────────────────────────────────────────────────────────────────
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20"
@@ -1124,7 +1205,18 @@ export default function EventInfoPopup({ event, close }) {
               className="drag-handle"
             >
               <Toolbar variant="dense" sx={{ minHeight: "36px" }}>
-                <IconButton size="small" color="inherit" onClick={handleClose}>
+                <IconButton
+                  size="small"
+                  color="inherit"
+                  onClick={() => {
+                    // GA event
+                    sendGAEvent("close_popup_x_button", {
+                      event_category: "EventInfoPopup",
+                      event_label: selectedEvent.title,
+                    });
+                    handleClose();
+                  }}
+                >
                   <CloseIcon />
                 </IconButton>
               </Toolbar>
@@ -1185,6 +1277,10 @@ export default function EventInfoPopup({ event, close }) {
                 <IconButton
                   onClick={() => {
                     const { startDate, endDate } = selectedEvent;
+                    sendGAEvent("try_add_to_google_calendar", {
+                      event_category: "EventInfoPopup",
+                      event_label: selectedEvent.title,
+                    });
                     // If missing time in start/end date, show error
                     if (!startDate.includes("T") || !endDate.includes("T")) {
                       setSnackbarMessage(
@@ -1269,10 +1365,14 @@ export default function EventInfoPopup({ event, close }) {
               {Object.keys(sections).map((section) => (
                 <Button
                   key={section}
-                  variant={
-                    currentSection === section ? "contained" : "outlined"
-                  }
-                  onClick={() => setCurrentSection(section)}
+                  variant={currentSection === section ? "contained" : "outlined"}
+                  onClick={() => {
+                    sendGAEvent("switch_section_tab", {
+                      event_category: "EventInfoPopup",
+                      event_label: section,
+                    });
+                    setCurrentSection(section);
+                  }}
                   sx={{
                     fontWeight: currentSection === section ? "bold" : "normal",
                     borderRadius: "20px",
@@ -1320,11 +1420,18 @@ export default function EventInfoPopup({ event, close }) {
               >
                 <span>
                   <IconButton
-                    onClick={() =>
-                      selectedEvent.hailoLinks && selectedEvent.hailoLinks.length > 0
-                        ? setLinkedInDialogOpen(true)
-                        : null
-                    }
+                    onClick={() => {
+                      sendGAEvent("open_linkedin_dialog", {
+                        event_category: "EventInfoPopup",
+                        event_label: selectedEvent.title,
+                      });
+                      if (
+                        selectedEvent.hailoLinks &&
+                        selectedEvent.hailoLinks.length > 0
+                      ) {
+                        setLinkedInDialogOpen(true);
+                      }
+                    }}
                     size="small"
                     disabled={
                       !selectedEvent.hailoLinks ||
@@ -1370,7 +1477,15 @@ export default function EventInfoPopup({ event, close }) {
                       </Typography>
 
                       <CustomTooltip title="Select Language">
-                        <IconButton onClick={() => setLanguageDialogOpen(true)}>
+                        <IconButton
+                          onClick={() => {
+                            sendGAEvent("open_language_dialog", {
+                              event_category: "EventInfoPopup",
+                              event_label: selectedEvent.title,
+                            });
+                            setLanguageDialogOpen(true);
+                          }}
+                        >
                           <LanguageIcon />
                         </IconButton>
                       </CustomTooltip>
@@ -1469,12 +1584,21 @@ export default function EventInfoPopup({ event, close }) {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setCalendarConfirmationDialogOpen(false)}
+            onClick={() => {
+              sendGAEvent("cancel_add_calendar", {
+                event_category: "EventInfoPopup",
+                event_label: selectedEvent.title,
+              });
+              setCalendarConfirmationDialogOpen(false);
+            }}
             color="secondary"
           >
             No
           </Button>
-          <Button onClick={handleCalendarConfirmation} color="primary">
+          <Button
+            onClick={handleCalendarConfirmation}
+            color="primary"
+          >
             Yes
           </Button>
         </DialogActions>
@@ -1491,7 +1615,16 @@ export default function EventInfoPopup({ event, close }) {
           Are you sure you want to create a SalesLoft cadence?
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDialogOpen(false)} color="secondary">
+          <Button
+            onClick={() => {
+              sendGAEvent("cancel_salesloft_invite", {
+                event_category: "EventInfoPopup",
+                event_label: selectedEvent.title,
+              });
+              setDialogOpen(false);
+            }}
+            color="secondary"
+          >
             No
           </Button>
           <Button onClick={handleSalesLoftConfirmation} color="primary">
@@ -1503,7 +1636,13 @@ export default function EventInfoPopup({ event, close }) {
       {/* Language Select Dialog */}
       <Dialog
         open={languageDialogOpen}
-        onClose={() => setLanguageDialogOpen(false)}
+        onClose={() => {
+          sendGAEvent("close_language_dialog", {
+            event_category: "EventInfoPopup",
+            event_label: selectedEvent.title,
+          });
+          setLanguageDialogOpen(false);
+        }}
         maxWidth="xs"
         fullWidth
         sx={{ zIndex: 100000000 }}
@@ -1522,6 +1661,13 @@ export default function EventInfoPopup({ event, close }) {
                     value={item.language}
                     control={<Radio />}
                     label={`${item.platform} - ${item.language}`}
+                    onClick={() => {
+                      sendGAEvent("select_language_option", {
+                        event_category: "EventInfoPopup",
+                        language: item.language,
+                        platform: item.platform,
+                      });
+                    }}
                   />
                 ))
               ) : (
@@ -1531,11 +1677,26 @@ export default function EventInfoPopup({ event, close }) {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setLanguageDialogOpen(false)} color="secondary">
+          <Button
+            onClick={() => {
+              sendGAEvent("cancel_language_dialog", {
+                event_category: "EventInfoPopup",
+                event_label: selectedEvent.title,
+              });
+              setLanguageDialogOpen(false);
+            }}
+            color="secondary"
+          >
             Cancel
           </Button>
           <Button
-            onClick={() => setLanguageDialogOpen(false)}
+            onClick={() => {
+              sendGAEvent("confirm_language_dialog", {
+                event_category: "EventInfoPopup",
+                selected_language: selectedLanguage,
+              });
+              setLanguageDialogOpen(false);
+            }}
             color="primary"
             variant="contained"
           >
@@ -1547,7 +1708,13 @@ export default function EventInfoPopup({ event, close }) {
       {/* LinkedIn / Haiilo Dialog */}
       <Dialog
         open={linkedInDialogOpen}
-        onClose={() => setLinkedInDialogOpen(false)}
+        onClose={() => {
+          sendGAEvent("close_linkedin_dialog", {
+            event_category: "EventInfoPopup",
+            event_label: selectedEvent.title,
+          });
+          setLinkedInDialogOpen(false);
+        }}
         maxWidth="xs"
         fullWidth
         sx={{ zIndex: 100000000 }}
@@ -1579,11 +1746,25 @@ export default function EventInfoPopup({ event, close }) {
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
                   }}
+                  onClick={() =>
+                    sendGAEvent("click_haiilo_link", {
+                      event_category: "EventInfoPopup",
+                      event_label: link,
+                      event_title: selectedEvent.title,
+                    })
+                  }
                 >
                   {link}
                 </Typography>
                 <IconButton
-                  onClick={() => window.open(link, "_blank")}
+                  onClick={() => {
+                    sendGAEvent("open_haiilo_link", {
+                      event_category: "EventInfoPopup",
+                      event_label: link,
+                      event_title: selectedEvent.title,
+                    });
+                    window.open(link, "_blank");
+                  }}
                   size="small"
                   sx={{ color: "#1a73e8" }}
                 >
@@ -1597,7 +1778,13 @@ export default function EventInfoPopup({ event, close }) {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setLinkedInDialogOpen(false)}
+            onClick={() => {
+              sendGAEvent("close_linkedin_dialog", {
+                event_category: "EventInfoPopup",
+                event_label: selectedEvent.title,
+              });
+              setLinkedInDialogOpen(false);
+            }}
             color="secondary"
           >
             Close
@@ -1618,7 +1805,16 @@ export default function EventInfoPopup({ event, close }) {
           Are you sure you want to duplicate this event?
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleConfirmationDialogClose} color="secondary">
+          <Button
+            onClick={() => {
+              sendGAEvent("cancel_duplicate_event", {
+                event_category: "EventInfoPopup",
+                event_label: selectedEvent.title,
+              });
+              handleConfirmationDialogClose();
+            }}
+            color="secondary"
+          >
             No
           </Button>
           <Button onClick={confirmDuplicateEvent} color="primary">
