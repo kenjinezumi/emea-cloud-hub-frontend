@@ -8,8 +8,22 @@ export default function CreateEventButton() {
   const { resetFormData } = useContext(GlobalContext);
   const navigate = useNavigate();
 
+  // Helper to safely send a GA4 event (if available)
+  const sendGAEvent = (eventName, params = {}) => {
+    if (window && window.gtag) {
+      window.gtag('event', eventName, params);
+    }
+  };
+
   const handleButtonClick = () => {
-    resetFormData(); // Reset form data
+    // Fire GA4 event
+    sendGAEvent('create_event_button_click', {
+      event_category: 'CreateEvent',
+      event_label: 'Add Event Button'
+    });
+
+    // Existing logic
+    resetFormData(); 
     navigate('/create-event');
   };
 
