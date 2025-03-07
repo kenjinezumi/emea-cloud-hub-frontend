@@ -395,6 +395,8 @@ export default function CalendarHeader() {
           <MenuItem value="month">Month</MenuItem>
           <MenuItem value="year">Year</MenuItem>
           <MenuItem value="list">List</MenuItem>
+          <MenuItem value="extract">Export data</MenuItem>
+
         </Select>
 
         {/* User Profile & Popover */}
