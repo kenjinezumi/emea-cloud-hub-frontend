@@ -82,7 +82,7 @@ function App() {
         <Route path="/auth/success" element={<AuthSuccess />} />
 
         {/* Protected Routes */}
-        {/* <Route element={<PrivateRoute />}> */}
+        <Route element={<PrivateRoute />}>
           <Route path="/" element={<RenderCalendarView />} />
           <Route path="/create-event" element={<EventForm />} />
           <Route path="/location" element={<EventFormLocation />} />
@@ -93,7 +93,7 @@ function App() {
           <Route path="/event/:eventId" element={<EventSharePage />} />
           <Route path="/data-extract" element={<DataExtractView />} />
 
-        {/* </Route> */}
+        </Route>
         {/* Fallback Route */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
