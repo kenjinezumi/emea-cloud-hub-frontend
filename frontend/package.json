@@ -23,6 +23,7 @@
     "google-auth-library": "^9.7.0",
     "https-browserify": "^1.0.0",
     "native-url": "^0.3.4",
+    "papaparse": "^5.5.2",
     "path": "^0.12.7",
     "qs": "^6.11.2",
     "quill": "^2.0.2",
