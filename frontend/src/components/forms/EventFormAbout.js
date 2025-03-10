@@ -798,6 +798,8 @@ export default function EventForm() {
                     >
                       <MenuItem value="1st Party (Google Owned)">1st Party</MenuItem>
                       <MenuItem value="3rd Party">3rd Party</MenuItem>
+                      <MenuItem value="Unknown">Unknown</MenuItem>
+
                     </Select>
                     {isPartyTypeError && (
                       <Typography variant="body2" color="error">
