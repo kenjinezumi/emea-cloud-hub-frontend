@@ -572,7 +572,7 @@ const dummyEventData = [
     isDeleted: false,
     source: null,
     programName: ["AI & Analytics Platform (BigQuery, Gemini, Vertex)"],
-    partyType: "1st Party (Google Owned)",
+    partyType: "Unknown",
   },
 ];
 
